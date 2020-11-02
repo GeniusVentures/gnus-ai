@@ -18,12 +18,13 @@
  *
  */
 
-// const HDWalletProvider = require('truffle-hdwallet-provider');
-// const infuraKey = "Put your key here";
+require('dotenv').config();
+const HDWalletProvider = require('truffle-hdwallet-provider');
+const infuraKey = process.env["INFRA_API_KEY"];
 
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
-
+var alchemyapiId = process.env["ALCHEMY_API_ID"];
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -48,7 +49,48 @@ module.exports = {
       gas: 8000000,
       network_id: "*",       // Any network (default: none)
     },
+    
+    ganache: {
+      host:"127.0.0.1",
+      port: 7545,
+      network_id: "*"
+      },
 
+    // rinkeby: {
+    //   provider: () => new HDWalletProvider(mnemonic, 'https://eth-kovan.alchemyapi.io/v2/' + alchemyapiId),
+    //   network_id: 4, // eslint-disable-line camelcase
+    //   gas: 5500000, // Ropsten has a lower block limit than mainnet
+    //   confirmations: 2, // # of confs to wait between deployments. (default: 0)
+    //   timeoutBlocks: 200, // # of blocks before a deployment times out  (minimum/default: 50)
+    //   skipDryRun: true, // Skip dry run before migrations? (default: false for public nets )
+    // },
+
+    // ropsten: {
+    //   provider: () => new HDWalletProvider(mnemonic, 'https://eth-kovan.alchemyapi.io/v2/' + alchemyapiId),
+    //   network_id: 3, // eslint-disable-line camelcase
+    //   gas: 5500000, // Ropsten has a lower block limit than mainnet
+    //   confirmations: 2, // # of confs to wait between deployments. (default: 0)
+    //   timeoutBlocks: 200, // # of blocks before a deployment times out  (minimum/default: 50)
+    //   skipDryRun: true, // Skip dry run before migrations? (default: false for public nets )
+    // },
+
+    kovan: {
+      provider: function() {
+        // Or, pass an array of private keys, and optionally use a certain subset of addresses
+        var privateKeys = [
+          "48c9bb94d215bd4e980f9eeb7f5893ece14f2d5ea95ebd02f09c56fe1a1a89c5",
+        
+        ];
+        
+        //return new HDWalletProvider(privateKeys, "https://eth-kovan.alchemyapi.io/v2/CwRjtMcuSDLtPt0ymjR7pwTQ65N3OPA9" );
+        return new HDWalletProvider(privateKeys, "https://kovan.infura.io/v3/" + infuraKey);
+      },      
+      network_id: 42
+      , gas : 5500000,
+      confirmations: 2, // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200, // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true, // Skip dry run before migrations? (default: false for public nets )
+    }
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
@@ -77,6 +119,7 @@ module.exports = {
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
   },
+
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
