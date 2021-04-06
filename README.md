@@ -47,7 +47,7 @@ truffle compile
 
 7. Deploy contracts to local ganache blockchain
 ```
-truffle --network ganach migrate
+truffle --network ganache migrate
 ```
 
 
