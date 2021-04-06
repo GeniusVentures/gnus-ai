@@ -19,7 +19,7 @@
  */
 
 require('dotenv').config();
-const HDWalletProvider = require('truffle-hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 const infuraKey = process.env["INFRA_API_KEY"];
 
 // const fs = require('fs');
