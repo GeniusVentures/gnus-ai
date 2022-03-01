@@ -16,7 +16,6 @@ contract PolyGNUSBridge is Initializable, ERC1155Upgradeable, PausableUpgradeabl
     ERC1155BurnableUpgradeable, ERC1155SupplyUpgradeable, UUPSUpgradeable, GeniusAccessControl
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
-    using GeniusDiamondStorage for GeniusDiamondStorage.Layout;
 
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
 

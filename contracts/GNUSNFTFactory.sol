@@ -7,9 +7,9 @@ import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/extensions/ERC1155B
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol";
+import "contracts-starter/contracts/libraries/LibDiamond.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
-import "./GeniusDiamondStorage.sol";
 import "./GNUSConstants.sol";
 
 /// @custom:security-contact support@gnus.ai
@@ -17,7 +17,6 @@ contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeabl
     ERC1155BurnableUpgradeable, ERC1155SupplyUpgradeable, UUPSUpgradeable, GeniusAccessControl
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
-    using GeniusDiamondStorage for GeniusDiamondStorage.Layout;
 
     struct Token {
         string name;
@@ -40,7 +39,7 @@ contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeabl
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // one time initialization on, subsequent calls get ignored with initializer
-    function initialize() public initializer onlyRole(DEFAULT_ADMIN_ROLE) {
+    function GNUSNFTFactory_Initialize() public initializer onlySuperAdminRole {
         __ERC1155_init("");
         __Pausable_init();
         __ERC1155Burnable_init();
@@ -48,12 +47,13 @@ contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeabl
         __UUPSUpgradeable_init();
         __GeniusAccessControl_init();
 
-        address superAdmin = GeniusDiamondStorage.layout().superAdmin;
+        address superAdmin = LibDiamond.diamondStorage().contractOwner;
         grantRole(MINTER_ROLE, superAdmin);
         grantRole(PAUSER_ROLE, superAdmin);
 
         createToken(GNUS_NAME, GNUS_SYMBOL, 1.0 * GNUS_DECIMALS, GNUS_MAX_SUPPLY, GNUS_URI);
 
+        InitializableStorage.layout()._initialized = false;
     }
 
     // set the top level URI for GNUS Tokens

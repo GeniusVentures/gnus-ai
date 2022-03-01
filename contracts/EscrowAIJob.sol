@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
+import "@gnus.ai/contracts-upgradeable-diamond/utils/escrow/ConditionalEscrowUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol";
-import "@gnus.ai/contracts-upgradeable-diamond/utils/escrow/ConditionalEscrowUpgradeable.sol";
 import "./GeniusAccessControl.sol";
 
 
-contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, UUPSUpgradeable, GeniusAccessControl {
+contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, UUPSUpgradeable, GeniusAccessControl  {
 
     // one time initialization on, subsequent calls get ignored with initializer
-    function initialize() public initializer override(EscrowUpgradeable) onlyRole(DEFAULT_ADMIN_ROLE) {
+    function EscrowAIJob_Initialize() public initializer onlySuperAdminRole {
         __ConditionalEscrow_init();
         __UUPSUpgradeable_init();
         __GeniusAccessControl_init();
+        InitializableStorage.layout()._initialized = false;
     }
 
     function withdrawalAllowed(address payee) public view virtual override returns (bool) {

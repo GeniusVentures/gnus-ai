@@ -17,9 +17,11 @@ contract GeniusAI is Initializable, UUPSUpgradeable, GeniusAccessControl {
     }
 
     // one time initialization on, subsequent calls get ignored with initializer
-    function initialize() public initializer onlyRole(DEFAULT_ADMIN_ROLE) {
+    function GeniusAI_Initialize() public initializer onlySuperAdminRole {
         __UUPSUpgradeable_init();
         __GeniusAccessControl_init();
+        // since this should be the last facet initiliazed, keep that all the contracts have been initialized
+        //InitializableStorage.layout()._initialized = false;
     }
 
     /// OpenEscrow

@@ -6,14 +6,13 @@ import "contracts-starter/contracts/facets/DiamondCutFacet.sol";
 import "contracts-starter/contracts/facets/OwnershipFacet.sol";
 import "contracts-starter/contracts/upgradeInitializers/DiamondInit.sol";
 import "contracts-starter/contracts/Diamond.sol";
-import "./GeniusDiamondStorage.sol";
+import "contracts-starter/contracts/libraries/LibDiamond.sol";
 
 contract GeniusDiamond is Diamond {
-    using GeniusDiamondStorage for GeniusDiamondStorage.Layout;
 
     constructor(address _contractOwner, address _diamondCutFacet) payable
         Diamond(_contractOwner, _diamondCutFacet) {
-            GeniusDiamondStorage.layout().superAdmin = _contractOwner;
+            LibDiamond.setContractOwner(_contractOwner);
         }
 
         // add Diamond functions here.
