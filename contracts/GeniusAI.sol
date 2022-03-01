@@ -2,11 +2,10 @@
 pragma solidity ^0.8.2;
 
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
-import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol";
 import "./GeniusAIStorage.sol";
 import "./GeniusAccessControl.sol";
 
-contract GeniusAI is Initializable, UUPSUpgradeable, GeniusAccessControl {
+contract GeniusAI is Initializable, GeniusAccessControl {
     using GeniusAIStorage for GeniusAIStorage.Layout;
 
     // section for GNUSAI contract, version 1.0
@@ -18,10 +17,8 @@ contract GeniusAI is Initializable, UUPSUpgradeable, GeniusAccessControl {
 
     // one time initialization on, subsequent calls get ignored with initializer
     function GeniusAI_Initialize() public initializer onlySuperAdminRole {
-        __UUPSUpgradeable_init();
         __GeniusAccessControl_init();
         // since this should be the last facet initiliazed, keep that all the contracts have been initialized
-        //InitializableStorage.layout()._initialized = false;
     }
 
     /// OpenEscrow

@@ -69,7 +69,7 @@ export async function deployGNUSDiamond() {
     const funcSelectors = getSelectors(facet, registeredFunctionSignatures);
     const removedSelectors = origSelectors.values.filter((v) => !funcSelectors.values.includes(v));
     if (removedSelectors.values.length > 0) {
-      console.log(`Removed ${removedSelectors.values.length} Selectors: ${removedSelectors.values}`);
+      // console.log(`Removed ${removedSelectors.values.length} Selectors: ${removedSelectors.values}`);
     }
     // add new registered function selector strings
     for (let index = 0; index < funcSelectors.values.length; index++) {
@@ -83,14 +83,16 @@ export async function deployGNUSDiamond() {
         action: FacetCutAction.Add,
         functionSelectors: funcSelectors.values,
       });
-    } else {
-      console.log(`Pruned all selectors from ${funcSelectors.contract}`);
+    } else if (process.env.VERBOSE_TEST) {
+        console.log(`Pruned all selectors from ${funcSelectors.contract}`);
     }
   }
 
   // upgrade diamond with facets
-  console.log("");
-  console.log("Diamond Cut:", cut);
+  if (process.env.VERBOSE_TEST) {
+    console.log("");
+    console.log("Diamond Cut:", cut);
+  }
   const diamondCut = await ethers.getContractAt("IDiamondCut", diamond.address);
   // call to init function
   const functionCall = diamondInit.interface.encodeFunctionData("init");
@@ -113,12 +115,13 @@ export async function deployGNUSDiamond() {
     if (Facets[index].init) {
       functionCall = contract.interface.encodeFunctionData(Facets[index].init!);
       initAddress = facetInfo.facetAddress;
-      console.log(`Calling Function ${Facets[index].init}`);
+      if (process.env.VERBOSE_TEST) {
+        console.log(`Calling Function ${Facets[index].init}`);
+      }
     } else {
       functionCall = [];
       initAddress = ethers.constants.AddressZero;
     }
-    console.log("")
     const tx = await diamondCut.diamondCut([facetInfo], initAddress, functionCall);
     console.log(`Diamond cut: ${Facets[index].name} tx hash: ${tx.hash}`);
     const receipt = await tx.wait();
@@ -127,7 +130,7 @@ export async function deployGNUSDiamond() {
     }
   }
 
-  console.log("Completed diamond cut");
+  console.log("Completed diamond cut\n");
 
   return diamond.address;
 }

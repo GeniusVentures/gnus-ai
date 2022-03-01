@@ -3,16 +3,14 @@ pragma solidity ^0.8.2;
 
 import "@gnus.ai/contracts-upgradeable-diamond/utils/escrow/ConditionalEscrowUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
-import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol";
 import "./GeniusAccessControl.sol";
 
 
-contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, UUPSUpgradeable, GeniusAccessControl  {
+contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, GeniusAccessControl  {
 
     // one time initialization on, subsequent calls get ignored with initializer
     function EscrowAIJob_Initialize() public initializer onlySuperAdminRole {
         __ConditionalEscrow_init();
-        __UUPSUpgradeable_init();
         __GeniusAccessControl_init();
         InitializableStorage.layout()._initialized = false;
     }

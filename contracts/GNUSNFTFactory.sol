@@ -6,7 +6,6 @@ import "@gnus.ai/contracts-upgradeable-diamond/security/PausableUpgradeable.sol"
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
-import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol";
 import "contracts-starter/contracts/libraries/LibDiamond.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
@@ -14,7 +13,7 @@ import "./GNUSConstants.sol";
 
 /// @custom:security-contact support@gnus.ai
 contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeable,
-    ERC1155BurnableUpgradeable, ERC1155SupplyUpgradeable, UUPSUpgradeable, GeniusAccessControl
+    ERC1155BurnableUpgradeable, ERC1155SupplyUpgradeable, GeniusAccessControl
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
 
@@ -44,7 +43,6 @@ contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeabl
         __Pausable_init();
         __ERC1155Burnable_init();
         __ERC1155Supply_init();
-        __UUPSUpgradeable_init();
         __GeniusAccessControl_init();
 
         address superAdmin = LibDiamond.diamondStorage().contractOwner;
@@ -140,7 +138,8 @@ contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeabl
     // The following functions are overrides required by Solidity.
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)
     returns (bool) {
-        return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId));
+        return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
+        (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
     }
 
     function _createToken(address owner, string memory name, string memory symbol, uint256 exchRate, uint256 max_supply,
