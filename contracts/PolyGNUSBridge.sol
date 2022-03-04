@@ -31,9 +31,7 @@ contract PolyGNUSBridge is Initializable, ERC1155Upgradeable, PausableUpgradeabl
 
     // The following functions are for the Ethereum -> Polygon Bridge for GNUS Tokens
     // Deposit ERC20 Tokens
-    function deposit(address user, bytes calldata depositData) external onlyRole(PROXY_ROLE) {
-
-        uint256 amount = abi.decode(depositData, (uint256));
+    function deposit(address user, uint256 amount) external onlyRole(PROXY_ROLE) {
 
         require(totalSupply(GNUS_TOKEN_ID) + amount <= GNUS_MAX_SUPPLY, "Minting this amount would exceed max supply of tokens");
 

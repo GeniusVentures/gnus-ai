@@ -3,6 +3,8 @@ import * as dotenv from "dotenv";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
+import "hardhat-diamond-abi";
+import "hardhat-abi-exporter";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
@@ -19,6 +21,33 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     console.log(account.address);
   }
 });
+
+const functionsSet = new Set<string>();
+// filter out duplicate function signatures
+function genSignature(name: string, inputs: Array<any>): string {
+  return `function ${name}(${inputs.reduce((previous, key) => 
+    {
+      const comma = previous.length ? ',' : '';
+      return previous + comma + key.internalType;
+    }, '' )})`;
+}
+
+function filterDuplicateFunctions(abiElement: any, index: number, fullAbiL: any[], fullyQualifiedName: string) {
+  if (abiElement.type === 'function') {
+    const funcSignature = genSignature(abiElement.name, abiElement.inputs);
+    if (functionsSet.has(funcSignature)) {
+      return false;
+    }
+    functionsSet.add(funcSignature);
+  }  else if (abiElement.type === 'fallback') {
+    if (!fullyQualifiedName.match("GeniusDiamond\.sol")) {
+      return false;
+    }
+  }
+
+  return true;
+
+}
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -46,6 +75,17 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  abiExporter: {
+    flat: true,
+    spacing: 2,
+    pretty: true,
+  },
+  diamondAbi: {
+    name: "GeniusDiamond",
+    strict: false,
+    //exclude: ["hardhat-diamond-abi\/.*"],
+    filter: filterDuplicateFunctions,
   },
 };
 
