@@ -19,6 +19,10 @@ contract PolyGNUSBridge is Initializable, ERC1155Upgradeable, PausableUpgradeabl
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
 
     // no initialization function as it is already done by GNUSNFTFactory
+    function PolyGNUSBridge_Initialize() public initializer onlySuperAdminRole {
+        _grantRole(PROXY_ROLE, _msgSender());
+        InitializableStorage.layout()._initialized = false;
+    }
 
     // The following functions are overrides required by Solidity.
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)

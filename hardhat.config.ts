@@ -22,10 +22,10 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-const functionsSet = new Set<string>();
+const elementSeenSet = new Set<string>();
 // filter out duplicate function signatures
-function genSignature(name: string, inputs: Array<any>): string {
-  return `function ${name}(${inputs.reduce((previous, key) => 
+function genSignature(name: string, inputs: Array<any>, type: string): string {
+  return `${type} ${name}(${inputs.reduce((previous, key) => 
     {
       const comma = previous.length ? ',' : '';
       return previous + comma + key.internalType;
@@ -33,16 +33,18 @@ function genSignature(name: string, inputs: Array<any>): string {
 }
 
 function filterDuplicateFunctions(abiElement: any, index: number, fullAbiL: any[], fullyQualifiedName: string) {
-  if (abiElement.type === 'function') {
-    const funcSignature = genSignature(abiElement.name, abiElement.inputs);
-    if (functionsSet.has(funcSignature)) {
+  if (["function", "event"].includes(abiElement.type)) {
+    const funcSignature = genSignature(abiElement.name, abiElement.inputs, abiElement.type);
+    if (elementSeenSet.has(funcSignature)) {
       return false;
     }
-    functionsSet.add(funcSignature);
-  }  else if (abiElement.type === 'fallback') {
+    elementSeenSet.add(funcSignature);
+  } else if (abiElement.type === 'fallback') {
     if (!fullyQualifiedName.match("GeniusDiamond\.sol")) {
       return false;
     }
+  } else if (abiElement.type === 'event') {
+
   }
 
   return true;
@@ -84,7 +86,7 @@ const config: HardhatUserConfig = {
   diamondAbi: {
     name: "GeniusDiamond",
     strict: false,
-    //exclude: ["hardhat-diamond-abi\/.*"],
+    exclude: ["hardhat-diamond-abi\/.*"],
     filter: filterDuplicateFunctions,
   },
 };

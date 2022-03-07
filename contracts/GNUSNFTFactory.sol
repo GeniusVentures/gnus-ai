@@ -45,9 +45,10 @@ contract GNUSNFTFactory is Initializable, ERC1155Upgradeable, PausableUpgradeabl
         __ERC1155Supply_init();
         __GeniusAccessControl_init();
 
-        address superAdmin = LibDiamond.diamondStorage().contractOwner;
-        grantRole(MINTER_ROLE, superAdmin);
-        grantRole(PAUSER_ROLE, superAdmin);
+        address superAdmin = _msgSender();
+        // Super Admin should be able to mint and pause as well
+        _grantRole(MINTER_ROLE, superAdmin);
+        _grantRole(PAUSER_ROLE, superAdmin);
 
         createToken(GNUS_NAME, GNUS_SYMBOL, 1.0 * GNUS_DECIMALS, GNUS_MAX_SUPPLY, GNUS_URI);
 

@@ -17,7 +17,6 @@ contract GeniusAI is Initializable, GeniusAccessControl {
 
     // one time initialization on, subsequent calls get ignored with initializer
     function GeniusAI_Initialize() public initializer onlySuperAdminRole {
-        __GeniusAccessControl_init();
         // since this should be the last facet initiliazed, keep that all the contracts have been initialized
     }
 

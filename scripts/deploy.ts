@@ -22,7 +22,7 @@ export const Facets = [
   { name: "DiamondLoupeFacet", init: null },
   { name: "OwnershipFacet", init: null },
   { name: "GNUSNFTFactory", init: "GNUSNFTFactory_Initialize" },
-  { name: "PolyGNUSBridge", init: null, skipExisting: true },
+  { name: "PolyGNUSBridge", init: "PolyGNUSBridge_Initialize", skipExisting: true },
   { name: "EscrowAIJob", init: "EscrowAIJob_Initialize" },
   { name: "GeniusAI", init: "GeniusAI_Initialize" },          // must be last one to initialize as it set one time init is completely finished
 ];

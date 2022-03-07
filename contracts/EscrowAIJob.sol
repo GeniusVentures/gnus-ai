@@ -11,7 +11,6 @@ contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, GeniusAcces
     // one time initialization on, subsequent calls get ignored with initializer
     function EscrowAIJob_Initialize() public initializer onlySuperAdminRole {
         __ConditionalEscrow_init();
-        __GeniusAccessControl_init();
         InitializableStorage.layout()._initialized = false;
     }
 

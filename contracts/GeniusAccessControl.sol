@@ -17,8 +17,8 @@ abstract contract GeniusAccessControl is Initializable, AccessControlEnumerableU
 
     function __GeniusAccessControl_init_unchained() onlyInitializing internal {
         address superAdmin = _msgSender();
-        _grantRole(UPGRADER_ROLE, superAdmin);
         _grantRole(DEFAULT_ADMIN_ROLE, superAdmin);
+        _grantRole(UPGRADER_ROLE, superAdmin);
     }
 
     function renounceRole(bytes32 role, address account) public override(IAccessControlUpgradeable) {
