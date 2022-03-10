@@ -7,7 +7,6 @@ import "contracts-starter/contracts/libraries/LibDiamond.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
-import "hardhat/console.sol";
 
 /// @custom:security-contact support@gnus.ai
 contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl
@@ -70,7 +69,6 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         if ((id >> 128) == GNUS_TOKEN_ID) {
             require((sender == nft.creator) || hasRole(DEFAULT_ADMIN_ROLE, sender), "Creator or Admin can only mint GNUS");
             uint256 convAmount = amount * nft.exchangeRate;
-            console.log("Trying to mint %d NFT (Token) from %d GNUS NFT tokens", convAmount, amount);
             require(balanceOf(sender, GNUS_TOKEN_ID) >= convAmount, "Not enough GNUS_TOKEN to burn");
             _burn(sender, GNUS_TOKEN_ID, convAmount);
         }

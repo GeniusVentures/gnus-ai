@@ -18,7 +18,7 @@ const {
 } = require("contracts-starter/scripts/libraries/diamond.js");
 
 // other files suites to execute
-import * as PolygonGNUSBridge from "./PolygonGNUSBridge"
+import * as NFTFactoryTests from "./NFTFactoryTests"
 
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();
@@ -114,7 +114,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
     });
 
     after(() => {
-      PolygonGNUSBridge.suite();
+      NFTFactoryTests.suite();
     });
 
   });
