@@ -8,13 +8,6 @@ import "./GeniusAccessControl.sol";
 contract GeniusAI is Initializable, GeniusAccessControl {
     using GeniusAIStorage for GeniusAIStorage.Layout;
 
-    // section for GNUSAI contract, version 1.0
-    struct AIProcessingJob {
-        uint256 escrowID;       // auto incremented ID for Escrow
-        bytes32 uuid;           // ipfs cid minus first 2 bytes (Qm)
-        uint256 escrowAmount;   // amount in gwei for Escrow on deposit
-    }
-
     // one time initialization on, subsequent calls get ignored with initializer
     function GeniusAI_Initialize() public initializer onlySuperAdminRole {
         // since this should be the last facet initiliazed, keep that all the contracts have been initialized

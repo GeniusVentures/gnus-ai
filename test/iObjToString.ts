@@ -1,9 +1,15 @@
 
 
-export function iObjToString(srcObj: any): string {
+export function iObjToString(srcObj: any, indent = 2): string {
     return Object.keys(srcObj).reduce((previous, key) => {
         if (!key.match(/^-*\d+$/)) {
-            return previous + `\n  ${key}: ${srcObj[key]},`;
+            let objStr: string;
+            if (srcObj[key].type === "Object") {
+                objStr = iObjToString(srcObj[key], indent + 2);
+            } else {
+                objStr = srcObj[key].toString();
+            }
+            return previous + `\n${' '.repeat(indent)}${key}: ${objStr},`;
         } else {
             return previous;
         }

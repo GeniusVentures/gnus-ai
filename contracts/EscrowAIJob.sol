@@ -5,7 +5,6 @@ import "@gnus.ai/contracts-upgradeable-diamond/utils/escrow/ConditionalEscrowUpg
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
 import "./GeniusAccessControl.sol";
 
-
 contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, GeniusAccessControl  {
 
     // one time initialization on, subsequent calls get ignored with initializer
@@ -15,6 +14,7 @@ contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, GeniusAcces
     }
 
     function withdrawalAllowed(address payee) public view virtual override returns (bool) {
+        // return super.withdrawalAllowed(payee);
         // TODO: zkSnark check based on some random seed and macro job index and hashes.
         //require(_payees.)
         // logic here for allowing withdrawals to a payee
