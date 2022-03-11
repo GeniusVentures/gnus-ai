@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { logEvents } from ".";
-import { di, debuglog, diamondInfo, GNUS_TOKEN_ID, assert, expect, toBN, toWei } from "./common";
+import { di, debuglog, GNUS_TOKEN_ID, assert, expect, toBN, toWei } from "../scripts/common";
 import { iObjToString } from "./iObjToString";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 

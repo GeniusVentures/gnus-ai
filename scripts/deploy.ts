@@ -8,6 +8,11 @@ import { BaseContract, BytesLike } from "ethers";
 import { ethers } from "hardhat";
 import "./FacetSelectors";
 import { FacetInfo, getSelectors } from "./FacetSelectors";
+import { di } from "./common";
+import { GeniusDiamond } from "../typechain-types/GeniusDiamond";
+import { DiamondCutFacet } from "../typechain-types/DiamondCutFacet";
+import { DiamondLoupeFacet } from "../typechain-types/DiamondLoupeFacet";
+import { OwnershipFacet } from "../typechain-types/OwnershipFacet";
 
 const log: debug.Debugger = debug("GNUSDeploy:log");
 // @ts-ignore
@@ -29,6 +34,7 @@ export const Facets = [
 
 const registeredFunctionSignatures = new Set<string>();
 
+
 const contracts: BaseContract[] = [];
 
 export async function deployGNUSDiamond() {
@@ -37,26 +43,27 @@ export async function deployGNUSDiamond() {
 
   // deploy DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
-  const diamondCutFacet = await DiamondCutFacet.deploy();
+  const diamondCutFacet = await DiamondCutFacet.deploy() as DiamondCutFacet;
   await diamondCutFacet.deployed();
   log("DiamondCutFacet deployed:", diamondCutFacet.address);
 
   // deploy Diamond
   const Diamond = await ethers.getContractFactory("contracts/GeniusDiamond.sol:GeniusDiamond");
-  const diamond = await Diamond.deploy(
-    contractOwner.address,
-    diamondCutFacet.address
+  const gnusDiamond = await Diamond.deploy(
+      contractOwner.address,
+      diamondCutFacet.address
   );
-  await diamond.deployed();
-  log("Diamond deployed:", diamond.address);
+  await gnusDiamond.deployed();
 
-  // deploy DiamondInit
-  // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
-  // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-  const DiamondInit = await ethers.getContractFactory("DiamondInit");
-  const diamondInit = await DiamondInit.deploy();
-  await diamondInit.deployed();
-  log("DiamondInit deployed:", diamondInit.address);
+  di.diamondCutFacet = await ethers.getContractAt("DiamondCutFacet", gnusDiamond.address) as DiamondCutFacet;
+  di.gnusDiamond = await ethers.getContractAt("hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond", gnusDiamond.address) as GeniusDiamond
+  log("Diamond deployed:", di.gnusDiamond.address);
+
+}
+
+export async function deployGNUSDiamondFacets() {
+  const accounts = await ethers.getSigners();
+  const contractOwner = accounts[0];
 
   // deploy facets
   log("");
@@ -96,19 +103,7 @@ export async function deployGNUSDiamond() {
   // upgrade diamond with facets
   log("");
   log("Diamond Cut:", cut);
-  const diamondCut = await ethers.getContractAt("IDiamondCut", diamond.address);
-  // call to init function
-  const functionCall = diamondInit.interface.encodeFunctionData("init");
-  const tx = await diamondCut.diamondCut(
-    [],
-    diamondInit.address,
-    functionCall
-  );
-  log("Diamond cut tx: ", tx.hash);
-  const receipt = await tx.wait();
-  if (!receipt.status) {
-    throw Error(`Diamond upgrade failed: ${tx.hash}`);
-  }
+  const diamondCut = await ethers.getContractAt("IDiamondCut", di.gnusDiamond.address);
 
   for (let index = 0; index < cut.length; index++) {
     const contract = contracts[index];
@@ -131,9 +126,18 @@ export async function deployGNUSDiamond() {
     }
   }
 
+  di.diamondLoupeFacet = await ethers.getContractAt(
+      "DiamondLoupeFacet",
+      di.gnusDiamond.address
+  ) as DiamondLoupeFacet;
+
+  di.ownershipFacet = await ethers.getContractAt(
+      "OwnershipFacet",
+      di.gnusDiamond.address
+  ) as OwnershipFacet;
+
   log("Completed diamond cut\n");
 
-  return diamond.address;
 }
 
 async function main() {
@@ -145,8 +149,8 @@ async function main() {
   // await hre.run('compile');
 
   if (require.main === module) {
-    const contractAddress: string = await deployGNUSDiamond();
-    log(`Contract address deployed is ${contractAddress}`);
+    await deployGNUSDiamond();
+    log(`Contract address deployed is ${di.gnusDiamond.address}`);
   }
 }
 

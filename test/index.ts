@@ -7,18 +7,20 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "@nomiclabs/hardhat-ethers";
 import "../scripts/FacetSelectors";
-import { deployGNUSDiamond } from "../scripts/deploy";
-import { getSelectors, Selectors } from "../scripts/FacetSelectors";
+import { deployGNUSDiamond, deployGNUSDiamondFacets } from "../scripts/deploy";
+import { getSelectors, Selectors, getInterfaceID } from "../scripts/FacetSelectors";
 import { GeniusDiamond, NFTStructOutput } from "../typechain-types/GeniusDiamond";
 import { GNUSNFTFactory } from "../typechain-types/GNUSNFTFactory";
 import { iObjToString } from "./iObjToString";
-import { di, debuglog, diamondInfo, GNUS_TOKEN_ID, assert, expect, toBN, toWei } from "./common";
+import { di, debuglog, GNUS_TOKEN_ID, assert, expect, toBN, toWei } from "../scripts/common";
+import { IERC1155Upgradeable__factory } from "../typechain-types/factories/IERC1155Upgradeable__factory";
+import { IERC165Upgradeable__factory } from "../typechain-types/factories/IERC165Upgradeable__factory";
 const {
   FacetCutAction,
 } = require("contracts-starter/scripts/libraries/diamond.js");
 
 // other files suites to execute
-import * as NFTFactoryTests from "./NFTFactoryTests"
+import * as NFTFactoryTests from "../test/NFTFactoryTests"
 
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();
@@ -33,22 +35,18 @@ export async function logEvents(tx: ContractTransaction) {
 describe.only("Genius Diamond DApp Testing", async function () {
 
   before(async function () {
-    di.diamondAddress = await deployGNUSDiamond();
+    await deployGNUSDiamond();
     debuglog('Diamond Deployed')
-    di.gnusDiamond = await ethers.getContractAt("hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond", di.diamondAddress) as GeniusDiamond;
 
-    di.diamondCutFacet = await ethers.getContractAt(
-        "DiamondCutFacet",
-        di.diamondAddress
-    );
-    di.diamondLoupeFacet = await ethers.getContractAt(
-        "DiamondLoupeFacet",
-        di.diamondAddress
-    );
-    di.ownershipFacet = await ethers.getContractAt(
-        "OwnershipFacet",
-        di.diamondAddress
-    );
+    const IERC165UpgradeableInterface = IERC165Upgradeable__factory.createInterface();
+    const IERC1155UpgradeableInterface = IERC1155Upgradeable__factory.createInterface();
+    const IERC165InterfaceID = getInterfaceID(IERC165UpgradeableInterface)
+    // interface ID does not include base contract(s) functions.
+    const IERC11InterfaceID = getInterfaceID(IERC1155UpgradeableInterface).xor(IERC165InterfaceID);
+    assert(await di.gnusDiamond.supportsInterface(IERC11InterfaceID._hex), "Doesn't support IERC1155Upgradeable");
+
+    await deployGNUSDiamondFacets();
+    debuglog('Facets Deployed')
 
   });
 

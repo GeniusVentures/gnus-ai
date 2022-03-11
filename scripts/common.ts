@@ -2,6 +2,9 @@ import {BigNumber, Contract } from "ethers";
 import { ethers } from "hardhat";
 import { debug } from "debug";
 import { GeniusDiamond } from "../typechain-types/GeniusDiamond";
+import { DiamondCutFacet } from "../typechain-types/DiamondCutFacet";
+import { DiamondLoupeFacet } from "../typechain-types/DiamondLoupeFacet";
+import { OwnershipFacet } from "../typechain-types/OwnershipFacet";
 import * as chai from "chai";
 export const assert = chai.assert;
 export const expect = chai.expect;
@@ -19,16 +22,14 @@ global.debuglog.color = "158";
 export const debuglog = global.debuglog;
 
 // global describe it before ethers
-
-export interface diamondInfo {
-    diamondAddress: string;
+interface DiamondInfo {
     gnusDiamond: GeniusDiamond;
-    diamondCutFacet: Contract;
-    diamondLoupeFacet: Contract;
-    ownershipFacet: Contract;
-};
+    diamondCutFacet: DiamondCutFacet;
+    diamondLoupeFacet: DiamondLoupeFacet;
+    ownershipFacet: OwnershipFacet;
+}
 
-export const di = new Object() as diamondInfo;
+export const di: DiamondInfo = <DiamondInfo>{};
 
 export const GNUS_TOKEN_ID  = 0;
 
@@ -36,4 +37,5 @@ export const toBN = BigNumber.from;
 export function toWei(value: number | string): BigNumber {
     return ethers.utils.parseEther(value.toString());
 }
+
 

@@ -1,4 +1,5 @@
-import { Contract, ethers } from "ethers";
+import { Contract, ContractInterface, ethers } from "ethers";
+import { Interface } from "@ethersproject/abi";
 
 export enum FacetCutAction {
   Add = 0,
@@ -88,4 +89,14 @@ export function findAddressPositionInFacets(
       return i;
     }
   }
+}
+
+export function getInterfaceID(contractInterface: ethers.utils.Interface) {
+  let interfaceID: ethers.BigNumber = ethers.constants.Zero;
+  const functions: string[] = Object.keys(contractInterface.functions);
+  for (let i=0; i< functions.length; i++) {
+      interfaceID = interfaceID.xor(contractInterface.getSighash(functions[i]));
+  }
+
+  return interfaceID;
 }
