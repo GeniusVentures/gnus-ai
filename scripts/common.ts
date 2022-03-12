@@ -31,11 +31,12 @@ interface DiamondInfo {
 
 export const di: DiamondInfo = <DiamondInfo>{};
 
-export const GNUS_TOKEN_ID  = 0;
-
 export const toBN = BigNumber.from;
+export const GNUS_TOKEN_ID  = toBN(0);
+
 export function toWei(value: number | string): BigNumber {
     return ethers.utils.parseEther(value.toString());
 }
+
 
 

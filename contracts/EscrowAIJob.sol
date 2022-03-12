@@ -21,7 +21,7 @@ contract EscrowAIJob is Initializable, ConditionalEscrowUpgradeable, GeniusAcces
         return false;
     }
 
-    function _addPayees(address[] memory payees) internal {
+    function addPayees(uint256 escrowID, address[] memory payees, uint256[] memory tokenIDs) internal {
     }
 
 }

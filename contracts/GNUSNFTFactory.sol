@@ -27,7 +27,7 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         address superAdmin = _msgSender();
         _grantRole(CREATOR_ROLE, superAdmin);
 
-        createNFTs(GNUS_TOKEN_ID, asSingletonArray(GNUS_NAME),  asSingletonArray(GNUS_SYMBOL),  asSingletonArray(1.0), asSingletonArray(GNUS_MAX_SUPPLY),  asSingletonArray(GNUS_URI));
+        createNFT(GNUS_TOKEN_ID, GNUS_NAME,  GNUS_SYMBOL, 1.0, GNUS_MAX_SUPPLY,  GNUS_URI);
 
         InitializableStorage.layout()._initialized = false;
     }
@@ -63,36 +63,34 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         _unpause();
     }
 
-    function beforeMint(uint256 id, NFT storage nft, uint256 amount) internal {
+    function beforeMint(address to, uint256 id, NFT storage nft, uint256 amount) internal {
         address sender = _msgSender();
+        require(id != GNUS_TOKEN_ID, "Shouldn't mint GNUS tokens tokens, only deposit and withdraw");
+        require(to != address(0), "ERC1155: mint to the zero address");
         require(nft.nftCreated, "Cannot mint NFT that doesn't exist");
+        require((sender == nft.creator) || hasRole(DEFAULT_ADMIN_ROLE, sender), "Creator or Admin can only mint NFT");
         if ((id >> 128) == GNUS_TOKEN_ID) {
-            require((sender == nft.creator) || hasRole(DEFAULT_ADMIN_ROLE, sender), "Creator or Admin can only mint GNUS");
             uint256 convAmount = amount * nft.exchangeRate;
             require(balanceOf(sender, GNUS_TOKEN_ID) >= convAmount, "Not enough GNUS_TOKEN to burn");
             _burn(sender, GNUS_TOKEN_ID, convAmount);
         }
+        require( (totalSupply(id) + amount) <= nft.maxSupply, "Not enough supply to mint tokens" );
     }
 
     function mint(address to, uint256 id, uint256 amount, bytes memory data) external {
-
-        require(id != GNUS_TOKEN_ID, "Shouldn't mint GNUS tokens tokens, only deposit and withdraw");
-        require(to != address(0), "ERC1155: mint to the zero address");
         NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[id];
 
-        beforeMint(id, nft, amount);
+        beforeMint(to, id, nft, amount);
         _mint(to, id, amount, data);
 
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) external {
 
-        require(to != address(0), "ERC1155: mint to the zero address");
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            require(id != GNUS_TOKEN_ID, "Shouldn't mint GNUS tokens tokens, only deposit and withdraw");
             NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[id];
-            beforeMint(id, nft, amounts[i]);
+            beforeMint(to, id, nft, amounts[i]);
         }
 
         _mintBatch(to, ids, amounts, data);
@@ -105,11 +103,16 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
     }
 
+    function createNFT(uint256 parentID, string memory name, string memory symbol, uint256 exchRate, uint256 max_supply,
+        string memory newuri) public{
+            createNFTs(parentID, asSingletonArray(name),  asSingletonArray(symbol),  asSingletonArray(exchRate), asSingletonArray(max_supply),  asSingletonArray(newuri));
+    }
+
     function createNFTs(uint256 parentID, string[] memory names, string[] memory symbols, uint256[] memory exchRates, uint256[] memory max_supplies,
         string[] memory newuris) public {
 
         address sender = _msgSender();
-        NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[parentID];
+        NFT memory nft = GNUSNFTFactoryStorage.layout().NFTs[parentID];
         if (parentID == GNUS_TOKEN_ID) {
             require(hasRole(DEFAULT_ADMIN_ROLE, sender) || (hasRole(CREATOR_ROLE, sender)), "Only Creators or Admins can create NFT child of GNUS");
         } else {
@@ -127,6 +130,7 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
             nft.childCurIndex++;
             GNUSNFTFactoryStorage.layout().NFTs[newTokenID] = NFT({name: names[i], symbol: symbols[i], exchangeRate: exchRates[i], maxSupply: max_supplies[i], uri: newuris[i], creator: sender, childCurIndex: 0, nftCreated: true});
         }
+       GNUSNFTFactoryStorage.layout().NFTs[parentID].childCurIndex = nft.childCurIndex;
     }
 
     function getNFTInfo(uint256 id) public view returns(NFT memory){

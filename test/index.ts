@@ -19,8 +19,11 @@ const {
   FacetCutAction,
 } = require("contracts-starter/scripts/libraries/diamond.js");
 
+const debugging = (process.env.JB_IDE_HOST !== undefined);
+
 // other files suites to execute
-import * as NFTFactoryTests from "../test/NFTFactoryTests"
+import * as NFTCreateTests from "../test/NFTCreateTests"
+
 
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();
@@ -33,6 +36,13 @@ export async function logEvents(tx: ContractTransaction) {
 }
 
 describe.only("Genius Diamond DApp Testing", async function () {
+
+  if (debugging) {
+    debuglog.enabled = true;
+    debuglog.log = console.log.bind(console);
+    debuglog("Disabling timeout, enabling debuglog, because code was run in Jet Brains (probably debugging)");
+    this.timeout(0);
+  }
 
   before(async function () {
     await deployGNUSDiamond();
@@ -112,7 +122,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
     });
 
     after(() => {
-      NFTFactoryTests.suite();
+      NFTCreateTests.suite();
     });
 
   });
