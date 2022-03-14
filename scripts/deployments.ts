@@ -20,8 +20,8 @@ export const deployments = {
       '0xD3745fecBF088da6214CC472aa2Fd629f76eCb1B',
       '0x25b3f982924f6d31eb8354a414C929D6107aFB8a'
     ],
-    LastDeployed: 0,
-    LastVerified: 0
+    LastDeployed: 1647288901995,
+    LastVerified: 1647289182796
   },
   localhost: {
     DiamondAddress: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
