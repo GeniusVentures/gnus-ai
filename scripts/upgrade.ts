@@ -40,6 +40,7 @@ async function main() {
       // TODO: check ABI for contract or time updated and only deploy updated contracts
       deployInfo.FacetAddresses = [];
       await deployGNUSDiamondFacets(deployInfo);
+      deployInfo.LastDeployed = Date.now();
       log(`Contract address deployed is ${di.gnusDiamond.address}`);
       fs.writeFileSync('scripts/deployments.ts', `\nexport const deployments = ${util.inspect(deployments)};\n`, "utf8")
     } else {
