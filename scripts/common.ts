@@ -41,6 +41,8 @@ export interface IDeployInfo {
     FacetCutAddress: string;
     DeployerAddress: string;
     FacetAddresses: string[];
+    LastDeployed: number;
+    LastVerified: number;
 }
 
 export interface IFacetDeployInfo {

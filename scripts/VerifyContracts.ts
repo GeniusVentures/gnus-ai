@@ -5,6 +5,8 @@ const log: debug.Debugger = debug("GNUSVerify:log");
 import hre from "hardhat";
 import { di, IDeployInfo } from "../scripts/common";
 import { deployments } from "../scripts/deployments";
+import fs from "fs";
+import util from "util";
 
 export async function VerifyContracts(deployInfo: IDeployInfo) {
     log(`Verifing GNUS Diamdond at address ${deployInfo.DiamondAddress}`);
@@ -30,9 +32,6 @@ export async function VerifyContracts(deployInfo: IDeployInfo) {
             address: facetAddress,
         });
     }
-
-
-
 }
 
 async function main() {
@@ -47,8 +46,15 @@ async function main() {
         const networkName = hre.network.name;
         log.enabled = true;
         if (networkName in deployments) {
-            const deployInfo = deployments[networkName as keyof typeof deployments] as IDeployInfo;
-            log(`Finished Verifying GNUS Diamond at ${deployInfo.DiamondAddress}`);
+            const deployInfo: IDeployInfo = deployments[networkName as keyof typeof deployments];
+            if (!["hardhat", "localhost"].includes(networkName))
+            {
+                await VerifyContracts(deployInfo);
+                log(`Finished Verifying GNUS Diamond at ${deployInfo.DiamondAddress}`);
+            }
+            deployInfo.LastVerified = Date.now();
+            fs.writeFileSync('scripts/deployments.ts', `\nexport const deployments = ${util.inspect(deployments)};\n`, "utf8")
+            log(`Finished Verifying GNUS Contracts/Facets at ${deployInfo.DiamondAddress}`);
         }
     }
 }
