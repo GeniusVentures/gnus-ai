@@ -6,11 +6,13 @@
 import { debug } from "debug";
 // @ts-ignore
 import { ethers } from "hardhat";
-import {di, IDeployInfo} from "../scripts/common";
+import { BaseContract } from "ethers";
+import { di, IDeployInfo, IFacetDeployInfo } from "../scripts/common";
 import { GeniusDiamond } from "../typechain-types/GeniusDiamond";
 import { DiamondCutFacet } from "../typechain-types/DiamondCutFacet";
 import { deployments } from "../scripts/deployments";
-import { deployGNUSDiamondFacets } from "./deploy";
+import { getInterfaceID } from "../scripts/FacetSelectors";
+import { deployGNUSDiamondFacets, Facets } from "./deploy";
 const log: debug.Debugger = debug("GNUSUpgrade:log");
 import hre from "hardhat";
 import fs from "fs";
@@ -18,6 +20,18 @@ import util from "util";
 
 // @ts-ignore
 log.color = "158";
+
+export async function GetUpdatedFacets(deployInfo: IDeployInfo, interfaceIDs: string[]) : Promise<IFacetDeployInfo[]> {
+  const updatedFacets = new Array<IFacetDeployInfo>(Facets.length);
+
+  for (let i=0; i < Facets.length; i++) {
+    updatedFacets[i] = Facets[i];
+    const facetContract: BaseContract = await ethers.getContractAt(Facets[i].name, deployInfo.DiamondAddress);
+    const interfaceID = getInterfaceID(facetContract.interface)._hex;
+    updatedFacets[i].skipExisting = (interfaceIDs[i] === interfaceID);
+  }
+  return updatedFacets;
+}
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -29,7 +43,6 @@ async function main() {
 
   if (require.main === module) {
     log.enabled = true;
-    //const network = await ethers.getDefaultProvider().getNetwork();
     const networkName = hre.network.name;
     if (networkName in deployments) {
       const deployInfo = deployments[networkName as keyof typeof deployments] as IDeployInfo;
@@ -38,9 +51,9 @@ async function main() {
       di.gnusDiamond = Diamond.attach(diamondAddress) as GeniusDiamond;
       di.diamondCutFacet = await ethers.getContractAt("DiamondCutFacet", di.gnusDiamond.address) as DiamondCutFacet;
       // TODO: check ABI for contract or time updated and only deploy updated contracts
-      deployInfo.FacetAddresses = [];
-      await deployGNUSDiamondFacets(deployInfo);
-      deployInfo.LastDeployed = Date.now();
+      const updatedFacets = await GetUpdatedFacets(deployInfo, deployInfo.LastDeployedIDs);
+      log(util.inspect(updatedFacets));
+      await deployGNUSDiamondFacets(deployInfo, updatedFacets);
       log(`Contract address deployed is ${di.gnusDiamond.address}`);
       fs.writeFileSync('scripts/deployments.ts', `\nexport const deployments = ${util.inspect(deployments)};\n`, "utf8")
     } else {

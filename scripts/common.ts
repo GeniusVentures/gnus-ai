@@ -38,11 +38,10 @@ export const GNUS_TOKEN_ID = toBN(0);
 
 export interface IDeployInfo {
     DiamondAddress: string;
-    FacetCutAddress: string;
     DeployerAddress: string;
     FacetAddresses: string[];
-    LastDeployed: number;
-    LastVerified: number;
+    LastDeployedIDs: string[];
+    LastVerifiedIDs: string[];
 }
 
 export interface IFacetDeployInfo {

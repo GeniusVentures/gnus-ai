@@ -11,6 +11,8 @@ export interface FacetInfo {
   facetAddress: string;
   action: FacetCutAction;
   functionSelectors: string[];
+  name: string;
+  initFunc: string | null | undefined;
 }
 
 export class Selectors {
