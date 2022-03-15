@@ -71,7 +71,7 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     mumbai: {
-      url: "https://rpc-mumbai.maticvigil.com/v1/12dd792f8cba3178b2b151e0ba6b80ab5d046b79",
+      url: "https://matic-testnet-archive-rpc.bwarelabs.com",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     polygon: {
