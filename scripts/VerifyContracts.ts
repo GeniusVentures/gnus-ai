@@ -3,34 +3,40 @@ import debug from "debug";
 
 const log: debug.Debugger = debug("GNUSVerify:log");
 import hre from "hardhat";
-import { di, IDeployInfo } from "../scripts/common";
+import { di, IDeployInfo, IFacetDeployInfo } from "../scripts/common";
 import { deployments } from "../scripts/deployments";
 import fs from "fs";
 import util from "util";
+import { BaseContract } from "ethers";
+import { Facets } from "../scripts/deploy";
+import { getInterfaceID } from "./FacetSelectors";
+import { GetUpdatedFacets } from "./upgrade";
+
+const ethers = hre.ethers;
 
 export async function VerifyContracts(deployInfo: IDeployInfo) {
-    log(`Verifing GNUS Diamdond at address ${deployInfo.DiamondAddress}`);
-    await hre.run("verify:verify", {
-        address: deployInfo.DiamondAddress,
-        constructorArguments: [
-            deployInfo.DeployerAddress,
-            deployInfo.FacetCutAddress
-        ],
-    });
-
-    log(`Verifing GNUS DiamdondCut at address ${deployInfo.FacetCutAddress}`);
-
-    await hre.run("verify:verify", {
-        address: deployInfo.FacetCutAddress,
-    });
+    // Can only verify GNUS Diamond Contract once.
+    if (deployInfo.LastVerifiedIDs[0] === "") {
+        log(`Verifing GNUS Diamdond at address ${deployInfo.DiamondAddress}`);
+        await hre.run("verify:verify", {
+            address: deployInfo.DiamondAddress,
+            constructorArguments: [
+                deployInfo.DeployerAddress,
+                deployInfo.FacetAddresses[0]
+            ],
+        });
+    }
 
     for (let i=0; i< deployInfo.FacetAddresses.length; i++) {
-        const facetAddress = deployInfo.FacetAddresses[i];
-        log(`Verifing GNUS Facet at address ${facetAddress}`);
-
-        await hre.run("verify:verify", {
-            address: facetAddress,
-        });
+        if (deployInfo.LastDeployedIDs[i] !== deployInfo.LastVerifiedIDs[i]) {
+            const facetAddress = deployInfo.FacetAddresses[i];
+            log(`Verifing GNUS Facet at address ${facetAddress}`);
+            const facetContract: BaseContract = await ethers.getContractAt(Facets[i].name, deployInfo.DiamondAddress);
+            deployInfo.LastDeployedIDs[i] = getInterfaceID(facetContract.interface)._hex;
+            await hre.run("verify:verify", {
+                address: facetAddress,
+            });
+        }
     }
 }
 
@@ -52,7 +58,6 @@ async function main() {
                 await VerifyContracts(deployInfo);
                 log(`Finished Verifying GNUS Diamond at ${deployInfo.DiamondAddress}`);
             }
-            deployInfo.LastVerified = Date.now();
             fs.writeFileSync('scripts/deployments.ts', `\nexport const deployments = ${util.inspect(deployments)};\n`, "utf8")
             log(`Finished Verifying GNUS Contracts/Facets at ${deployInfo.DiamondAddress}`);
         }

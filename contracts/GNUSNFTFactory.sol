@@ -8,7 +8,7 @@ import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
 
-/// @custom:security-contact support@gnus.ai
+/// @custom:security-contact support@gnus.a
 contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
