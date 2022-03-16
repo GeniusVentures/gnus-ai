@@ -81,7 +81,8 @@ export async function deployGNUSDiamondFacets(deployInfo: IDeployInfo, facets:IF
     assert(facets.length === deployInfo.FacetAddresses.length, `Need ${facets.length} items in deployInfo FacetAddresses array`);
     if (!FacetDeployInfo.skipExisting) {
       const FacetContract = await ethers.getContractFactory(FacetDeployInfo.name);
-      const facet = await FacetContract.deploy();
+      log(`Deploying ${FacetDeployInfo.name} size: ${FacetContract.bytecode.length}`);
+      const facet = await FacetContract.deploy( { gasLimit: 1900000, gasPrice: 60000000000});
       await facet.deployed();
       contracts.push(facet);
       deployInfo.FacetAddresses[index] = facet.address;

@@ -4,14 +4,14 @@ export const deployments = {
     DiamondAddress: '0x127e47aba094a9a87d084a3a93732909ff031419',
     DeployerAddress: '0x55f36651B5B61B8286305740fA86AD996FC8bDc9',
     FacetAddresses: [
-      '0xe30526ba2128f8cc4d05b013c65a623478b2ad80',
+      '0x127e47aba094a9a87d084a3a93732909ff031419',
       '0xf95EB593dDd7806beCC4419bD67371244187EA05',
       '0xad36d09B567FD6eC5B580804902A728F074F6df4',
       '0x611449746E13035471B90901d9Fb08abd0707346',
       '0xcEddE1968e33DC8F182e94EEE8738436867dd65A',
       '0xD3745fecBF088da6214CC472aa2Fd629f76eCb1B',
       '0x25b3f982924f6d31eb8354a414C929D6107aFB8a',
-      ''
+      '0x3B24ae057bE4fD492247714d903e3ec0ab0c4cf3'
     ],
     LastDeployedIDs: [
       '0x1f931c1c',
@@ -21,7 +21,7 @@ export const deployments = {
       '0x24787102',
       '0x2b6f4387',
       '0xdff732c7',
-      ''
+      '0x06fdde03'
     ],
     LastVerifiedIDs: [
       '0x1f931c1c',
