@@ -12,7 +12,7 @@ export interface FacetInfo {
   action: FacetCutAction;
   functionSelectors: string[];
   name: string;
-  initFunc: string | null | undefined;
+  initFunc?: string;
 }
 
 export class Selectors {

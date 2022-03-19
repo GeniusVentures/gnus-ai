@@ -11,6 +11,7 @@ export const assert = chai.assert;
 export const expect = chai.expect;
 import chaiAsPromised from "chai-as-promised"
 import {Context} from "mocha";
+import { Fragment } from "@ethersproject/abi";
 
 chai.use(chaiAsPromised);
 
@@ -23,33 +24,40 @@ global.debuglog.color = "158";
 
 export const debuglog = global.debuglog;
 
-// global describe it before ethers
-interface DiamondInfo {
-    gnusDiamond: GeniusDiamond;
-    diamondCutFacet: DiamondCutFacet;
-    diamondLoupeFacet: DiamondLoupeFacet;
-    ownershipFacet: OwnershipFacet;
-}
-
-export const di: DiamondInfo = <DiamondInfo>{};
-
 export const toBN = BigNumber.from;
 export const GNUS_TOKEN_ID = toBN(0);
 
-export interface IDeployInfo {
-    DiamondAddress: string;
-    DeployerAddress: string;
-    FacetAddresses: string[];
-    LastDeployedIDs: string[];
-    LastVerifiedIDs: string[];
+export interface IFacetDeployedInfo {
+    address?: string;
+    tx_hash?: string;
+    verified?: boolean;
 }
 
-export interface IFacetDeployInfo {
-    name: string;
-    init: (undefined | string | null);
-    skipExisting: (undefined | boolean);
+export type FacetDeployedInfo = Record<string, IFacetDeployedInfo>;
+
+export interface INetworkDeployInfo {
+    DiamondAddress: string;
+    DeployerAddress: string;
+    FacetDeployedInfo: FacetDeployedInfo;
 }
+
+export type AfterDeployInit = (networkDeployInfo: INetworkDeployInfo) => Promise<void|boolean>;
+
+export interface IFacetToDeployInfo {
+    priority: number;
+    init?: string;
+    skipExisting?: boolean;
+    deployInclude?: string[];
+    callback?: AfterDeployInit;
+}
+
+export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;
 
 export function toWei(value: number | string): BigNumber {
     return ethers.utils.parseEther(value.toString());
 }
+
+export function getSighash(funcSig: string) : string {
+    return ethers.utils.Interface.getSighash(Fragment.fromString(funcSig));
+}
+

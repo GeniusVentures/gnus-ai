@@ -32,7 +32,7 @@ export async function VerifyContracts(deployInfo: IDeployInfo) {
             const facetAddress = deployInfo.FacetAddresses[i];
             log(`Verifing GNUS Facet at address ${facetAddress}`);
             const facetContract: BaseContract = await ethers.getContractAt(Facets[i].name, deployInfo.DiamondAddress);
-            deployInfo.LastDeployedIDs[i] = getInterfaceID(facetContract.interface)._hex;
+            deployInfo.LastVerifiedIDs[i] = deployInfo.LastDeployedIDs[i];
             await hre.run("verify:verify", {
                 address: facetAddress,
             });
