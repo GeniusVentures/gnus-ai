@@ -1,4 +1,4 @@
-import {BigNumber, Contract} from "ethers";
+import {BaseContract, BigNumber, Contract} from "ethers";
 import {ethers} from "hardhat";
 import {debug} from "debug";
 import {GeniusDiamond} from "../typechain-types/GeniusDiamond";
@@ -12,6 +12,8 @@ export const expect = chai.expect;
 import chaiAsPromised from "chai-as-promised"
 import {Context} from "mocha";
 import { Fragment } from "@ethersproject/abi";
+import fs from "fs";
+import util from "util";
 
 chai.use(chaiAsPromised);
 
@@ -30,10 +32,21 @@ export const GNUS_TOKEN_ID = toBN(0);
 export interface IFacetDeployedInfo {
     address?: string;
     tx_hash?: string;
+    funcSelectors?: string[];
     verified?: boolean;
 }
 
 export type FacetDeployedInfo = Record<string, IFacetDeployedInfo>;
+
+export interface IDeployedFacetSelectors {
+    facets: Record<string, string>;
+}
+
+export interface IDeployedContractFacetSelectors {
+    contractFacets: Record<string, string[]>
+}
+
+export type FacetSelectorsDeployed = (IDeployedFacetSelectors & IDeployedContractFacetSelectors);
 
 export interface INetworkDeployInfo {
     DiamondAddress: string;
@@ -61,3 +74,11 @@ export function getSighash(funcSig: string) : string {
     return ethers.utils.Interface.getSighash(Fragment.fromString(funcSig));
 }
 
+export function writeDeployedInfo(deployments: { [key: string]: INetworkDeployInfo }) {
+    fs.writeFileSync('scripts/deployments.ts', `\nimport { INetworkDeployInfo } from "../scripts/common";\n` +
+        `export const deployments: { [key: string]: INetworkDeployInfo } = ${util.inspect(deployments, { depth: null })};\n`, "utf8");
+}
+
+export type DeployedContracts = Record<string, BaseContract >;
+
+export const dc: DeployedContracts = {};

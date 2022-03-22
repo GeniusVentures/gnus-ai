@@ -4,7 +4,7 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 import { debug } from "debug";
-import { FacetToDeployInfo, FacetDeployedInfo } from "../scripts/common";
+import { FacetToDeployInfo, FacetDeployedInfo, writeDeployedInfo } from "../scripts/common";
 import { deployments } from "../scripts/deployments";
 import { Facets, LoadFacetDeployments } from "../scripts/facets";
 import { deployGNUSDiamondFacets } from "./deploy";
@@ -45,8 +45,7 @@ async function main() {
       log(util.inspect(updatedFacetsToDeploy));
       await deployGNUSDiamondFacets(deployInfo, updatedFacetsToDeploy);
       log(`Contract address deployed is ${deployInfo.DiamondAddress}`);
-      fs.writeFileSync('scripts/deployments.ts', `\nimport { INetworkDeployInfo } from "../scripts/common";\n` +
-          `export const deployments: { [key: string]: INetworkDeployInfo } = ${util.inspect(deployments, { depth: null })};\n`, "utf8");
+      writeDeployedInfo(deployments);
     } else {
       log(`No deployments found to attach to for ${networkName}, aborting.`);
     }

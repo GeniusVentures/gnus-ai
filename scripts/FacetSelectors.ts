@@ -1,5 +1,8 @@
-import { Contract, ContractInterface, ethers } from "ethers";
+import { ethers } from "hardhat";
+import { Contract, ContractInterface, utils, BigNumber } from "ethers";
 import { Interface } from "@ethersproject/abi";
+import {FacetSelectorsDeployed, INetworkDeployInfo, debuglog } from "./common";
+import { DiamondLoupeFacet } from "../typechain-types/DiamondLoupeFacet";
 
 export enum FacetCutAction {
   Add = 0,
@@ -93,12 +96,49 @@ export function findAddressPositionInFacets(
   }
 }
 
-export function getInterfaceID(contractInterface: ethers.utils.Interface) {
-  let interfaceID: ethers.BigNumber = ethers.constants.Zero;
+export function getInterfaceID(contractInterface: utils.Interface) {
+  let interfaceID: BigNumber = ethers.constants.Zero;
   const functions: string[] = Object.keys(contractInterface.functions);
   for (let i=0; i< functions.length; i++) {
       interfaceID = interfaceID.xor(contractInterface.getSighash(functions[i]));
   }
 
   return interfaceID;
+}
+
+export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeployInfo, ): Promise<FacetSelectorsDeployed> {
+
+  // map funcSelectors to address
+  const deployedFuncSelectors: Record<string, string> = {};
+  const deployedContractFuncSelectors: Record<string, string[]> = {};
+  let diamondLoupe: DiamondLoupeFacet | undefined;
+  if (networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"]?.address) {
+    const factory = await ethers.getContractFactory("DiamondLoupeFacet")
+    diamondLoupe = factory.attach(networkDeployInfo.DiamondAddress) as DiamondLoupeFacet;
+    const deployedFacets = await diamondLoupe.facets();
+    for (const facetDeployedInfo of deployedFacets) {
+      for (const facetIndex of facetDeployedInfo.functionSelectors) {
+        deployedFuncSelectors[facetIndex] = facetDeployedInfo.facetAddress;
+      }
+    }
+  }
+
+  for (const contractName in networkDeployInfo.FacetDeployedInfo) {
+    const facetInfo = networkDeployInfo.FacetDeployedInfo[contractName];
+    if (facetInfo.funcSelectors) {
+      deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
+    } else if (diamondLoupe) {
+      if (facetInfo.address) {
+        facetInfo.funcSelectors = await diamondLoupe.facetFunctionSelectors(facetInfo.address);
+        deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
+      }
+    }
+    if (facetInfo.funcSelectors) {
+      for (const funcSelector of facetInfo.funcSelectors!) {
+        deployedFuncSelectors[funcSelector] = facetInfo.address!;
+      }
+    }
+  }
+
+  return Promise.resolve({ facets: deployedFuncSelectors, contractFacets: deployedContractFuncSelectors} );
 }
