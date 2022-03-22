@@ -69,7 +69,7 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         require(to != address(0), "ERC1155: mint to the zero address");
         require(nft.nftCreated, "Cannot mint NFT that doesn't exist");
         require((sender == nft.creator) || hasRole(DEFAULT_ADMIN_ROLE, sender), "Creator or Admin can only mint NFT");
-        if (nft.parentID == GNUS_TOKEN_ID) {
+        if ((id >> 128) == GNUS_TOKEN_ID) {
             uint256 convAmount = amount * nft.exchangeRate;
             require(balanceOf(sender, GNUS_TOKEN_ID) >= convAmount, "Not enough GNUS_TOKEN to burn");
             _burn(sender, GNUS_TOKEN_ID, convAmount);
@@ -126,12 +126,11 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
             if (parentID == GNUS_TOKEN_ID) {
                 require(exchRates[i] > 0, "Exchange Rate has to be > 0 for creating a new Child NFT of GNUS");
             }
-            uint256 newTokenID = GNUSNFTFactoryStorage.layout().nextNFTID++;
+            uint256 newTokenID = (parentID << 128) | nft.childCurIndex++;
             GNUSNFTFactoryStorage.layout().NFTs[newTokenID] = NFT({name: names[i], symbol: symbols[i], exchangeRate: exchRates[i],
-                maxSupply: max_supplies[i], uri: newuris[i], creator: sender, childCurIndex: 0, nftCreated: true, parentID: parentID});
-
-            GNUSNFTFactoryStorage.layout().NFTs[parentID].childCurIndex++;
+                maxSupply: max_supplies[i], uri: newuris[i], creator: sender, childCurIndex: 0, nftCreated: true});
         }
+        GNUSNFTFactoryStorage.layout().NFTs[parentID].childCurIndex = nft.childCurIndex;
     }
 
     function getNFTInfo(uint256 id) public view returns(NFT memory){
@@ -151,10 +150,6 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     array[0] = element;
 
     return array;
-    }
-
-    function nextNFTID() view public returns(uint256) {
-        return GNUSNFTFactoryStorage.layout().nextNFTID;
     }
 
 }

@@ -47,7 +47,7 @@ export function suite() {
         it("Testing NFT Factory to create new NFT & child NFTs for creator", async () => {
             await gnusDiamond.grantRole(utils.id("CREATOR_ROLE"), signers[1].address);
             const GNUSNFTInfo = await gdAddr1.getNFTInfo(GNUS_TOKEN_ID);
-            const newParentNFTID = await gdAddr1.nextNFTID();
+            const newParentNFTID = GNUSNFTInfo.childCurIndex;
             // exchange rate = 2.0 Addr1Tokens for 1 GNUS token
             await gdAddr1.createNFT(GNUS_TOKEN_ID, "TEST GAME", "TESTGAME", toBN(2.0), toWei(50000000*2), "");
             let newNFTInfo = await gdAddr1.getNFTInfo(newParentNFTID);
@@ -66,7 +66,7 @@ export function suite() {
 
 
             for (let i = 0; i<3; i++) {
-                const nftID = newParentNFTID.add(i + 1);
+                const nftID = newParentNFTID.shl(128).or(i);
                 const nftInfo = await gdAddr1.getNFTInfo(nftID);
                 debuglog(`nftInfo${i.toString()} ${iObjToString(nftInfo)}}`);
             }
