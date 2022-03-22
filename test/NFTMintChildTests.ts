@@ -23,15 +23,15 @@ export function suite() {
         })
 
         it("Testing NFT Factory to mint child NFT's of Addr1 Token", async () => {
-            const addr1childNFT1 = ParentNFTID.add(1);
+            const addr1childNFT1 = ParentNFTID.shl(128).or(0);
             await expect(gdAddr2.mint(signers[2].address, addr1childNFT1, toWei(5), [])).to.be.eventually.rejectedWith(Error,
                 /Creator or Admin can only mint NFT/);
         });
 
         it("Testing NFT Factory to mint child NFTs of Addr1 with address 1", async () => {
-            const addr1childNFT1 = ParentNFTID.add(1);
-            const addr1childNFT2 = ParentNFTID.add(2);
-            const addr1childNFT3 = ParentNFTID.add(3);
+            const addr1childNFT1 = ParentNFTID.shl(128).or(0);
+            const addr1childNFT2 = ParentNFTID.shl(128).or(1);
+            const addr1childNFT3 = ParentNFTID.shl(128).or(2);
             const startingSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
             debuglog(`Starting GNUS Supply: ${utils.formatEther(startingSupply)}`);
             // try to mint too many
@@ -47,7 +47,7 @@ export function suite() {
 
             // get information about NFT
             for (let i = 0; i<3; i++) {
-                const nftID = ParentNFTID.add(i+1);
+                const nftID = ParentNFTID.shl(128).or(i);
                 const totalSupply = await gdAddr1.totalSupply(nftID);
                 debuglog(`Total Supply for ParentNFT1:NFT${i+1} ${totalSupply}`);
             }
@@ -67,7 +67,7 @@ export function suite() {
                 tokenIDs.push(ParentNFTID);
                 for (let j=0; j< 3; j++) {
                     addrs.push(signers[i].address);
-                    tokenIDs.push(ParentNFTID.add(j+1));
+                    tokenIDs.push(ParentNFTID.shl(128).or(j));
                 }
             }
 

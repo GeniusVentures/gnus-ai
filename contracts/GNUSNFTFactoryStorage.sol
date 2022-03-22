@@ -10,7 +10,6 @@ struct NFT {
     address creator;        // the creator of the token
     uint128 childCurIndex;  // the current childNFT count created
     bool nftCreated;        // if there is a mapping/token created
-    uint256 parentID;       // parent token ID
 }
 
 /// @custom:security-contact support@gnus.ai
@@ -19,8 +18,6 @@ library  GNUSNFTFactoryStorage
     struct Layout {
         // token ID to NFT information
         mapping(uint256 => NFT) NFTs;
-        // next NFT id to be be created
-        uint256 nextNFTID;
     }
 
     bytes32 constant GNUS_NFT_FACTORY_STORAGE_POSITION = keccak256("gnus.ai.nft.factory.storage");
