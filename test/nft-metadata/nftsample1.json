@@ -1,0 +1,11 @@
+{
+  "description": "Cartoon Knight Character",
+  "image": "https://gnus.ai/nfts/gnus.ai/cartoon-nft-sample.png",
+  "name": "BIlly McKnight",
+  "attributes": [
+    { "trait_type": "Base", "value": "Human" },
+    { "trait_type": "Eyes", "value": "Big" },
+    { "trait_type": "Mouth","value": "Angry" },
+    { "trait_type": "Clothes","value": "Suite of Armour" }
+  ]
+}
