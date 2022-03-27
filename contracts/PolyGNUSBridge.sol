@@ -2,17 +2,21 @@
 pragma solidity ^0.8.2;
 
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
+import "@gnus.ai/contracts-upgradeable-diamond/token/ERC20/IERC20Upgradeable.sol";
 import "./GNUSERC1155MaxSupply.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
 
 /// @custom:security-contact support@gnus.ai
-contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl
+contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
 
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
+    string constant public name = "Genius NFT Collection";
+    string constant public symbol = "GNUS";
+    uint8 constant public decimals = 18;
 
     // no initialization function as it is already done by GNUSNFTFactory
     function PolyGNUSBridge_Initialize() public initializer onlySuperAdminRole {
@@ -34,6 +38,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     function deposit(address user, uint256 amount) external onlyRole(PROXY_ROLE) {
 
         // `amount` token getting minted here & equal amount got locked in RootChainManager
+        // these are in Wei from the ERC20 contract.
         _mint(user, GNUS_TOKEN_ID, amount, "");
 
         // emit ERC20 Transfer notification
@@ -65,6 +70,93 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         // emit ERC20 Transfer notification
         emit Transfer(sender, address(0), convAmount);
     }
+
+    /**
+      * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256) {
+        return totalSupply(GNUS_TOKEN_ID);
+    }
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256) {
+        return balanceOf(account, GNUS_TOKEN_ID);
+    }
+
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `to`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address to, uint256 amount) external returns (bool) {
+        _safeTransferFrom(_msgSender(), to, GNUS_TOKEN_ID, amount, "");
+        emit Transfer(_msgSender(), to, amount);
+        return true;
+    }
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool) {
+        return approve(spender, amount, GNUS_TOKEN_ID);
+    }
+
+    /**
+     * @dev Moves `amount` tokens from `from` to `to` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool) {
+        _safeTransferFrom(from, to, amount, GNUS_TOKEN_ID);
+
+        emit Transfer(from, to, amount);
+}
+
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 
 }
 
