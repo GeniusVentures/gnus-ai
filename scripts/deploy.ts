@@ -22,8 +22,6 @@ const {
   FacetCutAction,
 } = require("contracts-starter/scripts/libraries/diamond.js");
 
-// Facets to deploy and cut in diamond.  init = one time init on first deployed/constructor (not upgrade), skipExisting = skip existing facet functions
-
 const registeredFunctionSignatures = new Set<string>();
 
 export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
@@ -70,12 +68,14 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
     const facetDeployInfo = facetsToDeploy[name];
     let facet: BaseContract;
 
+    const facetNeedsUpdate = (!(name in deployedFacets) || (deployedFacets[name].version != facetDeployInfo.version));
     const FacetContract = await ethers.getContractFactory(name);
-    if (!facetDeployInfo.skipExisting) {
+    if (facetNeedsUpdate) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`);
       facet = await FacetContract.deploy();
       await facet.deployed();
-      deployedFacets[name] = { address: facet.address, tx_hash: facet.deployTransaction.hash };
+      deployedFacets[name] = { address: facet.address, tx_hash: facet.deployTransaction.hash,
+          version: facetDeployInfo.version };
       log(`${name} deployed: ${facet.address} tx_hash: ${facet.deployTransaction.hash}`);
     } else {
       facet = FacetContract.attach(deployedFacets[name].address!);
@@ -90,10 +90,14 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
       log(`${name} removed ${removedSelectors.length} selectors: [${removedSelectors}]`);
     }
 
-    // remove any that were removed and are still deployed.
+    // add/remove any that were added/removed and are still deployed.
     if (name in deployedFuncSelectors.contractFacets) {
       const deployedContractFacetsSelectors = deployedFuncSelectors.contractFacets[name];
       const deployedToRemove = deployedContractFacetsSelectors.filter((v) => !newFuncSelectors.includes(v));
+      // if another facet was removed, re-add back in this facets selectors if not updating the facet
+      // that were previously overridden
+      const readdedFacetSelectors = facetNeedsUpdate ? [] :
+          newFuncSelectors.filter((v) => !deployedContractFacetsSelectors.includes(v));
       deployedFuncSelectors.contractFacets[name] = newFuncSelectors;
       // removing any previous deployed function selectors from this contract
       if (deployedToRemove.length) {
@@ -107,12 +111,22 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
         for (const removedFacet of deployedToRemove) {
           delete deployedFuncSelectors.facets[removedFacet];
         }
+
+      }
+
+      if (readdedFacetSelectors.length) {
+        cut.push({
+          facetAddress: facet.address,
+          action: FacetCutAction.Add,
+          functionSelectors: readdedFacetSelectors,
+          name: name,
+        });
       }
     }
 
     if (newFuncSelectors.length) {
       deployedFacets[name].funcSelectors = newFuncSelectors;
-      if (!facetDeployInfo.skipExisting) {
+      if (facetNeedsUpdate) {
         const replaceFuncSelectors: string[] = [];
         const addFuncSelectors = newFuncSelectors.filter((v) => {
             if (v in deployedFuncSelectors.facets) {

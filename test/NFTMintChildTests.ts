@@ -32,7 +32,7 @@ export function suite() {
             const addr1childNFT1 = ParentNFTID.shl(128).or(0);
             const addr1childNFT2 = ParentNFTID.shl(128).or(1);
             const addr1childNFT3 = ParentNFTID.shl(128).or(2);
-            const startingSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+            const startingSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
             debuglog(`Starting GNUS Supply: ${utils.formatEther(startingSupply)}`);
             // try to mint too many
             await expect(gdAddr1.mintBatch(signers[2].address, [addr1childNFT1, addr1childNFT2, addr1childNFT3],
@@ -41,14 +41,14 @@ export function suite() {
             const tx = await gdAddr1.mintBatch(signers[2].address, [addr1childNFT1, addr1childNFT2, addr1childNFT3],
                 [ 50, 1, 1], []);
             logEvents(tx);
-            const endingSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+            const endingSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
             const burntSupply = startingSupply.sub(endingSupply);
             debuglog(`Total GNUS burned: ${utils.formatEther(burntSupply)}`);
 
             // get information about NFT
             for (let i = 0; i<3; i++) {
                 const nftID = ParentNFTID.shl(128).or(i);
-                const totalSupply = await gdAddr1.totalSupply(nftID);
+                const totalSupply = await gdAddr1["totalSupply(uint256)"](nftID);
                 debuglog(`Total Supply for ParentNFT1:NFT${i+1} ${totalSupply}`);
             }
 

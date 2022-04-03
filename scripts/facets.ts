@@ -2,7 +2,7 @@ import { FacetToDeployInfo } from "./common";
 import { glob } from "glob";
 
 export const Facets: FacetToDeployInfo = {
-    DiamondCutFacet:        { priority: 10, skipExisting: true },
+    DiamondCutFacet:        { priority: 10},
     DiamondLoupeFacet:      { priority: 20 },
     OwnershipFacet:         { priority: 30 },
     GNUSNFTFactory:         { priority: 40, init: "GNUSNFTFactory_Initialize" },

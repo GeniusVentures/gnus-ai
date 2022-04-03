@@ -3,6 +3,7 @@ pragma solidity ^0.8.2;
 
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC20/IERC20Upgradeable.sol";
+import "@gnus.ai/contracts-upgradeable-diamond/token/ERC20/ERC20Storage.sol";
 import "./GNUSERC1155MaxSupply.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
@@ -12,7 +13,7 @@ import "./GNUSConstants.sol";
 contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
-
+    using ERC20Storage for ERC20Storage.Layout;
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
     string constant public name = "Genius NFT Collection";
     string constant public symbol = "GNUS";
@@ -24,14 +25,16 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         InitializableStorage.layout()._initialized = false;
     }
 
+    function PolyGNUSBridge_Initialize_V1_0() public onlySuperAdminRole {
+        LibDiamond.diamondStorage().supportedInterfaces[type(IERC20Upgradeable).interfaceId] = true;
+    }
+
     // The following functions are overrides required by Solidity.
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)
     returns (bool) {
         return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
         (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
     }
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
 
     // The following functions are for the Ethereum -> Polygon Bridge for GNUS Tokens
     // Deposit ERC20 Tokens
@@ -74,14 +77,14 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     /**
       * @dev Returns the amount of tokens in existence.
      */
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() external view override returns (uint256) {
         return totalSupply(GNUS_TOKEN_ID);
     }
 
     /**
      * @dev Returns the amount of tokens owned by `account`.
      */
-    function balanceOf(address account) external view returns (uint256) {
+    function balanceOf(address account) external view override returns (uint256) {
         return balanceOf(account, GNUS_TOKEN_ID);
     }
 
@@ -92,7 +95,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
      *
      * Emits a {Transfer} event.
      */
-    function transfer(address to, uint256 amount) external returns (bool) {
+    function transfer(address to, uint256 amount) external virtual override returns (bool) {
         _safeTransferFrom(_msgSender(), to, GNUS_TOKEN_ID, amount, "");
         emit Transfer(_msgSender(), to, amount);
         return true;
@@ -105,7 +108,9 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender) external view returns (uint256);
+    function allowance(address owner, address spender) public view virtual override returns (uint256) {
+        return ERC20Storage.layout()._allowances[owner][spender];
+    }
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -121,8 +126,53 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
      *
      * Emits an {Approval} event.
      */
-    function approve(address spender, uint256 amount) external returns (bool) {
-        return approve(spender, amount, GNUS_TOKEN_ID);
+    function approve(address spender, uint256 amount) public virtual override returns (bool) {
+        address owner = _msgSender();
+        _approve(owner, spender, amount);
+        return true;
+    }
+
+    /**
+     * @dev Atomically increases the allowance granted to `spender` by the caller.
+     *
+     * This is an alternative to {approve} that can be used as a mitigation for
+     * problems described in {IERC20-approve}.
+     *
+     * Emits an {Approval} event indicating the updated allowance.
+     *
+     * Requirements:
+     *
+     * - `spender` cannot be the zero address.
+     */
+    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+        address owner = _msgSender();
+        _approve(owner, spender, ERC20Storage.layout()._allowances[owner][spender] + addedValue);
+        return true;
+    }
+
+    /**
+ * @dev Atomically decreases the allowance granted to `spender` by the caller.
+     *
+     * This is an alternative to {approve} that can be used as a mitigation for
+     * problems described in {IERC20-approve}.
+     *
+     * Emits an {Approval} event indicating the updated allowance.
+     *
+     * Requirements:
+     *
+     * - `spender` cannot be the zero address.
+     * - `spender` must have allowance for the caller of at least
+     * `subtractedValue`.
+     */
+    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+        address owner = _msgSender();
+        uint256 currentAllowance = ERC20Storage.layout()._allowances[owner][spender];
+        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+        unchecked {
+            _approve(owner, spender, currentAllowance - subtractedValue);
+        }
+
+        return true;
     }
 
     /**
@@ -138,25 +188,47 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         address from,
         address to,
         uint256 amount
-    ) external returns (bool) {
-        _safeTransferFrom(from, to, amount, GNUS_TOKEN_ID);
-
+    ) external virtual override returns (bool) {
+        address spender = _msgSender();
+        _spendAllowance(from, spender, amount);
+        _safeTransferFrom(from, to, amount, GNUS_TOKEN_ID, "");
         emit Transfer(from, to, amount);
-}
+        return true;
+    }
+
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
+
+        ERC20Storage.layout()._allowances[owner][spender] = amount;
+        emit Approval(owner, spender, amount);
+    }
 
     /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
+ * @dev Updates `owner` s allowance for `spender` based on spent `amount`.
      *
-     * Note that `value` may be zero.
+     * Does not update the allowance amount in case of infinite allowance.
+     * Revert if not enough allowance is available.
+     *
+     * Might emit an {Approval} event.
      */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    function _spendAllowance(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        uint256 currentAllowance = allowance(owner, spender);
+        if (currentAllowance != type(uint256).max) {
+            require(currentAllowance >= amount, "ERC20: insufficient allowance");
+            unchecked {
+                _approve(owner, spender, currentAllowance - amount);
+            }
+        }
+    }
 
 }
 
