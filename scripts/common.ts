@@ -34,14 +34,17 @@ export interface IFacetDeployedInfo {
     tx_hash?: string;
     funcSelectors?: string[];
     verified?: boolean;
+    version?: number;
 }
 
 export type FacetDeployedInfo = Record<string, IFacetDeployedInfo>;
 
+// map Facet Selectors to contract address string
 export interface IDeployedFacetSelectors {
     facets: Record<string, string>;
 }
 
+// map contract name to array of FacetSignature strings
 export interface IDeployedContractFacetSelectors {
     contractFacets: Record<string, string[]>
 }
@@ -59,9 +62,9 @@ export type AfterDeployInit = (networkDeployInfo: INetworkDeployInfo) => Promise
 export interface IFacetToDeployInfo {
     priority: number;
     init?: string;
-    skipExisting?: boolean;
     deployInclude?: string[];
     callback?: AfterDeployInit;
+    version?: number;
 }
 
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;

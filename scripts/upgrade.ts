@@ -21,8 +21,6 @@ export async function GetUpdatedFacets(facetsDeployed: FacetDeployedInfo) : Prom
 
   for (const name in Facets ) {
     updatedFacetsToDeploy[name] = Facets[name];
-    // if transaction hash is undefined, null or empty string, don't skip, double negatives with truthy :)
-    updatedFacetsToDeploy[name].skipExisting = !(!facetsDeployed[name]?.tx_hash);
   }
   return updatedFacetsToDeploy;
 }

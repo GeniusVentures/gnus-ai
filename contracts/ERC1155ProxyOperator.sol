@@ -28,7 +28,7 @@ contract ERC1155ProxyOperator is GeniusAccessControl {
         return ERC1155Storage.layout()._operatorApprovals[account][operator];
     }
 
-    function tokenSupply(uint256 id) public view returns (uint256 curSupply) {
+    function totalSupply(uint256 id) public view returns (uint256 curSupply) {
         return ERC1155SupplyStorage.layout()._totalSupply[id];
     }
 

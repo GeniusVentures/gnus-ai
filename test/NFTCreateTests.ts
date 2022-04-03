@@ -18,7 +18,7 @@ export function suite() {
         before(async () => {
             signers = await ethers.getSigners();
             owner = signers[0].address;
-            const amount = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+            const amount = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
 
             gdAddr1 = await gnusDiamond.connect(signers[1]);
         })
@@ -28,7 +28,7 @@ export function suite() {
             const tx = await expect(gnusDiamond.burn(signers[1].address, GNUS_TOKEN_ID, toWei(1000)))
                 .to.eventually.be.rejectedWith(Error, /ERC1155: caller is not owner nor approved/);
             logEvents(tx);
-            const amount = await gnusDiamond.balanceOf(signers[1].address, GNUS_TOKEN_ID);
+            const amount = await gnusDiamond["balanceOf(address,uint256)"](signers[1].address, GNUS_TOKEN_ID);
             assert(amount.eq(toWei(1000)), `Address one should equal 1000, but equals ${utils.formatEther(amount)}`);
 
         });

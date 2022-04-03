@@ -123,7 +123,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
     it("Testing if GNUS token has any supply yet", async () => {
       const [owner, addr1, addr2] = await ethers.getSigners();
 
-      const gnusSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+      const gnusSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
       assert(gnusSupply.eq(0), `GNUS Supply should equal zero but equals${gnusSupply}`);
 
       let tx = await gnusDiamond["deposit(address,uint256)"](owner.address, toWei(2000));
@@ -141,7 +141,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
     });
 
     it("Testing if GNUS token received deposit", async () => {
-      const gnusSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+      const gnusSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
       assert(gnusSupply.eq(toWei(4000)), `GNUS Supply should be 4000, but is ${ethers.utils.formatEther(gnusSupply)}`);
     });
 

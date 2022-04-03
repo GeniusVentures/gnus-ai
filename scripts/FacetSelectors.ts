@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import { Contract, ContractInterface, utils, BigNumber } from "ethers";
 import { Interface } from "@ethersproject/abi";
-import {FacetSelectorsDeployed, INetworkDeployInfo, debuglog } from "./common";
+import { FacetSelectorsDeployed, INetworkDeployInfo, debuglog } from "./common";
 import { DiamondLoupeFacet } from "../typechain-types/DiamondLoupeFacet";
 
 export enum FacetCutAction {
@@ -108,8 +108,9 @@ export function getInterfaceID(contractInterface: utils.Interface) {
 
 export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeployInfo, ): Promise<FacetSelectorsDeployed> {
 
-  // map funcSelectors to address
+  // map funcSelectors to contract address
   const deployedFuncSelectors: Record<string, string> = {};
+  // map contract name to container of funcSelectors
   const deployedContractFuncSelectors: Record<string, string[]> = {};
   let diamondLoupe: DiamondLoupeFacet | undefined;
   if (networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"]?.address) {

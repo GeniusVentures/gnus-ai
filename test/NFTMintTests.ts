@@ -29,11 +29,11 @@ export function suite() {
         });
 
         it("Testing NFT Factory to mint child NFTS (tokens) of GNUS with address 1", async () => {
-            const startingSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+            const startingSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
             debuglog(`Starting GNUS Supply: ${utils.formatEther(startingSupply)}`);
             const tx = await gdAddr1.mint(signers[2].address, addr1ParentNFT, toWei(5), []);
             logEvents(tx);
-            const endingSupply = await gnusDiamond.totalSupply(GNUS_TOKEN_ID);
+            const endingSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
             const burntSupply = startingSupply.sub(endingSupply);
             assert(burntSupply.eq(toWei(5.0*2.0)),
                 `Burnt Supply should equal minted * exchange rate (5.0*2.0), but equals ${burntSupply.toString()}`);
