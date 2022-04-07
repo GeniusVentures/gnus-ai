@@ -59,12 +59,19 @@ export interface INetworkDeployInfo {
 
 export type AfterDeployInit = (networkDeployInfo: INetworkDeployInfo) => Promise<void|boolean>;
 
-export interface IFacetToDeployInfo {
-    priority: number;
+export interface IVersionInfo {
+    fromVersion?: number;
     init?: string;
+    upgrade_init?: string;
     deployInclude?: string[];
     callback?: AfterDeployInit;
-    version?: number;
+}
+
+export type VersionRecord = Record<number, IVersionInfo>;
+
+export interface IFacetToDeployInfo {
+    priority: number;
+    versions?: VersionRecord;
 }
 
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;
