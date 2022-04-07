@@ -33,7 +33,7 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   const diamondCutFacet = await DiamondCutFacet.deploy() as DiamondCutFacet;
   await diamondCutFacet.deployed();
   networkDeployInfo.FacetDeployedInfo.DiamondCutFacet = { address: diamondCutFacet.address,
-    tx_hash: diamondCutFacet.deployTransaction.hash };
+    tx_hash: diamondCutFacet.deployTransaction.hash, version: 0.0 };
   log(`DiamondCutFacet deployed: ${diamondCutFacet.deployTransaction.hash} tx_hash: ${diamondCutFacet.deployTransaction.hash}`);
   dc.DiamondCutFacet = diamondCutFacet;
 
@@ -61,21 +61,30 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
 
   const deployedFacets = networkDeployInfo.FacetDeployedInfo;
   const deployedFuncSelectors = await getDeployedFuncSelectors(networkDeployInfo);
-
+  const afterDeployCallbacks: AfterDeployInit[] = [];
   const cut: FacetInfo[] = [];
   const facetsPriority = Object.keys(facetsToDeploy).sort((a, b) => facetsToDeploy[a].priority - facetsToDeploy[b].priority);
   for (const name of facetsPriority) {
-    const facetDeployInfo = facetsToDeploy[name];
+    const facetDeployVersionInfo = facetsToDeploy[name];
     let facet: BaseContract;
+    let facetVersions = ["0.0"];
+    // sort version high to low
+    if (facetDeployVersionInfo.versions) {
+      facetVersions = Object.keys(facetDeployVersionInfo.versions).sort( (a, b) => +b - +a);
+    }
 
-    const facetNeedsUpdate = (!(name in deployedFacets) || (deployedFacets[name].version != facetDeployInfo.version));
+    const upgradeVersion = +facetVersions[0];
+    const facetDeployInfo = facetDeployVersionInfo.versions ? facetDeployVersionInfo.versions[upgradeVersion] : {};
+
+    const deployedVersion = deployedFacets[name]?.version ?? -1.0;
+    const facetNeedsUpdate = (!(name in deployedFacets) || (deployedVersion != upgradeVersion));
     const FacetContract = await ethers.getContractFactory(name);
     if (facetNeedsUpdate) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`);
       facet = await FacetContract.deploy();
       await facet.deployed();
       deployedFacets[name] = { address: facet.address, tx_hash: facet.deployTransaction.hash,
-          version: facetDeployInfo.version };
+          version: upgradeVersion };
       log(`${name} deployed: ${facet.address} tx_hash: ${facet.deployTransaction.hash}`);
     } else {
       facet = FacetContract.attach(deployedFacets[name].address!);
@@ -125,6 +134,10 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
     }
 
     if (newFuncSelectors.length) {
+      const initFunc = (deployedVersion === facetDeployInfo.fromVersion) ? facetDeployInfo.upgrade_init : facetDeployInfo.init;
+      if (facetDeployInfo.callback) {
+        afterDeployCallbacks.push(facetDeployInfo.callback);
+      }
       deployedFacets[name].funcSelectors = newFuncSelectors;
       if (facetNeedsUpdate) {
         const replaceFuncSelectors: string[] = [];
@@ -143,7 +156,7 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
             action: FacetCutAction.Replace,
             functionSelectors: replaceFuncSelectors,
             name: name,
-            initFunc: facetDeployInfo.init,
+            initFunc: initFunc,
           });
         }
 
@@ -153,7 +166,7 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
             action: FacetCutAction.Add,
             functionSelectors: addFuncSelectors,
             name: name,
-            initFunc: facetDeployInfo.init,
+            initFunc: initFunc,
           });
 
         }
@@ -198,11 +211,10 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
     if (!receipt.status) {
       throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
     }
+  }
 
-    if (facetsToDeploy[facetCutInfo.name].callback) {
-      const fnCallback = facetsToDeploy[facetCutInfo.name].callback as AfterDeployInit;
-      await fnCallback(networkDeployInfo);
-    }
+  for (const afterDeployCallback of afterDeployCallbacks) {
+    afterDeployCallback(networkDeployInfo);
   }
 
   log("Completed diamond cut\n");

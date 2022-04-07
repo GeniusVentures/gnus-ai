@@ -23,6 +23,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     function PolyGNUSBridge_Initialize() public initializer onlySuperAdminRole {
         _grantRole(PROXY_ROLE, _msgSender());
         InitializableStorage.layout()._initialized = false;
+        PolyGNUSBridge_Initialize_V1_0();
     }
 
     function PolyGNUSBridge_Initialize_V1_0() public onlySuperAdminRole {

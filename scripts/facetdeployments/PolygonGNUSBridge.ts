@@ -2,6 +2,5 @@ import { IFacetDeployedInfo, debuglog, INetworkDeployInfo, AfterDeployInit, getS
 import { Facets } from "../facets";
 
 // upgrade to 1.0 with ERC20 contract support, this upgrades all function selectors
-Facets.PolyGNUSBridge = {
-    priority: 50, init: "PolyGNUSBridge_Initialize_V1_0", version: 1.0
-}
+Facets.PolyGNUSBridge.versions![1.0] =
+        { init: "PolyGNUSBridge_Initialize", upgrade_init: "PolyGNUSBridge_Initialize_V1_0" };
