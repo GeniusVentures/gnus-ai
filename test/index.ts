@@ -26,7 +26,8 @@ const {
 const debugging = (process.env.JB_IDE_HOST !== undefined);
 
 // other files suites to execute
-import * as NFTCreateTests from "../test/NFTCreateTests"
+import * as NFTCreateTests from "../test/NFTCreateTests";
+import * as GNUSERC20Tests from "../test/GNUSERC20Tests";
 
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();
@@ -146,6 +147,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
     });
 
     after(() => {
+      GNUSERC20Tests.suite();
       NFTCreateTests.suite();
     });
 

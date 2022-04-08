@@ -2,7 +2,7 @@ import { IFacetDeployedInfo, debuglog, INetworkDeployInfo, AfterDeployInit, getS
 import { Facets } from "../facets";
 
 
-const afterDeploy: AfterDeployInit = async AfterDeployInit => {
+const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInfo) =>  {
     debuglog("In ERC1155ProxyOperator after Deploy function");
     // initalize with proxy's like OpenSea.
     Promise.resolve();
