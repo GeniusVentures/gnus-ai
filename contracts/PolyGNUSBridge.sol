@@ -15,7 +15,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC20Storage for ERC20Storage.Layout;
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
-    string constant public name = "Genius NFT Collection";
+    string constant public name = "Genius Token & NFT Collections";
     string constant public symbol = "GNUS";
     uint8 constant public decimals = 18;
 
