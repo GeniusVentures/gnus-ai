@@ -12,6 +12,8 @@ const log: debug.Debugger = debug("GNUSUpgrade:log");
 import hre from "hardhat";
 import fs from "fs";
 import util from "util";
+import { ethers } from "hardhat";
+import { dc, INetworkDeployInfo  } from "../scripts/common";
 
 // @ts-ignore
 log.color = "158";
@@ -25,7 +27,26 @@ export async function GetUpdatedFacets(facetsDeployed: FacetDeployedInfo) : Prom
   return updatedFacetsToDeploy;
 }
 
-async function main() {
+async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
+    const accounts = await ethers.getSigners();
+    const contractOwner = accounts[0];
+
+    // deploy DiamondCutFacet
+    const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
+    dc.DiamondCutFacet = DiamondCutFacet.attach(networkDeployInfo.FacetDeployedInfo.DiamondCutFacet.address!);
+
+    // deploy Diamond
+    const diamondAddress = networkDeployInfo.DiamondAddress;
+    const Diamond = (await ethers.getContractFactory("contracts/GeniusDiamond.sol:GeniusDiamond"))
+        .attach(diamondAddress);
+    dc.GeniusDiamond = (await ethers.getContractFactory("hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond"))
+        .attach(diamondAddress);
+
+    log(`Diamond attached ${diamondAddress}`);
+
+}
+
+  async function main() {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -41,6 +62,7 @@ async function main() {
       await LoadFacetDeployments();
       const updatedFacetsToDeploy = await GetUpdatedFacets(deployInfo.FacetDeployedInfo);
       log(util.inspect(updatedFacetsToDeploy));
+      await attachGNUSDiamond(deployInfo);
       await deployGNUSDiamondFacets(deployInfo, updatedFacetsToDeploy);
       log(`Contract address deployed is ${deployInfo.DiamondAddress}`);
       writeDeployedInfo(deployments);
