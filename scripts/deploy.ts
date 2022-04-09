@@ -17,6 +17,8 @@ import * as util from "util";
 const log: debug.Debugger = debug("GNUSDeploy:log");
 log.color = "159";
 
+const GAS_LIMIT_PER_FACET = 40000;
+const GAS_LIMIT_CUT_BASE = 50000;
 
 const {
   FacetCutAction,
@@ -76,7 +78,7 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
     const upgradeVersion = +facetVersions[0];
     const facetDeployInfo = facetDeployVersionInfo.versions ? facetDeployVersionInfo.versions[upgradeVersion] : {};
 
-    const deployedVersion = deployedFacets[name]?.version ?? -1.0;
+    const deployedVersion = deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
     const facetNeedsUpdate = (!(name in deployedFacets) || (deployedVersion != upgradeVersion));
     const FacetContract = await ethers.getContractFactory(name);
     if (facetNeedsUpdate) {
@@ -116,10 +118,6 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
           functionSelectors: deployedToRemove,
           name: name
         });
-
-        for (const removedFacet of deployedToRemove) {
-          delete deployedFuncSelectors.facets[removedFacet];
-        }
 
       }
 
@@ -175,14 +173,12 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
       // add new registered function selector strings
       for (const funcSelector of newFuncSelectors) {
         registeredFunctionSignatures.add(funcSelector);
-        deployedFuncSelectors.facets[funcSelector] = facet.address;
       }
 
       deployedFacets[name].funcSelectors = newFuncSelectors;
 
     } else {
         delete deployedFuncSelectors.contractFacets[name];
-        delete deployedFacets[name].funcSelectors;
         log(`Pruned all selectors from ${name}`);
     }
 
@@ -205,11 +201,26 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
       functionCall = [];
       initAddress = ethers.constants.AddressZero;
     }
-    const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall);
+    log("Cutting: ", facetCutInfo);
+    const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall,
+        { gasLimit: GAS_LIMIT_CUT_BASE + (facetCutInfo.functionSelectors.length * GAS_LIMIT_PER_FACET) });
     log(`Diamond cut: ${facetCutInfo.name} tx hash: ${tx.hash}`);
     const receipt = await tx.wait();
     if (!receipt.status) {
       throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
+    }
+
+
+    for (const facetModified of facetCutInfo.functionSelectors) {
+      switch (facetCutInfo.action) {
+        case FacetCutAction.Add:
+        case FacetCutAction.Replace:
+          deployedFuncSelectors.facets[facetModified] = facetCutInfo.facetAddress;
+          break;
+        case FacetCutAction.Remove:
+          delete deployedFuncSelectors.facets[facetModified];
+          break;
+      }
     }
   }
 
