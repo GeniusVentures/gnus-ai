@@ -17,8 +17,8 @@ import * as util from "util";
 const log: debug.Debugger = debug("GNUSDeploy:log");
 log.color = "159";
 
-const GAS_LIMIT_PER_FACET = 40000;
-const GAS_LIMIT_CUT_BASE = 50000;
+const GAS_LIMIT_PER_FACET = 60000;
+const GAS_LIMIT_CUT_BASE = 70000;
 
 const {
   FacetCutAction,
@@ -79,18 +79,25 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
     const facetDeployInfo = facetDeployVersionInfo.versions ? facetDeployVersionInfo.versions[upgradeVersion] : {};
 
     const deployedVersion = deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
-    const facetNeedsUpdate = (!(name in deployedFacets) || (deployedVersion != upgradeVersion));
+    const facetNeedsDeployment = (!(name in deployedFacets) || (deployedVersion != upgradeVersion));
     const FacetContract = await ethers.getContractFactory(name);
-    if (facetNeedsUpdate) {
+    if (facetNeedsDeployment) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`);
-      facet = await FacetContract.deploy();
-      await facet.deployed();
+      try {
+        facet = await FacetContract.deploy();
+        await facet.deployed();
+      } catch (e) {
+        log(`Unable to deploy, continuing: ${e}`);
+        continue;
+      }
       deployedFacets[name] = { address: facet.address, tx_hash: facet.deployTransaction.hash,
           version: upgradeVersion };
       log(`${name} deployed: ${facet.address} tx_hash: ${facet.deployTransaction.hash}`);
     } else {
       facet = FacetContract.attach(deployedFacets[name].address!);
     }
+
+    const facetNeedsUpdatedFuncSelectors = !(name in deployedFuncSelectors.contractFacets);
 
     dc[name] = facet;
 
@@ -102,12 +109,12 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
     }
 
     // add/remove any that were added/removed and are still deployed.
-    if (name in deployedFuncSelectors.contractFacets) {
+    if (facetNeedsUpdatedFuncSelectors) {
       const deployedContractFacetsSelectors = deployedFuncSelectors.contractFacets[name];
       const deployedToRemove = deployedContractFacetsSelectors.filter((v) => !newFuncSelectors.includes(v));
       // if another facet was removed, re-add back in this facets selectors if not updating the facet
       // that were previously overridden
-      const readdedFacetSelectors = facetNeedsUpdate ? [] :
+      const readdedFacetSelectors = facetNeedsDeployment ? [] :
           newFuncSelectors.filter((v) => !deployedContractFacetsSelectors.includes(v));
       deployedFuncSelectors.contractFacets[name] = newFuncSelectors;
       // removing any previous deployed function selectors from this contract
@@ -137,7 +144,7 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
         afterDeployCallbacks.push(facetDeployInfo.callback);
       }
       deployedFacets[name].funcSelectors = newFuncSelectors;
-      if (facetNeedsUpdate) {
+      if (facetNeedsDeployment) {
         const replaceFuncSelectors: string[] = [];
         const addFuncSelectors = newFuncSelectors.filter((v) => {
             if (v in deployedFuncSelectors.facets) {
@@ -202,14 +209,18 @@ export async function deployGNUSDiamondFacets(networkDeployInfo: INetworkDeployI
       initAddress = ethers.constants.AddressZero;
     }
     log("Cutting: ", facetCutInfo);
-    const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall,
-        { gasLimit: GAS_LIMIT_CUT_BASE + (facetCutInfo.functionSelectors.length * GAS_LIMIT_PER_FACET) });
-    log(`Diamond cut: ${facetCutInfo.name} tx hash: ${tx.hash}`);
-    const receipt = await tx.wait();
-    if (!receipt.status) {
-      throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
+    try {
+      const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall,
+          {gasLimit: GAS_LIMIT_CUT_BASE + (facetCutInfo.functionSelectors.length * GAS_LIMIT_PER_FACET)});
+      log(`Diamond cut: ${facetCutInfo.name} tx hash: ${tx.hash}`);
+      const receipt = await tx.wait();
+      if (!receipt.status) {
+        throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
+      }
+    } catch (e) {
+      log(`unable to cut facet: ${facetCutInfo.name}`);
+      continue;
     }
-
 
     for (const facetModified of facetCutInfo.functionSelectors) {
       switch (facetCutInfo.action) {
