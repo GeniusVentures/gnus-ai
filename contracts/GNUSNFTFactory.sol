@@ -14,7 +14,7 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC1155SupplyStorage for ERC1155SupplyStorage.Layout;
 
-    bytes32 constant CREATOR_ROLE = keccak256("CREATOR_ROLE");
+    bytes32 constant public CREATOR_ROLE = keccak256("CREATOR_ROLE");
 
     // one time initialization on, subsequent calls get ignored with initializer
     function GNUSNFTFactory_Initialize() public initializer onlySuperAdminRole {

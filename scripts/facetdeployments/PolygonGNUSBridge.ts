@@ -13,20 +13,18 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
     debuglog("In PolygonGNUSBridge after Deploy function");
 
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-    const proxyRole = await gnusDiamond.PROXY_ROLE();
+    const proxyRole = await gnusDiamond.PROXY_ROLE( { gasLimit: 600000 });
     const networkName = hre.network.name;
 
     // allow Polygon ChildChainManagerProxis
     if (networkName in PolygonProxyAddresses) {
         const proxyAddress: string = PolygonProxyAddresses[networkName];
         try {
-            await gnusDiamond.grantRole(proxyRole, proxyAddress);
+            await gnusDiamond.grantRole(proxyRole, proxyAddress, { gasLimit: 600000 });
         } catch (e) {
             debuglog(`Warning, couldn't grant proxy role for ${networkName} Deposit/Withdrawal contract at ${proxyAddress}`);
         }
     }
-    // initalize with proxy's deposit contract.
-    Promise.resolve();
 }
 // upgrade to 1.0 with ERC20 contract support, this upgrades all function selectors
 Facets.PolyGNUSBridge.versions![1.0] =

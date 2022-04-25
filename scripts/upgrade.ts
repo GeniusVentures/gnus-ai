@@ -7,7 +7,7 @@ import { debug } from "debug";
 import { FacetToDeployInfo, FacetDeployedInfo, writeDeployedInfo } from "../scripts/common";
 import { deployments } from "../scripts/deployments";
 import { Facets, LoadFacetDeployments } from "../scripts/facets";
-import { deployGNUSDiamondFacets } from "./deploy";
+import { deployAndInitDiamondFacets } from "./deploy";
 const log: debug.Debugger = debug("GNUSUpgrade:log");
 import hre from "hardhat";
 import fs from "fs";
@@ -63,7 +63,7 @@ async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
       const updatedFacetsToDeploy = await GetUpdatedFacets(deployInfo.FacetDeployedInfo);
       log(util.inspect(updatedFacetsToDeploy));
       await attachGNUSDiamond(deployInfo);
-      await deployGNUSDiamondFacets(deployInfo, updatedFacetsToDeploy);
+      await deployAndInitDiamondFacets(deployInfo, updatedFacetsToDeploy);
       log(`Contract address deployed is ${deployInfo.DiamondAddress}`);
       writeDeployedInfo(deployments);
     } else {

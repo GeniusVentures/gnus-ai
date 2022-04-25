@@ -7,7 +7,7 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "@nomiclabs/hardhat-ethers";
 import "../scripts/FacetSelectors";
-import { deployGNUSDiamond, deployGNUSDiamondFacets } from "../scripts/deploy";
+import { afterDeployCallbacks, deployAndInitDiamondFacets, deployDiamondFacets, deployFuncSelectors, deployGNUSDiamond } from "../scripts/deploy";
 import { getSelectors, Selectors, getInterfaceID } from "../scripts/FacetSelectors";
 import { GeniusDiamond, NFTStructOutput } from "../typechain-types/GeniusDiamond";
 import { GNUSNFTFactory } from "../typechain-types/GNUSNFTFactory";
@@ -18,16 +18,18 @@ import { IERC165Upgradeable__factory } from "../typechain-types/factories/IERC16
 import { LoadFacetDeployments } from "../scripts/facets";
 import { deployments } from "../scripts/deployments";
 import hre from "hardhat";
+import util from "util";
+import { debug } from "debug";
 
 const {
   FacetCutAction,
 } = require("contracts-starter/scripts/libraries/diamond.js");
 
-const debugging = (process.env.JB_IDE_HOST !== undefined);
-
 // other files suites to execute
 import * as NFTCreateTests from "../test/NFTCreateTests";
 import * as GNUSERC20Tests from "../test/GNUSERC20Tests";
+
+const debugging = (process.env.JB_IDE_HOST !== undefined);
 
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();
@@ -45,6 +47,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
   let networkDeployedInfo: INetworkDeployInfo;
 
   if (debugging) {
+    debug.enable("GNUS.*:log");
     debuglog.enabled = true;
     debuglog.log = console.log.bind(console);
     debuglog("Disabling timeout, enabling debuglog, because code was run in Jet Brains (probably debugging)");
@@ -65,6 +68,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
       };
     }
     networkDeployedInfo = deployments[networkName];
+
     await deployGNUSDiamond(networkDeployedInfo);
 
     gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
@@ -78,7 +82,18 @@ describe.only("Genius Diamond DApp Testing", async function () {
     const IERC11InterfaceID = getInterfaceID(IERC1155UpgradeableInterface).xor(IERC165InterfaceID);
     assert(await gnusDiamond.supportsInterface(IERC11InterfaceID._hex), "Doesn't support IERC1155Upgradeable");
 
-    await deployGNUSDiamondFacets(networkDeployedInfo);
+    // do deployment of facets in 3 steps
+    await deployDiamondFacets(networkDeployedInfo);
+    debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
+    await deployFuncSelectors(networkDeployedInfo);
+    debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
+
+    // this should be a null operation.
+    await deployFuncSelectors(networkDeployedInfo);
+
+    await afterDeployCallbacks(networkDeployedInfo);
+    debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
+
     debuglog('Facets Deployed')
 
   });

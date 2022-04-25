@@ -15,7 +15,7 @@ export interface FacetInfo {
   action: FacetCutAction;
   functionSelectors: string[];
   name: string;
-  initFunc?: string;
+  initFunc?: string | null;
 }
 
 export class Selectors {
@@ -128,15 +128,12 @@ export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeploy
 
   for (const contractName in networkDeployInfo.FacetDeployedInfo) {
     const facetInfo = networkDeployInfo.FacetDeployedInfo[contractName];
-    if (facetInfo.funcSelectors) {
-      deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
-    } else if (diamondLoupe) {
-      if (facetInfo.address) {
+    // make sure these were really deployed using louper
+    if (diamondLoupe && facetInfo.address) {
         facetInfo.funcSelectors = await diamondLoupe.facetFunctionSelectors(facetInfo.address,{ gasLimit: 200000});
         deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
-      }
-    }
-    if (facetInfo.funcSelectors) {
+    } else if (facetInfo.funcSelectors) {
+      deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
       for (const funcSelector of facetInfo.funcSelectors!) {
         deployedFuncSelectors[funcSelector] = facetInfo.address!;
       }

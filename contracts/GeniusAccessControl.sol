@@ -8,7 +8,7 @@ import "contracts-starter/contracts/libraries/LibDiamond.sol";
 
 abstract contract GeniusAccessControl is Initializable, AccessControlEnumerableUpgradeable {
 
-    bytes32 constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 constant public UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     function __GeniusAccessControl_init() internal onlyInitializing onlySuperAdminRole {
         __AccessControlEnumerable_init_unchained();
