@@ -12,7 +12,7 @@ contract ERC1155ProxyOperator is GeniusAccessControl {
     using ERC1155SupplyStorage for ERC1155SupplyStorage.Layout;
     using ERC1155Storage for ERC1155Storage.Layout;
 
-    bytes32 public constant NFT_PROXY_OPERATOR_ROLE = keccak256("NFT_PROXY_OPERATOR_ROLE");
+    bytes32 constant public NFT_PROXY_OPERATOR_ROLE = keccak256("NFT_PROXY_OPERATOR_ROLE");
 
     /**
      * Override isApprovedForAll to whitelist user's OpenSea proxy accounts to enable gas-free listings.

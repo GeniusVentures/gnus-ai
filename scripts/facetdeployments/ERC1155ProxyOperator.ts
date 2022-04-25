@@ -13,20 +13,18 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
     debuglog("In ERC1155ProxyOperator after Deploy function");
 
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-    const NFTProxyRole = await gnusDiamond.NFT_PROXY_OPERATOR_ROLE();
+    const NFTProxyRole = await gnusDiamond.NFT_PROXY_OPERATOR_ROLE( { gasLimit: 600000 });
     const networkName = hre.network.name;
 
     // allow OpenSea Proxy Operator
     if (networkName in OpenSeaProxyAddresses) {
         const proxyAddress: string = OpenSeaProxyAddresses[networkName];
         try {
-            await gnusDiamond.grantRole(NFTProxyRole, proxyAddress);
+            await gnusDiamond.grantRole(NFTProxyRole, proxyAddress, { gasLimit: 600000 });
         } catch (e) {
             debuglog(`Warning, couldn't grant proxy role for ${networkName} OpenSea NFT contract at ${proxyAddress}`);
         }
     }
-    // initalize with proxy's deposit contract.
-    Promise.resolve();
 }
 
 Facets.ERC1155ProxyOperator = {
@@ -34,7 +32,8 @@ Facets.ERC1155ProxyOperator = {
         callback: afterDeploy, deployInclude:
             [  getSighash("function isApprovedForAll(address,address)"),
                getSighash("function totalSupply(uint256)"),
-               getSighash("function creators(uint256)")
+               getSighash("function creators(uint256)"),
+               getSighash("function NFT_PROXY_OPERATOR_ROLE()"),
             ],
     } },
 };
