@@ -22,7 +22,7 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
         try {
             await gnusDiamond.grantRole(NFTProxyRole, proxyAddress, { gasLimit: 600000 });
         } catch (e) {
-            debuglog(`Warning, couldn't grant proxy role for ${networkName} OpenSea NFT contract at ${proxyAddress}`);
+            debuglog(`Warning, couldn't grant proxy role for ${networkName} OpenSea NFT contract at ${proxyAddress}\n${e}`);
         }
     }
 }
