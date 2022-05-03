@@ -61,6 +61,37 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
 
     }
 
+    /**
+ * @dev Creates `amount` tokens of token type `id`, and assigns them to `to`.
+     *
+     * Emits a {TransferSingle} event.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
+     * acceptance magic value.
+     */
+    function _mint(
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) internal override(ERC1155Upgradeable) {
+        require(to != address(0), "ERC1155: mint to the zero address");
+
+        address operator = _msgSender();
+        uint256[] memory ids = asSingletonArray(id);
+        uint256[] memory amounts = asSingletonArray(amount);
+
+        _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
+
+        ERC1155Storage.layout()._balances[id][to] += amount;
+        emit TransferSingle(operator, address(0), to, id, amount);
+
+        _afterTokenTransfer(operator, address(0), to, ids, amounts, data);
+    }
+
     // this will withdraw a child token to a GNUS Token on the Ethereum network
     function withdraw(uint256 amount, uint256 id) external {
 
@@ -97,6 +128,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
      * Emits a {Transfer} event.
      */
     function transfer(address to, uint256 amount) external virtual override returns (bool) {
+        //
         _safeTransferFrom(_msgSender(), to, GNUS_TOKEN_ID, amount, "");
         emit Transfer(_msgSender(), to, amount);
         return true;
@@ -174,6 +206,45 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         }
 
         return true;
+    }
+
+    /**
+       * @dev Transfers `amount` tokens of token type `id` from `from` to `to`.
+     *
+     * Emits a {TransferSingle} event.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `from` must have a balance of tokens of type `id` of at least `amount`.
+     * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
+     * acceptance magic value.
+     */
+    function _safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) internal override(ERC1155Upgradeable) {
+        require(to != address(0), "ERC1155: transfer to the zero address");
+
+        address operator = _msgSender();
+        uint256[] memory ids = asSingletonArray(id);
+        uint256[] memory amounts = asSingletonArray(amount);
+
+        _beforeTokenTransfer(operator, from, to, ids, amounts, data);
+
+        uint256 fromBalance = ERC1155Storage.layout()._balances[id][from];
+        require(fromBalance >= amount, "ERC1155: insufficient balance for transfer");
+        unchecked {
+            ERC1155Storage.layout()._balances[id][from] = fromBalance - amount;
+        }
+        ERC1155Storage.layout()._balances[id][to] += amount;
+
+        emit TransferSingle(operator, from, to, id, amount);
+
+        _afterTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
     /**

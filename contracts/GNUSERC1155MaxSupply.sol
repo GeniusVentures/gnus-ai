@@ -23,4 +23,18 @@ contract GNUSERC1155MaxSupply is ERC1155SupplyUpgradeable, PausableUpgradeable, 
             }
         }
     }
+
+    function asSingletonArray(uint256 element) internal pure returns (uint256[] memory) {
+        uint256[] memory array = new uint256[](1);
+        array[0] = element;
+
+        return array;
+    }
+
+    function asSingletonArray(string memory element) internal pure returns (string[] memory) {
+        string[] memory array = new string[](1);
+        array[0] = element;
+
+        return array;
+    }
 }

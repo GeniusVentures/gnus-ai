@@ -94,8 +94,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
     await afterDeployCallbacks(networkDeployedInfo);
     debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
 
-    debuglog('Facets Deployed')
-
+    debuglog('Facets Deployed');
   });
 
   describe("Facet Cut Testing", async function () {
@@ -125,9 +124,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
       result = await gnusDiamond.facetFunctionSelectors(addresses[2]);
       assert.sameMembers(result, selectors.values);
     });
-
   });
-
 
   describe("Polygon to GNUS Deposits", async function () {
 
@@ -147,13 +144,12 @@ describe.only("Genius Diamond DApp Testing", async function () {
 
       const addr1_gnusDiamond = gnusDiamond.connect(addr1);
       await expect(addr1_gnusDiamond["deposit(address,uint256)"](addr1.address, toBN(20))).to.eventually.be.rejectedWith(Error,
-          /reverted with reason string 'AccessControl: account/);
+        /reverted with reason string 'AccessControl: account/);
 
       await gnusDiamond.grantRole(await gnusDiamond.PROXY_ROLE(), addr1.address);
 
       tx = await addr1_gnusDiamond["deposit(address,uint256)"](addr1.address, toWei(2000));
       logEvents(tx);
-
     });
 
     it("Testing if GNUS token received deposit", async () => {
@@ -165,15 +161,5 @@ describe.only("Genius Diamond DApp Testing", async function () {
       GNUSERC20Tests.suite();
       NFTCreateTests.suite();
     });
-
   });
-
-
 });
-
-
-
-
-
-
-
