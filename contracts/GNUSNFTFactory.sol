@@ -104,7 +104,7 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     }
 
     function createNFT(uint256 parentID, string memory name, string memory symbol, uint256 exchRate, uint256 max_supply,
-        string memory newuri) public{
+        string memory newuri) public {
             createNFTs(parentID, asSingletonArray(name),  asSingletonArray(symbol),  asSingletonArray(exchRate), asSingletonArray(max_supply),  asSingletonArray(newuri));
     }
 
@@ -138,18 +138,5 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         return GNUSNFTFactoryStorage.layout().NFTs[id];
     }
 
-    function asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
-    uint256[] memory array = new uint256[](1);
-    array[0] = element;
-
-    return array;
-    }
-
-    function asSingletonArray(string memory element) private pure returns (string[] memory) {
-    string[] memory array = new string[](1);
-    array[0] = element;
-
-    return array;
-    }
 
 }

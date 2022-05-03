@@ -62,7 +62,7 @@ export type AfterDeployInit = (networkDeployInfo: INetworkDeployInfo) => Promise
 export interface IVersionInfo {
     fromVersion?: number;
     init?: string;
-    upgrade_init?: string;
+    upgradeInit?: string;
     deployInclude?: string[];
     callback?: AfterDeployInit;
 }

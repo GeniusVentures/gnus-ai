@@ -4,49 +4,44 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 import { debug } from "debug";
-import { FacetToDeployInfo, FacetDeployedInfo, writeDeployedInfo } from "../scripts/common";
+import { FacetToDeployInfo, FacetDeployedInfo, writeDeployedInfo, dc, INetworkDeployInfo } from "../scripts/common";
 import { deployments } from "../scripts/deployments";
 import { Facets, LoadFacetDeployments } from "../scripts/facets";
-import { deployAndInitDiamondFacets } from "./deploy";
-const log: debug.Debugger = debug("GNUSUpgrade:log");
-import hre from "hardhat";
+import { afterDeployCallbacks, deployAndInitDiamondFacets, deployFuncSelectors } from "./deploy";
+import hre, { ethers } from "hardhat";
 import fs from "fs";
 import util from "util";
-import { ethers } from "hardhat";
-import { dc, INetworkDeployInfo  } from "../scripts/common";
+const log: debug.Debugger = debug("GNUSUpgrade:log");
 
 // @ts-ignore
 log.color = "158";
 
-export async function GetUpdatedFacets(facetsDeployed: FacetDeployedInfo) : Promise<FacetToDeployInfo> {
+export async function GetUpdatedFacets (facetsDeployed: FacetDeployedInfo) : Promise<FacetToDeployInfo> {
   const updatedFacetsToDeploy: FacetToDeployInfo = {};
 
-  for (const name in Facets ) {
+  for (const name in Facets) {
     updatedFacetsToDeploy[name] = Facets[name];
   }
   return updatedFacetsToDeploy;
 }
 
-async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
-    const accounts = await ethers.getSigners();
-    const contractOwner = accounts[0];
+async function attachGNUSDiamond (networkDeployInfo: INetworkDeployInfo) {
 
-    // deploy DiamondCutFacet
-    const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
-    dc.DiamondCutFacet = DiamondCutFacet.attach(networkDeployInfo.FacetDeployedInfo.DiamondCutFacet.address!);
+  // deploy DiamondCutFacet
+  const DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
+  dc.DiamondCutFacet = DiamondCutFacet.attach(networkDeployInfo.FacetDeployedInfo.DiamondCutFacet.address!);
 
-    // deploy Diamond
-    const diamondAddress = networkDeployInfo.DiamondAddress;
-    const Diamond = (await ethers.getContractFactory("contracts/GeniusDiamond.sol:GeniusDiamond"))
-        .attach(diamondAddress);
-    dc.GeniusDiamond = (await ethers.getContractFactory("hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond"))
-        .attach(diamondAddress);
+  // deploy Diamond
+  const diamondAddress = networkDeployInfo.DiamondAddress;
+  dc._GeniusDiamond = (await ethers.getContractFactory("contracts/GeniusDiamond.sol:GeniusDiamond"))
+    .attach(diamondAddress);
+  dc.GeniusDiamond = (await ethers.getContractFactory("hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond"))
+    .attach(diamondAddress);
 
-    log(`Diamond attached ${diamondAddress}`);
-
+  log(`Diamond attached ${diamondAddress}`);
 }
 
-  async function main() {
+async function main () {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
@@ -69,7 +64,6 @@ async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
     } else {
       log(`No deployments found to attach to for ${networkName}, aborting.`);
     }
-
   }
 }
 
