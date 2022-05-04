@@ -263,7 +263,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     ) external virtual override returns (bool) {
         address spender = _msgSender();
         _spendAllowance(from, spender, amount);
-        _safeTransferFrom(from, to, amount, GNUS_TOKEN_ID, "");
+        _safeTransferFrom(from, to, GNUS_TOKEN_ID, amount, "");
         emit Transfer(from, to, amount);
         return true;
     }

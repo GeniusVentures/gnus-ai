@@ -148,8 +148,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         ]
       },
       PolyGNUSBridge: {
-        address: '0x7E34DB3b53df7D888b18F291ddFADdb83f7cB704',
-        tx_hash: '0x88a354c310c5f0b7de91b4e1f2847d7f925c8bdbc2b06761e0c45d7dcb998960',
+        address: '0x2f9303d1a6467b17A958b25417Ea219624a1d65C',
+        tx_hash: '0xdbae59da8b93443eab11b2c1f8b2c6e0449d5756b0476612dd9269f4b70f9709',
         version: 1.1,
         funcSelectors: [
           '0xe48bf15b', '0x8aedbf63',
