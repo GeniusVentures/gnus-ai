@@ -10,7 +10,7 @@ import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
 
 /// @custom:security-contact support@gnus.ai
-contract TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl {
+contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC20Storage for ERC20Storage.Layout;
 
@@ -31,7 +31,7 @@ contract TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccessContr
 
 
     /**
-     * @dev .
+     * @dev . check to not exceed supply, or burn more than supply
      */
     function _beforeTokenTransfer(
         address operator,
@@ -40,27 +40,30 @@ contract TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccessContr
         uint256[] memory amounts
     ) internal virtual {
 
+        uint256 supply = ERC1155SupplyStorage.layout()._totalSupply[GNUS_TOKEN_ID];
+
         // mint check
         if (from == address(0)) {
+            uint256 newSupply = supply;
             for (uint256 i = 0; i < amounts.length; ++i) {
-                ERC1155SupplyStorage.layout()._totalSupply[GNUS_TOKEN_ID] += amounts[i];
+                newSupply += amounts[i];
             }
-            require(totalSupply(GNUS_TOKEN_ID) <= GNUSNFTFactoryStorage.layout().NFTs[GNUS_TOKEN_ID].maxSupply,
+            require(newSupply <= GNUSNFTFactoryStorage.layout().NFTs[GNUS_TOKEN_ID].maxSupply,
                 "Max Supply for GNUS Token would be exceeded");
-        }
-
-        // check if burning any amounts
-        uint256 supply = ERC1155SupplyStorage.layout()._totalSupply[GNUS_TOKEN_ID];
-        uint256 burnAmount = 0;
-        for (uint256 i = 0; i < destinations.length; ++i) {
-            if (destinations[i] == address(0)) {
-                burnAmount += amounts[i];
+            ERC1155SupplyStorage.layout()._totalSupply[GNUS_TOKEN_ID] = newSupply;
+        } else {
+            // check if burning any amounts
+            uint256 burnAmount = 0;
+            for (uint256 i = 0; i < destinations.length; ++i) {
+                if (destinations[i] == address(0)) {
+                    burnAmount += amounts[i];
+                }
             }
-        }
-        if (burnAmount > 0) {
-            require(supply >= burnAmount, "GNUS Token: burn amount exceeds totalSupply");
-            unchecked {
-                ERC1155SupplyStorage.layout()._totalSupply[GNUS_TOKEN_ID] = supply - burnAmount;
+            if (burnAmount > 0) {
+                require(supply >= burnAmount, "GNUS Token: burn amount exceeds totalSupply");
+                unchecked {
+                    ERC1155SupplyStorage.layout()._totalSupply[GNUS_TOKEN_ID] = supply - burnAmount;
+                }
             }
         }
     }
@@ -110,7 +113,8 @@ contract TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccessContr
  */
     function _transferBatch(
         address payable[] destinations,
-        uint256[] memory amounts
+        uint256[] memory amounts,
+        bool checkBurn
     ) internal virtual {
         address operator = _msgSender();
 
@@ -120,22 +124,39 @@ contract TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccessContr
 
         for (uint256 i = 0; i < destinations.length; i++) {
             address payable to = destinations[i];
+            // this prevents burns during transfer
+            if (checkBurn) {
+                require(to != address(0), "TranferBatch: can't burn/transfer to the zero address");
+            }
 
-            require(to != address(0), "TransferBatch: mint to the zero address");
-
-            ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][to] += amounts[i];
+            uint256 fromBalance = ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][operator];
+            require(fromBalance >= amounts[i],
+                "TransferBatch: from account does not have sufficient tokens");
+            unchecked {
+                ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][operator] = fromBalance - amounts[i];
+                ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][to] += amounts[i];
+            }
         }
 
-        emit TransferBatch(operator, address(0), destinatiosn, amounts);
+        emit TransferBatch(operator, operator, destinations, amounts);
 
-        _afterTokenTransfer(operator, address(0), destinations, amounts);
+        _afterTokenTransfer(operator, operator, destinations, amounts);
     }
 
     function TransferBatch(
         address payable[] destinations,
         uint256[] memory amounts
     ) public {
-
+        _transferBatch(destinations, amounts, true);
     }
 
+    /*
+    * This allows us to burn
+    */
+    function TransferOrBurnBatch(
+        address payable[] destinations,
+        uint256[] memory amounts
+    ) public {
+        _transferBatch(destinations, amounts, false);
+    }
 }
