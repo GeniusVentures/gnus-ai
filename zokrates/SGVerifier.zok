@@ -1,0 +1,99 @@
+
+
+import "utils/pack/u32/nonStrictUnpack256.zok"
+import "utils/pack/u32/pack256.zok"
+
+// number of 32 bit words in 256 bits
+const u32 C32T256 = 8
+
+const u32 NUM_NODES = 11
+const u32 NUM_BLOCKS_PER_NODE = 10
+
+// this is the main ZKSnark code that checks the validity of processed nodes.
+// Based on 11 total nodes, 10 micro processed blocks at a time for each node.
+// The verfier node has 10 processed blocks also
+// which are 1 each of the other nodes.  The Hash of the previous block xor this
+struct XORWOW_STATE {
+    u32[5] x
+    u32 counter
+}
+
+struct BLOCK_HEADER {
+    field prevHash
+    u32 nonce
+    u32 timestamp
+    field uncleHash
+    field dataHash
+}
+
+/* The state array must be initialized to not be all zero in the first four words */
+def xorwow(XORWOW_STATE state) -> u32:
+    /* Algorithm "xorwow" from p. 5 of Marsaglia, "Xorshift RNGs" */
+    u32 t = state.x[4]
+
+    u32 s = state.x[0]  /* Perform a contrived 32-bit shift. */
+    state.x[4] = state.x[3]
+    state.x[3] = state.x[2]
+    state.x[2] = state.x[1]
+    state.x[1] = s
+
+    t = t ^ (t >> 2)
+    t =  t ^ (t << 1)
+    t = t ^ s ^ (s << 4)
+    state.x[0] = t
+    state.counter = state.counter + 362437
+    return t + state.counter
+
+
+// main function to take in 11 nodes blocks headers, 1 node if verifier
+// verifier node has one block from each of the other 10 nodes
+// encKeySee if public key encoded seed from escrow starter (prover)
+// in Solidity, to functions would call this
+//      1. GenBlockSigningKey(encKeySeed, prevBH, block_headers) : u256 signingHash;
+//      2. VerifyBlockSignaature(encKeySeed, prevBH, block_headers) : bool isSigned;
+def main(private field encKeySeed,  BLOCK_HEADER prevBH, BLOCK_HEADER[NUM_NODES][NUM_BLOCKS_PER_NODE] block_headers) -> field:
+
+    u32[C32T256] endKeySeed32 = nonStrictUnpack256(encKeySeed)
+    // set up the random generator seed for xorwow function
+     XORWOW_STATE state = XORWOW_STATE { x: [
+        endKeySeed32[0] ^ endKeySeed32[1], endKeySeed32[2] ^ endKeySeed32[3], endKeySeed32[4] ^ endKeySeed32[5], endKeySeed32[6] ^ endKeySeed32[7],
+        0xdeadc0de
+     ], counter: 0xdeadbeef }
+
+    // get randomly selected verifier block
+    u32 verifier_node_index = xorwow(state) % NUM_NODES
+    // get the first node index % 11, could be verifier node too
+    u32 cur_node_index = xorwow(state) % NUM_NODES
+    // get the random first block inside the nodes processed blocks
+    u32 block_index = xorwow(state) % NUM_BLOCKS_PER_NODE
+    // get a random stride to access the nodes processed blocks
+    u32 verifier_stride = xorwow(state) % NUM_BLOCKS_PER_NODE
+    // if any matches fail return 0 has the hash
+    u32 verified_node_count = 0
+    // starting hash
+    u32[8] xorHash = [0, 0, 0, 0, 0, 0, 0, 0]
+    // loop through all 11 nodes
+    for u32 i in 0..NUM_NODES do
+
+        u32[8] verifierHash = nonStrictUnpack256(block_headers[verifier_node_index][verified_node_count].dataHash)
+        u32[8] nodeHash = nonStrictUnpack256(block_headers[cur_node_index][block_index].dataHash)
+
+        u32 dataHashMatches = 0
+        // xor 256 bit hashes from field parameters
+        for u32 j in 0..C32T256 do
+            xorHash[j] = xorHash[j] ^ ((cur_node_index == verifier_node_index) ? nodeHash[j] : 0)
+            dataHashMatches = dataHashMatches + ((nodeHash[j] == verifierHash[j]) ? 1 : 0)
+        endfor
+
+        // add +1 if this is not the verifier node and the node hash matched with verifier node hash
+        verified_node_count = verified_node_count + ((cur_node_index != verifier_node_index) && (dataHashMatches == C32T256) ? 1 : 0)
+
+        // check next node, wrap (modulo) NUM_NODES
+        cur_node_index = (cur_node_index + 1) % NUM_NODES
+
+        block_index = (block_index + verifier_stride) % NUM_BLOCKS_PER_NODE
+    endfor
+
+    // return if NUM_NODES - verfier (1 node) have been verified.
+    return (verified_node_count == NUM_NODES-1) ? pack256(xorHash) : 0
+
