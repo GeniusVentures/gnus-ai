@@ -21,7 +21,7 @@ module.exports = {
             { ignores: ["modules"] }
         ],
         quotes: "off",
-        indent: ["error", 2],
+        indent: ["warn", 4],
         semi: "off"
     }
 }
