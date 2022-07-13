@@ -2,6 +2,7 @@
 
 import "utils/pack/u32/nonStrictUnpack256.zok"
 import "utils/pack/u32/pack256.zok"
+import "utils/casts/u32_to_field.zok"
 
 // number of 32 bit words in 256 bits
 const u32 C32T256 = 8
@@ -16,6 +17,7 @@ const u32 NUM_BLOCKS_PER_NODE = 10
 struct XORWOW_STATE {
     u32[5] x
     u32 counter
+    u32 current
 }
 
 struct BLOCK_HEADER {
@@ -27,7 +29,7 @@ struct BLOCK_HEADER {
 }
 
 /* The state array must be initialized to not be all zero in the first four words */
-def xorwow(XORWOW_STATE state) -> u32:
+def xorwow(XORWOW_STATE state) -> XORWOW_STATE:
     /* Algorithm "xorwow" from p. 5 of Marsaglia, "Xorshift RNGs" */
     u32 t = state.x[4]
 
@@ -42,7 +44,8 @@ def xorwow(XORWOW_STATE state) -> u32:
     t = t ^ s ^ (s << 4)
     state.x[0] = t
     state.counter = state.counter + 362437
-    return t + state.counter
+    state.current = t + state.counter
+    return state
 
 
 // main function to take in 11 nodes blocks headers, 1 node if verifier
@@ -51,25 +54,33 @@ def xorwow(XORWOW_STATE state) -> u32:
 // in Solidity, to functions would call this
 //      1. GenBlockSigningKey(encKeySeed, prevBH, block_headers) : u256 signingHash;
 //      2. VerifyBlockSignaature(encKeySeed, prevBH, block_headers) : bool isSigned;
-def main(private field encKeySeed,  BLOCK_HEADER prevBH, BLOCK_HEADER[NUM_NODES][NUM_BLOCKS_PER_NODE] block_headers) -> field:
+def main(public field encKeySeed,  BLOCK_HEADER prevBH, BLOCK_HEADER[NUM_NODES][NUM_BLOCKS_PER_NODE] block_headers) -> field: //u32[8]:
 
-    u32[C32T256] endKeySeed32 = nonStrictUnpack256(encKeySeed)
+    u32[C32T256] encKeySeed32 = nonStrictUnpack256(encKeySeed)
     // set up the random generator seed for xorwow function
      XORWOW_STATE state = XORWOW_STATE { x: [
-        endKeySeed32[0] ^ endKeySeed32[1], endKeySeed32[2] ^ endKeySeed32[3], endKeySeed32[4] ^ endKeySeed32[5], endKeySeed32[6] ^ endKeySeed32[7],
+        encKeySeed32[0] ^ encKeySeed32[1], encKeySeed32[2] ^ encKeySeed32[3], encKeySeed32[4] ^ encKeySeed32[5], encKeySeed32[6] ^ encKeySeed32[7],
         0xdeadc0de
-     ], counter: 0xdeadbeef }
+     ], counter: 0xdeadbeef, current: 0 }
 
     // get randomly selected verifier block
-    u32 verifier_node_index = xorwow(state) % NUM_NODES
+    state = xorwow(state)
+    u32 verifier_node_index = state.current % NUM_NODES
+    //debugInfo = [state.x[0], state.x[1], state.x[2], state.x[3], state.x[4], state.counter, verifier_node_index, 0]
     // get the first node index % 11, could be verifier node too
-    u32 cur_node_index = xorwow(state) % NUM_NODES
+    state = xorwow(state)
+    u32 cur_node_index = state.current % NUM_NODES
     // get the random first block inside the nodes processed blocks
-    u32 block_index = xorwow(state) % NUM_BLOCKS_PER_NODE
+    state = xorwow(state)
+    u32 block_index = state.current % NUM_BLOCKS_PER_NODE
     // get a random stride to access the nodes processed blocks
-    u32 verifier_stride = xorwow(state) % NUM_BLOCKS_PER_NODE
+    state = xorwow(state)
+    u32 verifier_stride = state.current % NUM_BLOCKS_PER_NODE
     // if any matches fail return 0 has the hash
     u32 verified_node_count = 0
+
+    u32[8] debugInfo = [verifier_node_index, cur_node_index, block_index, verifier_stride, state.x[4], state.counter, state.current, 0]
+
     // starting hash
     u32[8] xorHash = [0, 0, 0, 0, 0, 0, 0, 0]
     // loop through all 11 nodes
@@ -94,6 +105,10 @@ def main(private field encKeySeed,  BLOCK_HEADER prevBH, BLOCK_HEADER[NUM_NODES]
         block_index = (block_index + verifier_stride) % NUM_BLOCKS_PER_NODE
     endfor
 
+    debugInfo[7] = verified_node_count
+
     // return if NUM_NODES - verfier (1 node) have been verified.
+    //return encKeySeed
+    //return (verified_node_count == NUM_NODES-1) ? pack256(xorHash) : pack256(debugInfo)
     return (verified_node_count == NUM_NODES-1) ? pack256(xorHash) : 0
 
