@@ -54,7 +54,7 @@ def xorwow(XORWOW_STATE state) -> XORWOW_STATE:
 // in Solidity, to functions would call this
 //      1. GenBlockSigningKey(encKeySeed, prevBH, block_headers) : u256 signingHash;
 //      2. VerifyBlockSignaature(encKeySeed, prevBH, block_headers) : bool isSigned;
-def main(public field encKeySeed,  BLOCK_HEADER prevBH, BLOCK_HEADER[NUM_NODES][NUM_BLOCKS_PER_NODE] block_headers) -> field: //u32[8]:
+def main(private field encKeySeed,  public BLOCK_HEADER prevBH, public BLOCK_HEADER[NUM_NODES][NUM_BLOCKS_PER_NODE] block_headers) -> bool: //u32[8]:
 
     u32[C32T256] encKeySeed32 = nonStrictUnpack256(encKeySeed)
     // set up the random generator seed for xorwow function
@@ -110,5 +110,5 @@ def main(public field encKeySeed,  BLOCK_HEADER prevBH, BLOCK_HEADER[NUM_NODES][
     // return if NUM_NODES - verfier (1 node) have been verified.
     //return encKeySeed
     //return (verified_node_count == NUM_NODES-1) ? pack256(xorHash) : pack256(debugInfo)
-    return (verified_node_count == NUM_NODES-1) ? pack256(xorHash) : 0
+    return (verified_node_count == NUM_NODES-1) // ? xorHash : debugInfo
 
