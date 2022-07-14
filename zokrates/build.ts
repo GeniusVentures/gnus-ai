@@ -101,6 +101,7 @@ export function buildInitialZokEncoder(encKeySeed256: BigNumber): BLOCK_HEADER[]
     log(`Zok Encoder Parameters: 
     verifierNodeIndex: ${verifierNodeIndex}
     starting node index: ${curNodeIndex}
+    starting block index: ${blockIndex}
     verifier_stride: ${verifierStride}`);
 
     // block headers that will be passed to ZKSnark code
