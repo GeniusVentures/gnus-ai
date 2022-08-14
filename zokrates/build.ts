@@ -87,6 +87,7 @@ export function buildInitialZokEncoder(encKeySeed256: BigNumber): BLOCK_HEADER[]
     log(`state[1]: ${util.inspect(state)}`);
     // get the first node index % 11, could be verifier node too
     let curNodeIndex: number = xorwow(state) % NUM_NODES;
+    curNodeIndex = (curNodeIndex + ((curNodeIndex === verifierNodeIndex) ? 1 : 0)) % NUM_NODES;
     log(`state[2]: ${util.inspect(state)}`);
     // get the random first block inside the nodes processed blocks
     let blockIndex: number = xorwow(state) % NUM_BLOCKS_PER_NODE;
@@ -94,8 +95,6 @@ export function buildInitialZokEncoder(encKeySeed256: BigNumber): BLOCK_HEADER[]
     // get a random stride to access the nodes processed blocks
     const verifierStride: number = xorwow(state) % NUM_BLOCKS_PER_NODE;
     log(`state[4]: ${util.inspect(state)}`);
-    // current verified node count
-    let verifiedNodeCount: number = 0;
 
     log(`state: ${util.inspect(state)}`);
     log(`Zok Encoder Parameters: 
@@ -107,18 +106,16 @@ export function buildInitialZokEncoder(encKeySeed256: BigNumber): BLOCK_HEADER[]
     // block headers that will be passed to ZKSnark code
     const blockHeaders: BLOCK_HEADER[][] = Array.from(Array(NUM_NODES), e => Array(NUM_BLOCKS_PER_NODE).fill(new BLOCK_HEADER({ dataHash: BigNumber.from(0xdeaffacade) })));
 
-    for (let i = 0; i < NUM_NODES; i++) {
+    for (let i = 0; i < NUM_NODES - 1; i++) {
         // dummy up hashes for now just for generation
         const verifierHash: BigNumber = BigNumber.from(i + 0xdeadc0de);
-        if (i !== verifierNodeIndex) {
-            blockHeaders[verifierNodeIndex][verifiedNodeCount] = new BLOCK_HEADER({ dataHash: verifierHash, nonce: uint32.addMod32(i,   32768) });
-            blockHeaders[curNodeIndex][blockIndex] = new BLOCK_HEADER({ dataHash: verifierHash });
-            verifiedNodeCount++;
-            // check next node, wrap (modulo) NUM_NODES
-            curNodeIndex = (curNodeIndex + 1) % NUM_NODES;
-            // bump block index by stride and wrap (modulo)
-            blockIndex = (blockIndex + verifierStride) % NUM_BLOCKS_PER_NODE;
-        }
+        log(`nodeindex/blockindex is ${curNodeIndex.toString()}/${blockIndex.toString()} with hash of ${verifierHash._hex}`);
+        blockHeaders[verifierNodeIndex][i] = new BLOCK_HEADER({ dataHash: verifierHash, nonce: uint32.addMod32(i, 32768) });
+        blockHeaders[curNodeIndex][blockIndex] = new BLOCK_HEADER({ dataHash: verifierHash });
+        // bump block index by stride and wrap (modulo)
+        blockIndex = (blockIndex + verifierStride) % NUM_BLOCKS_PER_NODE;
+        // check next node, wrap (modulo) NUM_NODES
+        curNodeIndex = (curNodeIndex + ((curNodeIndex === verifierNodeIndex - 1) ? 2 : 1)) % NUM_NODES;
     }
 
     return blockHeaders;
@@ -129,30 +126,24 @@ export function buildInitialZokEncoder(encKeySeed256: BigNumber): BLOCK_HEADER[]
 async function main() {
     if (require.main === module) {
         let generatedRandom: BigNumber;
-        let previousBlockHeader: BLOCK_HEADER;
-        let blockHeaders: BLOCK_HEADER[][];
         if (fs.existsSync("SGVerifier.abi.json")) {
             const abiDataString = fs.readFileSync("SGVerifier.abi.json", "utf8");
             const abiData = JSON.parse(abiDataString, BlockHeaderReviver);
             generatedRandom = BigNumber.from(abiData[0]);
             log(`Random Number: ${generatedRandom._hex}`)
-            buildInitialZokEncoder(generatedRandom);
-            previousBlockHeader = abiData[1];
-            blockHeaders = abiData[2];
-
             // log(`read abiData: ${util.inspect(abiData, {depth: null})}`);
         } else {
             log("Creating SGVerifier.abi.json");
             generatedRandom = BigNumber.from(utils.randomBytes(32));
             log(`Random Number generated: ${generatedRandom._hex}`);
-            blockHeaders = buildInitialZokEncoder(generatedRandom);
-            previousBlockHeader = new BLOCK_HEADER({ dataHash: BigNumber.from(0) });
-            const abiOut = [generatedRandom.toString(), previousBlockHeader, blockHeaders];
-            const abiString = JSON.stringify(abiOut, null, 2);
-            // write the abi file
-            fs.writeFileSync('SGVerifier.abi.json', abiString, "utf8");
-            log(`wrote SGVerifier.abi.json`);
         }
+        const blockHeaders = buildInitialZokEncoder(generatedRandom);
+        const previousBlockHeader = new BLOCK_HEADER({ dataHash: BigNumber.from(0) });
+        const abiOut = [generatedRandom.toString(), previousBlockHeader, blockHeaders];
+        const abiString = JSON.stringify(abiOut, null, 2);
+        // write the abi file
+        fs.writeFileSync('SGVerifier.abi.json', abiString, "utf8");
+        log(`wrote SGVerifier.abi.json`);
     }
 }
 
