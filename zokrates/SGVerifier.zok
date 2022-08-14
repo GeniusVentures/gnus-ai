@@ -71,6 +71,7 @@ def main(private field encKeySeed,  public BLOCK_HEADER prevBH, public BLOCK_HEA
     // get the first node index % 11, could be verifier node too
     state = xorwow(state);
     u32 mut cur_node_index = state.current % NUM_NODES;
+    cur_node_index = (cur_node_index + ((cur_node_index == verifier_node_index) ? 1 : 0)) % NUM_NODES;
     assert (cur_node_index == 7);
     // get the random first block inside the nodes processed blocks
     state = xorwow(state);
@@ -89,13 +90,13 @@ def main(private field encKeySeed,  public BLOCK_HEADER prevBH, public BLOCK_HEA
     // starting hash
     u32[8] mut xorHash = [0, 0, 0, 0, 0, 0, 0, 0];
     // loop through all 11 nodes
-    for u32 i in 0..NUM_NODES {
+    for u32 i in 0..NUM_NODES-1 {
 
         u32[8] verifierHash = nonStrictUnpack256(block_headers[verifier_node_index][verified_node_count].dataHash);
         u32[8] nodeHash = nonStrictUnpack256(block_headers[cur_node_index][block_index].dataHash);
 
         log("verifierHash is {}", verifierHash);
-        log("nodeHash is {}", nodeHash);
+        log("iTH nodeindex/blockindex is {} - {},{} with nodeHash {}", i, cur_node_index, block_index, nodeHash);
         u32 mut dataHashMatches = 0;
         // xor 256 bit hashes from field parameters
         for u32 j in 0..C32T256 {
@@ -104,15 +105,15 @@ def main(private field encKeySeed,  public BLOCK_HEADER prevBH, public BLOCK_HEA
         }
 
         //log("dataHashMatches is {} for nth iteration {}", dataHashMatches, i);
-        //assert ((dataHashMatches == C32T256) || (i == verifier_node_index));
+        assert (dataHashMatches == C32T256);
 
         // add +1 if this is not the verifier node and the node hash matched with verifier node hash
-        verified_node_count = verified_node_count + ((i == verifier_node_index) ? 0 : 1);
+        verified_node_count = verified_node_count + 1;
 
-        // check next node, wrap (modulo) NUM_NODES
-        cur_node_index = (cur_node_index + 1) % NUM_NODES;
+        // check next node skipping verifier node, wrap (modulo) NUM_NODES
+        cur_node_index = (cur_node_index + ((cur_node_index == verifier_node_index-1) ? 2 : 1)) % NUM_NODES;
 
-        block_index = (block_index + ((i == verifier_node_index) ? 0 : verifier_stride)) % NUM_BLOCKS_PER_NODE;
+        block_index = (block_index + verifier_stride) % NUM_BLOCKS_PER_NODE;
     }
 
     assert(verified_node_count == NUM_NODES-1);
