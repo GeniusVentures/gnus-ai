@@ -35,10 +35,10 @@ export function suite() {
             const startingSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);
             debuglog(`Starting GNUS Supply: ${utils.formatEther(startingSupply)}`);
             // try to mint too many
-            await expect(gdAddr1.mintBatch(signers[2].address, [addr1childNFT1, addr1childNFT2, addr1childNFT3],
+            await expect(gdAddr1["mintBatch(address,uint256[],uint256[],bytes)"](signers[2].address, [addr1childNFT1, addr1childNFT2, addr1childNFT3],
                 [ 5, 100, 10], [])).to.be.eventually.rejectedWith(Error, /Not enough supply to mint tokens/);
             // now do with under max Supply
-            const tx = await gdAddr1.mintBatch(signers[2].address, [addr1childNFT1, addr1childNFT2, addr1childNFT3],
+            const tx = await gdAddr1["mintBatch(address,uint256[],uint256[],bytes)"](signers[2].address, [addr1childNFT1, addr1childNFT2, addr1childNFT3],
                 [ 50, 1, 1], []);
             logEvents(tx);
             const endingSupply = await gnusDiamond["totalSupply(uint256)"](GNUS_TOKEN_ID);

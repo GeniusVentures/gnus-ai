@@ -15,8 +15,16 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
     using ERC20Storage for ERC20Storage.Layout;
 
 
-    function mintBatch( address payable[] destinations,
-        uint256[] memory amounts) external {
+    // The following functions are overrides required by Solidity.
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)
+    returns (bool) {
+        return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
+        (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
+    }
+
+    function mintBatch( address[] memory destinations,
+        uint256[] memory amounts) external payable {
+        address operator = _msgSender();
 
         require(hasRole(DEFAULT_ADMIN_ROLE, operator), "Creator or Admin can only mint GNUS Tokens");
         _mintBatch(destinations, amounts);
@@ -25,7 +33,7 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
     event TransferBatch(
         address indexed operator,
         address indexed from,
-        address payable[] indexed destinations,
+        address[] indexed destinations,
         uint256[] values
     );
 
@@ -36,7 +44,7 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
     function _beforeTokenTransfer(
         address operator,
         address from,
-        address payable[] destinations,
+        address[] memory destinations,
         uint256[] memory amounts
     ) internal virtual {
 
@@ -72,7 +80,7 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
     function _afterTokenTransfer(
         address operator,
         address from,
-        address payable[] destinations,
+        address[] memory destinations,
         uint256[] memory amounts
     ) internal virtual {
     }
@@ -84,7 +92,7 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
      * - `destinations` and `amounts` must have the same length.
      */
     function _mintBatch(
-        address payable[] destinations,
+        address[] memory destinations,
         uint256[] memory amounts
     ) internal virtual {
         address operator = _msgSender();
@@ -93,15 +101,15 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
 
         _beforeTokenTransfer(operator, address(0), destinations, amounts);
 
-        for (uint256 i = 0; i < ids.length; i++) {
-            address payable to = destinations[i];
+        for (uint256 i = 0; i < destinations.length; i++) {
+            address to = destinations[i];
 
             require(to != address(0), "TransferBatch: mint to the zero address");
 
             ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][to] += amounts[i];
         }
 
-        emit TransferBatch(operator, address(0), destinatiosn, amounts);
+        emit TransferBatch(operator, address(0), destinations, amounts);
 
         _afterTokenTransfer(operator, address(0), destinations, amounts);
     }
@@ -112,7 +120,7 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
  * - `destinations` and `amounts` must have the same length.
  */
     function _transferBatch(
-        address payable[] destinations,
+        address[] memory destinations,
         uint256[] memory amounts,
         bool checkBurn
     ) internal virtual {
@@ -123,7 +131,7 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
         _beforeTokenTransfer(operator, operator, destinations, amounts);
 
         for (uint256 i = 0; i < destinations.length; i++) {
-            address payable to = destinations[i];
+            address to = destinations[i];
             // this prevents burns during transfer
             if (checkBurn) {
                 require(to != address(0), "TranferBatch: can't burn/transfer to the zero address");
@@ -143,20 +151,20 @@ contract ERC20TransferBatch is Initializable, GNUSERC1155MaxSupply, GeniusAccess
         _afterTokenTransfer(operator, operator, destinations, amounts);
     }
 
-    function TransferBatch(
-        address payable[] destinations,
+    function transferBatch(
+        address[] memory destinations,
         uint256[] memory amounts
-    ) public {
+    ) public payable {
         _transferBatch(destinations, amounts, true);
     }
 
     /*
     * This allows us to burn
     */
-    function TransferOrBurnBatch(
-        address payable[] destinations,
+    function transferOrBurnBatch(
+        address[] memory destinations,
         uint256[] memory amounts
-    ) public {
+    ) public payable {
         _transferBatch(destinations, amounts, false);
     }
 }

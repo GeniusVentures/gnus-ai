@@ -9,7 +9,8 @@ export const Facets: FacetToDeployInfo = {
   PolyGNUSBridge: { priority: 50, versions: { 0.0: { init: "PolyGNUSBridge_Initialize" } } },
   EscrowAIJob: { priority: 60, versions: { 0.0: { init: "EscrowAIJob_Initialize" } } },
   GeniusAI: { priority: 70, versions: { 0.0: { init: "GeniusAI_Initialize" } } },
-  GNUSNFTCollectionName: { priority: 80 }
+  GNUSNFTCollectionName: { priority: 80 },
+  ERC20TransferBatch: { priority: 90 }
 };
 
 export async function LoadFacetDeployments () {
