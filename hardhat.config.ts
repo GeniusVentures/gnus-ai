@@ -54,7 +54,7 @@ function filterDuplicateFunctions (abiElement: any, index: number, fullAbiL: any
 
 const config: HardhatUserConfig = {
     solidity: {
-        version: "0.8.4",
+        version: "0.8.9",
         settings: {
             optimizer: {
                 enabled: true,
@@ -85,9 +85,9 @@ const config: HardhatUserConfig = {
     etherscan: {
 
         apiKey: {
-            goerli: process.env.ETHERSCAN_API_KEY,
-            polygonMumbai: process.env.POLYGONSCAN_API_KEY,
-            polygon: process.env.POLYGONSCAN_API_KEY
+            goerli: process.env.ETHERSCAN_API_KEY !== undefined ? process.env.ETHERSCAN_API_KEY : '',
+            polygonMumbai: process.env.POLYGONSCAN_API_KEY !== undefined ? process.env.POLYGONSCAN_API_KEY : '',
+            polygon: process.env.POLYGONSCAN_API_KEY !== undefined ? process.env.POLYGONSCAN_API_KEY : ''
         }
     },
     abiExporter: {
