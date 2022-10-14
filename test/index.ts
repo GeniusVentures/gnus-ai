@@ -22,6 +22,7 @@ import { debug } from "debug";
 // other files suites to execute
 import * as NFTCreateTests from "../test/NFTCreateTests";
 import * as GNUSERC20Tests from "../test/GNUSERC20Tests";
+import * as ERC20BatchTests from "../test/Erc20BatchTests";
 
 const {
     FacetCutAction
@@ -155,6 +156,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
         after(() => {
             GNUSERC20Tests.suite();
             NFTCreateTests.suite();
+            ERC20BatchTests.suite();
         });
     });
 });
