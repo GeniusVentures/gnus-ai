@@ -57,6 +57,7 @@
     "uint32": "^0.2.1"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-web3": "^2.0.0",
     "ts-node": "^10.9.1"
   }
 }

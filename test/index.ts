@@ -23,6 +23,7 @@ import { debug } from "debug";
 import * as NFTCreateTests from "../test/NFTCreateTests";
 import * as GNUSERC20Tests from "../test/GNUSERC20Tests";
 import * as ERC20BatchTests from "../test/Erc20BatchTests";
+import * as ZetherTests from "../test/ZetherTests";
 
 const {
     FacetCutAction
@@ -158,6 +159,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
             GNUSERC20Tests.suite();
             NFTCreateTests.suite();
             ERC20BatchTests.suite();
+            ZetherTests.suite();
         });
     });
 });
