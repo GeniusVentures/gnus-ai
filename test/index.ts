@@ -7,7 +7,7 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "@nomiclabs/hardhat-ethers";
 import { getSelectors, Selectors, getInterfaceID } from "../scripts/FacetSelectors";
-import { afterDeployCallbacks, deployAndInitDiamondFacets, deployDiamondFacets, deployFuncSelectors, deployGNUSDiamond } from "../scripts/deploy";
+import { afterDeployCallbacks, deployAndInitDiamondFacets, deployDiamondFacets, deployExternalLibraries, deployFuncSelectors, deployGNUSDiamond } from "../scripts/deploy";
 import { GeniusDiamond, NFTStructOutput } from "../typechain-types/GeniusDiamond";
 import { GNUSNFTFactory } from "../typechain-types/GNUSNFTFactory";
 import { iObjToString } from "./iObjToString";
@@ -23,6 +23,7 @@ import { debug } from "debug";
 import * as NFTCreateTests from "../test/NFTCreateTests";
 import * as GNUSERC20Tests from "../test/GNUSERC20Tests";
 import * as ERC20BatchTests from "../test/Erc20BatchTests";
+import * as ZetherTests from "../test/ZetherTests";
 
 const {
     FacetCutAction
@@ -80,6 +81,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
         const IERC11InterfaceID = getInterfaceID(IERC1155UpgradeableInterface).xor(IERC165InterfaceID);
         assert(await gnusDiamond.supportsInterface(IERC11InterfaceID._hex), "Doesn't support IERC1155Upgradeable");
 
+        await deployExternalLibraries(networkDeployedInfo);
         // do deployment of facets in 3 steps
         await deployDiamondFacets(networkDeployedInfo);
         debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
@@ -157,6 +159,7 @@ describe.only("Genius Diamond DApp Testing", async function () {
             GNUSERC20Tests.suite();
             NFTCreateTests.suite();
             ERC20BatchTests.suite();
+            ZetherTests.suite();
         });
     });
 });

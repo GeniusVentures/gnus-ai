@@ -55,6 +55,7 @@ export interface INetworkDeployInfo {
     DiamondAddress: string;
     DeployerAddress: string;
     FacetDeployedInfo: FacetDeployedInfo;
+    ExternalLibraries?: any;
 }
 
 export type AfterDeployInit = (networkDeployInfo: INetworkDeployInfo) => Promise<void|boolean>;
@@ -72,6 +73,7 @@ export type VersionRecord = Record<number, IVersionInfo>;
 export interface IFacetToDeployInfo {
     priority: number;
     versions?: VersionRecord;
+    libraries?: string[];
 }
 
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;

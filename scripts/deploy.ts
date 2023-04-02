@@ -79,7 +79,14 @@ export async function deployFuncSelectors (networkDeployInfo: INetworkDeployInfo
 
         const deployedVersion = deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
 
-        const FacetContract = await ethers.getContractFactory(name);
+        const FacetContract = await ethers.getContractFactory(
+            name,
+            facetDeployVersionInfo.libraries
+                ? {
+                    libraries: networkDeployInfo.ExternalLibraries
+                }
+                : undefined
+        );
         const facet = FacetContract.attach(deployedFacets[name].address!);
 
         const facetNeedsUpgrade = (!(name in deployedFuncSelectors.contractFacets) ||
@@ -260,7 +267,14 @@ export async function deployDiamondFacets (networkDeployInfo: INetworkDeployInfo
 
         const deployedVersion = deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
         const facetNeedsDeployment = (!(name in deployedFacets) || (deployedVersion != upgradeVersion));
-        const FacetContract = await ethers.getContractFactory(name);
+        const FacetContract = await ethers.getContractFactory(
+            name,
+            facetDeployVersionInfo.libraries
+                ? {
+                    libraries: networkDeployInfo.ExternalLibraries
+                }
+                : undefined
+        );
         if (facetNeedsDeployment) {
             log(`Deploying ${name} size: ${FacetContract.bytecode.length}`);
             try {
@@ -281,6 +295,29 @@ export async function deployDiamondFacets (networkDeployInfo: INetworkDeployInfo
 
     log("Completed Facet deployments\n");
 }
+
+export async function deployExternalLibraries (networkDeployedInfo: INetworkDeployInfo) {
+    const innerVerifierContract = await ethers.getContractFactory('InnerVerifier');
+    const innerVerifier = await innerVerifierContract.deploy();
+    const burnVerifierContract = await ethers.getContractFactory('BurnVerifier', {
+        libraries: {
+            InnerVerifier: innerVerifier.address
+        }
+    });
+    const burnVerifier = await burnVerifierContract.deploy();
+    const zetherVerifierContract = await ethers.getContractFactory('ZetherVerifier', {
+        libraries: {
+            InnerVerifier: innerVerifier.address
+        }
+    });
+    const zetherVerifier = await zetherVerifierContract.deploy();
+    const LibEncryptionContract = await ethers.getContractFactory('libEncryption');
+    const libEncryption = await LibEncryptionContract.deploy();
+    networkDeployedInfo.ExternalLibraries = {};
+    networkDeployedInfo.ExternalLibraries.BurnVerifier = burnVerifier.address;
+    networkDeployedInfo.ExternalLibraries.ZetherVerifier = zetherVerifier.address;
+    networkDeployedInfo.ExternalLibraries.libEncryption = libEncryption.address;
+  }
 
 async function main () {
     // Hardhat always runs the compile task when running scripts with its command
