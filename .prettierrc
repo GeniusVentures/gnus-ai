@@ -1,1 +1,22 @@
-{}
+{
+  "overrides": [
+    {
+      "files": "*.ts",
+      "options": {
+        "tabWidth": 2,
+        "singleQuote": true,
+        "useTabs": false,
+        "trailingComma": "all",
+        "semi": true,
+        "printWidth": 92
+      }
+    },
+    {
+      "files": "*.sol",
+      "options": {
+        "tabWidth": 4,
+        "printWidth": 100
+      }
+    }
+  ]
+}

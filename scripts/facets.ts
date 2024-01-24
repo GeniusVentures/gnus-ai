@@ -11,7 +11,7 @@ export const Facets: FacetToDeployInfo = {
   GeniusAI: { priority: 70, versions: { 0.0: { init: "GeniusAI_Initialize" } } },
   GNUSNFTCollectionName: { priority: 80 },
   ERC20TransferBatch: { priority: 90 },
-  Zether: { priority: 100, libraries: ['BurnVerifier', 'ZetherVerifier'] }
+  Zether: { priority: 100, libraries: ['BurnVerifier', 'ZetherVerifier', 'libEncryption'] }
 };
 
 export async function LoadFacetDeployments () {
