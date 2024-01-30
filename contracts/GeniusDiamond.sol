@@ -3,11 +3,11 @@ pragma solidity ^0.8.2;
 
 import "contracts-starter/contracts/facets/DiamondLoupeFacet.sol";
 import "contracts-starter/contracts/facets/DiamondCutFacet.sol";
-import "contracts-starter/contracts/facets/OwnershipFacet.sol";
 import "contracts-starter/contracts/Diamond.sol";
 import "contracts-starter/contracts/libraries/LibDiamond.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/utils/introspection/ERC165StorageUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/IERC1155Upgradeable.sol";
+import "./GeniusOwnershipFacet.sol";
 
 contract GeniusDiamond is Diamond, ERC165StorageUpgradeable {
 
