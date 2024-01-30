@@ -53,7 +53,7 @@ def xorwow(XORWOW_STATE mut state) -> XORWOW_STATE {
 // encKeySee if public key encoded seed from escrow starter (prover)
 // in Solidity, to functions would call this
 //      1. GenBlockSigningKey(encKeySeed, prevBH, block_headers) : u256 signingHash;
-//      2. VerifyBlockSignaature(encKeySeed, prevBH, block_headers) : bool isSigned;
+//      2. VerifyBlockSignature(encKeySeed, prevBH, block_headers) : bool isSigned;
 def main(private field encKeySeed,  public BLOCK_HEADER prevBH, public BLOCK_HEADER[NUM_NODES][NUM_BLOCKS_PER_NODE] block_headers) -> u32[8] {
 
     u32[C32T256] encKeySeed32 = nonStrictUnpack256(encKeySeed);

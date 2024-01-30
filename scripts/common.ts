@@ -1,7 +1,7 @@
 import {BaseContract, BigNumber, Contract} from "ethers";
 import {ethers} from "hardhat";
 import {debug} from "debug";
-import {GeniusDiamond} from "../typechain-types/GeniusDiamond";
+import {IrrigatnionDiamond} from "../typechain-types/GeniusDiamond";
 import {DiamondCutFacet} from "../typechain-types/DiamondCutFacet";
 import {DiamondLoupeFacet} from "../typechain-types/DiamondLoupeFacet";
 import {OwnershipFacet} from "../typechain-types/OwnershipFacet";

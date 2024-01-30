@@ -8,6 +8,7 @@ import "./GNUSERC1155MaxSupply.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
+import "./GNUSConstants.sol";
 
 /// @custom:security-contact support@gnus.ai
 contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable
