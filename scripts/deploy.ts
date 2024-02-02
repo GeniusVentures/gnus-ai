@@ -6,6 +6,8 @@
 import { debug } from 'debug';
 import { BaseContract } from 'ethers';
 import hre, { ethers } from 'hardhat';
+import { AdminClient } from '@openzeppelin/defender-admin-client';
+import { Network } from '@openzeppelin/defender-base-client';
 import {
   FacetInfo,
   getSelectors,
@@ -31,6 +33,11 @@ const GAS_LIMIT_PER_FACET = 60000;
 const GAS_LIMIT_CUT_BASE = 70000;
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
+
+const client = new AdminClient({
+  apiKey: process.env.DEFENDER_API_KEY || '',
+  apiSecret: process.env.DEFENDER_API_SECRET || '',
+});
 
 export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   const accounts = await ethers.getSigners();
@@ -203,6 +210,23 @@ export async function deployFuncSelectors(
   log('');
   log('Diamond Cut:', cut);
   const diamondCut = dc.GeniusDiamond as IDiamondCut;
+  if (process.env.DEFENDER_DEPLOY_ON) {
+    log('Deploying contract on defender');
+    const listedContracts = await client.listContracts();
+    if (listedContracts.find((e) => e.address === diamondCut.address)) {
+      log('Diamond Contract was listed on defender');
+    } else {
+      const res = await client.addContract({
+        address: diamondCut.address,
+        abi: JSON.stringify(diamondCut.interface.fragments),
+        network: hre.network.name as Network,
+        name: 'Gnus.ai Diamond',
+      });
+      if (res.address) {
+        log('Diamond Contract was listed on defender', res.address);
+      }
+    }
+  }
 
   for (const facetCutInfo of cut) {
     const contract = dc[facetCutInfo.name]!;
@@ -218,14 +242,30 @@ export async function deployFuncSelectors(
     }
     log('Cutting: ', facetCutInfo);
     try {
-      const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall, {
-        gasLimit:
-          GAS_LIMIT_CUT_BASE + facetCutInfo.functionSelectors.length * GAS_LIMIT_PER_FACET,
-      });
-      log(`Diamond cut: ${facetCutInfo.name} tx hash: ${tx.hash}`);
-      const receipt = await tx.wait();
-      if (!receipt.status) {
-        throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
+      if (process.env.DEFENDER_DEPLOY_ON) {
+        await client.createProposal({
+          contract: { address: diamondCut.address, network: hre.network.name as Network }, // Target contract
+          title: 'Add facet' + facetCutInfo.name, // Title of the proposal
+          description: 'Add facet', // Description of the proposal
+          type: 'custom', // Use 'custom' for custom admin actions
+          functionInterface: diamondCut.interface.fragments.find(
+            (e) => e.name === 'diamondCut',
+          ), // Function ABI
+          functionInputs: [[facetCutInfo], initAddress, functionCall], // Arguments to the function
+          via: process.env.DEFENDER_SIGNER, // Address to execute proposal
+          viaType: 'Safe', // 'Gnosis Multisig', 'Safe' or 'EOA'
+        });
+      } else {
+        const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall, {
+          gasLimit:
+            GAS_LIMIT_CUT_BASE +
+            facetCutInfo.functionSelectors.length * GAS_LIMIT_PER_FACET,
+        });
+        log(`Diamond cut: ${facetCutInfo.name} tx hash: ${tx.hash}`);
+        const receipt = await tx.wait();
+        if (!receipt.status) {
+          throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
+        }
       }
     } catch (e) {
       log(`unable to cut facet: ${facetCutInfo.name}\n ${e}`);
@@ -390,7 +430,7 @@ async function main() {
     await deployGNUSDiamond(networkDeployedInfo);
 
     log(`Contract address deployed is ${networkDeployedInfo.DiamondAddress}`);
-    await deployExternalLibraries(networkDeployedInfo);
+    // await deployExternalLibraries(networkDeployedInfo);
     await deployAndInitDiamondFacets(networkDeployedInfo);
     log(
       `Facets deployed to: ${
