@@ -81,6 +81,7 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      timeout: 100000,
     },
     local: {
       url: `http://127.0.0.1:8545`,
@@ -103,6 +104,7 @@ const config: HardhatUserConfig = {
         process.env.POLYGONSCAN_API_KEY !== undefined
           ? process.env.POLYGONSCAN_API_KEY
           : '',
+      sepolia: process.env.ETHERSCAN_API_KEY || '',
     },
   },
   abiExporter: {
