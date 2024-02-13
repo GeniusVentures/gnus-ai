@@ -11,3 +11,4 @@ artifacts
 .idea/workspace.xml
 
 typechain-types
+fast.test.ts
