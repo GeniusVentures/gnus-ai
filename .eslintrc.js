@@ -20,6 +20,7 @@ module.exports = {
     indent: ["warn", 2],
     semi: "off",
     "comma-dangle": 0,
-    "space-before-function-paren": 0
+    "space-before-function-paren": 0,
+    "import/no-extraneous-dependencies": ["error", { ignores: ["devDependencies", "optionalDependencies", "peerDependencies"] }]
   },
 };
