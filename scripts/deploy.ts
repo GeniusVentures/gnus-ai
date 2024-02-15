@@ -63,7 +63,10 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   const Diamond = await ethers.getContractFactory(
     'contracts/GeniusDiamond.sol:GeniusDiamond',
   );
-  const gnusDiamond = await Diamond.deploy(contractOwner.address, dc.DiamondCutFacet.address);
+  const gnusDiamond = await Diamond.deploy(
+    contractOwner.address,
+    dc.DiamondCutFacet.address,
+  );
   await gnusDiamond.deployed();
   dc._GeniusDiamond = gnusDiamond;
   networkDeployInfo.DiamondAddress = gnusDiamond.address;
@@ -286,8 +289,16 @@ export async function deployFuncSelectors(
         };
         const response = await client.createProposal({
           contract: { address: diamondCut.address, network: hre.network.name as Network }, // Target contract
-          title: 'Add facet ' + facetCutInfo.name, // Title of the proposal
-          description: 'Add facet', // Description of the proposal
+          title: 'Update facet ' + facetCutInfo.name, // Title of the proposal
+          description: `${
+            facetCutInfo.action === FacetCutAction.Add
+              ? 'Add'
+              : facetCutInfo.action === FacetCutAction.Remove
+              ? 'Remove'
+              : 'Replace'
+          } facet ${facetCutInfo.name} (v${
+            deployedFacets[facetCutInfo.name].version || 0
+          })`, // Description of the proposal
           type: 'custom', // Use 'custom' for custom admin actions
           functionInterface: diamondCutFuncAbi, // Function ABI
           functionInputs: [
@@ -302,8 +313,9 @@ export async function deployFuncSelectors(
             functionCall,
           ], // Arguments to the function
           via: process.env.DEFENDER_SIGNER,
-          viaType: 'Gnosis Multisig',
-        });        
+          viaType: 'Safe',
+        });
+        log(`created proposal on defender ${response.proposalId} `);
       } else {
         const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall, {
           gasLimit:
