@@ -41,33 +41,39 @@ const client = new AdminClient({
 
 export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   const accounts = await ethers.getSigners();
+  let diamondCutFacet;
   const contractOwner = accounts[0];
 
-  // deploy DiamondCutFacet
   if (networkDeployInfo.FacetDeployedInfo['DiamondCutFacet']?.address) {
     dc.DiamondCutFacet = await ethers.getContractAt(
-      networkDeployInfo.FacetDeployedInfo['DiamondCutFacet']?.address,
       'DiamondCutFacet',
+      networkDeployInfo.FacetDeployedInfo['DiamondCutFacet']?.address,
     );
   } else {
+    // deploy DiamondCutFacet
     const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet');
-    const diamondCutFacet = (await DiamondCutFacet.deploy()) as DiamondCutFacet;
+    diamondCutFacet = (await DiamondCutFacet.deploy()) as DiamondCutFacet;
     await diamondCutFacet.deployed();
     log(
       `DiamondCutFacet deployed: ${diamondCutFacet.deployTransaction.hash} tx_hash: ${diamondCutFacet.deployTransaction.hash}`,
     );
     dc.DiamondCutFacet = diamondCutFacet;
   }
+  let gnusDiamond;
+  if (!networkDeployInfo.DiamondAddress) {
+    // deploy Diamond
+    const Diamond = await ethers.getContractFactory(
+      'contracts/GeniusDiamond.sol:GeniusDiamond',
+    );
+    gnusDiamond = await Diamond.deploy(contractOwner.address, dc.DiamondCutFacet.address);
+    await gnusDiamond.deployed();
+  } else {
+    gnusDiamond = await ethers.getContractAt(
+      'contracts/GeniusDiamond.sol:GeniusDiamond',
+      networkDeployInfo.DiamondAddress,
+    );
+  }
 
-  // deploy Diamond
-  const Diamond = await ethers.getContractFactory(
-    'contracts/GeniusDiamond.sol:GeniusDiamond',
-  );
-  const gnusDiamond = await Diamond.deploy(
-    contractOwner.address,
-    dc.DiamondCutFacet.address,
-  );
-  await gnusDiamond.deployed();
   dc._GeniusDiamond = gnusDiamond;
   networkDeployInfo.DiamondAddress = gnusDiamond.address;
 
@@ -76,10 +82,12 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   ).attach(gnusDiamond.address);
 
   // update deployed info for DiamondCutFacet since Diamond contract constructor already adds DiamondCutFacet::diamondCut
-  const funcSelectors = getSelectors(diamondCutFacet);
+  const funcSelectors = getSelectors(dc.DiamondCutFacet);
   networkDeployInfo.FacetDeployedInfo.DiamondCutFacet = {
-    address: diamondCutFacet.address,
-    tx_hash: diamondCutFacet.deployTransaction.hash,
+    address: dc.DiamondCutFacet.address,
+    tx_hash:
+      dc.DiamondCutFacet.deployTransaction?.hash ||
+      networkDeployInfo.FacetDeployedInfo['DiamondCutFacet'].tx_hash,
     version: 0.0,
     funcSelectors: funcSelectors.values,
   };
@@ -429,10 +437,12 @@ export async function deployDiamondFacets(
       !(name in deployedFacets) || deployedVersion != upgradeVersion;
 
     const externalLibraries = {} as any;
-    Object.keys(networkDeployInfo.ExternalLibraries)?.forEach((libraryName: string) => {
-      if (facetDeployVersionInfo.libraries?.includes(libraryName))
-        externalLibraries[libraryName] = networkDeployInfo.ExternalLibraries[libraryName];
-    });
+    if (networkDeployInfo.ExternalLibraries) {
+      Object.keys(networkDeployInfo.ExternalLibraries)?.forEach((libraryName: string) => {
+        if (facetDeployVersionInfo.libraries?.includes(libraryName))
+          externalLibraries[libraryName] = networkDeployInfo.ExternalLibraries[libraryName];
+      });
+    }
     const FacetContract = await ethers.getContractFactory(
       name,
       facetDeployVersionInfo.libraries

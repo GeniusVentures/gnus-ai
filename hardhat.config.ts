@@ -116,6 +116,7 @@ const config: HardhatUserConfig = {
           : '',
       sepolia: process.env.ETHERSCAN_API_KEY || '',
       mainnet: process.env.ETHERSCAN_API_KEY || '',
+      bsc: process.env.BSCSCAN_API_KEY || '',
     },
   },
   abiExporter: {
