@@ -1,4 +1,4 @@
-import { FacetToDeployInfo } from './common';
+import { FacetToDeployInfo, UpgradeInitInfo } from './common';
 import { glob } from 'glob';
 
 export const Facets: FacetToDeployInfo = {
@@ -17,8 +17,10 @@ export const Facets: FacetToDeployInfo = {
   GeniusAI: { priority: 70, versions: { 0.0: { init: 'GeniusAI_Initialize' } } },
   GNUSNFTCollectionName: { priority: 80 },
   ERC20TransferBatch: { priority: 90 },
-  Zether: { priority: 100, libraries: ['BurnVerifier', 'ZetherVerifier', 'libEncryption'] },
+  // Zether: { priority: 100, libraries: ['BurnVerifier', 'ZetherVerifier', 'libEncryption'] },
 };
+
+export const UpgradeInits: UpgradeInitInfo = {};
 
 export async function LoadFacetDeployments() {
   const imports = glob.sync(`${__dirname}/facetdeployments/*.ts`);
