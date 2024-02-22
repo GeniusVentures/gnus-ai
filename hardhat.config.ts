@@ -87,6 +87,16 @@ const config: HardhatUserConfig = {
       url: `http://127.0.0.1:8545`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    bsc_mainnet: {
+      url: `https://bsc-dataseed.bnbchain.org/`,
+      chainId: 56,
+      gasPrice: 3600000000,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
@@ -105,6 +115,7 @@ const config: HardhatUserConfig = {
           ? process.env.POLYGONSCAN_API_KEY
           : '',
       sepolia: process.env.ETHERSCAN_API_KEY || '',
+      mainnet: process.env.ETHERSCAN_API_KEY || '',
     },
   },
   abiExporter: {
