@@ -248,8 +248,30 @@ export async function deployFuncSelectors(
       }
     }
   }
-
+  // remove cut info to replace functions
+  const replacedFunctionSelectors = [];
   for (const facetCutInfo of cut) {
+    if (facetCutInfo.action === FacetCutAction.Replace) {
+      replacedFunctionSelectors.push(...facetCutInfo.functionSelectors);
+    }
+  }
+  const upgradeCut = [];
+  for (const facetCutInfo of cut) {
+    if (facetCutInfo.action === FacetCutAction.Remove) {
+      const newFunctionSelectors = [];
+      for (const removedFuncSelector of facetCutInfo.functionSelectors) {
+        if (!replacedFunctionSelectors.includes(removedFuncSelector))
+          newFunctionSelectors.push(removedFuncSelector);
+      }
+      if (newFunctionSelectors.length === 0) {
+        continue;
+      } else {
+        facetCutInfo.functionSelectors = newFunctionSelectors;
+      }
+    }
+    upgradeCut.push(facetCutInfo);
+  }
+  for (const facetCutInfo of upgradeCut) {
     const contract = dc[facetCutInfo.name]!;
     let functionCall;
     let initAddress;
