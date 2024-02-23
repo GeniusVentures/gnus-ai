@@ -135,16 +135,17 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true,
         version: 0,
         funcSelectors: [
-          '0x8aeda25a', '0xa217fddf', '0x101521f8',
-          '0xf72c0d8b', '0x00fdd58e', '0x4e1273f4',
-          '0xf5298aca', '0x6b20c454', '0xf667ab7c',
-          '0x1a9d2360', '0x4f558e79', '0xd188929f',
-          '0x248a9ca3', '0x9010d07c', '0xca15c873',
-          '0x2f2ff15d', '0x91d14854', '0x731133e9',
-          '0x1f7fdffa', '0x8456cb59', '0x5c975abb',
-          '0x36568abe', '0xd547741f', '0x2eb2c2d6',
-          '0xf242432a', '0xa22cb465', '0x02fe5305',
-          '0x862440e2', '0x3f4ba83a', '0x0e89341c'
+          '0x8aeda25a', '0x101521f8',
+          '0x00fdd58e', '0x4e1273f4',
+          '0xf5298aca', '0x6b20c454',
+          '0xf667ab7c', '0x1a9d2360',
+          '0x4f558e79', '0xd188929f',
+          '0x731133e9', '0x1f7fdffa',
+          '0x8456cb59', '0x5c975abb',
+          '0x2eb2c2d6', '0xf242432a',
+          '0xa22cb465', '0x02fe5305',
+          '0x862440e2', '0x3f4ba83a',
+          '0x0e89341c'
         ]
       },
       PolyGNUSBridge: {
@@ -198,6 +199,27 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true,
         version: 0,
         funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ]
+      },
+      GeniusOwnershipFacet: {
+        address: '0x2765a3b1367EcAE882A427E9a188832934F6aD46',
+        tx_hash: '0x1aded1efa82e1b95793c48369e2a7616a39b864069f7cd65c77bf9069a3e1e8b',
+        version: 0,
+        funcSelectors: [
+          '0xa217fddf', '0xf72c0d8b',
+          '0x248a9ca3', '0x9010d07c',
+          '0xca15c873', '0x2f2ff15d',
+          '0x91d14854', '0x8da5cb5b',
+          '0x36568abe', '0xd547741f',
+          '0xf2fde38b'
+        ],
+        verified: true
+      },
+      ERC20TransferBatch: {
+        address: '0x9FBF65a9306Ef953967bd0b40dA58BB6B8cCb77D',
+        tx_hash: '0xb9a7295fed4db2b8ecf50a4476f4547e95f5a541419a41301e940f94d41b96a2',
+        version: 0,
+        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
+        verified: true
       }
     }
   },
