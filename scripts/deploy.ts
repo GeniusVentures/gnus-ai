@@ -34,10 +34,7 @@ const GAS_LIMIT_CUT_BASE = 70000;
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
 
-const client = new AdminClient({
-  apiKey: process.env.DEFENDER_API_KEY || '',
-  apiSecret: process.env.DEFENDER_API_SECRET || '',
-});
+let client: AdminClient;
 
 export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   const accounts = await ethers.getSigners();
@@ -97,12 +94,12 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
 
 export async function deployFuncSelectors(
   networkDeployInfo: INetworkDeployInfo,
-  oldNetworkDeployInfo: INetworkDeployInfo,
+  oldNetworkDeployInfo: INetworkDeployInfo | undefined = undefined,
   facetsToDeploy: FacetToDeployInfo = Facets,
 ) {
   const cut: FacetInfo[] = [];
   const deployedFacets = networkDeployInfo.FacetDeployedInfo;
-  const deployedFuncSelectors = await getDeployedFuncSelectors(oldNetworkDeployInfo);
+  const deployedFuncSelectors = await getDeployedFuncSelectors(oldNetworkDeployInfo || networkDeployInfo);
   const registeredFunctionSignatures = new Set<string>();
 
   const facetsPriority = Object.keys(facetsToDeploy).sort(
@@ -233,6 +230,10 @@ export async function deployFuncSelectors(
   const diamondCut = dc.GeniusDiamond as IDiamondCut;
   if (process.env.DEFENDER_DEPLOY_ON) {
     log('Deploying contract on defender');
+    client = new AdminClient({
+      apiKey: process.env.DEFENDER_API_KEY || '',
+      apiSecret: process.env.DEFENDER_API_SECRET || '',
+    });
     const listedContracts = await client.listContracts();
     if (listedContracts.find((e) => e.address === diamondCut.address)) {
       log('Diamond Contract was listed on defender');
