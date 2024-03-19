@@ -35,6 +35,26 @@
   dependencies:
     tslib "^2.3.1"
 
+"@axelar-network/axelar-cgp-solidity@6.2.1":
+  version "6.2.1"
+  resolved "https://registry.npmjs.org/@axelar-network/axelar-cgp-solidity/-/axelar-cgp-solidity-6.2.1.tgz"
+  integrity sha512-0RaxLYmsp3elXBytn7+eZUil1KFS6jjHR/ECrN/3IC7TeTDPUYunyy6JDxCdNYNtiD6EKgUAfQ7G4DrBb6hRxg==
+  dependencies:
+    "@axelar-network/axelar-gmp-sdk-solidity" "5.6.4"
+
+"@axelar-network/axelar-gmp-sdk-solidity@5.6.4":
+  version "5.6.4"
+  resolved "https://registry.npmjs.org/@axelar-network/axelar-gmp-sdk-solidity/-/axelar-gmp-sdk-solidity-5.6.4.tgz"
+  integrity sha512-PQjV+HeJynmSRMhyM3SexwnbFNruSaiRUeNCWjV8/7CkdPsDqypoqIXVRVU8Zk92DUUHeqZZzL/3qP2LYuvlnA==
+
+"@axelar-network/interchain-token-service@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.npmjs.org/@axelar-network/interchain-token-service/-/interchain-token-service-1.2.1.tgz"
+  integrity sha512-l7X9xi9aveAfUts48kBsPzkWGIVdAjX2iRLWSqQkqeCvXZjDsEq54NFF2/JK7Cf2YTTJcVvFDJn9T18i5bzAfQ==
+  dependencies:
+    "@axelar-network/axelar-cgp-solidity" "6.2.1"
+    "@axelar-network/axelar-gmp-sdk-solidity" "5.6.4"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.12.11.tgz"
@@ -666,8 +686,7 @@
 
 "@gnus.ai/zk-utils@github:GeniusVentures/zk-utils":
   version "0.1.0"
-  resolved "https://codeload.github.com/GeniusVentures/zk-utils/tar.gz/bca2f351be73ea55be1777c0b4ca0be873eb99a6"
-  integrity sha512-Fwzdbl0j+wVkPh89DpGCEyY1Ag7QwlxvxZMra3y6JHNFWFqaeOHJxGfo/POtSctNgry6QtAFVPg+RIUI5WkrTA==
+  resolved "git+ssh://git@github.com/GeniusVentures/zk-utils.git#bca2f351be73ea55be1777c0b4ca0be873eb99a6"
   dependencies:
     bn.js "^5.1.1"
     elliptic "^6.5.1"
@@ -893,10 +912,10 @@
     mcl-wasm "^0.7.1"
     rustbn.js "~0.2.0"
 
-"@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.0":
+"@nomicfoundation/solidity-analyzer-darwin-x64@0.1.0":
   version "0.1.0"
-  resolved "https://registry.npmjs.org/@nomicfoundation/solidity-analyzer-darwin-arm64/-/solidity-analyzer-darwin-arm64-0.1.0.tgz"
-  integrity sha512-vEF3yKuuzfMHsZecHQcnkUrqm8mnTWfJeEVFHpg+cO+le96xQA4lAJYdUan8pXZohQxv1fSReQsn4QGNuBNuCw==
+  resolved "https://registry.npmjs.org/@nomicfoundation/solidity-analyzer-darwin-x64/-/solidity-analyzer-darwin-x64-0.1.0.tgz"
+  integrity sha512-dlHeIg0pTL4dB1l9JDwbi/JG6dHQaU1xpDK+ugYO8eJ1kxx9Dh2isEUtA4d02cQAl22cjOHTvifAk96A+ItEHA==
 
 "@nomicfoundation/solidity-analyzer@^0.1.0":
   version "0.1.0"
