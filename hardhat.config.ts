@@ -98,6 +98,11 @@ const config: HardhatUserConfig = {
       gasPrice: 3600000000,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    base: {
+      url: `https://mainnet.base.org/`,
+      chainId: 8453,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
