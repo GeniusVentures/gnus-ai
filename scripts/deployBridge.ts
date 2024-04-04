@@ -8,7 +8,7 @@ import {
   GasToken,
 } from '@axelar-network/axelarjs-sdk';
 
-const MINT_BURN = 0;
+const MINT_BURN = 4;
 // interchain token service contract on axelar
 const itsAddress = '0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C';
 const api = new AxelarQueryAPI({ environment: Environment.TESTNET });
@@ -35,7 +35,7 @@ async function deployTokenManager(salt: string) {
     'arbitrum-sepolia',
     MINT_BURN,
     params,
-    ethers.utils.parseEther('0.01'),
+    gas,
     { value: gas },
   );
   await tx.wait();
