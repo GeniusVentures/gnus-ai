@@ -84,6 +84,11 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       timeout: 100000,
     },
+    arbitrum_sepolia: {
+      url: `https://arbitrum-sepolia.blockpi.network/v1/rpc/public`,
+      chainId: 421614,
+      accounts: [process.env.PRIVATE_KEY || ''],
+    },
     local: {
       url: `http://127.0.0.1:8545`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
@@ -118,7 +123,19 @@ const config: HardhatUserConfig = {
       sepolia: process.env.ETHERSCAN_API_KEY || '',
       mainnet: process.env.ETHERSCAN_API_KEY || '',
       bsc: process.env.BSCSCAN_API_KEY || '',
+      arbitrum_sepolia: process.env.ARBITRUM_API_KEY || '',
     },
+    customChains: [
+      // additional etherscan config
+      {
+        network: 'arbitrum_sepolia',
+        chainId: 421614,
+        urls: {
+          apiURL: 'https://api-sepolia.arbiscan.io/api',
+          browserURL: 'https://sepolia.arbiscan.io/',
+        },
+      },
+    ],
   },
   abiExporter: {
     flat: true,
