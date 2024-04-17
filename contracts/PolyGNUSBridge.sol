@@ -79,10 +79,9 @@ contract PolyGNUSBridge is
     }
 
     // burn GNUS ERC20 tokens
-    function burn(uint256 amount) public onlyRole(MINTER_ROLE) {
-        address sender = _msgSender();
-        _burn(sender, GNUS_TOKEN_ID, amount);
-        emit Transfer(sender, address(0), amount);
+    function burn(address user, uint256 amount) public onlyRole(MINTER_ROLE) {        
+        _burn(user, GNUS_TOKEN_ID, amount);
+        emit Transfer(user, address(0), amount);
     }
 
     /**

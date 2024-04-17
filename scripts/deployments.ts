@@ -901,14 +901,14 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       PolyGNUSBridge: {
-        address: '0x8016ff060c5e22102C404C81a442B9E380d1d34c',
-        tx_hash: '0x72e0de1f40776c3020a1d47221eda0df351c8bfe860d37ba4c676f8f1eca72c8',
-        version: 2,
+        address: '0x24187948CC3b70Be07D8Be68f952389841fAABB7',
+        tx_hash: '0xb16b68631eb65f8c84168db8349ba57f9446559a65060e887d829c1c97cfd323',
+        version: 2.1,
         funcSelectors: [
           '0xd5391393', '0xe48bf15b',
           '0x8aedbf63', '0x30364234',
           '0xdd62ed3e', '0x095ea7b3',
-          '0x70a08231', '0x42966c68',
+          '0x70a08231', '0x9dc29fac',
           '0x313ce567', '0xa457c2d7',
           '0x47e7ef24', '0x39509351',
           '0x40c10f19', '0x06fdde03',
