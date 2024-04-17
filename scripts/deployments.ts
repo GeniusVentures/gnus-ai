@@ -1024,22 +1024,21 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       PolyGNUSBridge: {
-        address: '0xDA7eE06e561e9b14B07B1b3901D9761445beE090',
-        tx_hash: '0x655bb3e1f699d3a142b2b675040b1b098e885dddc6ec918983022ba2e69e6c62',
-        version: 1.1,
+        address: '0x8f54E78FC629165d936663Cbe5288194106B9BC4',
+        tx_hash: '0x912ecc021dbd7e72ae9ad269be5590926e44d79b507d8538faa198f92f625007',
+        version: 2.1,
         funcSelectors: [
           '0xd5391393', '0xe48bf15b',
           '0x8aedbf63', '0x30364234',
           '0xdd62ed3e', '0x095ea7b3',
-          '0x70a08231', '0x42966c68',
+          '0x70a08231', '0x9dc29fac',
           '0x313ce567', '0xa457c2d7',
           '0x47e7ef24', '0x39509351',
           '0x40c10f19', '0x06fdde03',
           '0x95d89b41', '0x18160ddd',
           '0xa9059cbb', '0x23b872dd',
           '0x2e1a7d4d', '0x441a3e70'
-        ],
-        verified: true
+        ]
       },
       EscrowAIJob: {
         address: '0xD418E420F63bb84C25840F2C5A35d671ceBCEC2c',
@@ -1076,6 +1075,11 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
         verified: true
       }
+    },
+    ExternalLibraries: {
+      BurnVerifier: '0x4B1430342D1CDEe87c744BD4aAEc6B306Ee39284',
+      ZetherVerifier: '0x1723a1A4c18E5c31F0013839846FF519B81eDc7d',
+      libEncryption: '0xB93F64E084B100006EF6c501eDC0b275EEeec8D0'
     }
   }
 };
