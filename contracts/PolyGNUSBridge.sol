@@ -27,6 +27,7 @@ contract PolyGNUSBridge is
     // no initialization function as it is already done by GNUSNFTFactory
     function PolyGNUSBridge_Initialize() public initializer onlySuperAdminRole {
         _grantRole(PROXY_ROLE, _msgSender());
+        _grantRole(MINTER_ROLE, _msgSender());
         InitializableStorage.layout()._initialized = false;
         PolyGNUSBridge_Initialize_V1_0();
     }

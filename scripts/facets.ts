@@ -11,7 +11,7 @@ export const Facets: FacetToDeployInfo = {
   },
   PolyGNUSBridge: {
     priority: 50,
-    versions: { 0.1: {} },
+    versions: { 2.0: { } },
   },
   EscrowAIJob: { priority: 60, versions: { 0.0: { init: 'EscrowAIJob_Initialize' } } },
   GeniusAI: { priority: 70, versions: { 0.0: { init: 'GeniusAI_Initialize' } } },
