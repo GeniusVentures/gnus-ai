@@ -513,21 +513,21 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       PolyGNUSBridge: {
-        address: '0x6508c0Cb0e60617D33D64f4b60d75d6C6bd171eA',
-        tx_hash: '0xc1b3efdd98f2f0c354d59d47efb15c2968e48812d45879aead0995ffe3cb5587',
-        version: 1.1,
+        address: '0x6BE95F4271d86c4DF3ea0b34D751B3Ba619e9D1C',
+        tx_hash: '0xa49e468647d20f439caed0d624a56e87c60f8c3f888b31f2fbc48de349ba3ef3',
+        version: 2.1,
         funcSelectors: [
-          '0xe48bf15b', '0x8aedbf63',
-          '0x30364234', '0xdd62ed3e',
-          '0x095ea7b3', '0x70a08231',
+          '0xd5391393', '0xe48bf15b',
+          '0x8aedbf63', '0x30364234',
+          '0xdd62ed3e', '0x095ea7b3',
+          '0x70a08231', '0x9dc29fac',
           '0x313ce567', '0xa457c2d7',
           '0x47e7ef24', '0x39509351',
-          '0x06fdde03', '0x95d89b41',
-          '0x18160ddd', '0xa9059cbb',
-          '0x23b872dd', '0x2e1a7d4d',
-          '0x441a3e70'
-        ],
-        verified: true
+          '0x40c10f19', '0x06fdde03',
+          '0x95d89b41', '0x18160ddd',
+          '0xa9059cbb', '0x23b872dd',
+          '0x2e1a7d4d', '0x441a3e70'
+        ]
       },
       EscrowAIJob: {
         address: '0x2DD796E2fe4Ea091906eE68b5F56774dAeC52177',
