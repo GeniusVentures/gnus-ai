@@ -10,12 +10,7 @@ import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
 
 /// @custom:security-contact support@gnus.ai
-contract PolyGNUSBridge is
-    Initializable,
-    GNUSERC1155MaxSupply,
-    GeniusAccessControl,
-    IERC20Upgradeable
-{
+contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC20Storage for ERC20Storage.Layout;
     bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
@@ -25,15 +20,10 @@ contract PolyGNUSBridge is
     uint8 public constant decimals = 18;
 
     // no initialization function as it is already done by GNUSNFTFactory
-    function PolyGNUSBridge_Initialize() public initializer onlySuperAdminRole {
+    function GNUSBridge_Initialize() public initializer onlySuperAdminRole {
         _grantRole(PROXY_ROLE, _msgSender());
         _grantRole(MINTER_ROLE, _msgSender());
-        InitializableStorage.layout()._initialized = false;
-        PolyGNUSBridge_Initialize_V1_0();
-    }
-
-    function PolyGNUSBridge_Initialize_V1_0() public onlySuperAdminRole {
-        LibDiamond.diamondStorage().supportedInterfaces[type(IERC20Upgradeable).interfaceId] = true;
+        InitializableStorage.layout()._initialized = true;
     }
 
     // The following functions are overrides required by Solidity.
@@ -79,7 +69,7 @@ contract PolyGNUSBridge is
     }
 
     // burn GNUS ERC20 tokens
-    function burn(address user, uint256 amount) public onlyRole(MINTER_ROLE) {        
+    function burn(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
         _burn(user, GNUS_TOKEN_ID, amount);
         emit Transfer(user, address(0), amount);
     }
