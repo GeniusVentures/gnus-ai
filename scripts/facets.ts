@@ -9,7 +9,7 @@ export const Facets: FacetToDeployInfo = {
     priority: 40,
     versions: { 0.0: { init: 'GNUSNFTFactory_Initialize' } },
   },
-  PolyGNUSBridge: {
+  GNUSBridge: {
     priority: 50,
     versions: { 2.1: { } },
   },

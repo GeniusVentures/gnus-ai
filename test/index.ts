@@ -176,37 +176,12 @@ describe.only('Genius Diamond DApp Testing', async function () {
 
       const gnusSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
       assert(gnusSupply.eq(0), `GNUS Supply should equal zero but equals${gnusSupply}`);
-
-      let tx = await gnusDiamond['deposit(address,uint256)'](owner.address, toWei(2000));
-      logEvents(tx);
-
-      const addr1_gnusDiamond = gnusDiamond.connect(addr1);
-      await expect(
-        addr1_gnusDiamond['deposit(address,uint256)'](addr1.address, toBN(20)),
-      ).to.eventually.be.rejectedWith(
-        Error,
-        /reverted with reason string 'AccessControl: account/,
-      );
-
-      await gnusDiamond.grantRole(await gnusDiamond.PROXY_ROLE(), addr1.address);
-
-      tx = await addr1_gnusDiamond['deposit(address,uint256)'](addr1.address, toWei(2000));
-      logEvents(tx);
-    });
-
-    it('Testing if GNUS token received deposit', async () => {
-      const gnusSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
-      assert(
-        gnusSupply.eq(toWei(4000)),
-        `GNUS Supply should be 4000, but is ${ethers.utils.formatEther(gnusSupply)}`,
-      );
     });
 
     after(() => {
       GNUSERC20Tests.suite();
       NFTCreateTests.suite();
       ERC20BatchTests.suite();
-      // ZetherTests.suite();
     });
   });
 });

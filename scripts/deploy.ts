@@ -5,7 +5,7 @@
 // Runtime Environment's members available in the global scope.
 import { debug } from 'debug';
 import { BaseContract } from 'ethers';
-import hre, { ethers } from 'hardhat';
+import hre, { ethers, network } from 'hardhat';
 import { AdminClient } from '@openzeppelin/defender-admin-client';
 import { Network } from '@openzeppelin/defender-base-client';
 import {
@@ -99,7 +99,9 @@ export async function deployFuncSelectors(
 ) {
   const cut: FacetInfo[] = [];
   const deployedFacets = networkDeployInfo.FacetDeployedInfo;
-  const deployedFuncSelectors = await getDeployedFuncSelectors(oldNetworkDeployInfo || networkDeployInfo);
+  const deployedFuncSelectors = await getDeployedFuncSelectors(
+    oldNetworkDeployInfo || networkDeployInfo,
+  );
   const registeredFunctionSignatures = new Set<string>();
 
   const facetsPriority = Object.keys(facetsToDeploy).sort(
@@ -228,7 +230,7 @@ export async function deployFuncSelectors(
   log('');
   log('Diamond Cut:', cut);
   const diamondCut = dc.GeniusDiamond as IDiamondCut;
-  if (process.env.DEFENDER_DEPLOY_ON) {
+  if (process.env.DEFENDER_DEPLOY_ON && network.name !== 'hardhat') {
     log('Deploying contract on defender');
     client = new AdminClient({
       apiKey: process.env.DEFENDER_API_KEY || '',
@@ -286,7 +288,7 @@ export async function deployFuncSelectors(
     }
     log('Cutting: ', facetCutInfo);
     try {
-      if (process.env.DEFENDER_DEPLOY_ON) {
+      if (process.env.DEFENDER_DEPLOY_ON && network.name !== 'hardhat') {
         const diamondCutFuncAbi = {
           inputs: [
             {

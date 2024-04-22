@@ -13,17 +13,16 @@ import "./GNUSConstants.sol";
 contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC20Storage for ERC20Storage.Layout;
-    bytes32 public constant PROXY_ROLE = keccak256("PROXY_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     string public constant name = "Genius Token & NFT Collections";
     string public constant symbol = "GNUS";
     uint8 public constant decimals = 18;
 
     // no initialization function as it is already done by GNUSNFTFactory
-    function GNUSBridge_Initialize() public initializer onlySuperAdminRole {
-        _grantRole(PROXY_ROLE, _msgSender());
+    function GNUSBridge_Initialize() external initializer onlySuperAdminRole {
         _grantRole(MINTER_ROLE, _msgSender());
-        InitializableStorage.layout()._initialized = true;
+        InitializableStorage.layout()._initialized = false;
+        LibDiamond.diamondStorage().supportedInterfaces[type(IERC20Upgradeable).interfaceId] = true;
     }
 
     // The following functions are overrides required by Solidity.
@@ -39,27 +38,6 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
         return (ERC1155Upgradeable.supportsInterface(interfaceId) ||
             AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
             (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
-    }
-
-    // The following functions are for the Ethereum -> Polygon Bridge for GNUS Tokens
-    // Deposit ERC20 Tokens
-    function deposit(address user, uint256 amount) external onlyRole(PROXY_ROLE) {
-        // `amount` token getting minted here & equal amount got locked in RootChainManager
-        // these are in Wei from the ERC20 contract.
-        _mint(user, GNUS_TOKEN_ID, amount, "");
-
-        // emit ERC20 Transfer notification
-        emit Transfer(address(0), user, amount);
-    }
-
-    // withdraw ERC 20 tokens (GNUS Tokens)
-    function withdraw(uint256 amount) public {
-        address sender = _msgSender();
-
-        _burn(sender, GNUS_TOKEN_ID, amount);
-
-        // emit ERC20 Transfer notification
-        emit Transfer(sender, address(0), amount);
     }
 
     // mint GNUS ERC20 tokens
