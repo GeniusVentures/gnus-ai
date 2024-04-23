@@ -40,7 +40,7 @@ import { debug } from 'debug';
 import * as NFTCreateTests from '../test/NFTCreateTests';
 import * as GNUSERC20Tests from '../test/GNUSERC20Tests';
 import * as ERC20BatchTests from '../test/Erc20BatchTests';
-import * as ZetherTests from '../test/ZetherTests';
+import { updateOwnerForTest } from './utils/signer';
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
 
@@ -84,7 +84,9 @@ describe.only('Genius Diamond DApp Testing', async function () {
       };
     }
     networkDeployedInfo = deployments[networkName];
-
+    if (networkDeployedInfo.DiamondAddress) {
+      await updateOwnerForTest(networkDeployedInfo.DiamondAddress);
+    }
     await deployGNUSDiamond(networkDeployedInfo);
 
     gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
@@ -103,7 +105,6 @@ describe.only('Genius Diamond DApp Testing', async function () {
       "Doesn't support IERC1155Upgradeable",
     );
 
-    await deployExternalLibraries(networkDeployedInfo);
     const deployInfoBeforeUpgraded: INetworkDeployInfo = JSON.parse(
       JSON.stringify(networkDeployedInfo),
     );

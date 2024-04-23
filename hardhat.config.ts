@@ -66,6 +66,16 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    hardhat: {
+      forking: process.env.FORK_URL
+        ? {
+            url: process.env.FORK_URL,
+            blockNumber: process.env.FORK_BLOCK_NUMBER
+              ? parseInt(process.env.FORK_BLOCK_NUMBER)
+              : undefined,
+          }
+        : undefined,
+    },
     mumbai: {
       url: 'https://matic-mumbai.chainstacklabs.com',
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
