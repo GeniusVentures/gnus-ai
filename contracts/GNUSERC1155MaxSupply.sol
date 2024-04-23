@@ -24,19 +24,17 @@ contract GNUSERC1155MaxSupply is
         bytes memory data
     ) internal override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) whenNotPaused {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-
-        if (from == address(0)) {
-            for (uint256 i = 0; i < ids.length; ++i) {
-                uint256 id = ids[i];
+        for (uint256 i = 0; i < ids.length; ++i) {
+            uint256 id = ids[i];
+            require(
+                !GNUSBannedTransferorStorage.isBannedTransferor(id, operator),
+                "Blocked transferor"
+            );
+            if (from == address(0))
                 require(
                     totalSupply(id) <= GNUSNFTFactoryStorage.layout().NFTs[id].maxSupply,
                     "Max Supply for NFT would be exceeded"
                 );
-                require(
-                    !GNUSBannedTransferorStorage.isBannedTransferor(id, operator),
-                    "Blocked transferor"
-                );
-            }
         }
     }
 
