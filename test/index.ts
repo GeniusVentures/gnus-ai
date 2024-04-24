@@ -40,6 +40,8 @@ import { debug } from 'debug';
 import * as NFTCreateTests from '../test/NFTCreateTests';
 import * as GNUSERC20Tests from '../test/GNUSERC20Tests';
 import * as ERC20BatchTests from '../test/Erc20BatchTests';
+import * as GNUSBridgeTests from '../test/GNUSBridgeTests';
+
 import { updateOwnerForTest } from './utils/signer';
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
@@ -186,6 +188,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
       GNUSERC20Tests.suite();
       NFTCreateTests.suite();
       ERC20BatchTests.suite();
+      GNUSBridgeTests.suite();
     });
   });
 });
