@@ -42,7 +42,7 @@ contract GNUSSecControl {
         emit AddToBlackList(tokenIds, bannedAddresses);
     }
 
-    function allowTransferor(
+    function allowTransferorBatch(
         uint256[] calldata tokenIds,
         address[] calldata bannedAddresses
     ) external onlySuperAdminRole {

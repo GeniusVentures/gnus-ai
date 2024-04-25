@@ -17,7 +17,11 @@ export function suite() {
   describe('Testing Batch transfer erc20', async function () {
     let gdAddr1: GeniusDiamond;
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-    let owner, minter, sender, receiver1: SignerWithAddress, receiver2: SignerWithAddress;
+    let owner: SignerWithAddress,
+      minter: SignerWithAddress,
+      sender,
+      receiver1: SignerWithAddress,
+      receiver2: SignerWithAddress;
     let oldTokenAmount1: BigNumber, oldTokenAmount2: BigNumber;
     before(async () => {
       [owner, minter, sender, receiver1, receiver2] = await ethers.getSigners();
@@ -70,6 +74,28 @@ export function suite() {
           toWei(1).add(oldTokenAmount2),
         )}, but equals ${utils.formatEther(updatedAmount2)}`,
       );
+    });
+    it('Block Transfer', async () => {
+      let balance = await gnusDiamond['balanceOf(address)'](owner.address);
+      await gnusDiamond['mint(address,uint256)'](owner.address, toWei(100));
+      balance = await gnusDiamond['balanceOf(address)'](owner.address);
+      expect(balance).to.be.gt(toWei(100));
+      await gnusDiamond.transfer(receiver1.address, toWei(10));
+      let receiverBalance = await gnusDiamond['balanceOf(address)'](receiver1.address);
+      expect(receiverBalance).to.be.gt(toWei(10));
+      await gnusDiamond.banTransferorForAll(owner.address);
+      await expect(gnusDiamond.transfer(receiver1.address, toWei(10))).to.be.rejectedWith(
+        Error,
+        'Blocked transferor',
+      );
+      await gnusDiamond.allowTransferorForAll(owner.address);
+      await gnusDiamond.transfer(receiver1.address, toWei(1));
+      await gnusDiamond.banTransferorBatch([0], [owner.address]);
+      await expect(gnusDiamond.transfer(receiver1.address, toWei(10))).to.be.rejectedWith(
+        Error,
+        'Blocked transferor',
+      );
+      await gnusDiamond.allowTransferorBatch([0], [owner.address]);
     });
     after(() => {
       // NFTMintTests.suite();
