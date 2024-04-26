@@ -17,7 +17,7 @@ export const Facets: FacetToDeployInfo = {
   GeniusAI: { priority: 70, versions: { 0.0: { init: 'GeniusAI_Initialize' } } },
   GNUSNFTCollectionName: { priority: 80 },
   ERC20TransferBatch: { priority: 90, versions: { 2.0: {} } },
-  GNUSSecControl: { priority: 100 },
+  GNUSControl: { priority: 100 },
 };
 
 export const UpgradeInits: UpgradeInitInfo = {};

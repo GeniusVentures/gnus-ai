@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./GNUSBannedTransferorStorage.sol";
+import "./GNUSControlStorage.sol";
 import "contracts-starter/contracts/libraries/LibDiamond.sol";
 
 /**
@@ -9,8 +9,8 @@ import "contracts-starter/contracts/libraries/LibDiamond.sol";
  * @author ruymaster
  * @notice This contract handles security for the protocol.
  */
-contract GNUSSecControl {
-    using GNUSBannedTransferorStorage for GNUSBannedTransferorStorage.Layout;
+contract GNUSControl {
+    using GNUSControlStorage for GNUSControlStorage.Layout;
 
     event AddToBlackList(uint256[] tokenIds, address[] addresses);
     event RemoveFromBlackList(uint256[] tokenIds, address[] addresses);
@@ -18,12 +18,12 @@ contract GNUSSecControl {
     event RemoveFromGlobalBlackList(address bannedAddress);
 
     function banTransferorForAll(address bannedAddress) external onlySuperAdminRole {
-        GNUSBannedTransferorStorage.layout().gBannedTransferors[bannedAddress] = true;
+        GNUSControlStorage.layout().gBannedTransferors[bannedAddress] = true;
         emit AddToGlobalBlackList(bannedAddress);
     }
 
     function allowTransferorForAll(address bannedAddress) external onlySuperAdminRole {
-        GNUSBannedTransferorStorage.layout().gBannedTransferors[bannedAddress] = false;
+        GNUSControlStorage.layout().gBannedTransferors[bannedAddress] = false;
         emit RemoveFromGlobalBlackList(bannedAddress);
     }
 
@@ -32,9 +32,7 @@ contract GNUSSecControl {
         address[] calldata bannedAddresses
     ) external onlySuperAdminRole {
         for (uint256 i; i < tokenIds.length; ) {
-            GNUSBannedTransferorStorage.layout().bannedTransferors[tokenIds[i]][
-                bannedAddresses[i]
-            ] = true;
+            GNUSControlStorage.layout().bannedTransferors[tokenIds[i]][bannedAddresses[i]] = true;
             unchecked {
                 ++i;
             }
@@ -47,9 +45,7 @@ contract GNUSSecControl {
         address[] calldata bannedAddresses
     ) external onlySuperAdminRole {
         for (uint256 i; i < tokenIds.length; ) {
-            GNUSBannedTransferorStorage.layout().bannedTransferors[tokenIds[i]][
-                bannedAddresses[i]
-            ] = false;
+            GNUSControlStorage.layout().bannedTransferors[tokenIds[i]][bannedAddresses[i]] = false;
             unchecked {
                 ++i;
             }

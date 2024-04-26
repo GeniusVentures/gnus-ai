@@ -5,7 +5,7 @@ import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/extensions/ERC1155S
 import "@gnus.ai/contracts-upgradeable-diamond/security/PausableUpgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
 import "./GNUSNFTFactoryStorage.sol";
-import "./GNUSBannedTransferorStorage.sol";
+import "./GNUSControlStorage.sol";
 
 contract GNUSERC1155MaxSupply is
     ERC1155SupplyUpgradeable,
@@ -13,7 +13,7 @@ contract GNUSERC1155MaxSupply is
     ERC1155BurnableUpgradeable
 {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
-    using GNUSBannedTransferorStorage for GNUSBannedTransferorStorage.Layout;
+    using GNUSControlStorage for GNUSControlStorage.Layout;
 
     function _beforeTokenTransfer(
         address operator,
@@ -26,10 +26,7 @@ contract GNUSERC1155MaxSupply is
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
         for (uint256 i = 0; i < ids.length; ++i) {
             uint256 id = ids[i];
-            require(
-                !GNUSBannedTransferorStorage.isBannedTransferor(id, operator),
-                "Blocked transferor"
-            );
+            require(!GNUSControlStorage.isBannedTransferor(id, operator), "Blocked transferor");
             if (from == address(0))
                 require(
                     totalSupply(id) <= GNUSNFTFactoryStorage.layout().NFTs[id].maxSupply,
