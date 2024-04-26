@@ -56,7 +56,7 @@ export function suite() {
           [5, 100, 10],
           [],
         ),
-      ).to.be.eventually.rejectedWith(Error, /Not enough supply to mint tokens/);
+      ).to.be.eventually.rejectedWith(Error, 'Max Supply for NFT would be exceeded');
       // now do with under max Supply
       const tx = await gdAddr1['mintBatch(address,uint256[],uint256[],bytes)'](
         signers[2].address,

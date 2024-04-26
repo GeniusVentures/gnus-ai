@@ -74,7 +74,6 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
             require(balanceOf(sender, GNUS_TOKEN_ID) >= convAmount, "Not enough GNUS_TOKEN to burn");
             _burn(sender, GNUS_TOKEN_ID, convAmount);
         }
-        require( (totalSupply(id) + amount) <= nft.maxSupply, "Not enough supply to mint tokens" );
     }
 
     function mint(address to, uint256 id, uint256 amount, bytes memory data) external {
