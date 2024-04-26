@@ -11,7 +11,7 @@ export const Facets: FacetToDeployInfo = {
   },
   GNUSBridge: {
     priority: 50,
-    versions: { 2.1: {} },
+    versions: { 2.2: {} },
   },
   EscrowAIJob: { priority: 60, versions: { 0.0: { init: 'EscrowAIJob_Initialize' } } },
   GeniusAI: { priority: 70, versions: { 0.0: { init: 'GeniusAI_Initialize' } } },

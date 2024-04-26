@@ -17,6 +17,7 @@ contract GNUSControl {
     event RemoveFromBlackList(uint256[] tokenIds, address[] addresses);
     event AddToGlobalBlackList(address bannedAddress);
     event RemoveFromGlobalBlackList(address bannedAddress);
+    event UpdateBridgeFee(uint256 indexed);
 
     function banTransferorForAll(address bannedAddress) external onlySuperAdminRole {
         GNUSControlStorage.layout().gBannedTransferors[bannedAddress] = true;
@@ -57,6 +58,7 @@ contract GNUSControl {
     function updateBridgeFee(uint256 newFee) external onlySuperAdminRole {
         require(newFee <= MAX_FEE, "Too big fee");
         GNUSControlStorage.layout().bridgeFee = newFee;
+        emit UpdateBridgeFee(newFee);
     }
 
     modifier onlySuperAdminRole() {

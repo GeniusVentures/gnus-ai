@@ -47,7 +47,7 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
     function mint(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
         uint256 bridgeFee = GNUSControlStorage.layout().bridgeFee;
         if (bridgeFee != 0) {
-            amount = (amount * bridgeFee) / FEE_DOMINATOR;
+            amount = (amount * (FEE_DOMINATOR - bridgeFee)) / FEE_DOMINATOR;
         }
         _mint(user, GNUS_TOKEN_ID, amount, "");
         emit Transfer(address(0), user, amount);
