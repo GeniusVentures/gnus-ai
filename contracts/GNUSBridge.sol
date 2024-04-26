@@ -8,15 +8,18 @@ import "./GNUSERC1155MaxSupply.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
+import "./GNUSControlStorage.sol";
 
 /// @custom:security-contact support@gnus.ai
 contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC20Storage for ERC20Storage.Layout;
+    using GNUSControlStorage for GNUSControlStorage.Layout;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     string public constant name = "Genius Token & NFT Collections";
     string public constant symbol = "GNUS";
     uint8 public constant decimals = 18;
+    uint256 private constant FEE_DOMINATOR = 1000;
 
     // no initialization function as it is already done by GNUSNFTFactory
     function GNUSBridge_Initialize() external initializer onlySuperAdminRole {
@@ -42,6 +45,10 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
 
     // mint GNUS ERC20 tokens
     function mint(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
+        uint256 bridgeFee = GNUSControlStorage.layout().bridgeFee;
+        if (bridgeFee != 0) {
+            amount = (amount * bridgeFee) / FEE_DOMINATOR;
+        }
         _mint(user, GNUS_TOKEN_ID, amount, "");
         emit Transfer(address(0), user, amount);
     }

@@ -12,6 +12,7 @@ import "contracts-starter/contracts/libraries/LibDiamond.sol";
 contract GNUSControl {
     using GNUSControlStorage for GNUSControlStorage.Layout;
 
+    uint256 private constant MAX_FEE = 200;
     event AddToBlackList(uint256[] tokenIds, address[] addresses);
     event RemoveFromBlackList(uint256[] tokenIds, address[] addresses);
     event AddToGlobalBlackList(address bannedAddress);
@@ -51,6 +52,11 @@ contract GNUSControl {
             }
         }
         emit RemoveFromBlackList(tokenIds, bannedAddresses);
+    }
+
+    function updateBridgeFee(uint256 newFee) external onlySuperAdminRole {
+        require(newFee <= MAX_FEE, "Too big fee");
+        GNUSControlStorage.layout().bridgeFee = newFee;
     }
 
     modifier onlySuperAdminRole() {
