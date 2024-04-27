@@ -108,6 +108,26 @@ export async function deployFuncSelectors(
     (a, b) => facetsToDeploy[a].priority - facetsToDeploy[b].priority,
   );
   let protocolUpgradeVersion = 0;
+  const selectorsToBeRemoved: string[] = [];
+  // delete old facets not included in deploy list and remove all deleted all functions
+  for (const facetName of Object.keys(deployedFacets)) {
+    if (!Object.keys(facetsToDeploy).includes(facetName)) {
+      // should delete functions exist in diamond
+      selectorsToBeRemoved.push(
+        ...deployedFacets[facetName].funcSelectors?.filter((e) =>
+          Object.keys(deployedFuncSelectors?.facets).includes(e),
+        ),
+      );
+      if (selectorsToBeRemoved.length > 0)
+        cut.push({
+          facetAddress: ethers.constants.AddressZero,
+          action: FacetCutAction.Remove,
+          functionSelectors: selectorsToBeRemoved,
+          name: facetName,
+        });
+      delete deployedFacets[facetName];
+    }
+  }
   for (const name of facetsPriority) {
     const facetDeployVersionInfo = facetsToDeploy[name];
     let facetVersions = ['0.0'];

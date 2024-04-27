@@ -141,7 +141,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
     const addresses: any[] = [];
 
     it('should have same count of facets -- call to facetAddresses function', async () => {
-      const facetAddresses = await await gnusDiamond.facetAddresses();
+      const facetAddresses = await gnusDiamond.facetAddresses();
       for (const facetAddress of facetAddresses) {
         addresses.push(facetAddress);
       }
