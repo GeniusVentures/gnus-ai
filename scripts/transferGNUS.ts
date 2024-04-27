@@ -28,8 +28,8 @@ async function transferToken() {
   const tx = await its.interchainTransfer(
     tokenId,
     EvmChain.ARBITRUM_SEPOLIA,
-    signerAddress,
-    ethers.utils.parseEther('1.1'),
+    signerAddress.address,
+    ethers.utils.parseEther('2'),
     '0x',
     gas,
     {
