@@ -112,10 +112,9 @@ const config: HardhatUserConfig = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    bsc_mainnet: {
+    bsc: {
       url: `https://bsc-dataseed.bnbchain.org/`,
       chainId: 56,
-      gasPrice: 3600000000,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
   },

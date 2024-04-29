@@ -729,7 +729,7 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
     },
     ExternalLibraries: {}
   },
-  bsc_mainnet: {
+  bsc: {
     DiamondAddress: '0x614577036F0a024DBC1C88BA616b394DD65d105a',
     DeployerAddress: '0x1804dECa63705e18edf04f242b325bCd54a8b463',
     FacetDeployedInfo: {
@@ -775,9 +775,9 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       GNUSNFTFactory: {
-        address: '0x85403f882A57D61b4528E5C6FaA39f0D9ee9756C',
-        tx_hash: '0xf57426e934ac3dae225a9d12e582144c1100e790eddad14e767adc95d2aa5b04',
-        version: 0,
+        address: '0x393211cC8e587DC3F446cF9320FcEc23ee350395',
+        tx_hash: '0x48f8e4a653b0ea9e579a412a6b0460d4ae121ba02c365a6c028a4dbede548092',
+        version: 2,
         funcSelectors: [
           '0x8aeda25a', '0x101521f8',
           '0x00fdd58e', '0x4e1273f4',
@@ -790,23 +790,6 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0xa22cb465', '0x02fe5305',
           '0x862440e2', '0x3f4ba83a',
           '0x0e89341c'
-        ],
-        verified: true
-      },
-      PolyGNUSBridge: {
-        address: '0x482c8998d8a2194CDFe92e616dbB906035fdae9E',
-        tx_hash: '0x753f187076744948c12a65fa1c78095fc675859ea94436cbd936b2fd69f67fb6',
-        version: 1.1,
-        funcSelectors: [
-          '0xe48bf15b', '0x8aedbf63',
-          '0x30364234', '0xdd62ed3e',
-          '0x095ea7b3', '0x70a08231',
-          '0x313ce567', '0xa457c2d7',
-          '0x47e7ef24', '0x39509351',
-          '0x06fdde03', '0x95d89b41',
-          '0x18160ddd', '0xa9059cbb',
-          '0x23b872dd', '0x2e1a7d4d',
-          '0x441a3e70'
         ],
         verified: true
       },
@@ -833,18 +816,53 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       GNUSNFTCollectionName: {
-        address: '0x8Bb02782B10293BD29410240E3781bad41Bdd588',
-        tx_hash: '0xec19223a2b5182768f9bbb2dc9f4158afa6f1644745bc1c7dea70184aafc05e9',
+        address: '0xE5d92FB546f5782E77B46a00fE20086C6F76D60e',
+        tx_hash: '0x772f00ea77caa4b377e4a2a2d244721d62a4eff26068303339d752b2147dfad6',
         version: -1,
         verified: true
       },
       ERC20TransferBatch: {
-        address: '0xC84567fCF259D0287fb632cB046cf47AA5Affee6',
-        tx_hash: '0x99a9fe0dc0f5930bccc04c8514bcdae0f5e476904a6da439e1e930afb8bfdc27',
-        version: 0,
+        address: '0x5908aac3747751BE5c2a1799eB0EAfFA86303bf4',
+        tx_hash: '0x4d5db5c1a6e818fb0f9d382d75a53fcd2f729d78f15d61fb5f9c4059f1656ebf',
+        version: 2,
         funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
         verified: true
+      },
+      GNUSBridge: {
+        address: '0xB1cCbaEA15491E582E8B3dddaE4833c7FbAD6269',
+        tx_hash: '0xcb1ab7241fd023c1bbe3e7ee24a9bec104e1c75456db987505150d2bf840f8e8',
+        version: 2.2,
+        funcSelectors: [
+          '0x179a4a53', '0xd5391393',
+          '0xdd62ed3e', '0x095ea7b3',
+          '0x70a08231', '0x9dc29fac',
+          '0x313ce567', '0xa457c2d7',
+          '0x39509351', '0x40c10f19',
+          '0x06fdde03', '0x95d89b41',
+          '0x18160ddd', '0xa9059cbb',
+          '0x23b872dd', '0x441a3e70'
+        ],
+        verified: true
+      },
+      GNUSControl: {
+        address: '0xc8Ad620Bb2a5B11e146E5D3C3679eaB889b43a15',
+        tx_hash: '0xb4d0e06767316a29d581be6a9f2f3c2848e0c9faa5f272d3c0dd39cdd47ea1ee',
+        version: 0,
+        funcSelectors: [
+          '0x9e8e7134',
+          '0x9ceb1593',
+          '0x19a8b28a',
+          '0x1307a4be',
+          '0x93420cf4',
+          '0x5a1c0366'
+        ],
+        verified: true
       }
+    },
+    ExternalLibraries: {
+      BurnVerifier: '0x48a1831a8F4F701C26C0F72B1B7FA68aA3AE4731',
+      ZetherVerifier: '0xC6FDeAEc9aAc1F5D0F21E0115B122867e0706e06',
+      libEncryption: '0xF15096D50Ce6660be5B6F46e10C2137d0131C99C'
     }
   },
   arbitrum_sepolia: {
