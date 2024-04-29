@@ -1267,7 +1267,6 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
       }
     },
     ExternalLibraries: {}
-    }
   },
   base: {
     DiamondAddress: '0x614577036F0a024DBC1C88BA616b394DD65d105a',
