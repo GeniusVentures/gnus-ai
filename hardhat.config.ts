@@ -117,6 +117,11 @@ const config: HardhatUserConfig = {
       chainId: 56,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    base: {
+      url: `https://mainnet.base.org/`,
+      chainId: 8453,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
@@ -139,6 +144,7 @@ const config: HardhatUserConfig = {
       bsc: process.env.BSCSCAN_API_KEY || '',
       arbitrum_sepolia: process.env.ARBITRUM_API_KEY || '',
       base_sepolia: process.env.BASESCAN_API_KEY || '',
+      base: process.env.BASESCAN_API_KEY || '',
     },
     customChains: [
       // additional etherscan config
@@ -156,6 +162,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-sepolia.basescan.org/api',
           browserURL: 'https://sepolia.basescan.org/',
+        }
+      },
+      {
+        network: 'base',
+        chainId: 8453,
+        urls: {
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org',
         },
       },
     ],
