@@ -61,6 +61,11 @@ contract GNUSControl {
         emit UpdateBridgeFee(newFee);
     }
 
+    function protocolInfo() external view returns (uint256 bridgeFee, uint256 protocolVersion) {
+        bridgeFee = GNUSControlStorage.layout().bridgeFee;
+        protocolVersion = GNUSControlStorage.layout().protocolVersion;
+    }
+
     modifier onlySuperAdminRole() {
         require(LibDiamond.diamondStorage().contractOwner == msg.sender, "Only SuperAdmin allowed");
         _;

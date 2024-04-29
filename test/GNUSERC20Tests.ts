@@ -46,7 +46,7 @@ export function suite() {
         'GeniusOwnershipFacet',
         gnusDiamond.address,
       );
-      await ownershipFacet.grantRole(minterRole, owner);
+      expect(await ownershipFacet.hasRole(minterRole, owner)).to.be.eq(true);
       await gnusDiamond['mint(address,uint256)'](owner, toWei(150));
       ownerSupply = await gnusDiamond['balanceOf(address)'](owner);
       assert(

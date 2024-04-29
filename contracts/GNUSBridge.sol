@@ -22,10 +22,12 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
     uint256 private constant FEE_DOMINATOR = 1000;
 
     function GNUSBridge_Initialize220() external onlySuperAdminRole {
-        if (GNUSControlStorage.layout().protocolVersion < 220) {
-            _grantRole(MINTER_ROLE, _msgSender());
-            GNUSControlStorage.layout().protocolVersion = 220;
-        }
+        require(
+            GNUSControlStorage.layout().protocolVersion < 220,
+            "constract was initialized: 2.2"
+        );
+        _grantRole(MINTER_ROLE, _msgSender());
+        GNUSControlStorage.layout().protocolVersion = 220;
     }
 
     // The following functions are overrides required by Solidity.

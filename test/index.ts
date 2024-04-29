@@ -166,6 +166,18 @@ describe.only('Genius Diamond DApp Testing', async function () {
         selectors.values.filter((e) => !result.includes(e)),
       );
     });
+
+    it('protocol version should be same after upgrading', async () => {
+      const { bridgeFee, protocolVersion } = await gnusDiamond.protocolInfo();
+      expect(bridgeFee).to.be.eq(0);
+      expect(protocolVersion).to.be.eq(BigInt(220));
+    });
+
+    it('can not recall init function after upgrading', async () => {
+      await expect(gnusDiamond.GNUSBridge_Initialize220()).to.be.rejectedWith(
+        'constract was initialized: 2.2',
+      );
+    });
   });
 
   describe('Polygon to GNUS Deposits', async function () {
