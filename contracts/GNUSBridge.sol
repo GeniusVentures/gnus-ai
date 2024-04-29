@@ -8,61 +8,61 @@ import "./GNUSERC1155MaxSupply.sol";
 import "./GNUSNFTFactoryStorage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
+import "./GNUSControlStorage.sol";
 
 /// @custom:security-contact support@gnus.ai
-contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable
-{
+contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl, IERC20Upgradeable {
     using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
     using ERC20Storage for ERC20Storage.Layout;
-    bytes32 constant public PROXY_ROLE = keccak256("PROXY_ROLE");
-    string constant public name = "Genius Token & NFT Collections";
-    string constant public symbol = "GNUS";
-    uint8 constant public decimals = 18;
+    using GNUSControlStorage for GNUSControlStorage.Layout;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    string public constant name = "Genius Token & NFT Collections";
+    string public constant symbol = "GNUS";
+    uint8 public constant decimals = 18;
+    uint256 private constant FEE_DOMINATOR = 1000;
 
-    // no initialization function as it is already done by GNUSNFTFactory
-    function PolyGNUSBridge_Initialize() public initializer onlySuperAdminRole {
-        _grantRole(PROXY_ROLE, _msgSender());
-        InitializableStorage.layout()._initialized = false;
-        PolyGNUSBridge_Initialize_V1_0();
-    }
-
-    function PolyGNUSBridge_Initialize_V1_0() public onlySuperAdminRole {
-        LibDiamond.diamondStorage().supportedInterfaces[type(IERC20Upgradeable).interfaceId] = true;
+    function GNUSBridge_Initialize220() external onlySuperAdminRole {
+        require(
+            GNUSControlStorage.layout().protocolVersion < 220,
+            "constract was initialized: 2.2"
+        );
+        _grantRole(MINTER_ROLE, _msgSender());
+        GNUSControlStorage.layout().protocolVersion = 220;
     }
 
     // The following functions are overrides required by Solidity.
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)
-    returns (bool) {
-        return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
-        (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)
+        returns (bool)
+    {
+        return (ERC1155Upgradeable.supportsInterface(interfaceId) ||
+            AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
+            (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
     }
 
-    // The following functions are for the Ethereum -> Polygon Bridge for GNUS Tokens
-    // Deposit ERC20 Tokens
-    function deposit(address user, uint256 amount) external onlyRole(PROXY_ROLE) {
-
-        // `amount` token getting minted here & equal amount got locked in RootChainManager
-        // these are in Wei from the ERC20 contract.
+    // mint GNUS ERC20 tokens
+    function mint(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
+        uint256 bridgeFee = GNUSControlStorage.layout().bridgeFee;
+        if (bridgeFee != 0) {
+            amount = (amount * (FEE_DOMINATOR - bridgeFee)) / FEE_DOMINATOR;
+        }
         _mint(user, GNUS_TOKEN_ID, amount, "");
-
-        // emit ERC20 Transfer notification
         emit Transfer(address(0), user, amount);
     }
 
-    // withdraw ERC 20 tokens (GNUS Tokens)
-    function withdraw(uint256 amount) public {
-
-        address sender = _msgSender();
-
-        _burn(sender, GNUS_TOKEN_ID, amount);
-
-        // emit ERC20 Transfer notification
-        emit Transfer(sender, address(0), amount);
-
+    // burn GNUS ERC20 tokens
+    function burn(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
+        _burn(user, GNUS_TOKEN_ID, amount);
+        emit Transfer(user, address(0), amount);
     }
 
     /**
- * @dev Creates `amount` tokens of token type `id`, and assigns them to `to`.
+     * @dev Creates `amount` tokens of token type `id`, and assigns them to `to`.
      *
      * Emits a {TransferSingle} event.
      *
@@ -94,10 +94,12 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
 
     // this will withdraw a child token to a GNUS Token on the Ethereum network
     function withdraw(uint256 amount, uint256 id) external {
-
         address sender = _msgSender();
 
-        require(GNUSNFTFactoryStorage.layout().NFTs[id].nftCreated, "This token can't be withdrawn, as it hasn't been created yet!");
+        require(
+            GNUSNFTFactoryStorage.layout().NFTs[id].nftCreated,
+            "This token can't be withdrawn, as it hasn't been created yet!"
+        );
         // first burn the child createToken
         require(balanceOf(sender, id) >= amount, "Not enough child tokens to withdraw");
         uint256 convAmount = amount / GNUSNFTFactoryStorage.layout().NFTs[id].exchangeRate;
@@ -107,7 +109,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     }
 
     /**
-      * @dev Returns the amount of tokens in existence.
+     * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view override returns (uint256) {
         return totalSupply(GNUS_TOKEN_ID);
@@ -141,7 +143,10 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender) public view virtual override returns (uint256) {
+    function allowance(
+        address owner,
+        address spender
+    ) public view virtual override returns (uint256) {
         return ERC20Storage.layout()._allowances[owner][spender];
     }
 
@@ -184,7 +189,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     }
 
     /**
- * @dev Atomically decreases the allowance granted to `spender` by the caller.
+     * @dev Atomically decreases the allowance granted to `spender` by the caller.
      *
      * This is an alternative to {approve} that can be used as a mitigation for
      * problems described in {IERC20-approve}.
@@ -197,7 +202,10 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+    function decreaseAllowance(
+        address spender,
+        uint256 subtractedValue
+    ) public virtual returns (bool) {
         address owner = _msgSender();
         uint256 currentAllowance = ERC20Storage.layout()._allowances[owner][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
@@ -209,7 +217,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     }
 
     /**
-       * @dev Transfers `amount` tokens of token type `id` from `from` to `to`.
+     * @dev Transfers `amount` tokens of token type `id` from `from` to `to`.
      *
      * Emits a {TransferSingle} event.
      *
@@ -268,11 +276,7 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         return true;
     }
 
-    function _approve(
-        address owner,
-        address spender,
-        uint256 amount
-    ) internal virtual {
+    function _approve(address owner, address spender, uint256 amount) internal virtual {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
@@ -281,18 +285,14 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     }
 
     /**
- * @dev Updates `owner` s allowance for `spender` based on spent `amount`.
+     * @dev Updates `owner` s allowance for `spender` based on spent `amount`.
      *
      * Does not update the allowance amount in case of infinite allowance.
      * Revert if not enough allowance is available.
      *
      * Might emit an {Approval} event.
      */
-    function _spendAllowance(
-        address owner,
-        address spender,
-        uint256 amount
-    ) internal virtual {
+    function _spendAllowance(address owner, address spender, uint256 amount) internal virtual {
         uint256 currentAllowance = allowance(owner, spender);
         if (currentAllowance != type(uint256).max) {
             require(currentAllowance >= amount, "ERC20: insufficient allowance");
@@ -301,6 +301,4 @@ contract PolyGNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
             }
         }
     }
-
 }
-

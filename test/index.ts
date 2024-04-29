@@ -40,7 +40,9 @@ import { debug } from 'debug';
 import * as NFTCreateTests from '../test/NFTCreateTests';
 import * as GNUSERC20Tests from '../test/GNUSERC20Tests';
 import * as ERC20BatchTests from '../test/Erc20BatchTests';
-import * as ZetherTests from '../test/ZetherTests';
+import * as GNUSBridgeTests from '../test/GNUSBridgeTests';
+
+import { updateOwnerForTest } from './utils/signer';
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
 
@@ -84,7 +86,9 @@ describe.only('Genius Diamond DApp Testing', async function () {
       };
     }
     networkDeployedInfo = deployments[networkName];
-
+    if (networkDeployedInfo.DiamondAddress) {
+      await updateOwnerForTest(networkDeployedInfo.DiamondAddress);
+    }
     await deployGNUSDiamond(networkDeployedInfo);
 
     gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
@@ -103,7 +107,6 @@ describe.only('Genius Diamond DApp Testing', async function () {
       "Doesn't support IERC1155Upgradeable",
     );
 
-    await deployExternalLibraries(networkDeployedInfo);
     const deployInfoBeforeUpgraded: INetworkDeployInfo = JSON.parse(
       JSON.stringify(networkDeployedInfo),
     );
@@ -138,7 +141,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
     const addresses: any[] = [];
 
     it('should have same count of facets -- call to facetAddresses function', async () => {
-      const facetAddresses = await await gnusDiamond.facetAddresses();
+      const facetAddresses = await gnusDiamond.facetAddresses();
       for (const facetAddress of facetAddresses) {
         addresses.push(facetAddress);
       }
@@ -163,6 +166,18 @@ describe.only('Genius Diamond DApp Testing', async function () {
         selectors.values.filter((e) => !result.includes(e)),
       );
     });
+
+    it('protocol version should be same after upgrading', async () => {
+      const { bridgeFee, protocolVersion } = await gnusDiamond.protocolInfo();
+      expect(bridgeFee).to.be.eq(0);
+      expect(protocolVersion).to.be.eq(BigInt(220));
+    });
+
+    it('can not recall init function after upgrading', async () => {
+      await expect(gnusDiamond.GNUSBridge_Initialize220()).to.be.rejectedWith(
+        'constract was initialized: 2.2',
+      );
+    });
   });
 
   describe('Polygon to GNUS Deposits', async function () {
@@ -175,30 +190,9 @@ describe.only('Genius Diamond DApp Testing', async function () {
       const [owner, addr1, addr2] = await ethers.getSigners();
 
       const gnusSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
-      assert(gnusSupply.eq(0), `GNUS Supply should equal zero but equals${gnusSupply}`);
-
-      let tx = await gnusDiamond['deposit(address,uint256)'](owner.address, toWei(2000));
-      logEvents(tx);
-
-      const addr1_gnusDiamond = gnusDiamond.connect(addr1);
-      await expect(
-        addr1_gnusDiamond['deposit(address,uint256)'](addr1.address, toBN(20)),
-      ).to.eventually.be.rejectedWith(
-        Error,
-        /reverted with reason string 'AccessControl: account/,
-      );
-
-      await gnusDiamond.grantRole(await gnusDiamond.PROXY_ROLE(), addr1.address);
-
-      tx = await addr1_gnusDiamond['deposit(address,uint256)'](addr1.address, toWei(2000));
-      logEvents(tx);
-    });
-
-    it('Testing if GNUS token received deposit', async () => {
-      const gnusSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
       assert(
-        gnusSupply.eq(toWei(4000)),
-        `GNUS Supply should be 4000, but is ${ethers.utils.formatEther(gnusSupply)}`,
+        gnusSupply.eq(toWei(900_000)),
+        `GNUS Supply should equal zero but equals${gnusSupply}`,
       );
     });
 
@@ -206,7 +200,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
       GNUSERC20Tests.suite();
       NFTCreateTests.suite();
       ERC20BatchTests.suite();
-      // ZetherTests.suite();
+      GNUSBridgeTests.suite();
     });
   });
 });

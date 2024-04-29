@@ -3,6 +3,8 @@ pragma solidity ^0.8.2;
 
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC20/ERC20Upgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
+import "@axelar-network/interchain-token-service/contracts/interfaces/ITokenManager.sol";
+import "@axelar-network/interchain-token-service/contracts/interfaces/IInterchainTokenService.sol";
 
 contract MockERC20Upgradeable is Initializable, ERC20Upgradeable {
     function __MockERC20_init(

@@ -5,7 +5,7 @@
 // Runtime Environment's members available in the global scope.
 import { debug } from 'debug';
 import { BaseContract } from 'ethers';
-import hre, { ethers } from 'hardhat';
+import hre, { ethers, network } from 'hardhat';
 import { AdminClient } from '@openzeppelin/defender-admin-client';
 import { Network } from '@openzeppelin/defender-base-client';
 import {
@@ -19,17 +19,18 @@ import {
   FacetToDeployInfo,
   AfterDeployInit,
   writeDeployedInfo,
+  diamondCutFuncAbi,
 } from '../scripts/common';
 import { DiamondCutFacet } from '../typechain-types/DiamondCutFacet';
 import { IDiamondCut } from '../typechain-types/IDiamondCut';
 import { deployments } from '../scripts/deployments';
-import { Facets, LoadFacetDeployments } from '../scripts/facets';
+import { Facets, LoadFacetDeployments, UpgradeInits } from '../scripts/facets';
 import * as util from 'util';
 
 const log: debug.Debugger = debug('GNUSDeploy:log');
 log.color = '159';
 
-const GAS_LIMIT_PER_FACET = 60000;
+const GAS_LIMIT_PER_FACET = 20000;
 const GAS_LIMIT_CUT_BASE = 70000;
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
@@ -99,13 +100,38 @@ export async function deployFuncSelectors(
 ) {
   const cut: FacetInfo[] = [];
   const deployedFacets = networkDeployInfo.FacetDeployedInfo;
-  const deployedFuncSelectors = await getDeployedFuncSelectors(oldNetworkDeployInfo || networkDeployInfo);
+  const deployedFuncSelectors = await getDeployedFuncSelectors(
+    oldNetworkDeployInfo || networkDeployInfo,
+  );
   const registeredFunctionSignatures = new Set<string>();
 
   const facetsPriority = Object.keys(facetsToDeploy).sort(
     (a, b) => facetsToDeploy[a].priority - facetsToDeploy[b].priority,
   );
   let protocolUpgradeVersion = 0;
+  const selectorsToBeRemoved: string[] = [];
+  const facetNamesToBeRemoved: string[] = [];
+  // delete old facets not included in deploy list and remove all deleted all functions
+  for (const facetName of Object.keys(deployedFacets)) {
+    if (!Object.keys(facetsToDeploy).includes(facetName)) {
+      // should delete functions exist in diamond
+      selectorsToBeRemoved.push(
+        ...deployedFacets[facetName].funcSelectors?.filter((e) =>
+          Object.keys(deployedFuncSelectors?.facets).includes(e),
+        ),
+      );
+      facetNamesToBeRemoved.push(facetName);
+      delete deployedFacets[facetName];
+    }
+  }
+  if (selectorsToBeRemoved.length > 0)
+    cut.push({
+      facetAddress: ethers.constants.AddressZero,
+      action: FacetCutAction.Remove,
+      functionSelectors: selectorsToBeRemoved,
+      name: facetNamesToBeRemoved.join(','),
+    });
+
   for (const name of facetsPriority) {
     const facetDeployVersionInfo = facetsToDeploy[name];
     let facetVersions = ['0.0'];
@@ -225,17 +251,19 @@ export async function deployFuncSelectors(
   }
 
   // upgrade diamond with facets
-  log('');
-  log('Diamond Cut:', cut);
   const diamondCut = dc.GeniusDiamond as IDiamondCut;
-  if (process.env.DEFENDER_DEPLOY_ON) {
+  if (process.env.DEFENDER_DEPLOY_ON && network.name !== 'hardhat') {
     log('Deploying contract on defender');
     client = new AdminClient({
       apiKey: process.env.DEFENDER_API_KEY || '',
       apiSecret: process.env.DEFENDER_API_SECRET || '',
     });
     const listedContracts = await client.listContracts();
-    if (listedContracts.find((e) => e.address === diamondCut.address)) {
+    if (
+      listedContracts.find(
+        (e) => e.address.toLowerCase() === diamondCut.address.toLowerCase(),
+      )
+    ) {
       log('Diamond Contract was listed on defender');
     } else {
       const res = await client.addContract({
@@ -272,98 +300,87 @@ export async function deployFuncSelectors(
     }
     upgradeCut.push(facetCutInfo);
   }
-  for (const facetCutInfo of upgradeCut) {
-    const contract = dc[facetCutInfo.name]!;
-    let functionCall;
-    let initAddress;
-    if (facetCutInfo.initFunc) {
-      functionCall = contract.interface.encodeFunctionData(facetCutInfo.initFunc!);
-      initAddress = facetCutInfo.facetAddress;
-      log(`Calling Function ${facetCutInfo.initFunc}`);
-    } else {
-      functionCall = [];
-      initAddress = ethers.constants.AddressZero;
-    }
-    log('Cutting: ', facetCutInfo);
-    try {
-      if (process.env.DEFENDER_DEPLOY_ON) {
-        const diamondCutFuncAbi = {
-          inputs: [
-            {
-              components: [
-                {
-                  name: 'facetAddress',
-                  type: 'address',
-                },
-                {
-                  name: 'action',
-                  type: 'uint8',
-                },
-                {
-                  name: 'functionSelectors',
-                  type: 'bytes4[]',
-                },
-              ],
-              name: '_diamondCut',
-              type: 'tuple[]',
-            },
-            {
-              name: '_init',
-              type: 'address',
-            },
-            {
-              name: '_calldata',
-              type: 'bytes',
-            },
-          ],
-          name: 'diamondCut',
-        };
-        const response = await client.createProposal({
-          contract: { address: diamondCut.address, network: hre.network.name as Network }, // Target contract
-          title: 'Update facet ' + facetCutInfo.name, // Title of the proposal
-          description: `${
-            facetCutInfo.action === FacetCutAction.Add
-              ? 'Add'
-              : facetCutInfo.action === FacetCutAction.Remove
-              ? 'Remove'
-              : 'Replace'
-          } facet ${facetCutInfo.name} (v${
-            deployedFacets[facetCutInfo.name].version || 0
-          })`, // Description of the proposal
-          type: 'custom', // Use 'custom' for custom admin actions
-          functionInterface: diamondCutFuncAbi, // Function ABI
-          functionInputs: [
-            [
-              [
-                facetCutInfo.facetAddress,
-                facetCutInfo.action.toString(),
-                facetCutInfo.functionSelectors,
-              ],
-            ],
-            initAddress,
-            functionCall,
-          ], // Arguments to the function
-          via: process.env.DEFENDER_SIGNER,
-          viaType: 'Safe',
-        });
-        log(`created proposal on defender ${response.proposalId} `);
-      } else {
-        const tx = await diamondCut.diamondCut([facetCutInfo], initAddress, functionCall, {
-          gasLimit:
-            GAS_LIMIT_CUT_BASE +
-            facetCutInfo.functionSelectors.length * GAS_LIMIT_PER_FACET,
-        });
-        log(`Diamond cut: ${facetCutInfo.name} tx hash: ${tx.hash}`);
-        const receipt = await tx.wait();
-        if (!receipt.status) {
-          throw Error(`Diamond upgrade of ${facetCutInfo.name} failed: ${tx.hash}`);
-        }
-      }
-    } catch (e) {
-      log(`unable to cut facet: ${facetCutInfo.name}\n ${e}`);
-      continue;
-    }
 
+  log('');
+  log('Diamond Cut:', upgradeCut);
+
+  let functionCall: any = [];
+  let initAddress = ethers.constants.AddressZero;
+
+  if (UpgradeInits[protocolUpgradeVersion]) {
+    const upgradeInitInfo = UpgradeInits[protocolUpgradeVersion];
+    let initContract;
+    if (networkDeployInfo.FacetDeployedInfo[upgradeInitInfo.initContractName]?.address) {
+      initContract = await ethers.getContractAt(
+        upgradeInitInfo.initContractName,
+        networkDeployInfo.FacetDeployedInfo[upgradeInitInfo.initContractName].address,
+      );
+    } else {
+      const initContractFactory: any = await ethers.getContractFactory(
+        upgradeInitInfo.initContractName,
+      );
+      initContract = await initContractFactory.deploy();
+      await initContract.deployed();
+    }
+    if (!upgradeInitInfo.initArgs) {
+      functionCall = initContract.interface.encodeFunctionData(
+        upgradeInitInfo.initFuncName,
+      );
+    } else
+      functionCall = initContract.interface.encodeFunctionData(
+        upgradeInitInfo.initFuncName,
+        upgradeInitInfo.initArgs,
+      );
+    initAddress = initContract.address;
+    log(`Calling Function:`, upgradeInitInfo);
+  }
+
+  try {
+    let totalSelectors = 0;
+    upgradeCut.forEach((e) => {
+      totalSelectors += e.functionSelectors.length;
+    });
+    if (process.env.DEFENDER_DEPLOY_ON && network.name !== 'hardhat') {
+      const upgradeFunctionInputs:
+        | string
+        | boolean
+        | (string | boolean)[]
+        | (string | string[])[][] = [];
+      upgradeCut.forEach((e) =>
+        upgradeFunctionInputs.push([
+          e.facetAddress,
+          e.action.toString(),
+          e.functionSelectors,
+        ]),
+      );
+      const response = await client.createProposal({
+        contract: {
+          address: diamondCut.address,
+          network: hre.network.name == 'polygon' ? 'matic' : (hre.network.name as Network),
+        }, // Target contract
+        title: `Update facet ${protocolUpgradeVersion}`, // Title of the proposal
+        description: `Update facet`, // Description of the proposal
+        type: 'custom', // Use 'custom' for custom admin actions
+        functionInterface: diamondCutFuncAbi, // Function ABI
+        functionInputs: [upgradeFunctionInputs, initAddress, functionCall], // Arguments to the function
+        via: process.env.DEFENDER_SIGNER,
+        viaType: 'Safe',
+      });
+      log(`created proposal on defender ${response.proposalId} `);
+    } else {
+      const tx = await diamondCut.diamondCut(upgradeCut, initAddress, functionCall, {
+        gasLimit: GAS_LIMIT_CUT_BASE + totalSelectors * GAS_LIMIT_PER_FACET,
+      });
+      log(`Diamond cut: tx hash: ${tx.hash}`);
+      const receipt = await tx.wait();
+      if (!receipt.status) {
+        throw Error(`Diamond upgrade was failed: ${tx.hash}`);
+      }
+    }
+  } catch (e) {
+    log(`unable to cut facet: \n ${e}`);
+  }
+  for (const facetCutInfo of upgradeCut) {
     for (const facetModified of facetCutInfo.functionSelectors) {
       switch (facetCutInfo.action) {
         case FacetCutAction.Add:
@@ -478,7 +495,12 @@ export async function deployDiamondFacets(
     if (facetNeedsDeployment) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`);
       try {
-        facet = await FacetContract.deploy();
+        // Get current gas price from the network
+        const gasPrice = await ethers.provider.getGasPrice();
+        log(`Current gas pice: ${gasPrice.toString()}`);
+        facet = await FacetContract.deploy({
+          gasPrice: gasPrice.mul(110).div(100),
+        });
         await facet.deployed();
       } catch (e) {
         log(`Unable to deploy, continuing: ${e}`);

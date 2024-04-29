@@ -66,6 +66,16 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    hardhat: {
+      forking: process.env.FORK_URL
+        ? {
+            url: process.env.FORK_URL,
+            blockNumber: process.env.FORK_BLOCK_NUMBER
+              ? parseInt(process.env.FORK_BLOCK_NUMBER)
+              : undefined,
+          }
+        : undefined,
+    },
     mumbai: {
       url: 'https://matic-mumbai.chainstacklabs.com',
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
@@ -84,6 +94,16 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       timeout: 100000,
     },
+    arbitrum_sepolia: {
+      url: `https://arbitrum-sepolia.blockpi.network/v1/rpc/public`,
+      chainId: 421614,
+      accounts: [process.env.PRIVATE_KEY || ''],
+    },
+    base_sepolia: {
+      url: `https://sepolia.base.org`,
+      chainId: 84532,
+      accounts: [process.env.PRIVATE_KEY || ''],
+    },
     local: {
       url: `http://127.0.0.1:8545`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
@@ -92,10 +112,9 @@ const config: HardhatUserConfig = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    bsc_mainnet: {
+    bsc: {
       url: `https://bsc-dataseed.bnbchain.org/`,
       chainId: 56,
-      gasPrice: 3600000000,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     base: {
@@ -123,9 +142,28 @@ const config: HardhatUserConfig = {
       sepolia: process.env.ETHERSCAN_API_KEY || '',
       mainnet: process.env.ETHERSCAN_API_KEY || '',
       bsc: process.env.BSCSCAN_API_KEY || '',
+      arbitrum_sepolia: process.env.ARBITRUM_API_KEY || '',
+      base_sepolia: process.env.BASESCAN_API_KEY || '',
       base: process.env.BASESCAN_API_KEY || '',
     },
     customChains: [
+      // additional etherscan config
+      {
+        network: 'arbitrum_sepolia',
+        chainId: 421614,
+        urls: {
+          apiURL: 'https://api-sepolia.arbiscan.io/api',
+          browserURL: 'https://sepolia.arbiscan.io/',
+        },
+      },
+      {
+        network: 'base_sepolia',
+        chainId: 84532,
+        urls: {
+          apiURL: 'https://api-sepolia.basescan.org/api',
+          browserURL: 'https://sepolia.basescan.org/',
+        }
+      },
       {
         network: 'base',
         chainId: 8453,
