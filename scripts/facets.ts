@@ -20,7 +20,13 @@ export const Facets: FacetToDeployInfo = {
   GNUSControl: { priority: 100 },
 };
 
-export const UpgradeInits: UpgradeInitInfo = {};
+export const UpgradeInits: UpgradeInitInfo = {
+  2.2: {
+    initContractName: 'GNUSBridge',
+    initFuncName: 'GNUSBridge_Initialize220',
+    initArgs: [],
+  },
+};
 
 export async function LoadFacetDeployments() {
   const imports = glob.sync(`${__dirname}/facetdeployments/*.ts`);

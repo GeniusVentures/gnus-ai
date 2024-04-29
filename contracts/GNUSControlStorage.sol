@@ -10,6 +10,8 @@ library GNUSControlStorage {
         mapping(address => bool) gBannedTransferors;
         // percentage when mint
         uint256 bridgeFee;
+        // current protocol version
+        uint256 protocolVersion;
     }
 
     bytes32 constant GNUS_CONTROL_STORAGE_POSITION = keccak256("gnus.ai.control.storage");

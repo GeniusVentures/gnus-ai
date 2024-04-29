@@ -21,11 +21,11 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
     uint8 public constant decimals = 18;
     uint256 private constant FEE_DOMINATOR = 1000;
 
-    // no initialization function as it is already done by GNUSNFTFactory
-    function GNUSBridge_Initialize() external initializer onlySuperAdminRole {
-        _grantRole(MINTER_ROLE, _msgSender());
-        InitializableStorage.layout()._initialized = false;
-        LibDiamond.diamondStorage().supportedInterfaces[type(IERC20Upgradeable).interfaceId] = true;
+    function GNUSBridge_Initialize220() external onlySuperAdminRole {
+        if (GNUSControlStorage.layout().protocolVersion < 220) {
+            _grantRole(MINTER_ROLE, _msgSender());
+            GNUSControlStorage.layout().protocolVersion = 220;
+        }
     }
 
     // The following functions are overrides required by Solidity.
