@@ -162,7 +162,7 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-sepolia.basescan.org/api',
           browserURL: 'https://sepolia.basescan.org/',
-        }
+        },
       },
       {
         network: 'base',
@@ -182,7 +182,16 @@ const config: HardhatUserConfig = {
   diamondAbi: {
     name: 'GeniusDiamond',
     strict: false,
-    exclude: ['hardhat-diamond-abi/.*'],
+    exclude: [
+      'hardhat-diamond-abi/.*',
+      'Zether',
+      'BurnVerifier',
+      'InnerVerifier',
+      'ZetherVerifier',
+      'Migrations',
+      'libEncryption',
+      'contracts/mocks/.*',
+    ],
     filter: filterDuplicateFunctions,
   },
 };
