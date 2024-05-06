@@ -30,6 +30,7 @@ import * as util from 'util';
 const log: debug.Debugger = debug('GNUSDeploy:log');
 log.color = '159';
 
+
 const GAS_LIMIT_PER_FACET = 20000;
 const GAS_LIMIT_CUT_BASE = 70000;
 
@@ -171,7 +172,6 @@ export async function deployFuncSelectors(
     if (removedSelectors.length) {
       log(`${name} removed ${removedSelectors.length} selectors: [${removedSelectors}]`);
     }
-
     let numFuncSelectorsCut = 0;
     // remove any function selectors from this facet that were previously deployed but no longer exist
     const deployedContractFacetsSelectors = deployedFuncSelectors.contractFacets[name];
