@@ -104,3 +104,35 @@ export function writeDeployedInfo(deployments: { [key: string]: INetworkDeployIn
 export type DeployedContracts = Record<string, BaseContract>;
 
 export const dc: DeployedContracts = {};
+
+export const diamondCutFuncAbi = {
+  inputs: [
+    {
+      components: [
+        {
+          name: 'facetAddress',
+          type: 'address',
+        },
+        {
+          name: 'action',
+          type: 'uint8',
+        },
+        {
+          name: 'functionSelectors',
+          type: 'bytes4[]',
+        },
+      ],
+      name: '_diamondCut',
+      type: 'tuple[]',
+    },
+    {
+      name: '_init',
+      type: 'address',
+    },
+    {
+      name: '_calldata',
+      type: 'bytes',
+    },
+  ],
+  name: 'diamondCut',
+};
