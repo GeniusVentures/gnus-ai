@@ -18,6 +18,7 @@ export const Facets: FacetToDeployInfo = {
   GNUSNFTCollectionName: { priority: 80 },
   ERC20TransferBatch: { priority: 90, versions: { 2.0: {} } },
   GNUSControl: { priority: 100 },
+  ContractAssets: { priority: 100 },
 };
 
 export const UpgradeInits: UpgradeInitInfo = {
