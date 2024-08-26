@@ -14,7 +14,7 @@
   "author": "gvtopcoder",
   "license": "MIT",
   "devDependencies": {
-    "@gnus.ai/contracts-upgradeable-diamond": "^4.5.0",
+    "@gnus.ai/contracts-upgradeable-diamond": "=4.5.0",
     "@gnus.ai/zk-utils": "github:GeniusVentures/zk-utils",
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
