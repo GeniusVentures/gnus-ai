@@ -24,7 +24,7 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
     function GNUSBridge_Initialize220() external onlySuperAdminRole {
         require(
             GNUSControlStorage.layout().protocolVersion < 220,
-            "constract was initialized: 2.2"
+            "constructor was initialized: 2.2"
         );
         _grantRole(MINTER_ROLE, _msgSender());
         GNUSControlStorage.layout().protocolVersion = 220;
@@ -301,4 +301,5 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
             }
         }
     }
+
 }
