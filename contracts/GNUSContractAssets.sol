@@ -2,15 +2,13 @@
 pragma solidity ^0.8.2;
 
 import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
-import "@gnus.ai/contracts-upgradeable-diamond/token/ERC20/IERC20Upgradeable.sol";
 import "@gnus.ai/contracts-upgradeable-diamond/token/ERC20/ERC20Storage.sol";
 import "./GeniusAccessControl.sol";
 import "./GNUSConstants.sol";
-import "./GNUSControlStorage.sol";
-import "./GNUSConstants.sol";
+import "./libraries/TransferHelper.sol";
 
 /// @custom:security-contact support@gnus.ai
-contract GNUSContractAssets is Initializable, GeniusAccessControl, IERC20Upgradeable {
+contract GNUSContractAssets is Initializable, GeniusAccessControl {
 
     event WithdrawToken(address indexed token, address to, uint256 amount);
     error ErrorWithdrawingEther();
@@ -28,7 +26,7 @@ contract GNUSContractAssets is Initializable, GeniusAccessControl, IERC20Upgrade
             if (!success)
                 revert ErrorWithdrawingEther();
         } else {
-            IERC20Upgradeable(token).safeTransfer(to, amount);
+            TransferHelper.safeTransfer(token, to, amount);
         }
         emit WithdrawToken(token, msg.sender, amount);
     }

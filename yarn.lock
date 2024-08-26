@@ -759,10 +759,10 @@
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.1.tgz#b9da6a878a371829a0502c9b6c1c143ef6663f4d"
   integrity sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==
 
-"@gnus.ai/contracts-upgradeable-diamond@^4.5.0":
-  version "4.9.1"
-  resolved "https://registry.yarnpkg.com/@gnus.ai/contracts-upgradeable-diamond/-/contracts-upgradeable-diamond-4.9.1.tgz#49998c9d08701d4616a197828333838b7fb3a0f6"
-  integrity sha512-d8NH2bCl2QBimDu3BubJ3dAETZzu1LNcn0l8H49OJekhp4AE/EfhRpMLZBOnlYTeP66A7inaOnybSuUQKdk/Kg==
+"@gnus.ai/contracts-upgradeable-diamond@=4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@gnus.ai/contracts-upgradeable-diamond/-/contracts-upgradeable-diamond-4.5.0.tgz#64fc64d88a3594ee02a36027c6fe942989084651"
+  integrity sha512-HZm+pnmgNEPkXubfz5y4Gz9dJnxA+ztRDgMNdZ8fBcXYnQuO9eZqzePhHh6fleEIX2DJIBF6qEyxA1Ysq+87zQ==
 
 "@gnus.ai/zk-utils@github:GeniusVentures/zk-utils":
   version "0.1.0"
