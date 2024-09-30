@@ -22,10 +22,7 @@ export const Facets: FacetToDeployInfo = {
 };
 
 export const UpgradeInits: UpgradeInitInfo = {
-  2.2: {
-    initContractName: 'GNUSBridge',
-    initFuncName: 'GNUSBridge_Initialize220',
-    initArgs: [],
+  2.3: {
   },
 };
 

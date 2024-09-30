@@ -354,7 +354,7 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       }
     }
-  },  
+  },
   goerli: {
     DiamondAddress: '0xb42cC2B7C89b027362CaD03819366BA8739B04db',
     DeployerAddress: '0xc47E91E0672be2689b30aF2fCFAfd5f83238099b',
@@ -746,6 +746,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x93420cf4',
           '0x5a1c0366'
         ],
+        verified: true
+      },
+      GNUSContractAssets: {
+        address: '0xBB25CA9742c98Fd2F647dc5878B362164a918051',
+        tx_hash: '0x6d95cc43ee8a626b9eea547124a9a607a5e82b9e3de8f2a1107ecc0508e8ab42',
+        version: 0,
+        funcSelectors: [ '0x01e33667' ],
         verified: true
       }
     },

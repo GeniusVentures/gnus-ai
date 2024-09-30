@@ -8,7 +8,7 @@ typechain
 cache
 artifacts
 
-.idea/workspace.xml
+.idea
 
 typechain-types
 fast.test.ts
