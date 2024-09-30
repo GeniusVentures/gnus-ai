@@ -74,9 +74,9 @@ export interface IFacetToDeployInfo {
   libraries?: string[];
 }
 export interface IUpgradeInit {
-  initContractName: string;
-  initFuncName: string;
-  initArgs: any;
+  initContractName?: string;
+  initFuncName?: string;
+  initArgs?: any;
 }
 export type UpgradeInitInfo = Record<string, IUpgradeInit>;
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;
