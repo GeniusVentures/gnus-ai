@@ -76,21 +76,14 @@ const config: HardhatUserConfig = {
           }
         : undefined,
     },
-    mumbai: {
-      url: 'https://matic-mumbai.chainstacklabs.com',
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
     polygon: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       chainId: 137,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    goerli: {
-      url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
     sepolia: {
-      url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://nd-964-217-560.p2pify.com/${process.env.CHAINSTACK_ETH_TEST_API_KEY}`,
+      chainId: 11155111,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       timeout: 100000,
     },
@@ -100,9 +93,19 @@ const config: HardhatUserConfig = {
       accounts: [process.env.PRIVATE_KEY || ''],
     },
     base_sepolia: {
-      url: `https://sepolia.base.org`,
+      url: `https://base-sepolia.core.chainstack.com/${process.env.CHAINSTACK_BASE_TEST_API_KEY}`,
       chainId: 84532,
-      accounts: [process.env.PRIVATE_KEY || ''],
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    bsc_testnet: {
+      url: `https://bsc-testnet.core.chainstack.com/${process.env.CHAINSTACK_BSC_TEST_API_KEY}`,
+      chainId: 97,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    polygon_amoy: {
+      url: `https://polygon-amoy.core.chainstack.com/${process.env.CHAINSTACK_POLY_TEST_API_KEY}`,
+      chainId: 80002,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     local: {
       url: `http://127.0.0.1:8545`,
