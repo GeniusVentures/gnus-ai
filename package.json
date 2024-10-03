@@ -9,7 +9,8 @@
     "upgrade": "npx hardhat run scripts/upgrade.ts",
     "deploy": "npx hardhat run scripts/deploy.ts",
     "verify": "npx hardhat run scripts/VerifyContracts.ts",
-    "exec": "cd zokrates; npm exec ts-node build.ts"
+    "exec": "cd zokrates; npm exec ts-node build.ts",
+    "getgascost": "npx hardhat run scripts/getgascost.ts"
   },
   "author": "gvtopcoder",
   "license": "MIT",

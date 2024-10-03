@@ -910,19 +910,20 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x948423D1292F693BA0Aa8E394743099765e50b7A',
         tx_hash: '0xfdfd38f4c0e5ad761b4854ed7c0923b8881689c5518b294326472cc16e59f7dd',
         version: 0,
+        verified: true,
         funcSelectors: [
           '0xcdffacc6',
           '0x52ef6b2c',
           '0xadfca15e',
           '0x7a0ed627',
           '0x01ffc9a7'
-        ],
-        verified: true
+        ]
       },
       GeniusOwnershipFacet: {
         address: '0x55206d3647c045fA28B14C2E1713a8E8a0F465Ff',
         tx_hash: '0x3f68bcce423e3b4c6ceaedf459df4e8bdfb973b3289d27cc452f007305fcaee2',
         version: 0,
+        verified: true,
         funcSelectors: [
           '0xa217fddf', '0xf72c0d8b',
           '0x248a9ca3', '0x9010d07c',
@@ -930,20 +931,20 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x91d14854', '0x8da5cb5b',
           '0x36568abe', '0xd547741f',
           '0xf2fde38b'
-        ],
-        verified: true
+        ]
       },
       ERC1155ProxyOperator: {
         address: '0x3ef701015A79Bdf7e101342d5E2a9e430cCF98Be',
         tx_hash: '0xb56fe529ab660b5ff023bed159d5c0e22c58f7af35adefe3b923ee7ab3847325',
         version: 0,
-        funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ],
-        verified: true
+        verified: true,
+        funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ]
       },
       GNUSNFTFactory: {
         address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
         tx_hash: '0xb24dab0d4293cefa512192e2d2737f784a6030fde4ebec100e6ac98d6d93fc40',
         version: 2,
+        verified: true,
         funcSelectors: [
           '0x8aeda25a', '0x101521f8',
           '0x00fdd58e', '0x4e1273f4',
@@ -956,13 +957,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0xa22cb465', '0x02fe5305',
           '0x862440e2', '0x3f4ba83a',
           '0x0e89341c'
-        ],
-        verified: true
+        ]
       },
       GNUSBridge: {
         address: '0xeC764eB165e04efE5C6A01b41805673714F930Ae',
         tx_hash: '0x143b49e11e582a3f674cd0111b6b4558228fe06f6f1d2510a3d3fbf66b7191fe',
         version: 2.2,
+        verified: true,
         funcSelectors: [
           '0x179a4a53', '0xd5391393',
           '0xdd62ed3e', '0x095ea7b3',
@@ -972,13 +973,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x06fdde03', '0x95d89b41',
           '0x18160ddd', '0xa9059cbb',
           '0x23b872dd', '0x441a3e70'
-        ],
-        verified: true
+        ]
       },
       EscrowAIJob: {
         address: '0x182b78dDfd52199ec6582EbD2987E0aBe1C1bDF7',
         tx_hash: '0xc692a48f725b7289750083dca9e440c511092f3e7eee38b225c55d11391b5be9',
         version: 0,
+        verified: true,
         funcSelectors: [
           '0x0dbc00c7',
           '0xf340fa01',
@@ -987,19 +988,18 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x715018a6',
           '0x51cff8d9',
           '0x685ca194'
-        ],
-        verified: true
+        ]
       },
       GeniusAI: {
         address: '0xa7A35Bf2035C35be384532D897C7E8Daf6692F12',
         tx_hash: '0xbe7609e9f8048e10798e6653f2715f895a9939500976a3a97aa5fbab159db78a',
         version: 0,
-        funcSelectors: [ '0x6ea9fd36', '0x31d6388d' ],
-        verified: true
+        verified: true,
+        funcSelectors: [ '0x6ea9fd36', '0x31d6388d' ]
       },
       GNUSNFTCollectionName: {
-        address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
-        tx_hash: '0xdee570d7a5252b9c050eed93048eed41834342d623512aea1806e43457ea1c20',
+        address: '0x478CC1529358b0cFcB4185E8D963B52468e406e3',
+        tx_hash: '0x946a7c6ae7b78f84d3faaf8325bfa542d627ed4fa285e0a0ea57cafc41b065c2',
         version: -1,
         verified: true
       },
@@ -1007,13 +1007,14 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x29Df5345Eb5404EeBEBAD6125C7E43e0baCb816f',
         tx_hash: '0x9e577141c96500db2df5590a33cd67d85fe69f5c8e2ae426181e459ba191b588',
         version: 2,
-        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
-        verified: true
+        verified: true,
+        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ]
       },
       GNUSControl: {
         address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
         tx_hash: '0xbefe438bc6d6adf235947e0f03694d1934ad10ca6cec50e9edf413da4ae5a0c8',
         version: 0,
+        verified: true,
         funcSelectors: [
           '0x9e8e7134',
           '0x9ceb1593',
@@ -1021,15 +1022,14 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x1307a4be',
           '0x93420cf4',
           '0x5a1c0366'
-        ],
-        verified: true
+        ]
       },
       GNUSContractAssets: {
         address: '0x7a37ef45DfeBC2204991DAB26bDe8C8cbCB17ca9',
         tx_hash: '0x5a02cea3b2e71bf045037b1954292cb61383a60d5901da1f7e7c3e4a0684a62d',
         version: 0,
-        funcSelectors: [ '0x01e33667' ],
-        verified: true
+        verified: true,
+        funcSelectors: [ '0x01e33667' ]
       }
     }
   },
@@ -1156,6 +1156,420 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         tx_hash: '0x68f5aa02431ce41c1f4d8e2a725fe1b5259ecd9506515752f8a995d1966bb850',
         version: 0,
         funcSelectors: [ '0x01e33667' ]
+      }
+    }
+  },
+  base_sepolia: {
+    DiamondAddress: '0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB',
+    DeployerAddress: '0x910bAa33DeB0D614Aa9d80e38b7f0BF87549c2fC',
+    FacetDeployedInfo: {
+      DiamondCutFacet: {
+        address: '0x5e5443C23Fa2B5A69F6B1A174A2D9E67AbA2117a',
+        tx_hash: '0x18c1dfef794115a4a94d75f1c6883b157b52b50bf845585f282387229b7212f9',
+        version: 0,
+        funcSelectors: [ '0x1f931c1c' ],
+        verified: true
+      },
+      DiamondLoupeFacet: {
+        address: '0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70',
+        tx_hash: '0xb888fe7231524d50ba17c0d606c861e8cb7ceeee0949f4fceb7fdd14c04777f5',
+        version: 0,
+        funcSelectors: [
+          '0xcdffacc6',
+          '0x52ef6b2c',
+          '0xadfca15e',
+          '0x7a0ed627',
+          '0x01ffc9a7'
+        ],
+        verified: true
+      },
+      GeniusOwnershipFacet: {
+        address: '0x948423D1292F693BA0Aa8E394743099765e50b7A',
+        tx_hash: '0x928f74cecf81174b774791e54a047140e83bde6511c9d90648f9c382ebf97bd8',
+        version: 0,
+        funcSelectors: [
+          '0xa217fddf', '0xf72c0d8b',
+          '0x248a9ca3', '0x9010d07c',
+          '0xca15c873', '0x2f2ff15d',
+          '0x91d14854', '0x8da5cb5b',
+          '0x36568abe', '0xd547741f',
+          '0xf2fde38b'
+        ],
+        verified: true
+      },
+      ERC1155ProxyOperator: {
+        address: '0x55206d3647c045fA28B14C2E1713a8E8a0F465Ff',
+        tx_hash: '0x4e21c388cc295bc9c3c1596495491d61c578dad2d908e2f737995b14fecfba75',
+        version: 0,
+        funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ],
+        verified: true
+      },
+      GNUSNFTFactory: {
+        address: '0x3ef701015A79Bdf7e101342d5E2a9e430cCF98Be',
+        tx_hash: '0x91af2f0f631ccd50599959d6abe92770b2b0e14201345713c88053263c606ed8',
+        version: 2,
+        funcSelectors: [
+          '0x8aeda25a', '0x101521f8',
+          '0x00fdd58e', '0x4e1273f4',
+          '0xf5298aca', '0x6b20c454',
+          '0xf667ab7c', '0x1a9d2360',
+          '0x4f558e79', '0xd188929f',
+          '0x731133e9', '0x1f7fdffa',
+          '0x8456cb59', '0x5c975abb',
+          '0x2eb2c2d6', '0xf242432a',
+          '0xa22cb465', '0x02fe5305',
+          '0x862440e2', '0x3f4ba83a',
+          '0x0e89341c'
+        ],
+        verified: true
+      },
+      GNUSBridge: {
+        address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
+        tx_hash: '0x65b4ccb47a69969055d4ecae02adbdbc1a9933ce6d8feb18128e8766d878a288',
+        version: 2.2,
+        funcSelectors: [
+          '0x179a4a53', '0xd5391393',
+          '0xdd62ed3e', '0x095ea7b3',
+          '0x70a08231', '0x9dc29fac',
+          '0x313ce567', '0xa457c2d7',
+          '0x39509351', '0x40c10f19',
+          '0x06fdde03', '0x95d89b41',
+          '0x18160ddd', '0xa9059cbb',
+          '0x23b872dd', '0x441a3e70'
+        ],
+        verified: true
+      },
+      EscrowAIJob: {
+        address: '0xeC764eB165e04efE5C6A01b41805673714F930Ae',
+        tx_hash: '0x0e3038547660196b4880b226a8b28279d33812e0983905135c84a60305935d03',
+        version: 0,
+        funcSelectors: [
+          '0x0dbc00c7',
+          '0xf340fa01',
+          '0xe3a9db1a',
+          '0x8129fc1c',
+          '0x715018a6',
+          '0x51cff8d9',
+          '0x685ca194'
+        ],
+        verified: true
+      },
+      GeniusAI: {
+        address: '0x182b78dDfd52199ec6582EbD2987E0aBe1C1bDF7',
+        tx_hash: '0x44d98fd2f819e1100ebcec493aac763c30a33f587f6c889718591b932ae38b46',
+        version: 0,
+        funcSelectors: [ '0x6ea9fd36', '0x31d6388d' ],
+        verified: true
+      },
+      GNUSNFTCollectionName: {
+        address: '0xa7A35Bf2035C35be384532D897C7E8Daf6692F12',
+        tx_hash: '0x43c5a065d5988e560bf1b0f3adb6b86c74022087207ec90425252807e5213b29',
+        version: -1,
+        verified: true
+      },
+      ERC20TransferBatch: {
+        address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
+        tx_hash: '0xfce21bc0fd5f9ec7faed6170e4da1f3b5388a5f8bfeca502124e2a67df1254c7',
+        version: 2,
+        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
+        verified: true
+      },
+      GNUSControl: {
+        address: '0x29Df5345Eb5404EeBEBAD6125C7E43e0baCb816f',
+        tx_hash: '0xf9f60adae64a8c9bdf4c562bcc7e48c162bdde60d58344db48c95595f4b76f05',
+        version: 0,
+        funcSelectors: [
+          '0x9e8e7134',
+          '0x9ceb1593',
+          '0x19a8b28a',
+          '0x1307a4be',
+          '0x93420cf4',
+          '0x5a1c0366'
+        ],
+        verified: true
+      },
+      GNUSContractAssets: {
+        address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
+        tx_hash: '0xa517d1e82264d949c23b84b92b99c74b39863a59d82117b4292954a7357ddd60',
+        version: 0,
+        funcSelectors: [ '0x01e33667' ],
+        verified: true
+      }
+    }
+  },
+  bsc_testnet: {
+    DiamondAddress: '0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB',
+    DeployerAddress: '0x910bAa33DeB0D614Aa9d80e38b7f0BF87549c2fC',
+    FacetDeployedInfo: {
+      DiamondCutFacet: {
+        address: '0x5e5443C23Fa2B5A69F6B1A174A2D9E67AbA2117a',
+        tx_hash: '0x1a64f3502f221bdb3453e07cdeeaa00037b8853937d1d9a70d631c1c270815b8',
+        version: 0,
+        funcSelectors: [ '0x1f931c1c' ],
+        verified: true
+      },
+      DiamondLoupeFacet: {
+        address: '0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70',
+        tx_hash: '0x88f6d18d7463db121c6924deb7583d60d8557e2bd04c290b168728e23f36c231',
+        version: 0,
+        funcSelectors: [
+          '0xcdffacc6',
+          '0x52ef6b2c',
+          '0xadfca15e',
+          '0x7a0ed627',
+          '0x01ffc9a7'
+        ],
+        verified: true
+      },
+      GeniusOwnershipFacet: {
+        address: '0x948423D1292F693BA0Aa8E394743099765e50b7A',
+        tx_hash: '0xe5d78353c9659ad08402155ce50c70cc807f78ef3c11b2f213129f9aed7b1249',
+        version: 0,
+        funcSelectors: [
+          '0xa217fddf', '0xf72c0d8b',
+          '0x248a9ca3', '0x9010d07c',
+          '0xca15c873', '0x2f2ff15d',
+          '0x91d14854', '0x8da5cb5b',
+          '0x36568abe', '0xd547741f',
+          '0xf2fde38b'
+        ],
+        verified: true
+      },
+      ERC1155ProxyOperator: {
+        address: '0x55206d3647c045fA28B14C2E1713a8E8a0F465Ff',
+        tx_hash: '0xa36804fbdd23cd988572722da585adf2826c3a4865cfd33fa4aac184d76bdbbd',
+        version: 0,
+        funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ],
+        verified: true
+      },
+      GNUSNFTFactory: {
+        address: '0x3ef701015A79Bdf7e101342d5E2a9e430cCF98Be',
+        tx_hash: '0x9011d49a9f5c832ac1605dc6b1b8cad6628583996de0237b87ac8db1a8e751a1',
+        version: 2,
+        funcSelectors: [
+          '0x8aeda25a', '0x101521f8',
+          '0x00fdd58e', '0x4e1273f4',
+          '0xf5298aca', '0x6b20c454',
+          '0xf667ab7c', '0x1a9d2360',
+          '0x4f558e79', '0xd188929f',
+          '0x731133e9', '0x1f7fdffa',
+          '0x8456cb59', '0x5c975abb',
+          '0x2eb2c2d6', '0xf242432a',
+          '0xa22cb465', '0x02fe5305',
+          '0x862440e2', '0x3f4ba83a',
+          '0x0e89341c'
+        ],
+        verified: true
+      },
+      GNUSBridge: {
+        address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
+        tx_hash: '0x5a93c8b94a89a4e49b61fa384568438f1e9c0d80eaf5ca65ca72ab12581488f2',
+        version: 2.2,
+        funcSelectors: [
+          '0x179a4a53', '0xd5391393',
+          '0xdd62ed3e', '0x095ea7b3',
+          '0x70a08231', '0x9dc29fac',
+          '0x313ce567', '0xa457c2d7',
+          '0x39509351', '0x40c10f19',
+          '0x06fdde03', '0x95d89b41',
+          '0x18160ddd', '0xa9059cbb',
+          '0x23b872dd', '0x441a3e70'
+        ],
+        verified: true
+      },
+      EscrowAIJob: {
+        address: '0xeC764eB165e04efE5C6A01b41805673714F930Ae',
+        tx_hash: '0x9f08e40ed16d191dd4359427af4012a8fb287e89d49f4d5df95fd0a1f7cf6909',
+        version: 0,
+        funcSelectors: [
+          '0x0dbc00c7',
+          '0xf340fa01',
+          '0xe3a9db1a',
+          '0x8129fc1c',
+          '0x715018a6',
+          '0x51cff8d9',
+          '0x685ca194'
+        ],
+        verified: true
+      },
+      GeniusAI: {
+        address: '0x182b78dDfd52199ec6582EbD2987E0aBe1C1bDF7',
+        tx_hash: '0x9a28b58541f01ea67e33d73c987c45799fc007c0de1ba38580ad28e915121e2b',
+        version: 0,
+        funcSelectors: [ '0x6ea9fd36', '0x31d6388d' ],
+        verified: true
+      },
+      GNUSNFTCollectionName: {
+        address: '0xa7A35Bf2035C35be384532D897C7E8Daf6692F12',
+        tx_hash: '0x0848baec26570a99a4301ca9a993523815cde99b8b58af621fc14474799edfec',
+        version: -1,
+        verified: true
+      },
+      ERC20TransferBatch: {
+        address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
+        tx_hash: '0xcdbe624ac32d466f7df1c31ee6129cc0e5803d22d8ea1312f6afa4d1387c55e5',
+        version: 2,
+        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
+        verified: true
+      },
+      GNUSControl: {
+        address: '0x29Df5345Eb5404EeBEBAD6125C7E43e0baCb816f',
+        tx_hash: '0xde3a42ebd8e7e2c78f7e01007df794c4cbfcb541178ec5dba14f11c3c6a1e9b2',
+        version: 0,
+        funcSelectors: [
+          '0x9e8e7134',
+          '0x9ceb1593',
+          '0x19a8b28a',
+          '0x1307a4be',
+          '0x93420cf4',
+          '0x5a1c0366'
+        ],
+        verified: true
+      },
+      GNUSContractAssets: {
+        address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
+        tx_hash: '0xd8158e797faa02d93cd2dfab449742c1e9eb3f7b4ec74748dd992f2bc922c354',
+        version: 0,
+        funcSelectors: [ '0x01e33667' ],
+        verified: true
+      }
+    }
+  },
+  polygon_amoy: {
+    DiamondAddress: '0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB',
+    DeployerAddress: '0x910bAa33DeB0D614Aa9d80e38b7f0BF87549c2fC',
+    FacetDeployedInfo: {
+      DiamondCutFacet: {
+        address: '0x5e5443C23Fa2B5A69F6B1A174A2D9E67AbA2117a',
+        tx_hash: '0x102fffa5c9d27a7b94e2acd4a58288590174087cfe192d6602f97ced1ac8bffd',
+        version: 0,
+        funcSelectors: [ '0x1f931c1c' ],
+        verified: true
+      },
+      DiamondLoupeFacet: {
+        address: '0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70',
+        tx_hash: '0x262fda123f5eef41d9e9125332db87ce0c0125c4edfe156298935d14288fa6cc',
+        version: 0,
+        funcSelectors: [
+          '0xcdffacc6',
+          '0x52ef6b2c',
+          '0xadfca15e',
+          '0x7a0ed627',
+          '0x01ffc9a7'
+        ],
+        verified: true
+      },
+      GeniusOwnershipFacet: {
+        address: '0x948423D1292F693BA0Aa8E394743099765e50b7A',
+        tx_hash: '0xa6d45448df96ea839d017efcad78d1f9256fa8ac791011fc935461548df17c0d',
+        version: 0,
+        funcSelectors: [
+          '0xa217fddf', '0xf72c0d8b',
+          '0x248a9ca3', '0x9010d07c',
+          '0xca15c873', '0x2f2ff15d',
+          '0x91d14854', '0x8da5cb5b',
+          '0x36568abe', '0xd547741f',
+          '0xf2fde38b'
+        ],
+        verified: true
+      },
+      ERC1155ProxyOperator: {
+        address: '0x55206d3647c045fA28B14C2E1713a8E8a0F465Ff',
+        tx_hash: '0x46cea5ec691d0399d038d90f078dd7821a32d0762742665f0525c0efd5bd2f3e',
+        version: 0,
+        funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ],
+        verified: true
+      },
+      GNUSNFTFactory: {
+        address: '0x3ef701015A79Bdf7e101342d5E2a9e430cCF98Be',
+        tx_hash: '0xd7d88533af831930d06884fc5befdf3c9efbd2c5d66366f70d98c9b5f66e009d',
+        version: 2,
+        funcSelectors: [
+          '0x8aeda25a', '0x101521f8',
+          '0x00fdd58e', '0x4e1273f4',
+          '0xf5298aca', '0x6b20c454',
+          '0xf667ab7c', '0x1a9d2360',
+          '0x4f558e79', '0xd188929f',
+          '0x731133e9', '0x1f7fdffa',
+          '0x8456cb59', '0x5c975abb',
+          '0x2eb2c2d6', '0xf242432a',
+          '0xa22cb465', '0x02fe5305',
+          '0x862440e2', '0x3f4ba83a',
+          '0x0e89341c'
+        ],
+        verified: true
+      },
+      GNUSBridge: {
+        address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
+        tx_hash: '0x8117945f23042a4bc917e0af5f935a1aeec1c72b20ad1b6f2b46a3e2c3c2a7cc',
+        version: 2.2,
+        funcSelectors: [
+          '0x179a4a53', '0xd5391393',
+          '0xdd62ed3e', '0x095ea7b3',
+          '0x70a08231', '0x9dc29fac',
+          '0x313ce567', '0xa457c2d7',
+          '0x39509351', '0x40c10f19',
+          '0x06fdde03', '0x95d89b41',
+          '0x18160ddd', '0xa9059cbb',
+          '0x23b872dd', '0x441a3e70'
+        ],
+        verified: true
+      },
+      EscrowAIJob: {
+        address: '0xeC764eB165e04efE5C6A01b41805673714F930Ae',
+        tx_hash: '0xdc1fedd09064679883109c5293d271e7c454aa2a078df08e4916ff7b8342c29d',
+        version: 0,
+        funcSelectors: [
+          '0x0dbc00c7',
+          '0xf340fa01',
+          '0xe3a9db1a',
+          '0x8129fc1c',
+          '0x715018a6',
+          '0x51cff8d9',
+          '0x685ca194'
+        ],
+        verified: true
+      },
+      GeniusAI: {
+        address: '0x182b78dDfd52199ec6582EbD2987E0aBe1C1bDF7',
+        tx_hash: '0x68d6352e4bdb1324a7bd051505abbcf5a5741ec8b8354d2b93082a17ef5fc7e0',
+        version: 0,
+        funcSelectors: [ '0x6ea9fd36', '0x31d6388d' ],
+        verified: true
+      },
+      GNUSNFTCollectionName: {
+        address: '0xa7A35Bf2035C35be384532D897C7E8Daf6692F12',
+        tx_hash: '0xe0ff346b341441bc1dbc2f45ed3f97c86815ca031ec5aa392ba18b7eec90d0ce',
+        version: -1,
+        verified: true
+      },
+      ERC20TransferBatch: {
+        address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
+        tx_hash: '0x58f4a75b1600703be4458de22e0a989fe6315ff99c287e8ae58458fe3a80b576',
+        version: 2,
+        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ],
+        verified: true
+      },
+      GNUSControl: {
+        address: '0x29Df5345Eb5404EeBEBAD6125C7E43e0baCb816f',
+        tx_hash: '0x3feb7ccac1a5e17e9a52bd33876f4553915e62fe42599cd1d7db1ff6aa50ed1b',
+        version: 0,
+        funcSelectors: [
+          '0x9e8e7134',
+          '0x9ceb1593',
+          '0x19a8b28a',
+          '0x1307a4be',
+          '0x93420cf4',
+          '0x5a1c0366'
+        ],
+        verified: true
+      },
+      GNUSContractAssets: {
+        address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
+        tx_hash: '0x40ebf862881e0effeb9f896f23e5e17575a8f1e7c1e02d98f80427f5810548dd',
+        version: 0,
+        funcSelectors: [ '0x01e33667' ],
+        verified: true
       }
     }
   }

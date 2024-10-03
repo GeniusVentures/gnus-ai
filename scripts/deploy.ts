@@ -26,12 +26,13 @@ import { IDiamondCut } from '../typechain-types/IDiamondCut';
 import { deployments } from '../scripts/deployments';
 import { Facets, LoadFacetDeployments, UpgradeInits } from '../scripts/facets';
 import * as util from 'util';
+import { getGasCost } from '../scripts/getgascost';
 
 const log: debug.Debugger = debug('GNUSDeploy:log');
 log.color = '159';
 
 
-const GAS_LIMIT_PER_FACET = 20000;
+const GAS_LIMIT_PER_FACET = 50000;
 const GAS_LIMIT_CUT_BASE = 70000;
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
@@ -552,12 +553,34 @@ async function main() {
   if (require.main === module) {
     debug.enable('GNUS.*:log');
     await LoadFacetDeployments();
-    const deployer = (await ethers.getSigners())[0].address;
+    const deployer = (await ethers.getSigners())[0];
+
+    log(`Deployer address: ${deployer.address}`);
+
+    // Get the deployer's balance in wei
+    const deployerBalance = await ethers.provider.getBalance(deployer.address);
+    log(`Deployer balance (in ETH): ${ethers.utils.formatEther(deployerBalance)} ETH`);
+
+    // Estimate the gas cost for the deployment (from getGasCost function)
+    const estimatedGasCost = await getGasCost();
+    log(`Estimated Gas Cost: ${estimatedGasCost} ETH`);
+
+    // Convert estimated gas cost to wei for comparison
+    const estimatedGasCostInWei = ethers.utils.parseUnits(estimatedGasCost, 'ether');
+
+    // Check if deployer has enough funds to cover gas costs
+    if (deployerBalance.lt(estimatedGasCostInWei)) {
+      throw new Error(`Not enough funds to deploy. Deployer balance: ${ethers.utils.formatEther(deployerBalance)} ETH, Required: ${estimatedGasCost} ETH`);
+    }
+
+    log(`Sufficient balance to deploy on ${network.name}`);
+
+
     const networkName = hre.network.name;
     if (!deployments[networkName]) {
       deployments[networkName] = {
         DiamondAddress: '',
-        DeployerAddress: deployer,
+        DeployerAddress: deployer.address,
         FacetDeployedInfo: {},
       };
     }
@@ -573,12 +596,17 @@ async function main() {
       }`,
     );
     writeDeployedInfo(deployments);
+
   }
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
+  if (error instanceof Error) {
+    console.error(`Deployment error: ${error.message}`);
+  } else {
+    console.error(`Unknown error occurred: ${error}`);
+  }
   process.exitCode = 1;
 });

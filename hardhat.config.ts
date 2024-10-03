@@ -142,9 +142,14 @@ const config: HardhatUserConfig = {
         process.env.POLYGONSCAN_API_KEY !== undefined
           ? process.env.POLYGONSCAN_API_KEY
           : '',
+      polygon_amoy:
+          process.env.POLYGONSCAN_API_KEY !== undefined
+              ? process.env.POLYGONSCAN_API_KEY
+              : '',
       sepolia: process.env.ETHERSCAN_API_KEY || '',
       mainnet: process.env.ETHERSCAN_API_KEY || '',
       bsc: process.env.BSCSCAN_API_KEY || '',
+      bsc_testnet: process.env.BSCSCAN_API_KEY || '',
       arbitrum_sepolia: process.env.ARBITRUM_API_KEY || '',
       base_sepolia: process.env.BASESCAN_API_KEY || '',
       base: process.env.BASESCAN_API_KEY || '',
@@ -168,6 +173,14 @@ const config: HardhatUserConfig = {
         },
       },
       {
+        network: 'bsc_testnet',
+        chainId: 97,
+        urls: {
+          apiURL: 'https://api-testnet.bscscan.com/api',
+          browserURL: 'https://testnet.bscscan.com',
+        },
+      },
+      {
         network: 'base',
         chainId: 8453,
         urls: {
@@ -175,6 +188,15 @@ const config: HardhatUserConfig = {
           browserURL: 'https://basescan.org',
         },
       },
+      {
+        network: 'polygon_amoy',
+        chainId: 80002,
+        urls: {
+          apiURL: 'https://api-amoy.polygonscan.com/api',
+          browserURL: 'https://amoy.polygonscan.com/',
+        },
+      },
+
     ],
   },
   abiExporter: {
