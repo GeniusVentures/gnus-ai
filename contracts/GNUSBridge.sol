@@ -21,14 +21,10 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
     uint8 public constant decimals = 18;
     uint256 private constant FEE_DOMINATOR = 1000;
 
-    function GNUSBridge_Initialize220() external onlySuperAdminRole {
-        require(
-            GNUSControlStorage.layout().protocolVersion < 220,
-            "constructor was initialized: 2.2"
-        );
-        _grantRole(MINTER_ROLE, _msgSender());
-        GNUSControlStorage.layout().protocolVersion = 220;
-    }
+    /**
+     * @dev Emitted when token holder wants to bridge to another chain
+     */
+    event BridgeSourceBurned(address indexed sender, uint256 id, uint256 amount, uint256 destChainID);
 
     // The following functions are overrides required by Solidity.
     function supportsInterface(
@@ -45,14 +41,23 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
             (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
     }
 
-    // mint GNUS ERC20 tokens
-    function mint(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
+    function _mintWithBridgeFee(address user, uint256 tokenID, uint256 amount) internal {
         uint256 bridgeFee = GNUSControlStorage.layout().bridgeFee;
         if (bridgeFee != 0) {
             amount = (amount * (FEE_DOMINATOR - bridgeFee)) / FEE_DOMINATOR;
         }
-        _mint(user, GNUS_TOKEN_ID, amount, "");
+        _mint(user, tokenID, amount, "");
         emit Transfer(address(0), user, amount);
+    }
+
+    // mint GNUS ERC20 tokens
+    function mint(address user, uint256 amount) public onlyRole(MINTER_ROLE) {
+        _mintWithBridgeFee(user, GNUS_TOKEN_ID,amount);
+    }
+
+    // mint any of the ERC-1155 tokens
+    function mint(address user, uint256 tokenID, uint256 amount) public onlyRole(MINTER_ROLE) {
+        _mintWithBridgeFee(user, tokenID,amount);
     }
 
     // burn GNUS ERC20 tokens
@@ -92,7 +97,7 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
         _afterTokenTransfer(operator, address(0), to, ids, amounts, data);
     }
 
-    // this will withdraw a child token to a GNUS Token on the Ethereum network
+    // this will withdraw a child token to a GNUS Token on the current network
     function withdraw(uint256 amount, uint256 id) external {
         address sender = _msgSender();
 
@@ -100,13 +105,33 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
             GNUSNFTFactoryStorage.layout().NFTs[id].nftCreated,
             "This token can't be withdrawn, as it hasn't been created yet!"
         );
+
+        require(id != GNUS_TOKEN_ID);
+
         // first burn the child createToken
         require(balanceOf(sender, id) >= amount, "Not enough child tokens to withdraw");
         uint256 convAmount = amount / GNUSNFTFactoryStorage.layout().NFTs[id].exchangeRate;
         _burn(sender, id, amount);
-        // emit ERC20 Transfer notification
-        emit Transfer(sender, address(0), convAmount);
+
+        _mintWithBridgeFee(sender, GNUS_TOKEN_ID, convAmount);
     }
+
+    // this will burn a token and send message for other chain to mint tokens
+    function bridgeOut(uint256 amount, uint256 id, uint256 destChainID) external {
+        address sender = _msgSender();
+
+        require(
+            GNUSNFTFactoryStorage.layout().NFTs[id].nftCreated,
+            "This token can't be withdrawn, as it hasn't been created yet!"
+        );
+
+        // first burn the child createToken
+        require(balanceOf(sender, id) >= amount, "Not enough tokens to bridge");
+        _burn(sender, id, amount);
+
+        emit BridgeSourceBurned(sender, id, amount, destChainID);
+    }
+
 
     /**
      * @dev Returns the amount of tokens in existence.

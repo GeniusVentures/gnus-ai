@@ -19,6 +19,15 @@ contract GNUSControl {
     event RemoveFromGlobalBlackList(address bannedAddress);
     event UpdateBridgeFee(uint256 indexed);
 
+    function GNUSControl_Initialize230(uint256 chainID) external onlySuperAdminRole {
+        require(
+            GNUSControlStorage.layout().protocolVersion < 230,
+            "constructor was already initialized >= 2.30"
+        );
+        GNUSControlStorage.layout().protocolVersion = 230;
+        GNUSControlStorage.layout().chainID = chainID;
+    }
+
     function banTransferorForAll(address bannedAddress) external onlySuperAdminRole {
         GNUSControlStorage.layout().gBannedTransferors[bannedAddress] = true;
         emit AddToGlobalBlackList(bannedAddress);
@@ -61,9 +70,10 @@ contract GNUSControl {
         emit UpdateBridgeFee(newFee);
     }
 
-    function protocolInfo() external view returns (uint256 bridgeFee, uint256 protocolVersion) {
+    function protocolInfo() external view returns (uint256 bridgeFee, uint256 protocolVersion, uint256 chainID) {
         bridgeFee = GNUSControlStorage.layout().bridgeFee;
         protocolVersion = GNUSControlStorage.layout().protocolVersion;
+        chainID = GNUSControlStorage.layout().chainID;
     }
 
     modifier onlySuperAdminRole() {

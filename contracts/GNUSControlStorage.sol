@@ -12,6 +12,8 @@ library GNUSControlStorage {
         uint256 bridgeFee;
         // current protocol version
         uint256 protocolVersion;
+        // this chains ID
+        uint256 chainID;
     }
 
     bytes32 constant GNUS_CONTROL_STORAGE_POSITION = keccak256("gnus.ai.control.storage");

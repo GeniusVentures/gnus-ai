@@ -1041,91 +1041,41 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         tx_hash: '0xb1055237eda31422189efe9d246a89b4a38e5296da0d1c920b9b228f3ae06176',
         version: 0,
-        funcSelectors: [ '0x1f931c1c' ]
       },
       DiamondLoupeFacet: {
         address: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
         tx_hash: '0x422fc9897901184158086fee77f7fc324ed56add9226c0272b15a68d71b14f38',
         version: 0,
-        funcSelectors: [
-          '0xcdffacc6',
-          '0x52ef6b2c',
-          '0xadfca15e',
-          '0x7a0ed627',
-          '0x01ffc9a7'
-        ]
       },
       GeniusOwnershipFacet: {
         address: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
         tx_hash: '0x0e7ac575ff830700ae8961513dafbc61fefba635fcd4b67d799491e872b17578',
         version: 0,
-        funcSelectors: [
-          '0xa217fddf', '0xf72c0d8b',
-          '0x248a9ca3', '0x9010d07c',
-          '0xca15c873', '0x2f2ff15d',
-          '0x91d14854', '0x8da5cb5b',
-          '0x36568abe', '0xd547741f',
-          '0xf2fde38b'
-        ]
       },
       ERC1155ProxyOperator: {
         address: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
         tx_hash: '0xc9b6c4617cf13bff0c83756340a343748bcc2bd96c256f5d7d7d106f854bfb9c',
         version: 0,
-        funcSelectors: [ '0xe985e9c5', '0xbd85b039', '0xcd53d08e', '0xa2dd2453' ]
       },
       GNUSNFTFactory: {
         address: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707',
         tx_hash: '0x33240e0181e19f8229c069930d1b5676000a7167ed60808c4a07e01b9304aff6',
         version: 2,
-        funcSelectors: [
-          '0x8aeda25a', '0x101521f8',
-          '0x00fdd58e', '0x4e1273f4',
-          '0xf5298aca', '0x6b20c454',
-          '0xf667ab7c', '0x1a9d2360',
-          '0x4f558e79', '0xd188929f',
-          '0x731133e9', '0x1f7fdffa',
-          '0x8456cb59', '0x5c975abb',
-          '0x2eb2c2d6', '0xf242432a',
-          '0xa22cb465', '0x02fe5305',
-          '0x862440e2', '0x3f4ba83a',
-          '0x0e89341c'
-        ]
       },
       GNUSBridge: {
         address: '0x0165878A594ca255338adfa4d48449f69242Eb8F',
         tx_hash: '0x74319e00ed5f14bee63436e76d315dc6567e8b105653126b36c3325895730578',
         version: 2.2,
-        funcSelectors: [
-          '0x179a4a53', '0xd5391393',
-          '0xdd62ed3e', '0x095ea7b3',
-          '0x70a08231', '0x9dc29fac',
-          '0x313ce567', '0xa457c2d7',
-          '0x39509351', '0x40c10f19',
-          '0x06fdde03', '0x95d89b41',
-          '0x18160ddd', '0xa9059cbb',
-          '0x23b872dd', '0x441a3e70'
-        ]
       },
       EscrowAIJob: {
         address: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853',
         tx_hash: '0x455d0b90db0f0479b2d8f3762ee341c4964ab4131243719c93c3b94c6d1d85e4',
         version: 0,
-        funcSelectors: [
-          '0x0dbc00c7',
-          '0xf340fa01',
-          '0xe3a9db1a',
-          '0x8129fc1c',
-          '0x715018a6',
-          '0x51cff8d9',
-          '0x685ca194'
-        ]
       },
       GeniusAI: {
         address: '0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6',
         tx_hash: '0x37aabb910e8fd636e44456b1e5550fd73bd5c5b013b7581ba291f556ef757d16',
         version: 0,
-        funcSelectors: [ '0x6ea9fd36', '0x31d6388d' ]
       },
       GNUSNFTCollectionName: {
         address: '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318',
@@ -1136,26 +1086,16 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
         tx_hash: '0xa8c00be37d94b43c92f96af86b36879a4243fe9206ef687c6e53991a11d53221',
         version: 2,
-        funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ]
       },
       GNUSControl: {
         address: '0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e',
         tx_hash: '0xfd2e324552f53d8f2a0cc194a42b93da88e8d099ac5f467ca25c783d7e1b9a69',
         version: 0,
-        funcSelectors: [
-          '0x9e8e7134',
-          '0x9ceb1593',
-          '0x19a8b28a',
-          '0x1307a4be',
-          '0x93420cf4',
-          '0x5a1c0366'
-        ]
       },
       GNUSContractAssets: {
         address: '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0',
         tx_hash: '0x68f5aa02431ce41c1f4d8e2a725fe1b5259ecd9506515752f8a995d1966bb850',
         version: 0,
-        funcSelectors: [ '0x01e33667' ]
       }
     }
   },
