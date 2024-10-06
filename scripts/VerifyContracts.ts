@@ -57,10 +57,12 @@ async function main() {
         await VerifyContracts(networkDeployInfo);
         log(`Finished Verifying GNUS Diamond at ${networkDeployInfo.DiamondAddress}`);
       }
-      writeDeployedInfo(deployments);
-      log(
-        `Finished Verifying GNUS Contracts/Facets at ${networkDeployInfo.DiamondAddress}`,
-      );
+      if (networkName !== 'hardhat') {
+        writeDeployedInfo(deployments);
+        log(
+            `Finished Verifying GNUS Contracts/Facets at ${networkDeployInfo.DiamondAddress}`,
+        );
+      }
     }
   }
 }

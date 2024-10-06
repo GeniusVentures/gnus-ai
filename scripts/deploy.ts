@@ -27,6 +27,7 @@ import { deployments } from '../scripts/deployments';
 import { Facets, LoadFacetDeployments, UpgradeInits } from '../scripts/facets';
 import * as util from 'util';
 import { getGasCost } from '../scripts/getgascost';
+import { defenderSigners } from "./DefenderSigners";
 
 const log: debug.Debugger = debug('GNUSDeploy:log');
 log.color = '159';
@@ -190,11 +191,17 @@ export async function deployFuncSelectors(
     }
 
     if (newFuncSelectors.length) {
-      const initFunc = facetNeedsUpgrade
-        ? deployedVersion === facetDeployInfo.fromVersion
-          ? facetDeployInfo.upgradeInit
-          : facetDeployInfo.init
-        : null;
+      let initFunc: string | undefined;
+      // if we are upgrading to a new version the upgradeInit function is called
+      if (facetNeedsUpgrade) {
+        if (deployedVersion === facetDeployInfo.fromVersion) {
+          initFunc = facetDeployInfo.upgradeInit;
+        } else if (deployedVersion == -1) {   // check if we have deployed at all, if not this should be an init at this version
+          initFunc = facetDeployInfo.deployInit;
+        }
+      } else {
+         initFunc = facetDeployInfo.deployInit;
+      }
       deployedFacets[name].funcSelectors = newFuncSelectors;
       const replaceFuncSelectors: string[] = [];
       const addFuncSelectors = newFuncSelectors.filter((v) => {
@@ -253,7 +260,8 @@ export async function deployFuncSelectors(
 
   // upgrade diamond with facets
   const diamondCut = dc.GeniusDiamond as IDiamondCut;
-  if (process.env.DEFENDER_DEPLOY_ON && network.name !== 'hardhat') {
+  if (process.env.DEFENDER_DEPLOY_ON &&
+      defenderSigners[network.name]) {
     log('Deploying contract on defender');
     client = new AdminClient({
       apiKey: process.env.DEFENDER_API_KEY || '',
@@ -308,40 +316,13 @@ export async function deployFuncSelectors(
   let functionCall: any = [];
   let initAddress = ethers.constants.AddressZero;
 
-  if (UpgradeInits[protocolUpgradeVersion]) {
-    const upgradeInitInfo = UpgradeInits[protocolUpgradeVersion];
-    let initContract;
-    if (networkDeployInfo.FacetDeployedInfo[upgradeInitInfo.initContractName]?.address) {
-      initContract = await ethers.getContractAt(
-        upgradeInitInfo.initContractName,
-        networkDeployInfo.FacetDeployedInfo[upgradeInitInfo.initContractName].address,
-      );
-    } else {
-      const initContractFactory: any = await ethers.getContractFactory(
-        upgradeInitInfo.initContractName,
-      );
-      initContract = await initContractFactory.deploy();
-      await initContract.deployed();
-    }
-    if (!upgradeInitInfo.initArgs) {
-      functionCall = initContract.interface.encodeFunctionData(
-        upgradeInitInfo.initFuncName,
-      );
-    } else
-      functionCall = initContract.interface.encodeFunctionData(
-        upgradeInitInfo.initFuncName,
-        upgradeInitInfo.initArgs,
-      );
-    initAddress = initContract.address;
-    log(`Calling Function:`, upgradeInitInfo);
-  }
-
   try {
     let totalSelectors = 0;
     upgradeCut.forEach((e) => {
       totalSelectors += e.functionSelectors.length;
     });
-    if (process.env.DEFENDER_DEPLOY_ON && network.name !== 'hardhat') {
+    if (process.env.DEFENDER_DEPLOY_ON &&
+        defenderSigners[network.name]) {
       const upgradeFunctionInputs:
         | string
         | boolean
@@ -364,8 +345,8 @@ export async function deployFuncSelectors(
         type: 'custom', // Use 'custom' for custom admin actions
         functionInterface: diamondCutFuncAbi, // Function ABI
         functionInputs: [upgradeFunctionInputs, initAddress, functionCall], // Arguments to the function
-        via: process.env.DEFENDER_SIGNER,
-        viaType: 'Safe',
+        via: defenderSigners[network.name].via,
+        viaType: defenderSigners[network.name].viaType,
       });
       log(`created proposal on defender ${response.proposalId} `);
     } else {
@@ -595,7 +576,9 @@ async function main() {
         (util.inspect(networkDeployedInfo.FacetDeployedInfo), { depth: null })
       }`,
     );
-    writeDeployedInfo(deployments);
+    if (networkName !== 'hardhat') {
+      writeDeployedInfo(deployments);
+    }
 
   }
 }

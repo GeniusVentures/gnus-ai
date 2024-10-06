@@ -28,7 +28,7 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
 }
 
 Facets.ERC1155ProxyOperator = {
-  priority: 35,
+  priority: 135,
   versions: {
     0.0: {
       callback: afterDeploy,

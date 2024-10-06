@@ -38,7 +38,7 @@ export async function GetUpdatedFacets(
   return updatedFacetsToDeploy;
 }
 
-async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
+export async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   // deploy DiamondCutFacet
   const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet');
   dc.DiamondCutFacet = DiamondCutFacet.attach(
@@ -77,7 +77,10 @@ async function main() {
       if (!deployInfo.ExternalLibraries) await deployExternalLibraries(deployInfo);
       await deployAndInitDiamondFacets(deployInfo, updatedFacetsToDeploy);
       log(`Contract address deployed is ${deployInfo.DiamondAddress}`);
-      writeDeployedInfo(deployments);
+      // hardhat is non-sticky testing.
+      if (networkName !== 'hardhat') {
+        writeDeployedInfo(deployments);
+      }
     } else {
       log(`No deployments found to attach to for ${networkName}, aborting.`);
     }

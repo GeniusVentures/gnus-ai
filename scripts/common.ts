@@ -9,6 +9,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { Fragment } from '@ethersproject/abi';
 import fs from 'fs';
 import util from 'util';
+import { ExternalApiCreateProposalRequest } from "@openzeppelin/defender-admin-client/lib/models/proposal";
 
 chai.use(chaiAsPromised);
 
@@ -60,8 +61,8 @@ export type AfterDeployInit = (
 
 export interface IVersionInfo {
   fromVersion?: number;
-  init?: string;
-  upgradeInit?: string;
+  deployInit?: string;          // init for when not upgrading and first deployment
+  upgradeInit?: string;   // upgradeInit if version is upgrading from previous version
   deployInclude?: string[];
   callback?: AfterDeployInit;
 }
@@ -73,12 +74,7 @@ export interface IFacetToDeployInfo {
   versions?: VersionRecord;
   libraries?: string[];
 }
-export interface IUpgradeInit {
-  initContractName?: string;
-  initFuncName?: string;
-  initArgs?: any;
-}
-export type UpgradeInitInfo = Record<string, IUpgradeInit>;
+
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;
 
 export function toWei(value: number | string): BigNumber {
@@ -136,3 +132,8 @@ export const diamondCutFuncAbi = {
   ],
   name: 'diamondCut',
 };
+
+export interface IDefenderViaInfo {
+  via: ExternalApiCreateProposalRequest['via'],
+  viaType: ExternalApiCreateProposalRequest['viaType'];
+}

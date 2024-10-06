@@ -14,3 +14,4 @@ uint128 constant MAX_UINT128 = uint128(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
 uint256 constant PARENT_MASK = uint256(MAX_UINT128) << 128; // the token type mask in the upper 128 bits
 uint256 constant CHILD_MASK = MAX_UINT128; // the non-fungible index mask in the lower 128
 address constant ETHER = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
