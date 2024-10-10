@@ -26,6 +26,7 @@ export class Selectors {
     this.contract = contract;
   }
 
+
   // used with getSelectors to remove selectors from an array of selectors
   // functionNames argument is an array of function signatures
   remove(functionNames: string[]): Selectors {
@@ -68,15 +69,27 @@ export class Selectors {
 }
 
 // get function selectors from ABI
+export function getSelector(
+    contract: Contract,
+    funcName: string | null | undefined = null
+): string | null{
+  if (funcName === null || funcName === undefined) {
+    return null;
+  }
+  return contract.interface.getSighash(funcName);
+}
+
+// get function selectors from ABI
 export function getSelectors(
   contract: Contract,
-  exclude: Set<string> | null = null
+  exclude: Set<string> | null = null,
+  include: Set<String> | null = null
 ): Selectors {
   const signatures = Object.keys(contract.interface.functions);
   const selectors = new Selectors(contract);
   selectors.values = signatures.reduce<string[]>((acc, val) => {
     const funcSignature = contract.interface.getSighash(val);
-    if (!exclude || !exclude.has(funcSignature)) {
+    if ((!exclude || !exclude.has(funcSignature)) && (!include || include.has(funcSignature))) {
       acc.push(funcSignature);
     }
     return acc;

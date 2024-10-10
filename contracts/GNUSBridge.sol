@@ -24,7 +24,7 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
     /**
      * @dev Emitted when token holder wants to bridge to another chain
      */
-    event BridgeSourceBurned(address indexed sender, uint256 id, uint256 amount, uint256 destChainID);
+    event BridgeSourceBurned(address indexed sender, uint256 id, uint256 amount, uint256 srcChainID, uint256 destChainID);
 
     // The following functions are overrides required by Solidity.
     function supportsInterface(
@@ -129,7 +129,7 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
         require(balanceOf(sender, id) >= amount, "Not enough tokens to bridge");
         _burn(sender, id, amount);
 
-        emit BridgeSourceBurned(sender, id, amount, destChainID);
+        emit BridgeSourceBurned(sender, id, amount, GNUSControlStorage.layout().chainID, destChainID);
     }
 
 

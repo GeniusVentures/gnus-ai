@@ -17,7 +17,8 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
     bytes32 constant public CREATOR_ROLE = keccak256("CREATOR_ROLE");
 
     // one time initialization on, subsequent calls get ignored with initializer
-    function GNUSNFTFactory_Initialize() public initializer onlySuperAdminRole {
+    function GNUSNFTFactory_Initialize() public onlySuperAdminRole {
+        InitializableStorage.layout()._initializing = true;
         __ERC1155_init("");
         __Pausable_init();
         __ERC1155Burnable_init();
@@ -30,6 +31,12 @@ contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessCont
         createNFT(GNUS_TOKEN_ID, GNUS_NAME,  GNUS_SYMBOL, 1.0, GNUS_MAX_SUPPLY,  GNUS_URI);
 
         InitializableStorage.layout()._initialized = false;
+    }
+
+    function GNUSNFTFactory_Initialize230() public onlySuperAdminRole {
+        if (!GNUSNFTFactoryStorage.layout().NFTs[GNUS_TOKEN_ID].nftCreated) {
+            GNUSNFTFactory_Initialize();
+        }
     }
 
     // set the top level URI for GNUS Token NFT

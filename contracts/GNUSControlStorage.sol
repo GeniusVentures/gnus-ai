@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
+import "contracts-starter/contracts/libraries/LibDiamond.sol";
+
 /// @custom:security-contact support@gnus.ai
 library GNUSControlStorage {
     struct Layout {
@@ -16,6 +18,8 @@ library GNUSControlStorage {
         uint256 chainID;
     }
 
+    using LibDiamond for LibDiamond.DiamondStorage;
+
     bytes32 constant GNUS_CONTROL_STORAGE_POSITION = keccak256("gnus.ai.control.storage");
 
     function layout() internal pure returns (Layout storage l) {
@@ -28,4 +32,12 @@ library GNUSControlStorage {
     function isBannedTransferor(uint256 tokenId, address sender) internal view returns (bool) {
         return layout().gBannedTransferors[sender] || layout().bannedTransferors[tokenId][sender];
     }
+
+    function callFacetDelegate(bytes4 facetSelector, bytes memory encodedParameters) internal returns (bool, bytes memory) {
+        address facetAddress = address(bytes20(LibDiamond.diamondStorage().facets[facetSelector]));
+
+        require(facetAddress != address(0), "Diamond: Function does not exist");
+        return facetAddress.delegatecall(abi.encodePacked(facetSelector, encodedParameters));
+    }
+
 }

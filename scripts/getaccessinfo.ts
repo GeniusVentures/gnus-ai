@@ -5,6 +5,7 @@ import { GeniusDiamond } from "../typechain-types";
 import { BigNumber } from "ethers";
 import { deployments } from "./deployments";
 import { attachGNUSDiamond } from "./upgrade";
+import util, { log } from "util";
 
 const log: debug.Debugger = debug('GNUSAccessControl:log');
 log.color = '32';
@@ -17,9 +18,22 @@ export async function getAccessControlInfo() {
 
     const roleCount =  await gnusDiamond.getRoleMemberCount(adminRole);
     log(`Role Count: ${roleCount}`);
-    for (let i:BigNumber = BigNumber.from(0); i.lt(roleCount); i.add(1)) {
+    const roleCountNum = roleCount.toNumber();
+    for (let i = 0; i < roleCountNum; i++) {
         const roleMember = await gnusDiamond.getRoleMember(adminRole, i);
         log(`Role Member ${i.toString()}: ${roleMember}`);
+    }
+
+    try {
+        const NFTCreated = await gnusDiamond.getNFTInfo(0);
+        log(`NFT Information: ${util.inspect(NFTCreated)}`);
+    } catch(e)
+    {
+        if (e instanceof Error && 'reason' in e) {
+            log(`Error getting NFT info: ${util.inspect(e.reason)}`);
+        } else {
+            log(`Error getting NFT info: ${util.inspect(e)}`);
+        }
     }
 }
 

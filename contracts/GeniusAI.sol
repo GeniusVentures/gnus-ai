@@ -9,8 +9,10 @@ contract GeniusAI is Initializable, GeniusAccessControl {
     using GeniusAIStorage for GeniusAIStorage.Layout;
 
     // one time initialization on, subsequent calls get ignored with initializer
-    function GeniusAI_Initialize() public initializer onlySuperAdminRole {
+    function GeniusAI_Initialize() public  {
+        InitializableStorage.layout()._initializing = true;
         __GeniusAccessControl_init();
+        InitializableStorage.layout()._initializing = false;
     }
 
     /// OpenEscrow

@@ -1,7 +1,8 @@
 import { GeniusDiamond } from "../../typechain-types/GeniusDiamond";
 import { dc, debuglog, INetworkDeployInfo, AfterDeployInit, getSighash } from "../common";
 import { Facets } from "../facets";
-import hre from "hardhat";
+import hre, { ethers } from "hardhat";
+import util from "util";
 
 const OpenSeaProxyAddresses: {[key: string]: string } = {
     mumbai: "",
@@ -16,14 +17,25 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
 
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
     await gnusDiamond.setChainID(chainID);
+
+    const info = await gnusDiamond.protocolInfo();
+
+    debuglog(`protocalinfo: \n${util.inspect(info)}`)
+
+    // simulate orevious bad deployments
+    //const signers = await ethers.getSigners();
+    //const owner = signers[0];
+    //await gnusDiamond.transferOwnership(owner.address);
 }
 
 Facets.GNUSControl = {
-    priority: 100,
+    priority: 110,
     versions: {
-        2.3: {
-            deployInit: "GNUSControl_Initialize230()",
+        0.0: {
             callback: afterDeploy
+        },
+        2.3: {
+             deployInit: "GNUSControl_Initialize230()",
         }
     }
 };

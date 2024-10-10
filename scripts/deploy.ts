@@ -12,7 +12,8 @@ import {
   FacetInfo,
   getSelectors,
   getDeployedFuncSelectors,
-} from '../scripts/FacetSelectors';
+  getSelector
+} from "../scripts/FacetSelectors";
 import {
   dc,
   INetworkDeployInfo,
@@ -20,6 +21,7 @@ import {
   AfterDeployInit,
   writeDeployedInfo,
   diamondCutFuncAbi,
+  getSighash
 } from '../scripts/common';
 import { DiamondCutFacet } from '../typechain-types/DiamondCutFacet';
 import { IDiamondCut } from '../typechain-types/IDiamondCut';
@@ -28,6 +30,7 @@ import { Facets, LoadFacetDeployments, UpgradeInits } from '../scripts/facets';
 import * as util from 'util';
 import { getGasCost } from '../scripts/getgascost';
 import { defenderSigners } from "./DefenderSigners";
+import { GeniusDiamond } from "../typechain-types";
 
 const log: debug.Debugger = debug('GNUSDeploy:log');
 log.color = '159';
@@ -167,9 +170,8 @@ export async function deployFuncSelectors(
     dc[name] = facet;
 
     const origSelectors = getSelectors(facet).values;
-    const newFuncSelectors =
-      facetDeployInfo.deployInclude ??
-      getSelectors(facet, registeredFunctionSignatures).values;
+    const includeSelectors: Set<String> | null = facetDeployInfo.deployInclude ? new Set(facetDeployInfo.deployInclude) : null;
+    const newFuncSelectors = getSelectors(facet, registeredFunctionSignatures, includeSelectors).values;
     const removedSelectors = origSelectors.filter((v) => !newFuncSelectors.includes(v));
     if (removedSelectors.length) {
       log(`${name} removed ${removedSelectors.length} selectors: [${removedSelectors}]`);
@@ -192,6 +194,7 @@ export async function deployFuncSelectors(
 
     if (newFuncSelectors.length) {
       let initFunc: string | undefined;
+      let initFuncSelector: string | null = null;
       // if we are upgrading to a new version the upgradeInit function is called
       if (facetNeedsUpgrade) {
         if (deployedVersion === facetDeployInfo.fromVersion) {
@@ -201,6 +204,10 @@ export async function deployFuncSelectors(
         }
       } else {
          initFunc = facetDeployInfo.deployInit;
+      }
+      if (initFunc) {
+        initFuncSelector = getSelector(facet, initFunc);
+        log(`contract: ${facet.address}, initFuncSelector: ${initFuncSelector}`);
       }
       deployedFacets[name].funcSelectors = newFuncSelectors;
       const replaceFuncSelectors: string[] = [];
@@ -223,7 +230,7 @@ export async function deployFuncSelectors(
           action: FacetCutAction.Replace,
           functionSelectors: replaceFuncSelectors,
           name: name,
-          initFunc: initFunc,
+          initFunc: initFuncSelector,
         });
         numFuncSelectorsCut++;
       }
@@ -234,7 +241,7 @@ export async function deployFuncSelectors(
           action: FacetCutAction.Add,
           functionSelectors: addFuncSelectors,
           name: name,
-          initFunc: initFunc,
+          initFunc: initFuncSelector,
         });
         numFuncSelectorsCut++;
       }
@@ -335,6 +342,7 @@ export async function deployFuncSelectors(
           e.functionSelectors,
         ]),
       );
+      // since this deployment does the diamond cut all at once, there is only on initialization functionCall
       const response = await client.createProposal({
         contract: {
           address: diamondCut.address,
@@ -350,14 +358,14 @@ export async function deployFuncSelectors(
       });
       log(`created proposal on defender ${response.proposalId} `);
     } else {
-      const tx = await diamondCut.diamondCut(upgradeCut, initAddress, functionCall, {
-        gasLimit: GAS_LIMIT_CUT_BASE + totalSelectors * GAS_LIMIT_PER_FACET,
-      });
-      log(`Diamond cut: tx hash: ${tx.hash}`);
-      const receipt = await tx.wait();
-      if (!receipt.status) {
-        throw Error(`Diamond upgrade was failed: ${tx.hash}`);
-      }
+        const tx = await diamondCut.diamondCut(upgradeCut, initAddress, functionCall, {
+          gasLimit: GAS_LIMIT_CUT_BASE + totalSelectors * GAS_LIMIT_PER_FACET,
+        });
+        log(`Diamond cut: tx hash: ${tx.hash}`);
+        const receipt = await tx.wait();
+        if (!receipt.status) {
+          throw Error(`Diamond upgrade was failed: ${tx.hash}`);
+        }
     }
   } catch (e) {
     log(`unable to cut facet: \n ${e}`);
@@ -383,6 +391,9 @@ export async function afterDeployCallbacks(
   networkDeployInfo: INetworkDeployInfo,
   facetsToDeploy: FacetToDeployInfo = Facets,
 ) {
+  const signers = await ethers.getSigners();
+  const owner = signers[0];
+  const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
   const facetsPriority = Object.keys(facetsToDeploy).sort(
     (a, b) => facetsToDeploy[a].priority - facetsToDeploy[b].priority,
   );
@@ -394,11 +405,47 @@ export async function afterDeployCallbacks(
       facetVersions = Object.keys(facetDeployVersionInfo.versions).sort((a, b) => +b - +a);
     }
 
+    // since the initCall on facet cut function is only one function run through the init functions after deployment in order
     const upgradeVersion = +facetVersions[0];
     const facetDeployInfo = facetDeployVersionInfo.versions
       ? facetDeployVersionInfo.versions[upgradeVersion]
       : {};
+    let currentDeployedVersion = networkDeployInfo.FacetDeployedInfo[name].version;
+
+    let initFunction: keyof GeniusDiamond;
+    if (facetDeployInfo.upgradeInit && facetDeployInfo.fromVersion === currentDeployedVersion) {
+      initFunction = facetDeployInfo.upgradeInit as keyof GeniusDiamond;
+    } else {
+      initFunction = facetDeployInfo.deployInit as keyof GeniusDiamond;
+    }
+
+    if (initFunction) {
+      const funcSelector = getSighash(`function ${initFunction}`);
+      if (!funcSelector) {
+        throw new Error("Function selector cannot be null or undefined");
+      }
+
+      log(`initFunction being called is ${initFunction}`);
+
+      // Create a transaction object
+      const tx = {
+        to: gnusDiamond.address,
+        data: funcSelector, // The 4-byte function selector
+        gasLimit: ethers.utils.hexlify(1000000), // Adjust gas as necessary
+      };
+      try {
+        const txResponse = await owner.sendTransaction(tx);
+        log("Transaction hash:", txResponse.hash);
+        await txResponse.wait();
+        log("Transaction confirmed!");
+      } catch (error) {
+        log(`Error sending transaction: ${error}`);
+      }
+    }
+
     if (facetDeployInfo.callback) {
+      log(`callback function being called is ${facetDeployInfo.callback.name}`);
+
       const afterDeployCallback = facetDeployInfo.callback;
       try {
         await afterDeployCallback(networkDeployInfo);
@@ -549,6 +596,9 @@ async function main() {
     // Convert estimated gas cost to wei for comparison
     const estimatedGasCostInWei = ethers.utils.parseUnits(estimatedGasCost, 'ether');
 
+    if (hre.network.name === "hardhat") {
+      hre.config.networks["hardhat"].loggingEnabled = true;
+    }
     // Check if deployer has enough funds to cover gas costs
     if (deployerBalance.lt(estimatedGasCostInWei)) {
       throw new Error(`Not enough funds to deploy. Deployer balance: ${ethers.utils.formatEther(deployerBalance)} ETH, Required: ${estimatedGasCost} ETH`);

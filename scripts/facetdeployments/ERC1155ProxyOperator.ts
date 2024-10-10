@@ -28,12 +28,12 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
 }
 
 Facets.ERC1155ProxyOperator = {
-  priority: 135,
+  priority: 45,
   versions: {
     0.0: {
       callback: afterDeploy,
       deployInclude:
-            [getSighash("function isApprovedForAll(address,address)"),
+            [ getSighash("function isApprovedForAll(address,address)"),
               getSighash("function totalSupply(uint256)"),
               getSighash("function creators(uint256)"),
               getSighash("function NFT_PROXY_OPERATOR_ROLE()")

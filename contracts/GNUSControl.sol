@@ -23,7 +23,7 @@ contract GNUSControl is GeniusAccessControl {
     event AddToGlobalBlackList(address bannedAddress);
     event RemoveFromGlobalBlackList(address bannedAddress);
     event UpdateBridgeFee(uint256 indexed);
-    bytes4 constant GNUS_NFT_INIT_SELECTOR = bytes4(keccak256("GNUSNFTFactory_Initialize()"));
+    bytes4 constant GNUS_NFT_INIT_SELECTOR = bytes4(keccak256(bytes('GNUSNFTFactory_Initialize()')));
     bytes32 constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     function GNUSControl_Initialize230() external onlySuperAdminRole {
@@ -33,17 +33,8 @@ contract GNUSControl is GeniusAccessControl {
             "constructor was already initialized >= 2.30"
         );
 
-        if (!GNUSNFTFactoryStorage.layout().NFTs[GNUS_TOKEN_ID].nftCreated) {
-            // Perform the low-level call with the bytes array
-            (bool success, bytes memory data) = address(this).call(abi.encode(GNUS_NFT_INIT_SELECTOR));
-            require(success, "GNUS NFT initialization failed");
-        }
-
-        if (!hasRole(MINTER_ROLE, sender)) {
-            grantRole(MINTER_ROLE, sender);
-        }
         GNUSControlStorage.layout().protocolVersion = 230;
-        InitializableStorage.layout()._initialized = false;
+        InitializableStorage.layout()._initialized = true;
     }
 
     function banTransferorForAll(address bannedAddress) external onlySuperAdminRole {
@@ -99,3 +90,5 @@ contract GNUSControl is GeniusAccessControl {
     }
 
 }
+
+
