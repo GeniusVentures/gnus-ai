@@ -21,8 +21,8 @@ import {
   AfterDeployInit,
   writeDeployedInfo,
   diamondCutFuncAbi,
-  getSighash
-} from '../scripts/common';
+  getSighash, PreviousVersionRecord
+} from "../scripts/common";
 import { DiamondCutFacet } from '../typechain-types/DiamondCutFacet';
 import { IDiamondCut } from '../typechain-types/IDiamondCut';
 import { deployments } from '../scripts/deployments';
@@ -36,8 +36,8 @@ const log: debug.Debugger = debug('GNUSDeploy:log');
 log.color = '159';
 
 
-const GAS_LIMIT_PER_FACET = 50000;
-const GAS_LIMIT_CUT_BASE = 70000;
+const GAS_LIMIT_PER_FACET = 60000;
+const GAS_LIMIT_CUT_BASE = 100000;
 
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
 
@@ -197,7 +197,7 @@ export async function deployFuncSelectors(
       let initFuncSelector: string | null = null;
       // if we are upgrading to a new version the upgradeInit function is called
       if (facetNeedsUpgrade) {
-        if (deployedVersion === facetDeployInfo.fromVersion) {
+        if (facetDeployInfo.fromVersions?.includes(deployedVersion)) {
           initFunc = facetDeployInfo.upgradeInit;
         } else if (deployedVersion == -1) {   // check if we have deployed at all, if not this should be an init at this version
           initFunc = facetDeployInfo.deployInit;
@@ -390,6 +390,7 @@ export async function deployFuncSelectors(
 export async function afterDeployCallbacks(
   networkDeployInfo: INetworkDeployInfo,
   facetsToDeploy: FacetToDeployInfo = Facets,
+  previousVersions: PreviousVersionRecord,
 ) {
   const signers = await ethers.getSigners();
   const owner = signers[0];
@@ -406,18 +407,20 @@ export async function afterDeployCallbacks(
     }
 
     // since the initCall on facet cut function is only one function run through the init functions after deployment in order
-    const upgradeVersion = +facetVersions[0];
+    const deployedVersion = +facetVersions[0];
     const facetDeployInfo = facetDeployVersionInfo.versions
-      ? facetDeployVersionInfo.versions[upgradeVersion]
+      ? facetDeployVersionInfo.versions[deployedVersion]
       : {};
-    let currentDeployedVersion = networkDeployInfo.FacetDeployedInfo[name].version;
+    let previousVersion = previousVersions[name];
 
-    let initFunction: keyof GeniusDiamond;
-    if (facetDeployInfo.upgradeInit && facetDeployInfo.fromVersion === currentDeployedVersion) {
+    let initFunction: keyof GeniusDiamond | undefined = undefined;
+    if (facetDeployInfo.upgradeInit && (facetDeployInfo.fromVersions?.includes(previousVersion || -1))) {
       initFunction = facetDeployInfo.upgradeInit as keyof GeniusDiamond;
-    } else {
+    } else if (previousVersion != deployedVersion) {
       initFunction = facetDeployInfo.deployInit as keyof GeniusDiamond;
     }
+
+    log(`Facet: ${name}, Last Deployed Version: ${previousVersion}, Deployed Version: ${deployedVersion}`);
 
     if (initFunction) {
       const funcSelector = getSighash(`function ${initFunction}`);
@@ -443,7 +446,7 @@ export async function afterDeployCallbacks(
       }
     }
 
-    if (facetDeployInfo.callback) {
+    if (facetDeployInfo.callback && (previousVersion != deployedVersion)) {
       log(`callback function being called is ${facetDeployInfo.callback.name}`);
 
       const afterDeployCallback = facetDeployInfo.callback;
@@ -458,8 +461,11 @@ export async function afterDeployCallbacks(
 
 export async function deployAndInitDiamondFacets(
   networkDeployInfo: INetworkDeployInfo,
-  facetsToDeploy: FacetToDeployInfo = Facets,
+  facetsToDeploy: FacetToDeployInfo = Facets
 ) {
+  // Create the previousDeployedVersions record
+  const previousDeployedVersions: PreviousVersionRecord = {};
+
   const deployInfoBeforeUpgraded: INetworkDeployInfo = JSON.parse(
     JSON.stringify(networkDeployInfo),
   );
@@ -472,9 +478,17 @@ export async function deployAndInitDiamondFacets(
     if (deployInfoBeforeUpgraded.FacetDeployedInfo[key])
       deployInfoWithOldFacet.FacetDeployedInfo[key] =
         deployInfoBeforeUpgraded.FacetDeployedInfo[key];
+
+    // Build the previousDeployedVersions in the same loop
+    const facetInfo = deployInfoWithOldFacet.FacetDeployedInfo[key];
+    if (facetInfo.version !== undefined) {
+      previousDeployedVersions[key] = facetInfo.version;
+    } else {
+      log(`Facet ${key} does not have a version`);
+    }
   }
   await deployFuncSelectors(networkDeployInfo, deployInfoWithOldFacet, facetsToDeploy);
-  await afterDeployCallbacks(networkDeployInfo, facetsToDeploy);
+  await afterDeployCallbacks(networkDeployInfo, facetsToDeploy, previousDeployedVersions);
 }
 
 export async function deployDiamondFacets(
@@ -623,7 +637,7 @@ async function main() {
     await deployAndInitDiamondFacets(networkDeployedInfo);
     log(
       `Facets deployed to: ${
-        (util.inspect(networkDeployedInfo.FacetDeployedInfo), { depth: null })
+        (util.inspect(networkDeployedInfo.FacetDeployedInfo, { depth: null }))
       }`,
     );
     if (networkName !== 'hardhat') {

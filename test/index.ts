@@ -27,8 +27,8 @@ import {
   toBN,
   toWei,
   INetworkDeployInfo,
-  FacetToDeployInfo,
-} from '../scripts/common';
+  FacetToDeployInfo, PreviousVersionRecord
+} from "../scripts/common";
 import { IERC1155Upgradeable__factory } from '../typechain-types/factories/IERC1155Upgradeable__factory';
 import { IERC165Upgradeable__factory } from '../typechain-types/factories/IERC165Upgradeable__factory';
 import { Facets, LoadFacetDeployments } from '../scripts/facets';
@@ -61,6 +61,7 @@ export async function logEvents(tx: ContractTransaction) {
 describe.only('Genius Diamond DApp Testing', async function () {
   let gnusDiamond: GeniusDiamond;
   let networkDeployedInfo: INetworkDeployInfo;
+  let previousDeployedVersions: PreviousVersionRecord;
 
   if (debugging) {
     debug.enable('GNUS.*:log');
@@ -103,13 +104,14 @@ describe.only('Genius Diamond DApp Testing', async function () {
       IERC165InterfaceID,
     );
     assert(
-      await gnusDiamond.supportsInterface(IERC11InterfaceID._hex),
-      "Doesn't support IERC1155Upgradeable",
+        await gnusDiamond.supportsInterface(IERC11InterfaceID._hex),
+      "Doesn't support IERC1155Upgradeable"
     );
 
     const deployInfoBeforeUpgraded: INetworkDeployInfo = JSON.parse(
       JSON.stringify(networkDeployedInfo),
     );
+
     let facetsToDeploy: FacetToDeployInfo = Facets;
     // do deployment of facets in 3 steps
     await deployDiamondFacets(networkDeployedInfo, facetsToDeploy);
@@ -117,18 +119,28 @@ describe.only('Genius Diamond DApp Testing', async function () {
     const deployInfoWithOldFacet: INetworkDeployInfo = Object.assign(
       JSON.parse(JSON.stringify(networkDeployedInfo)),
     );
+    // isn't this bad?  Changing the keys of what we are iterating through?
     for (const key in deployInfoWithOldFacet.FacetDeployedInfo) {
       if (deployInfoBeforeUpgraded.FacetDeployedInfo[key])
         deployInfoWithOldFacet.FacetDeployedInfo[key] =
           deployInfoBeforeUpgraded.FacetDeployedInfo[key];
+
+      // Build the previousDeployedVersions in the same loop
+      const facetInfo = deployInfoWithOldFacet.FacetDeployedInfo[key];
+      if (facetInfo.version !== undefined) {
+        previousDeployedVersions[key] = facetInfo.version;
+      } else {
+        debuglog(`Facet ${key} does not have a version`);
+      }
     }
+
     await deployFuncSelectors(networkDeployedInfo, deployInfoWithOldFacet, facetsToDeploy);
     debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
 
     // this should be a null operation.
     await deployFuncSelectors(networkDeployedInfo, deployInfoWithOldFacet, facetsToDeploy);
 
-    await afterDeployCallbacks(networkDeployedInfo);
+    await afterDeployCallbacks(networkDeployedInfo, undefined, previousDeployedVersions);
     debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
 
     debuglog('Facets Deployed');

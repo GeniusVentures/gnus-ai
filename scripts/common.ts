@@ -60,7 +60,7 @@ export type AfterDeployInit = (
 ) => Promise<void | boolean>;
 
 export interface IVersionInfo {
-  fromVersion?: number;
+  fromVersions?: number[];
   deployInit?: string;          // init for when not upgrading and first deployment
   upgradeInit?: string;   // upgradeInit if version is upgrading from previous version
   deployInclude?: string[];
@@ -76,6 +76,8 @@ export interface IFacetToDeployInfo {
 }
 
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;
+
+export type PreviousVersionRecord = Record<string, number>;
 
 export function toWei(value: number | string): BigNumber {
   return ethers.utils.parseEther(value.toString());
@@ -136,4 +138,19 @@ export const diamondCutFuncAbi = {
 export interface IDefenderViaInfo {
   via: ExternalApiCreateProposalRequest['via'],
   viaType: ExternalApiCreateProposalRequest['viaType'];
+}
+
+export function createPreviousVersionRecordWithMap(facetInfo: FacetDeployedInfo): PreviousVersionRecord {
+  const previousVersionRecord: PreviousVersionRecord = {};
+
+  // Using Object.entries() to get key-value pairs and then mapping over them
+  Object.entries(facetInfo).map(([facetName, info]) => {
+    if (info.version !== undefined) {
+      previousVersionRecord[facetName] = info.version;
+    } else {
+      console.warn(`Facet ${facetName} does not have a version`);
+    }
+  });
+
+  return previousVersionRecord;
 }

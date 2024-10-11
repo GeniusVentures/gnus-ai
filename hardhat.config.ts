@@ -77,7 +77,7 @@ const config: HardhatUserConfig = {
         : undefined,
     },
     polygon: {
-      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_API_KEY}`,
       chainId: 137,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
@@ -88,8 +88,13 @@ const config: HardhatUserConfig = {
       timeout: 100000,
     },
     arbitrum_sepolia: {
-      url: `https://arbitrum-sepolia.blockpi.network/v1/rpc/public`,
+      url: `https://lb.drpc.org/ogrpc?network=arbitrum-sepolia&dkey=${process.env.DRPC_API_KEY}`,
       chainId: 421614,
+      accounts: [process.env.PRIVATE_KEY || ''],
+    },
+    arbitrum: {
+      url: `https://lb.drpc.org/ogrpc?network=arbitrum&dkey=${process.env.DRPC_API_KEY}`,
+      chainId: 42161,
       accounts: [process.env.PRIVATE_KEY || ''],
     },
     base_sepolia: {
@@ -103,7 +108,7 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     polygon_amoy: {
-      url: `https://polygon-amoy.core.chainstack.com/${process.env.CHAINSTACK_POLY_TEST_API_KEY}`,
+      url: `https://lb.drpc.org/ogrpc?network=polygon-amoy&dkey=${process.env.DRPC_API_KEY}`,
       chainId: 80002,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
@@ -112,16 +117,16 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     mainnet: {
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://lb.drpc.org/ogrpc?network=ethereum=${process.env.DRPC_API_KEY}`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     bsc: {
-      url: `https://bsc-dataseed.bnbchain.org/`,
+      url: `https://lb.drpc.org/ogrpc?network=bsc&dkey=${process.env.DRPC_API_KEY}`,
       chainId: 56,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     base: {
-      url: `https://mainnet.base.org/`,
+      url: `https://lb.drpc.org/ogrpc?network=base&dkey=${process.env.DRPC_API_KEY}`,
       chainId: 8453,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },

@@ -20,7 +20,7 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
 
     const info = await gnusDiamond.protocolInfo();
 
-    debuglog(`protocalinfo: \n${util.inspect(info)}`)
+    debuglog(`protocol info: \n${util.inspect(info)}`)
 
     // simulate orevious bad deployments
     //const signers = await ethers.getSigners();
