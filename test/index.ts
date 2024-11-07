@@ -61,7 +61,7 @@ export async function logEvents(tx: ContractTransaction) {
 describe.only('Genius Diamond DApp Testing', async function () {
   let gnusDiamond: GeniusDiamond;
   let networkDeployedInfo: INetworkDeployInfo;
-  let previousDeployedVersions: PreviousVersionRecord;
+  let previousDeployedVersions: PreviousVersionRecord = {};
 
   if (debugging) {
     debug.enable('GNUS.*:log');
@@ -127,7 +127,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
 
       // Build the previousDeployedVersions in the same loop
       const facetInfo = deployInfoWithOldFacet.FacetDeployedInfo[key];
-      if (facetInfo.version !== undefined) {
+      if (facetInfo && (facetInfo.version !== undefined)) {
         previousDeployedVersions[key] = facetInfo.version;
       } else {
         debuglog(`Facet ${key} does not have a version`);
