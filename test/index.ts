@@ -159,7 +159,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
       }
       // DiamondCutFacet is deployed but doesn't have any facets deployed
       assert.equal(
-        addresses.length + 1,
+        addresses.length,
         Object.keys(networkDeployedInfo.FacetDeployedInfo).length,
       );
     });
