@@ -198,8 +198,8 @@ describe.only('Genius Diamond DApp Testing', async function () {
 
       const gnusSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
       assert(
-        gnusSupply.eq(toWei(900_000)),
-        `GNUS Supply should equal zero but equals${gnusSupply}`,
+        gnusSupply.eq(toWei(0)),
+        `GNUS Supply should equal zero but equals ${gnusSupply}`,
       );
     });
 
