@@ -4,7 +4,6 @@ import {
   dc,
   debuglog,
   GNUS_TOKEN_ID,
-  assert,
   expect,
   toBN,
   toWei,
@@ -12,6 +11,7 @@ import {
 import { iObjToString } from './iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
+import { assert } from 'chai';
 
 export function suite() {
   describe('Testing Batch transfer erc20', async function () {

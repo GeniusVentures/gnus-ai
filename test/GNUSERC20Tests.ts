@@ -1,10 +1,11 @@
 import { ethers, network } from 'hardhat';
-import { dc, assert, expect, toWei, GNUS_TOKEN_ID, debuglog } from '../scripts/common';
+import { dc, expect, toWei, GNUS_TOKEN_ID, debuglog } from '../scripts/common';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
 import { getInterfaceID } from '../scripts/FacetSelectors';
 import { IERC20Upgradeable__factory } from '../typechain-types/factories/IERC20Upgradeable__factory';
 import { deployments } from '../scripts/deployments';
+import { assert } from 'chai';
 
 export function suite() {
   describe('GNUS ERC20 Hybrid Testing', async function () {
