@@ -22,13 +22,13 @@ import {
   dc,
   debuglog,
   GNUS_TOKEN_ID,
-  assert,
   expect,
   toBN,
   toWei,
   INetworkDeployInfo,
   FacetToDeployInfo, PreviousVersionRecord
 } from "../scripts/common";
+import { assert } from 'chai';
 import { IERC1155Upgradeable__factory } from '../typechain-types/factories/IERC1155Upgradeable__factory';
 import { IERC165Upgradeable__factory } from '../typechain-types/factories/IERC165Upgradeable__factory';
 import { Facets, LoadFacetDeployments } from '../scripts/facets';
