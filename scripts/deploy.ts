@@ -26,7 +26,7 @@ import {
 import { DiamondCutFacet } from '../typechain-types/DiamondCutFacet';
 import { IDiamondCut } from '../typechain-types/IDiamondCut';
 import { deployments } from '../scripts/deployments';
-import { Facets, LoadFacetDeployments, UpgradeInits } from '../scripts/facets';
+import { Facets, LoadFacetDeployments } from '../scripts/facets';
 import * as util from 'util';
 import { getGasCost } from '../scripts/getgascost';
 import { defenderSigners } from "./DefenderSigners";
