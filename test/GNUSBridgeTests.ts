@@ -1,5 +1,6 @@
 import { ethers } from 'hardhat';
-import { dc, assert, expect, toWei, GNUS_TOKEN_ID } from '../scripts/common';
+import { dc, expect, toWei, GNUS_TOKEN_ID } from '../scripts/common';
+import { assert } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
 import { getInterfaceID } from '../scripts/FacetSelectors';
