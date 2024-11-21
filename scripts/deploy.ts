@@ -122,9 +122,9 @@ export async function deployFuncSelectors(
     if (!Object.keys(facetsToDeploy).includes(facetName)) {
       // should delete functions exist in diamond
       selectorsToBeRemoved.push(
-        ...deployedFacets[facetName].funcSelectors?.filter((e) =>
+        ...(deployedFacets[facetName].funcSelectors?.filter((e) =>
           Object.keys(deployedFuncSelectors?.facets).includes(e),
-        ),
+        ) || []),
       );
       facetNamesToBeRemoved.push(facetName);
       delete deployedFacets[facetName];
@@ -332,18 +332,17 @@ export async function deployFuncSelectors(
     });
     if (process.env.DEFENDER_DEPLOY_ON &&
         defenderSigners[network.name]) {
-      const upgradeFunctionInputs:
-        | string
-        | boolean
-        | (string | boolean)[]
-        | (string | string[])[][] = [];
+      const upgradeFunctionInputs: (string | boolean | (string | string[])[])[] = [];
+
+      // Format the inputs for the diamond cut operation
       upgradeCut.forEach((e) =>
         upgradeFunctionInputs.push([
-          e.facetAddress,
-          e.action.toString(),
-          e.functionSelectors,
+          e.facetAddress, // Address of the facet
+          e.action.toString(), // Action type (Add, Replace, Remove)
+          e.functionSelectors, // Function selectors for the operation
         ]),
       );
+
       // since this deployment does the diamond cut all at once, there is only on initialization functionCall
       const response = await client.createProposal({
         contract: {
