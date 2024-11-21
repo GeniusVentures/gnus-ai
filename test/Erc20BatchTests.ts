@@ -12,7 +12,6 @@ import { assert } from 'chai';
 import { iObjToString } from './iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
-import { assert } from 'chai';
 
 // Exporting a test suite for batch transfer functionality of GNUS ERC20 tokens.
 export function suite() {
