@@ -8,6 +8,7 @@ import {
   toBN,
   toWei,
 } from '../scripts/common';
+import { assert } from 'chai';
 import { iObjToString } from './iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';

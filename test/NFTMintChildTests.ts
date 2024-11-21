@@ -4,12 +4,12 @@ import { logEvents } from '.';
 import {
   debuglog,
   GNUS_TOKEN_ID,
-  assert,
   expect,
   toBN,
   toWei,
   dc,
 } from '../scripts/common';
+import { assert } from 'chai';
 import { iObjToString } from './iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
