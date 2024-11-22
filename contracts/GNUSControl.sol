@@ -27,7 +27,6 @@ contract GNUSControl is GeniusAccessControl {
     bytes32 constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     function GNUSControl_Initialize230() external onlySuperAdminRole {
-        address sender = _msgSender();
         require(
             GNUSControlStorage.layout().protocolVersion < 230,
             "constructor was already initialized >= 2.30"
