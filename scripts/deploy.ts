@@ -333,7 +333,7 @@ export async function deployFuncSelectors(
     // Check if the diamond contract is already listed on Defender
     if (
       listedContracts.find(
-        (e) => e.address.toLowerCase() === diamondCut.address.toLowerCase(),
+        (e: { address: string }) => e.address.toLowerCase() === diamondCut.address.toLowerCase(),
       )
     ) {
       log('Diamond Contract was listed on defender');
