@@ -832,13 +832,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0xa22cb465', '0x02fe5305',
           '0x862440e2', '0xbd85b039',
           '0x3f4ba83a', '0x0e89341c'
-        ]
+        ],
+        verified: true
       },
       GNUSBridge: {
-        address: '0xeC764eB165e04efE5C6A01b41805673714F930Ae',
-        tx_hash: '0x143b49e11e582a3f674cd0111b6b4558228fe06f6f1d2510a3d3fbf66b7191fe',
-        version: 2.2,
-        verified: true,
+        address: '0xAd47AC7B669CA8e6b1497BD4F3b6056c30704EE4',
+        tx_hash: '0x35bb2a876bcb080c25f63df644d2250e431acee7ec8f72b0e9af94be71445165',
+        version: 2.4,
         funcSelectors: [
           '0xd5391393', '0xdd62ed3e',
           '0x095ea7b3', '0x70a08231',
@@ -848,7 +848,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x40c10f19', '0x95d89b41',
           '0x18160ddd', '0xa9059cbb',
           '0x23b872dd', '0x441a3e70'
-        ]
+        ],
+        verified: true
       },
       GeniusAI: {
         address: '0xa7A35Bf2035C35be384532D897C7E8Daf6692F12',
@@ -861,7 +862,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x59d8d9dab55CF87478b0bb307188D0FE3F3425ac',
         tx_hash: '0xd86f6613215ae1290a685d200e0bc9b5734c6920d7957a764f1aa2fc39af89d3',
         version: 0,
-        funcSelectors: [ '0x06fdde03' ]
+        funcSelectors: [ '0x06fdde03' ],
+        verified: true
       },
       ERC20TransferBatch: {
         address: '0x29Df5345Eb5404EeBEBAD6125C7E43e0baCb816f',
@@ -871,9 +873,9 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         funcSelectors: [ '0x7c88e3d9', '0x3b3e672f', '0x1bdc02ba' ]
       },
       GNUSControl: {
-        address: '0x0E92e46Ad0E57e306EB3B96cfAf53709BD552096',
-        tx_hash: '0x501b1bd17e858449e623cd6d22169faefd49eca8d44c48bd6c2342a0e3b83d20',
-        version: 2.3,
+        address: '0x46ADb9f0CC91dA9dC6FdD3340fa0ac4934a4A578',
+        tx_hash: '0x1b7070150a9c1eafe5afb820bb0b925bd5ce1c6329a9c51624d9238bc28c039e',
+        version: 2.4,
         funcSelectors: [
           '0x72f6ac43',
           '0x9e8e7134',
@@ -882,8 +884,10 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x1307a4be',
           '0x93420cf4',
           '0xed8d47e6',
+          '0xceba5598',
           '0x5a1c0366'
-        ]
+        ],
+        verified: true
       },
       GNUSContractAssets: {
         address: '0x7a37ef45DfeBC2204991DAB26bDe8C8cbCB17ca9',
@@ -897,7 +901,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
       BurnVerifier: '0x1D7389C37c3DD5E6dA7Df715B164E40EFBc7F397',
       ZetherVerifier: '0xeb0aac06A5DF0a9d5e942ce1e560C8Aa428A31C5',
       libEncryption: '0xF7B8E8a8aB5417Ab8bce9Dbb0246cd1b0C768b8f'
-    }
+    },
+    protocolVersion: 2.4
   },
   base_sepolia: {
     DiamondAddress: '0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB',
@@ -961,12 +966,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0xa22cb465', '0x02fe5305',
           '0x862440e2', '0xbd85b039',
           '0x3f4ba83a', '0x0e89341c'
-        ]
+        ],
+        verified: true
       },
       GNUSBridge: {
-        address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
-        tx_hash: '0x65b4ccb47a69969055d4ecae02adbdbc1a9933ce6d8feb18128e8766d878a288',
-        version: 2.2,
+        address: '0x1D7389C37c3DD5E6dA7Df715B164E40EFBc7F397',
+        tx_hash: '0xc649f58257c0dc0c56e8e49750af51d6b62bfa695eebf99ee1ff36c91834d67f',
+        version: 2.4,
         funcSelectors: [
           '0xd5391393', '0xdd62ed3e',
           '0x095ea7b3', '0x70a08231',
@@ -990,7 +996,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x8f9698b6d5edc5975576a7f880c03Ac836d4b981',
         tx_hash: '0xfd025e65b043cacb4b85b1e078e4827a4c5a69e1b0b98b87db0d3d8c0fd24f52',
         version: 0,
-        funcSelectors: [ '0x06fdde03' ]
+        funcSelectors: [ '0x06fdde03' ],
+        verified: true
       },
       ERC20TransferBatch: {
         address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
@@ -1000,9 +1007,9 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       GNUSControl: {
-        address: '0xcB9dE2d6dac44480a7944593bFE6F8438c0Df967',
-        tx_hash: '0xb2240529a2a38a83c9d53912982f00216574fb77108d59a83204ecc88141546a',
-        version: 2.3,
+        address: '0xeb0aac06A5DF0a9d5e942ce1e560C8Aa428A31C5',
+        tx_hash: '0x421fe47a9dbfeddda857019f23a25f9c28cc82607c7f0bdebc3fd833c82f66f4',
+        version: 2.4,
         funcSelectors: [
           '0x72f6ac43',
           '0x9e8e7134',
@@ -1011,8 +1018,10 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x1307a4be',
           '0x93420cf4',
           '0xed8d47e6',
+          '0xceba5598',
           '0x5a1c0366'
-        ]
+        ],
+        verified: true
       },
       GNUSContractAssets: {
         address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
@@ -1026,7 +1035,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
       BurnVerifier: '0xC28B43882F86634B20C48fABCa1479523Eb43CD8',
       ZetherVerifier: '0xE6f6CCF5D5b0c0a508861DD14BB38bDEA5286195',
       libEncryption: '0x4b5C09EF668Be32907034ad26226df317C503442'
-    }
+    },
+    protocolVersion: 2.4
   },
   bsc_testnet: {
     DiamondAddress: '0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB',
@@ -1090,12 +1100,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0xa22cb465', '0x02fe5305',
           '0x862440e2', '0xbd85b039',
           '0x3f4ba83a', '0x0e89341c'
-        ]
+        ],
+        verified: true
       },
       GNUSBridge: {
-        address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
-        tx_hash: '0x5a93c8b94a89a4e49b61fa384568438f1e9c0d80eaf5ca65ca72ab12581488f2',
-        version: 2.2,
+        address: '0xfdaeeFD574c3023a8FE847d802B0af6254259357',
+        tx_hash: '0x59c5b95ef5e8b9ec4a048ad7e631fdfe43ec130e8aef7ffc6318c07817f10456',
+        version: 2.4,
         funcSelectors: [
           '0xd5391393', '0xdd62ed3e',
           '0x095ea7b3', '0x70a08231',
@@ -1119,7 +1130,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0xf2A11DfAdF5256bC27F7Dcde1E6898C3067097af',
         tx_hash: '0xb9f560aaa96d6657d7f230afd93dbd7ab23d36e7357c7166f760f4b2d9af6bc3',
         version: 0,
-        funcSelectors: [ '0x06fdde03' ]
+        funcSelectors: [ '0x06fdde03' ],
+        verified: true
       },
       ERC20TransferBatch: {
         address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
@@ -1129,9 +1141,9 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       GNUSControl: {
-        address: '0x820009B3546D421724Aace39025F4eA56C4ceF05',
-        tx_hash: '0x968bf09d848a68e5d48a598a54c4b43d23bd9ba8bcc8642c8c8bac9f9d8f4d0b',
-        version: 2.3,
+        address: '0xC217562AB6Cc916adB8AB321420E13247fc84F08',
+        tx_hash: '0xaa30d684b1480299719788ab964bf1510ccc7d01ce7030151307faf119088a4c',
+        version: 2.4,
         funcSelectors: [
           '0x72f6ac43',
           '0x9e8e7134',
@@ -1140,8 +1152,10 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x1307a4be',
           '0x93420cf4',
           '0xed8d47e6',
+          '0xceba5598',
           '0x5a1c0366'
-        ]
+        ],
+        verified: true
       },
       GNUSContractAssets: {
         address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
@@ -1155,7 +1169,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
       BurnVerifier: '0x0E92e46Ad0E57e306EB3B96cfAf53709BD552096',
       ZetherVerifier: '0xbEBE4955B557629774Ce64e29d43c7523a3b4c77',
       libEncryption: '0x05C28D62A01d6dA60a70f73F4AEf0D78CF19D081'
-    }
+    },
+    protocolVersion: 2.4
   },
   polygon_amoy: {
     DiamondAddress: '0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB',
@@ -1219,12 +1234,13 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0xa22cb465', '0x02fe5305',
           '0x862440e2', '0xbd85b039',
           '0x3f4ba83a', '0x0e89341c'
-        ]
+        ],
+        verified: true
       },
       GNUSBridge: {
-        address: '0x587C328a1189eC813F13cBaE6e4003a556f17484',
-        tx_hash: '0x8117945f23042a4bc917e0af5f935a1aeec1c72b20ad1b6f2b46a3e2c3c2a7cc',
-        version: 2.2,
+        address: '0xCA62505485e72d8298dd952FF62aD1C7072EBD53',
+        tx_hash: '0x0a90ff2a1f8ac962e766b622e025872ca5a9e259cae9b6878cc7908b1fd3ff07',
+        version: 2.4,
         funcSelectors: [
           '0xd5391393', '0xdd62ed3e',
           '0x095ea7b3', '0x70a08231',
@@ -1248,7 +1264,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         address: '0x4b5C09EF668Be32907034ad26226df317C503442',
         tx_hash: '0x397e7c6bf27a5607d05fdb52f958046edca05f19daffaf524b600155948690ca',
         version: 0,
-        funcSelectors: [ '0x06fdde03' ]
+        funcSelectors: [ '0x06fdde03' ],
+        verified: true
       },
       ERC20TransferBatch: {
         address: '0x34Aa1c9f996BaDC688dF2149F72cC6e6B842575e',
@@ -1258,9 +1275,9 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
         verified: true
       },
       GNUSControl: {
-        address: '0x45a396fB12721DE9E8E0DAE7881d013B2c5A6a4f',
-        tx_hash: '0xada88f8702bb4504de9b577a77df1126f58784fdd9768785bfd093e13fcc9b34',
-        version: 2.3,
+        address: '0x5a32F04D7cF359bf28742C38E3ef1B017E195F47',
+        tx_hash: '0x9f776f2b8af10968d2b1b231738f2f27a62b03a5e4859a93625dff482c929c20',
+        version: 2.4,
         funcSelectors: [
           '0x72f6ac43',
           '0x9e8e7134',
@@ -1269,8 +1286,10 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
           '0x1307a4be',
           '0x93420cf4',
           '0xed8d47e6',
+          '0xceba5598',
           '0x5a1c0366'
-        ]
+        ],
+        verified: true
       },
       GNUSContractAssets: {
         address: '0xB76042F7edF3Ee7AECc3143cA46A2f357491EBC0',
@@ -1284,7 +1303,8 @@ export const deployments: { [key: string]: INetworkDeployInfo } = {
       BurnVerifier: '0x9bCd7Da4Bf573b19e784e9dCfA6279a9D53e376F',
       ZetherVerifier: '0x51e99a3A30B3B69EbFfA078aF54d25115a163EE8',
       libEncryption: '0xC28B43882F86634B20C48fABCa1479523Eb43CD8'
-    }
+    },
+    protocolVersion: 2.4
   },
   localhost: {
     DiamondAddress: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',

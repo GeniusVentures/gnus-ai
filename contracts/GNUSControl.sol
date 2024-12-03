@@ -89,6 +89,10 @@ contract GNUSControl is GeniusAccessControl {
         chainID = GNUSControlStorage.layout().chainID;
     }
 
+    function setProtocolVersion(uint256 protocolVersion) external onlySuperAdminRole {
+        GNUSControlStorage.layout().protocolVersion = protocolVersion;
+    }
+
 }
 
 

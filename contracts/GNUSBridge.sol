@@ -132,7 +132,6 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
         emit BridgeSourceBurned(sender, id, amount, GNUSControlStorage.layout().chainID, destChainID);
     }
 
-
     /**
      * @dev Returns the amount of tokens in existence.
      */

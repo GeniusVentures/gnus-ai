@@ -265,6 +265,8 @@ export async function deployFuncSelectors(
     }
   }
 
+  networkDeployInfo.protocolVersion = protocolUpgradeVersion;
+
   // upgrade diamond with facets
   const diamondCut = dc.GeniusDiamond as IDiamondCut;
   if (process.env.DEFENDER_DEPLOY_ON &&
