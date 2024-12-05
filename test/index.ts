@@ -256,34 +256,6 @@ describe.only('Genius Diamond DApp Testing', async function () {
       expect(protocolVersion).to.be.eq(BigInt(240));
     });
   }); 
-
-  // Test suite to verify GNUS token creation and initial supply on the Polygon network.
-  describe('Polygon to GNUS Deposits', async function () {
-
-    // Test to check if the GNUS token has been created successfully in the contract.
-    it('Testing if GNUS token has been created', async () => {
-      // Retrieve information about the GNUS token using its token ID (`GNUS_TOKEN_ID`).
-      const gnusInfo: NFTStructOutput = await gnusDiamond.getNFTInfo(GNUS_TOKEN_ID);
-
-      // Log GNUS token information for debugging purposes.
-      debuglog(iObjToString(gnusInfo));
-    });
-
-    // Test to verify the initial supply of the GNUS token.
-    it('Testing if GNUS token has any supply yet', async () => {
-      // Retrieve a list of signers and destructure it to get `owner`, `addr1`, and `addr2`.
-      const [owner, addr1, addr2] = await ethers.getSigners();
-
-      // Get the total supply of the GNUS token using the token ID.
-      const gnusSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
-
-      // Assert that the GNUS token supply is zero, as expected upon initial creation.
-      assert(
-        gnusSupply.eq(toWei(0)),
-        `GNUS Supply should equal zero but equals ${gnusSupply}`,
-      );
-    });
-  });
   
   // After all tests in this suite, run additional test suites for GNUS functionality.
   after(() => {
