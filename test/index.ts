@@ -217,6 +217,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
       // Assert that the number of facets in `gnusDiamond` matches the count in `networkDeployedInfo`.
       // The diamond contract should have one additional facet to account for the main diamond facet.
       assert.equal(
+
         addresses.length,
         Object.keys(networkDeployedInfo.FacetDeployedInfo).length,
       );
@@ -252,7 +253,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
       expect(bridgeFee).to.be.eq(0);
 
       // Verify that the `protocolVersion` matches the expected version (230).
-      expect(protocolVersion).to.be.eq(BigInt(230));
+      expect(protocolVersion).to.be.eq(BigInt(240));
     });
   }); 
 
