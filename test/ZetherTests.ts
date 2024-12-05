@@ -1,5 +1,6 @@
 import { ethers, web3 } from "hardhat";
-import { dc, assert, expect, toWei, GNUS_TOKEN_ID } from "../scripts/common";
+import { dc, expect, toWei, GNUS_TOKEN_ID } from "../scripts/common";
+import { assert } from 'chai';
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Zether } from '../typechain-types/Zether';
 import Client from '@gnus.ai/zk-utils/src/client';

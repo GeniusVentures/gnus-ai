@@ -5,7 +5,7 @@ import { GeniusDiamond } from "../typechain-types";
 import { BigNumber } from "ethers";
 import { deployments } from "./deployments";
 import { attachGNUSDiamond } from "./upgrade";
-import util, { log } from "util";
+import util from "util";
 
 const log: debug.Debugger = debug('GNUSAccessControl:log');
 log.color = '32';
