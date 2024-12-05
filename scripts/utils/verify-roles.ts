@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { deployments } from "./deployments"; // Adjust the path to your `deployments.ts`
+import { deployments } from "../deployments"; // Adjust the path to your `deployments.ts`
 import * as dotenv from "dotenv";
 
 dotenv.config();
