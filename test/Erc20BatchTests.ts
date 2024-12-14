@@ -1,4 +1,4 @@
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { BigNumber, utils } from 'ethers';
 import {
   dc,
@@ -59,9 +59,24 @@ export function suite() {
       );
       // assert(ownerSupply.gt(toWei(100)), `Owner balanceOf should be > 100, but is ${ethers.utils.formatEther(ownerSupply)}`);
     });
+    
+    // The snapshot ID to revert to the initial state after each test.
+    let snapshotId: string;
 
+    beforeEach(async () => {
+      snapshotId = await network.provider.send('evm_snapshot');
+    });
+      
+    afterEach(async () => {
+      await network.provider.send("evm_revert", [snapshotId]);
+    });
+    
     // Test case to verify batch transfers of ERC20 tokens.
     it('Batch Transferring to two addresses', async () => {
+      
+      // Mint 150 GNUS tokens to the owner’s address and verify the updated balance.
+      await gnusDiamond['mint(address,uint256)'](owner.address, toWei(150));
+      
       // Execute a batch transfer to `receiver1` and `receiver2` with specified token amounts.
       await gdAddr1.transferBatch(
         [receiver1.address, receiver2.address],
@@ -101,12 +116,12 @@ export function suite() {
       balance = await gnusDiamond['balanceOf(address)'](owner.address);
 
       // Assert that the owner's balance exceeds 100 after minting.
-      expect(balance).to.be.gt(toWei(100));
+      expect(balance).to.be.eq(toWei(100));
 
       // Transfer tokens to `receiver1` and verify their balance.
       await gnusDiamond.transfer(receiver1.address, toWei(10));
       let receiverBalance = await gnusDiamond['balanceOf(address)'](receiver1.address);
-      expect(receiverBalance).to.be.gt(toWei(10));
+      expect(receiverBalance).to.be.eq(toWei(10));
 
       // Block the owner from transferring tokens and verify the restriction.
       await gnusDiamond.banTransferorForAll(owner.address);

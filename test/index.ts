@@ -253,7 +253,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
       expect(bridgeFee).to.be.eq(0);
 
       // Verify that the `protocolVersion` matches the expected version (230).
-      expect(protocolVersion).to.be.eq(BigInt(240));
+      expect(protocolVersion).to.be.eq(BigInt(250));
     });
   }); 
   
