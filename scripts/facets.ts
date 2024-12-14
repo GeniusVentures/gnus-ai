@@ -11,7 +11,7 @@ export const Facets: FacetToDeployInfo = {
   },
   GNUSBridge: {
     priority: 110,
-    versions: { 2.4: {} },
+    versions: { 2.5: { deployInit: 'GNUSBridge_Initialize()'} },
   },
   GeniusAI: { priority: 70, versions: { 0.0: { deployInit: 'GeniusAI_Initialize()' }   }  },
   GNUSNFTCollectionName: { priority: 80 },
