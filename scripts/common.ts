@@ -9,7 +9,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { Fragment } from '@ethersproject/abi';
 import fs from 'fs';
 import util from 'util';
-import { ExternalApiCreateProposalRequest } from "@openzeppelin/defender-admin-client/lib/models/proposal";
+// import { ExternalApiCreateProposalRequest } from "@openzeppelin/defender-sdk";
 
 chai.use(chaiAsPromised);
 
@@ -22,8 +22,8 @@ global.debuglog.color = '158';
 
 export const debuglog = global.debuglog;
 
-export const toBN = BigNumber.from;
-export const GNUS_TOKEN_ID = toBN(0);
+// export const toBN = BigNumber.from;
+export const GNUS_TOKEN_ID = BigNumber.from(0);
 
 export interface IFacetDeployedInfo {
   address?: string;
@@ -136,10 +136,10 @@ export const diamondCutFuncAbi = {
   name: 'diamondCut',
 };
 
-export interface IDefenderViaInfo {
-  via: ExternalApiCreateProposalRequest['via'],
-  viaType: ExternalApiCreateProposalRequest['viaType'];
-}
+// export interface IDefenderViaInfo {
+//   via: ExternalApiCreateProposalRequest['via'],
+//   viaType: ExternalApiCreateProposalRequest['viaType'];
+// }
 
 export function createPreviousVersionRecordWithMap(facetInfo: FacetDeployedInfo): PreviousVersionRecord {
   const previousVersionRecord: PreviousVersionRecord = {};

@@ -5,7 +5,6 @@ import {
   debuglog,
   GNUS_TOKEN_ID,
   expect,
-  toBN,
   toWei,
 } from '../scripts/common';
 import { assert } from 'chai';

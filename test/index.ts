@@ -1,7 +1,6 @@
 import { Contract, BigNumber, EventFilter, ContractTransaction } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import '@nomiclabs/hardhat-etherscan';
-import '@nomiclabs/hardhat-waffle';
+import "@nomicfoundation/hardhat-toolbox";
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
@@ -23,7 +22,6 @@ import {
   debuglog,
   GNUS_TOKEN_ID,
   expect,
-  toBN,
   toWei,
   INetworkDeployInfo,
   FacetToDeployInfo, PreviousVersionRecord

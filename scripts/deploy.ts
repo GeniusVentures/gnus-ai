@@ -1,8 +1,7 @@
 import { debug } from 'debug';
 import { BaseContract } from 'ethers';
 import hre, { ethers, network } from 'hardhat';
-import { AdminClient } from '@openzeppelin/defender-admin-client';
-import { Network } from '@openzeppelin/defender-base-client';
+import { Defender } from '@openzeppelin/defender-sdk';
 import {
   FacetInfo,
   getSelectors,
@@ -37,7 +36,7 @@ const GAS_LIMIT_CUT_BASE = 100000;
 const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
 
 // Declare an AdminClient object for OpenZeppelin Defender, if integration with Defender is used.
-let client: AdminClient;
+let client: Defender;
 
 /**
  * Deploys the Genius Diamond contract, which serves as the main entry point of the GNUS protocol.
@@ -321,14 +320,14 @@ export async function deployFuncSelectors(
       defenderSigners[network.name]) {
     log('Deploying contract on defender');
 
-    // Initialize the AdminClient for OpenZeppelin Defender
-    client = new AdminClient({
+    // Initialize the Defender client for OpenZeppelin Defender
+    client = new Defender({
       apiKey: process.env.DEFENDER_API_KEY || '', // Defender API key
       apiSecret: process.env.DEFENDER_API_SECRET || '', // Defender API secret
     });
-
+    
     // Retrieve the list of contracts managed on Defender
-    const listedContracts = await client.listContracts();
+    const listedContracts = await client.proposal.listContracts();
 
     // Check if the diamond contract is already listed on Defender
     if (
@@ -339,7 +338,7 @@ export async function deployFuncSelectors(
       log('Diamond Contract was listed on defender');
     } else {
       // Add the diamond contract to Defender if it isn't listed
-      const res = await client.addContract({
+      const res = await client.proposal.addContract({
         address: diamondCut.address, // Address of the diamond contract
         abi: JSON.stringify(diamondCut.interface.fragments), // Contract ABI
         network: hre.network.name as Network, // Current network

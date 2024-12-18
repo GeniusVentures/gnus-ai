@@ -5,7 +5,6 @@ import {
   debuglog,
   GNUS_TOKEN_ID,
   expect,
-  toBN,
   toWei,
   dc,
 } from '../scripts/common';
@@ -22,7 +21,7 @@ export function suite() {
     let owner: string;
     let gdAddr1: GeniusDiamond;
     let gdAddr2: GeniusDiamond;
-    const ParentNFTID: BigNumber = toBN(1); // Reference to the parent NFT
+    const ParentNFTID: BigNumber = BigNumber.from(1); // Reference to the parent NFT
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
 
     // `before` hook to set up the testing environment

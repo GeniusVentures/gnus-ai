@@ -1,12 +1,11 @@
 import { ethers } from 'hardhat';
-import { utils } from 'ethers';
+import { utils, BigNumber } from 'ethers';
 import { logEvents } from '.';
 import {
   dc,
   debuglog,
   GNUS_TOKEN_ID,
   expect,
-  toBN,
   toWei,
 } from '../scripts/common';
 import { assert } from 'chai';
@@ -15,12 +14,13 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
 // Import additional test suites for NFT minting functionality
 import * as NFTMintTests from '../test/NFTMintTests';
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 // Exporting a test suite for testing NFT creation functionality in the GNUS NFT Factory
 export function suite() {
   describe('GNUS NFT Factory Testing', async function () {
     // Variables to store signers, contract instances, and roles
-    let signers: SignerWithAddress[];
+    let signers: HardhatEthersSigner[];
     let owner: string;
     let gdAddr1: GeniusDiamond;
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
@@ -35,7 +35,7 @@ export function suite() {
       const amount = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 
       // Connect the `gnusDiamond` contract to a specific signer
-      gdAddr1 = await gnusDiamond.connect(signers[1]);
+      gdAddr1 = await gnusDiamond.connect(signers[1] as unknown as SignerWithAddress);
     });
 
     // Test case to validate the burning of GNUS tokens for NFT creation
@@ -118,7 +118,7 @@ export function suite() {
         GNUS_TOKEN_ID,
         'TEST GAME',
         'TESTGAME',
-        toBN(2.0), // Exchange rate: 2.0 tokens for 1 GNUS token
+        BigNumber.from(2.0), // Exchange rate: 2.0 tokens for 1 GNUS token
         toWei(50000000 * 2),
         '',
       );
