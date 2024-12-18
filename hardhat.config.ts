@@ -1,15 +1,14 @@
 import * as dotenv from 'dotenv';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
-import '@nomiclabs/hardhat-etherscan';
-import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-diamond-abi';
 import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-web3';
+import '@nomicfoundation/hardhat-ethers';
+import '@nomicfoundation/hardhat-web3-v4';
 import 'hardhat-multichain';
 
 dotenv.config();

@@ -364,7 +364,7 @@ export async function deployFuncSelectors(
       apiKey: process.env.DEFENDER_API_KEY || '', // Defender API key
       apiSecret: process.env.DEFENDER_API_SECRET || '', // Defender API secret
     });
-
+    
     // Retrieve the list of contracts managed on Defender
     const listedContracts = await client.proposal.listContracts();
 
