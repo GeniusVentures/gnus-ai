@@ -9,8 +9,7 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "allowJs": true,
-    "checkJs": false,
-    "typeRoots": ["node_modules/@types", "./types"],
+    "checkJs": false
   },
   "include": ["./scripts", "./test", "./typechain-types"],
   "files": ["./hardhat.config.ts"]
