@@ -1,20 +1,19 @@
 import * as dotenv from 'dotenv';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
-import "@nomicfoundation/hardhat-toolbox";
+import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-diamond-abi';
 import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 import '@nomicfoundation/hardhat-ethers';
-import '@nomiclabs/hardhat-web3';
+import '@nomicfoundation/hardhat-web3-v4';
 
 dotenv.config();
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
 task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
+  // Retrieve the list of accounts
   const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
@@ -24,21 +23,29 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
 
 const elementSeenSet = new Set<string>();
 // filter out duplicate function signatures
-function genSignature(name: string, inputs: Array<any>, type: string): string {
-  return `${type} ${name}(${inputs.reduce((previous, key) => {
+function genSignature(name: string, inputs: Array<unknown>, type: string): string {
+  return `${type} ${name}(${inputs.reduce((previous: string, key) => {
     const comma = previous.length ? ',' : '';
-    return previous + comma + key.internalType;
+    return previous + comma + (key as { internalType: string }).internalType;
   }, '')})`;
 }
 
 function filterDuplicateFunctions(
-  abiElement: any,
+  abiElement: { type: string; name?: string; inputs?: Array<{ internalType: string }> },
   index: number,
-  fullAbiL: any[],
+  fullAbiL: Array<{
+    type: string;
+    name?: string;
+    inputs?: Array<{ internalType: string }>;
+  }>,
   fullyQualifiedName: string,
 ) {
   if (['function', 'event'].includes(abiElement.type)) {
-    const funcSignature = genSignature(abiElement.name, abiElement.inputs, abiElement.type);
+    const funcSignature = genSignature(
+      abiElement.name || '',
+      abiElement.inputs || [],
+      abiElement.type,
+    );
     if (elementSeenSet.has(funcSignature)) {
       return false;
     }
@@ -55,6 +62,10 @@ function filterDuplicateFunctions(
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
+  typechain: {
+    outDir: 'typechain-types', // Ensure this matches your expected output folder
+    target: 'ethers-v6', // Match the version of Ethers.js you're using
+  },
   solidity: {
     version: '0.8.9',
     settings: {
@@ -147,9 +158,9 @@ const config: HardhatUserConfig = {
           ? process.env.POLYGONSCAN_API_KEY
           : '',
       polygon_amoy:
-          process.env.POLYGONSCAN_API_KEY !== undefined
-              ? process.env.POLYGONSCAN_API_KEY
-              : '',
+        process.env.POLYGONSCAN_API_KEY !== undefined
+          ? process.env.POLYGONSCAN_API_KEY
+          : '',
       sepolia: process.env.ETHERSCAN_API_KEY || '',
       mainnet: process.env.ETHERSCAN_API_KEY || '',
       bsc: process.env.BSCSCAN_API_KEY || '',
@@ -200,7 +211,6 @@ const config: HardhatUserConfig = {
           browserURL: 'https://amoy.polygonscan.com/',
         },
       },
-
     ],
   },
   abiExporter: {
@@ -211,16 +221,7 @@ const config: HardhatUserConfig = {
   diamondAbi: {
     name: 'GeniusDiamond',
     strict: false,
-    exclude: [
-      'hardhat-diamond-abi/.*',
-      'Zether',
-      'BurnVerifier',
-      'InnerVerifier',
-      'ZetherVerifier',
-      'Migrations',
-      'libEncryption',
-      'contracts/mocks/.*',
-    ],
+    exclude: ['hardhat-diamond-abi/.*', 'libEncryption', 'contracts/mocks/.*'],
     filter: filterDuplicateFunctions,
   },
 };
