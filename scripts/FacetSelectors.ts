@@ -2,6 +2,7 @@ import { ethers } from 'hardhat';
 import { Contract, Fragment, Interface } from 'ethers';
 import { FacetSelectorsDeployed, INetworkDeployInfo } from './common';
 import { DiamondLoupeFacet } from '../typechain-types';
+import { ProposalFunctionInputs } from '@openzeppelin/defender-sdk-proposal-client/lib/models/proposal';
 
 export enum FacetCutAction {
   Add = 0,
@@ -12,7 +13,7 @@ export enum FacetCutAction {
 export interface FacetInfo {
   facetAddress: string;
   action: FacetCutAction;
-  functionSelectors: string[];
+  functionSelectors: ProposalFunctionInputs;
   name: string;
   initFunc?: string | null;
 }

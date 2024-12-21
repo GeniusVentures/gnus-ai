@@ -20,6 +20,7 @@ import util from 'util';
 const log: debug.Debugger = debug('GNUSUpgrade:log');
 
 // ToDO Remove this or leave it?
+// @ts-ignore
 log.color = '158';
 
 // ToDo remove the unused variable?

@@ -11,11 +11,3 @@ declare module 'contracts-starter/scripts/libraries/diamond' {
 
   export function remove(functionNames: string[]): string[];
 }
-
-declare module 'contracts-starter/contracts/interfaces/IDiamondCut' {
-  export type FacetCutStruct = {
-    facetAddress: AddressLike;
-    action: BigNumberish;
-    functionSelectors: BytesLike[];
-  };
-}

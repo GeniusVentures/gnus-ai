@@ -1,6 +1,7 @@
 import { debug } from 'debug';
 import { ethers, network, config } from 'hardhat';
 import { Defender } from '@openzeppelin/defender-sdk';
+import { ProposalFunctionInputs } from '@openzeppelin/defender-sdk-proposal-client/lib/models/proposal';
 import {
   FacetInfo,
   getSelectors,
@@ -47,8 +48,7 @@ let client: Defender;
  * 
  * @returns The address of the deployed GeniusDiamond contract.
  */
-export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
-  
+export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) { 
   let provider;
   let contractOwner;
   // If the Multichain testing scaffold has created a spawned process with a JSON-RPC URL
@@ -80,7 +80,10 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
     const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet');
     diamondCutFacet = (await DiamondCutFacet.deploy()) as unknown as DiamondCutFacet;
     await diamondCutFacet.waitForDeployment();
+    diamondCutFacet = (await DiamondCutFacet.deploy()) as unknown as DiamondCutFacet;
+    await diamondCutFacet.waitForDeployment();
     log(
+      `DiamondCutFacet deployed: ${diamondCutFacet.deploymentTransaction()?.hash} tx_hash: ${diamondCutFacet.deploymentTransaction()?.hash}`,
       `DiamondCutFacet deployed: ${diamondCutFacet.deploymentTransaction()?.hash} tx_hash: ${diamondCutFacet.deploymentTransaction()?.hash}`,
     );
     // Save the deployed DiamondCutFacet instance in `dc` for global reference.
@@ -93,6 +96,11 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
     // If not, deploy the GeniusDiamond contract, passing the contract owner's address and the DiamondCutFacet address.
     const Diamond = await ethers.getContractFactory(
       'contracts/GeniusDiamond.sol:GeniusDiamond',
+    );
+    const contractOwnerAddress = await contractOwner.getAddress();
+    gnusDiamond = await Diamond.deploy(
+      contractOwner.address,
+      dc.DiamondCutFacet.getAddress(),
     );
     gnusDiamond = await Diamond.deploy(
       contractOwner.address,
@@ -110,10 +118,12 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   // Save the GeniusDiamond instance in the `dc` object for future reference within the deployment process.
   dc._GeniusDiamond = gnusDiamond;
   networkDeployInfo.DiamondAddress = await gnusDiamond.getAddress();
+  networkDeployInfo.DiamondAddress = await gnusDiamond.getAddress();
 
   // Attach the GeniusDiamond contract to the `dc` object using the ABI for interaction through `hardhat-diamond-abi`.
   dc.GeniusDiamond = (
     await ethers.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
+  ).attach(await gnusDiamond.getAddress());
   ).attach(await gnusDiamond.getAddress());
 
   // Update the deployment info for DiamondCutFacet, since the GeniusDiamond contract constructor already references it.
@@ -162,7 +172,7 @@ export async function deployFuncSelectors(
 
   // Variable to track the protocol's maximum upgrade version
   let protocolUpgradeVersion = 0;
-  const selectorsToBeRemoved: string[] = []; // Track selectors to be removed
+  const selectorsToBeRemoved: ProposalFunctionInputs = []; // Track selectors to be removed
   const facetNamesToBeRemoved: string[] = []; // Track facet names to be removed
   // This should be necessary with a fresh install, as with a new chain or non-forked hardhat locally.
   // Loop through deployed facets to identify facets and selectors no longer in the deployment list
@@ -364,7 +374,7 @@ export async function deployFuncSelectors(
       apiKey: process.env.DEFENDER_API_KEY || '', // Defender API key
       apiSecret: process.env.DEFENDER_API_SECRET || '', // Defender API secret
     });
-    
+
     // Retrieve the list of contracts managed on Defender
     const listedContracts = await client.proposal.listContracts();
 
@@ -583,7 +593,9 @@ export async function afterDeployCallbacks(
     }
 
     // Log the facet deployment status
-    log(`Facet: ${name}, Last Deployed Version: ${previousVersion}, Deployed Version: ${deployedVersion}`);
+    log(
+      `Facet: ${name}, Last Deployed Version: ${previousVersion}, Deployed Version: ${deployedVersion}`,
+    );
 
     // If an initialization function is defined, execute it
     if (initFunction) {
