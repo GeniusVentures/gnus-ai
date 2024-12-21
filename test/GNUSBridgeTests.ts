@@ -2,7 +2,7 @@ import { ethers } from 'hardhat';
 import { dc, expect, toWei, GNUS_TOKEN_ID } from '../scripts/common';
 import { assert } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
+import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 import { getInterfaceID } from '../scripts/FacetSelectors';
 import { IERC20Upgradeable__factory } from '../typechain-types/factories/IERC20Upgradeable__factory';
 

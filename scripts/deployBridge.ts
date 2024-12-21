@@ -1,4 +1,4 @@
-import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils';
+import { keccak256 } from 'ethers';
 import { ethers, network } from 'hardhat';
 import { deployments } from './deployments';
 
@@ -10,11 +10,11 @@ async function deployTokenManager(salt: string) {
   const deployerAddress = (await ethers.getSigners())[0].address;
   const gnusTokenAddress = deployments[network.name].DiamondAddress;
   console.log('deployer:', deployerAddress);
-  const params = defaultAbiCoder.encode(
+  const params = ethers.AbiCoder.defaultAbiCoder().encode(
     ['bytes', 'address'],
     [deployerAddress, gnusTokenAddress],
   );
-  const its = await ethers.getContractAt('IInterchainTokenService', itsAddress);  
+  const its = await ethers.getContractAt('IInterchainTokenService', itsAddress);
   const tx = await its.deployTokenManager(salt, '', MINT_BURN, params, 0);
   await tx.wait();
   const tokenId = await its.interchainTokenId(deployerAddress, salt);
@@ -25,8 +25,11 @@ async function deployTokenManager(salt: string) {
   return tokenManager;
 }
 const salt = keccak256(
-  defaultAbiCoder.encode(['string', 'uint256'], ['gnus.ai.token.manager', 202403]),
+  ethers.AbiCoder.defaultAbiCoder().encode(
+    ['string', 'uint256'],
+    ['gnus.ai.token.manager', 202403],
+  ),
 );
-deployTokenManager(salt).then((result) => {
+deployTokenManager(salt).then(() => {
   console.log('Deployed token manager');
 });

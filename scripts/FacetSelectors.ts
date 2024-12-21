@@ -1,8 +1,8 @@
-import { ethers } from "hardhat";
-import { Contract, ContractInterface, utils, BigNumber } from "ethers";
-import { Interface } from "@ethersproject/abi";
-import { FacetSelectorsDeployed, INetworkDeployInfo, debuglog } from "./common";
-import { DiamondLoupeFacet } from "../typechain-types/DiamondLoupeFacet";
+import { ethers } from 'hardhat';
+import { Contract, Fragment, Interface } from 'ethers';
+import { FacetSelectorsDeployed, INetworkDeployInfo } from './common';
+import { DiamondLoupeFacet } from '../typechain-types';
+import { ProposalFunctionInputs } from '@openzeppelin/defender-sdk-proposal-client/lib/models/proposal';
 
 export enum FacetCutAction {
   Add = 0,
@@ -13,7 +13,7 @@ export enum FacetCutAction {
 export interface FacetInfo {
   facetAddress: string;
   action: FacetCutAction;
-  functionSelectors: string[];
+  functionSelectors: ProposalFunctionInputs;
   name: string;
   initFunc?: string | null;
 }
@@ -26,14 +26,13 @@ export class Selectors {
     this.contract = contract;
   }
 
-
   // used with getSelectors to remove selectors from an array of selectors
   // functionNames argument is an array of function signatures
   remove(functionNames: string[]): Selectors {
     const newSelectors: Selectors = new Selectors(this.contract);
     newSelectors.values = this.values.filter((v) => {
       for (const functionName of functionNames) {
-        if (v === this.contract.interface.getSighash(functionName)) {
+        if (v === this.contract.interface.getFunction(functionName)?.selector) {
           return false;
         }
       }
@@ -48,7 +47,7 @@ export class Selectors {
     const newSelectors = new Selectors(this.contract);
     newSelectors.values = this.values.filter((v) => {
       for (const functionName of functionNames) {
-        if (v === this.contract.interface.getSighash(functionName)) {
+        if (v === this.contract.interface.getFunction(functionName)?.selector) {
           return true;
         }
       }
@@ -59,10 +58,8 @@ export class Selectors {
 
   // remove selectors using an array of function names
   removeSelectors(signatures: string[]) {
-    const iface = new ethers.utils.Interface(
-      signatures.map((v) => "function " + v)
-    );
-    const removeSelectors = signatures.map((v) => iface.getSighash(v));
+    const iface = new ethers.Interface(signatures.map((v) => 'function ' + v));
+    const removeSelectors = signatures.map((v) => iface.getFunction(v)?.selector);
     this.values = this.values.filter((v) => !removeSelectors.includes(v));
     return this;
   }
@@ -70,26 +67,36 @@ export class Selectors {
 
 // get function selectors from ABI
 export function getSelector(
-    contract: Contract,
-    funcName: string | null | undefined = null
-): string | null{
+  contract: Contract,
+  funcName: string | null | undefined = null,
+): string | null {
   if (funcName === null || funcName === undefined) {
     return null;
   }
-  return contract.interface.getSighash(funcName);
+  const selector = contract.interface.getFunction(funcName)?.selector;
+  return selector !== undefined ? selector : null;
 }
 
 // get function selectors from ABI
 export function getSelectors(
   contract: Contract,
   exclude: Set<string> | null = null,
-  include: Set<String> | null = null
+  include: Set<string> | null = null,
 ): Selectors {
-  const signatures = Object.keys(contract.interface.functions);
+  const fragments = contract.interface.fragments as Fragment[];
+  const signatures = Object.keys(fragments)
+    .filter(
+      (key) => (fragments[key as keyof typeof fragments] as Fragment).type === 'function',
+    )
+    .map((key) => (fragments[key as keyof typeof fragments] as Fragment).format());
   const selectors = new Selectors(contract);
   selectors.values = signatures.reduce<string[]>((acc, val) => {
-    const funcSignature = contract.interface.getSighash(val);
-    if ((!exclude || !exclude.has(funcSignature)) && (!include || include.has(funcSignature))) {
+    const funcSignature = contract.interface.getFunction(val)?.selector;
+    if (
+      funcSignature &&
+      (!exclude || !exclude.has(funcSignature)) &&
+      (!include || include.has(funcSignature))
+    ) {
       acc.push(funcSignature);
     }
     return acc;
@@ -98,10 +105,7 @@ export function getSelectors(
 }
 
 // find a particular address position in the return value of diamondLoupeFacet.facets()
-export function findAddressPositionInFacets(
-  facetAddress: string,
-  facets: FacetInfo[]
-) {
+export function findAddressPositionInFacets(facetAddress: string, facets: FacetInfo[]) {
   for (let i = 0; i < facets.length; i++) {
     if (facets[i].facetAddress === facetAddress) {
       return i;
@@ -109,29 +113,45 @@ export function findAddressPositionInFacets(
   }
 }
 
-export function getInterfaceID(contractInterface: utils.Interface) {
-  let interfaceID: BigNumber = ethers.constants.Zero;
-  const functions: string[] = Object.keys(contractInterface.functions);
-  for (let i=0; i< functions.length; i++) {
-      interfaceID = interfaceID.xor(contractInterface.getSighash(functions[i]));
+export function getInterfaceID(contractInterface: Interface) {
+  // let interfaceID: BigNumber = ethers.constants.Zero;
+  // const functions: string[] = Object.keys(contractInterface.functions);
+  // for (let i = 0; i < functions.length; i++) {
+  //   interfaceID = interfaceID.xor(contractInterface.getSighash(functions[i]));
+  // }
+  let interfaceID: bigint = 0n;
+  const functions: string[] = Object.keys(
+    contractInterface.fragments.filter((f) => f.type === 'function'),
+  );
+  for (let i = 0; i < functions.length; i++) {
+    const func = contractInterface.getFunction(functions[i]);
+    if (func) {
+      const selector: bigint = BigInt(func.selector);
+      interfaceID = interfaceID ^ selector;
+    }
   }
 
   return interfaceID;
 }
 
-export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeployInfo): Promise<FacetSelectorsDeployed> {
-
+export async function getDeployedFuncSelectors(
+  networkDeployInfo: INetworkDeployInfo,
+): Promise<FacetSelectorsDeployed> {
   // map funcSelectors to contract address
   const deployedFuncSelectors: Record<string, string> = {};
   // map contract name to container of funcSelectors
   const deployedContractFuncSelectors: Record<string, string[]> = {};
   let diamondLoupe: DiamondLoupeFacet | undefined;
-  if (networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"]?.address &&
-      networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"].funcSelectors &&
-          networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"].funcSelectors.length > 0) {
-    const factory = await ethers.getContractFactory("DiamondLoupeFacet")
-    diamondLoupe = factory.attach(networkDeployInfo.DiamondAddress) as DiamondLoupeFacet;
-    const deployedFacets = await diamondLoupe.facets({ gasLimit: 2000000});
+  if (
+    networkDeployInfo.FacetDeployedInfo['DiamondLoupeFacet']?.address &&
+    networkDeployInfo.FacetDeployedInfo['DiamondLoupeFacet'].funcSelectors &&
+    networkDeployInfo.FacetDeployedInfo['DiamondLoupeFacet'].funcSelectors.length > 0
+  ) {
+    const factory = await ethers.getContractFactory('DiamondLoupeFacet');
+    diamondLoupe = factory.attach(
+      networkDeployInfo.DiamondAddress,
+    ) as unknown as DiamondLoupeFacet;
+    const deployedFacets = await diamondLoupe.facets({ gasLimit: 2000000 });
     for (const facetDeployedInfo of deployedFacets) {
       for (const facetIndex of facetDeployedInfo.functionSelectors) {
         deployedFuncSelectors[facetIndex] = facetDeployedInfo.facetAddress;
@@ -143,7 +163,10 @@ export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeploy
     const facetInfo = networkDeployInfo.FacetDeployedInfo[contractName];
     // make sure these were really deployed using louper
     if (diamondLoupe && facetInfo.address) {
-      facetInfo.funcSelectors = await diamondLoupe.facetFunctionSelectors(facetInfo.address,{ gasLimit: 2000000});
+      facetInfo.funcSelectors = await diamondLoupe.facetFunctionSelectors(
+        facetInfo.address,
+        { gasLimit: 2000000 },
+      );
       deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
     } else if (facetInfo.funcSelectors) {
       deployedContractFuncSelectors[contractName] = facetInfo.funcSelectors;
@@ -153,5 +176,8 @@ export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeploy
     }
   }
 
-  return Promise.resolve({ facets: deployedFuncSelectors, contractFacets: deployedContractFuncSelectors} );
+  return Promise.resolve({
+    facets: deployedFuncSelectors,
+    contractFacets: deployedContractFuncSelectors,
+  });
 }

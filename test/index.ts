@@ -1,34 +1,29 @@
-import { Contract, BigNumber, EventFilter, ContractTransaction } from 'ethers';
+import { ContractTransaction } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import "@nomicfoundation/hardhat-toolbox";
+import '@nomicfoundation/hardhat-toolbox';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
-import '@nomiclabs/hardhat-ethers';
-import { getSelectors, Selectors, getInterfaceID } from '../scripts/FacetSelectors';
+import '@nomicfoundation/hardhat-ethers';
+import { getSelectors, getInterfaceID } from '../scripts/FacetSelectors';
 import {
   afterDeployCallbacks,
-  deployAndInitDiamondFacets,
   deployDiamondFacets,
-  deployExternalLibraries,
   deployFuncSelectors,
   deployGNUSDiamond,
 } from '../scripts/deploy';
-import { GeniusDiamond, NFTStructOutput } from '../typechain-types/GeniusDiamond';
-import { GNUSNFTFactory } from '../typechain-types/GNUSNFTFactory';
-import { iObjToString } from './iObjToString';
+import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 import {
   dc,
   debuglog,
-  GNUS_TOKEN_ID,
   expect,
-  toWei,
   INetworkDeployInfo,
-  FacetToDeployInfo, PreviousVersionRecord
-} from "../scripts/common";
+  FacetToDeployInfo,
+  PreviousVersionRecord,
+} from '../scripts/common';
 import { assert } from 'chai';
-import { IERC1155Upgradeable__factory } from '../typechain-types/factories/IERC1155Upgradeable__factory';
-import { IERC165Upgradeable__factory } from '../typechain-types/factories/IERC165Upgradeable__factory';
+import { IERC1155Upgradeable__factory } from '../typechain-types/factories/@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/IERC1155Upgradeable__factory';
+import { IERC165Upgradeable__factory } from '../typechain-types/factories/@gnus.ai/contracts-upgradeable-diamond/utils/introspection/IERC165Upgradeable__factory';
 import { Facets, LoadFacetDeployments } from '../scripts/facets';
 import { deployments } from '../scripts/deployments';
 import util from 'util';
@@ -42,10 +37,9 @@ import * as GNUSBridgeTests from '../test/GNUSBridgeTests';
 
 import { updateOwnerForTest } from './utils/signer';
 
-const { FacetCutAction } = require('contracts-starter/scripts/libraries/diamond.js');
-
 const debugging = process.env.JB_IDE_HOST !== undefined;
 
+// Contract Transaction Events logging function to display detailed event information.
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();
 
@@ -61,24 +55,24 @@ export async function logEvents(tx: ContractTransaction) {
 describe.only('Genius Diamond DApp Testing', async function () {
   // Declare a variable to store the deployed GeniusDiamond contract instance.
   let gnusDiamond: GeniusDiamond;
-  
+
   // Store network-specific deployment information, which includes addresses and other details.
   let networkDeployedInfo: INetworkDeployInfo;
-  
+
   // Keep track of previously deployed versions for comparison during upgrades.
-  let previousDeployedVersions: PreviousVersionRecord = {};
+  const previousDeployedVersions: PreviousVersionRecord = {};
 
   // Check if debugging mode is enabled (set if running in JetBrains IDE) and configure logging.
   if (debugging) {
     // Enable debug logging for logs tagged with 'GNUS.*:log' to view detailed output.
     debug.enable('GNUS.*:log');
-    
+
     // Enable the debug logging utility defined earlier (debuglog).
     debuglog.enabled = true;
-    
+
     // Bind console.log to debuglog.log, so debug logs are sent to the console.
     debuglog.log = console.log.bind(console);
-    
+
     // Log a message indicating that debugging options are set up.
     debuglog(
       'Disabling timeout, enabling debuglog, because code was run in Jet Brains (probably debugging)',
@@ -91,74 +85,74 @@ describe.only('Genius Diamond DApp Testing', async function () {
   before(async function () {
     // Load previously deployed facet information to ensure that facets are correctly deployed and initialized.
     await LoadFacetDeployments();
-  
+
     // Get the deployer address, the first signer in the list of available signers in Hardhat.
     const deployer = (await ethers.getSigners())[0].address;
-  
+
     // Retrieve the current network's name (e.g., hardhat, mainnet).
     const networkName = hre.network.name;
-  
+
     // Initialize deployment information for the network if it doesn't already exist.
     if (!deployments[networkName]) {
       deployments[networkName] = {
-        DiamondAddress: '',             // Address for the deployed diamond contract.
-        DeployerAddress: deployer,      // Address of the deployer.
-        FacetDeployedInfo: {},          // Object to store information about each deployed facet.
+        DiamondAddress: '', // Address for the deployed diamond contract.
+        DeployerAddress: deployer, // Address of the deployer.
+        FacetDeployedInfo: {}, // Object to store information about each deployed facet.
       };
     }
-  
+
     // Store the current network's deployment info in `networkDeployedInfo`.
     networkDeployedInfo = deployments[networkName];
-  
+
     // If the diamond contract has already been deployed, update the owner for testing.
     if (networkDeployedInfo.DiamondAddress) {
       await updateOwnerForTest(networkDeployedInfo.DiamondAddress);
     }
-  
+
     // Deploy the GNUS Diamond contract and store deployment details in `networkDeployedInfo`.
     await deployGNUSDiamond(networkDeployedInfo);
-  
+
     // Initialize `gnusDiamond` as the deployed GeniusDiamond contract instance.
     gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-  
+
     // Log the successful deployment of the Diamond contract.
     debuglog('Diamond Deployed');
-  
+
     // Create interfaces for the `IERC165Upgradeable` and `IERC1155Upgradeable` standards.
     const IERC165UpgradeableInterface = IERC165Upgradeable__factory.createInterface();
     const IERC1155UpgradeableInterface = IERC1155Upgradeable__factory.createInterface();
-  
+
     // Calculate the interface ID for IERC165.
     const IERC165InterfaceID = getInterfaceID(IERC165UpgradeableInterface);
-  
+
     // Calculate the interface ID for IERC1155 by XORing it with IERC165InterfaceID to exclude base contract functions.
     const IERC11InterfaceID = getInterfaceID(IERC1155UpgradeableInterface).xor(
       IERC165InterfaceID,
     );
-  
+
     // Assert that `gnusDiamond` supports the IERC1155Upgradeable interface, indicating compatibility.
     assert(
       await gnusDiamond.supportsInterface(IERC11InterfaceID._hex),
-      "Doesn't support IERC1155Upgradeable"
+      "Doesn't support IERC1155Upgradeable",
     );
-  
+
     // Make a deep copy of `networkDeployedInfo` before upgrading to retain pre-upgrade information.
     const deployInfoBeforeUpgraded: INetworkDeployInfo = JSON.parse(
       JSON.stringify(networkDeployedInfo),
     );
-  
+
     // Define facets to be deployed, sourced from the `Facets` object.
-    let facetsToDeploy: FacetToDeployInfo = Facets;
-  
+    const facetsToDeploy: FacetToDeployInfo = Facets;
+
     // Deploy facets in multiple steps for modular deployment, updating deployment info each time.
     await deployDiamondFacets(networkDeployedInfo, facetsToDeploy);
     debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
-  
+
     // Copy deployment information into a new variable for comparison post-upgrade.
     const deployInfoWithOldFacet: INetworkDeployInfo = Object.assign(
       JSON.parse(JSON.stringify(networkDeployedInfo)),
     );
-  
+
     // TODO: Answer:  isn't this bad?  Changing the keys of what we are iterating through?
     // Iterate through each facet's deployment information and update it with previous version data if available.
     for (const key in deployInfoWithOldFacet.FacetDeployedInfo) {
@@ -166,7 +160,7 @@ describe.only('Genius Diamond DApp Testing', async function () {
         deployInfoWithOldFacet.FacetDeployedInfo[key] =
           deployInfoBeforeUpgraded.FacetDeployedInfo[key];
       }
-  
+
       // Build `previousDeployedVersions` to store versioning information for facets.
       const facetInfo = deployInfoWithOldFacet.FacetDeployedInfo[key];
       if (facetInfo && facetInfo.version !== undefined) {
@@ -175,18 +169,18 @@ describe.only('Genius Diamond DApp Testing', async function () {
         debuglog(`Facet ${key} does not have a version`);
       }
     }
-  
+
     // Deploy function selectors for facets, updating `networkDeployedInfo` and `deployInfoWithOldFacet`.
     await deployFuncSelectors(networkDeployedInfo, deployInfoWithOldFacet, facetsToDeploy);
     debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
-  
+
     // Redundant deployment of function selectors (likely to confirm they were successfully added).
     await deployFuncSelectors(networkDeployedInfo, deployInfoWithOldFacet, facetsToDeploy);
-  
+
     // Execute any callbacks required after deployment, typically for post-deployment setups or checks.
     await afterDeployCallbacks(networkDeployedInfo, undefined, previousDeployedVersions);
     debuglog(`${util.inspect(networkDeployedInfo, { depth: null })}`);
-  
+
     // Log that all facets have been successfully deployed.
     debuglog('Facets Deployed');
   });
@@ -195,8 +189,6 @@ describe.only('Genius Diamond DApp Testing', async function () {
   // facets and function selectors for correctness and consistency after upgrades.
   describe('Facet Cut Testing', async function () {
     // Variables to store transaction, receipt, and results for test assertions.
-    let tx;
-    let receipt;
     let result: any;
 
     // Array to store addresses of deployed facets.
@@ -206,16 +198,15 @@ describe.only('Genius Diamond DApp Testing', async function () {
     it('should have same count of facets -- call to facetAddresses function', async () => {
       // Retrieve the addresses of all facets in the diamond contract.
       const facetAddresses = await gnusDiamond.facetAddresses();
-      
+
       // Store each facet address in the `addresses` array.
       for (const facetAddress of facetAddresses) {
         addresses.push(facetAddress);
       }
-      
+
       // Assert that the number of facets in `gnusDiamond` matches the count in `networkDeployedInfo`.
       // The diamond contract should have one additional facet to account for the main diamond facet.
       assert.equal(
-
         addresses.length,
         Object.keys(networkDeployedInfo.FacetDeployedInfo).length,
       );
@@ -253,13 +244,13 @@ describe.only('Genius Diamond DApp Testing', async function () {
       // Verify that the `protocolVersion` matches the expected version (230).
       expect(protocolVersion).to.be.eq(BigInt(250));
     });
-  }); 
-  
+  });
+
   // After all tests in this suite, run additional test suites for GNUS functionality.
   after(() => {
-    GNUSERC20Tests.suite();       // Run tests for ERC20 functionality of GNUS.
-    NFTCreateTests.suite();        // Run tests for NFT creation within the GNUS ecosystem.
-    ERC20BatchTests.suite();       // Run batch transfer tests for GNUS ERC20 tokens.
-    GNUSBridgeTests.suite();       // Run bridge tests for GNUS token transfers across chains.
+    GNUSERC20Tests.suite(); // Run tests for ERC20 functionality of GNUS.
+    NFTCreateTests.suite(); // Run tests for NFT creation within the GNUS ecosystem.
+    ERC20BatchTests.suite(); // Run batch transfer tests for GNUS ERC20 tokens.
+    GNUSBridgeTests.suite(); // Run bridge tests for GNUS token transfers across chains.
   });
 });

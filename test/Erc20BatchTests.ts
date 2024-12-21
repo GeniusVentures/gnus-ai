@@ -1,23 +1,20 @@
 import { ethers, network } from 'hardhat';
-import { BigNumber, utils } from 'ethers';
 import {
   dc,
-  debuglog,
   GNUS_TOKEN_ID,
   expect,
   toWei,
 } from '../scripts/common';
 import { assert } from 'chai';
-import { iObjToString } from './iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
+import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 
 // Exporting a test suite for batch transfer functionality of GNUS ERC20 tokens.
 export function suite() {
   describe('Testing Batch transfer erc20', async function () {
     // Declaring variables for GeniusDiamond instances, signers, and balances.
     let gdAddr1: GeniusDiamond;
-    const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
+    const gnusDiamond = dc.GeniusDiamond;
     let owner: SignerWithAddress,
       minter: SignerWithAddress,
       sender: SignerWithAddress,

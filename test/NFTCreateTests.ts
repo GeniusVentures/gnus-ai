@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import { utils, BigNumber } from 'ethers';
+// import { utils } from 'ethers';
 import { logEvents } from '.';
 import {
   dc,
@@ -10,8 +10,8 @@ import {
 } from '../scripts/common';
 import { assert } from 'chai';
 import { iObjToString } from './iObjToString';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
+import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
+
 // Import additional test suites for NFT minting functionality
 import * as NFTMintTests from '../test/NFTMintTests';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
@@ -23,7 +23,9 @@ export function suite() {
     let signers: HardhatEthersSigner[];
     let owner: string;
     let gdAddr1: GeniusDiamond;
-    const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
+    
+    // this eliminates type safety so is not a great option
+    const gnusDiamond = dc.GeniusDiamond as unknown as GeniusDiamond;
 
     // `before` hook to set up the testing environment
     before(async () => {
@@ -35,7 +37,9 @@ export function suite() {
       const amount = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 
       // Connect the `gnusDiamond` contract to a specific signer
-      gdAddr1 = await gnusDiamond.connect(signers[1] as unknown as SignerWithAddress);
+      // updated to ethers v6 so this no longer works
+      // gdAddr1 = GeniusDiamond__factory.connect(gnusDiamond.address, signers[1]);
+      gdAddr1 = await gnusDiamond.connect(signers[1] as HardhatEthersSigner);
     });
 
     // Test case to validate the burning of GNUS tokens for NFT creation
@@ -69,7 +73,7 @@ export function suite() {
       );
       assert(
         amount.eq(toWei(1000)),
-        `Address one should equal 1000, but equals ${utils.formatEther(amount)}`,
+        `Address one should equal 1000, but equals ${ethers.formatEther(amount)}`,
       );
     });
 
@@ -77,7 +81,7 @@ export function suite() {
     it('Testing NFT Factory to mint GNUS Token', async () => {
       // Attempt to mint GNUS tokens directly, expecting rejection due to factory restrictions
       await expect(
-        gnusDiamond["mint(address,uint256,uint256,bytes)"](owner, GNUS_TOKEN_ID, toWei(2000), []),
+        gnusDiamond["mint(address,uint256,uint256,bytes)"](owner, GNUS_TOKEN_ID, toWei(2000), ethers.toUtf8Bytes('')),
       ).to.eventually.be.rejectedWith(
         Error,
         /Shouldn\'t mint GNUS tokens tokens, only deposit and withdraw/,
@@ -105,7 +109,7 @@ export function suite() {
     // Test case to validate NFT creation functionality for authorized creators
     it('Testing NFT Factory to create new NFT & child NFTs for creator', async () => {
       // Grant the `CREATOR_ROLE` to the second signer
-      await gnusDiamond.grantRole(utils.id('CREATOR_ROLE'), signers[1].address);
+      await gnusDiamond.grantRole(ethers.id('CREATOR_ROLE'), signers[1].address);
 
       // Retrieve information about the GNUS NFT
       const GNUSNFTInfo = await gdAddr1.getNFTInfo(GNUS_TOKEN_ID);
@@ -118,7 +122,7 @@ export function suite() {
         GNUS_TOKEN_ID,
         'TEST GAME',
         'TESTGAME',
-        BigNumber.from(2.0), // Exchange rate: 2.0 tokens for 1 GNUS token
+        2n, // Exchange rate: 2.0 tokens for 1 GNUS token
         toWei(50000000 * 2),
         '',
       );

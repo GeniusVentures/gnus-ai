@@ -11,7 +11,7 @@ import {
 import { assert } from 'chai';
 import { iObjToString } from './iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../typechain-types/GeniusDiamond';
+import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 import * as NFTMintChildTests from '../test/NFTMintChildTests';
 
 // Exporting a test suite for minting NFTs through the GNUS NFT Factory
