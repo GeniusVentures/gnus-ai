@@ -1279,6 +1279,7 @@ __metadata:
 >>>>>>> 19749e7 (BASE UPGRADE - Yarn,TS,Hardhat,DefenderSDK,Ethers,ESLint)
     "@openzeppelin/defender-sdk": "npm:^2.0.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@typechain/ethers-v6": "npm:^0.5.1"
     "@typechain/hardhat": "npm:^9.1.0"
     "@types/chai": "npm:^4.3.0"
@@ -1290,6 +1291,9 @@ __metadata:
     "@types/sinon-chai": "npm:^3.2.3"
 >>>>>>> ec3cc74 (updated yarn>betty, +npm packages)
 =======
+=======
+    "@openzeppelin/defender-sdk-proposal-client": "npm:^2.0.0"
+>>>>>>> 69d5cf5 (continuing full upgrade)
     "@typechain/ethers-v6": "npm:^0.5.0"
     "@typechain/hardhat": "npm:^9.0.0"
     "@types/chai": "npm:^4.2.0"
@@ -1315,8 +1319,12 @@ __metadata:
 =======
     chai: "npm:^4.2.0"
     chai-as-promised: "npm:^7.1.1"
+<<<<<<< HEAD
     contracts-starter: "git+https://github.com/mudgen/diamond-2-hardhat.git"
 >>>>>>> a18c857 (BASE UPGRADE - Yarn,TS,Hardhat,DefenderSDK,Ethers,ESLint)
+=======
+    contracts-starter: "https://github.com/mudgen/diamond-2-hardhat.git"
+>>>>>>> 69d5cf5 (continuing full upgrade)
     dotenv: "npm:^16.4.7"
     eslint: "npm:^9.17.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -6446,12 +6454,16 @@ __metadata:
   linkType: hard
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 "contracts-starter@https://github.com/mudgen/diamond-2-hardhat.git":
 =======
 =======
 >>>>>>> a18c857 (BASE UPGRADE - Yarn,TS,Hardhat,DefenderSDK,Ethers,ESLint)
 "contracts-starter@git+https://github.com/mudgen/diamond-2-hardhat.git":
 >>>>>>> ec3cc74 (updated yarn>betty, +npm packages)
+=======
+"contracts-starter@https://github.com/mudgen/diamond-2-hardhat.git":
+>>>>>>> 69d5cf5 (continuing full upgrade)
   version: 1.0.0
   resolution: "contracts-starter@https://github.com/mudgen/diamond-2-hardhat.git#commit=bf67b736ad5fa3366551f599e204784856fb3069"
   checksum: 10c0/bb02edc42733588af6ad2344d2f9d4da62892d2b95edd9674c2bf6718854ab97fc39553ab84181897b8b5474130414f4db72da6ee01b1366c0d3b4685ecc4f9e
