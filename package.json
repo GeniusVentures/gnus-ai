@@ -1,6 +1,6 @@
 {
   "name": "@gnus-ai/gnus-ai",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Diamond NFT system with AI Diamond Facet",
   "main": "index.ts",
   "scripts": {
@@ -25,6 +25,7 @@
     "@nomicfoundation/hardhat-verify": "^2.0.0",
     "@nomicfoundation/ignition-core": "^0.15.9",
     "@openzeppelin/defender-sdk": "^2.0.0",
+    "@openzeppelin/defender-sdk-proposal-client": "^2.0.0",
     "@typechain/ethers-v6": "^0.5.0",
     "@typechain/hardhat": "^9.0.0",
     "@types/chai": "^4.2.0",
@@ -40,7 +41,7 @@
     "abi2oas": "^0.1.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "contracts-starter": "git+https://github.com/mudgen/diamond-2-hardhat.git",
+    "contracts-starter": "https://github.com/mudgen/diamond-2-hardhat.git",
     "dotenv": "^16.4.7",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",

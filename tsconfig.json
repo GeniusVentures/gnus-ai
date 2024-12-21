@@ -10,8 +10,8 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
-    "noImplicitAny": false,
+    "typeRoots": ["node_modules/@types", "./types"],
   },
-  "include": ["./scripts", "./test", "./typechain"],
+  "include": ["./scripts", "./test", "./typechain", "./types"],
   "files": ["./hardhat.config.ts"]
 }
