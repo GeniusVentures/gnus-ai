@@ -1,7 +1,6 @@
 import { debug } from 'debug';
 import { ethers, network, config } from 'hardhat';
 import { Defender } from '@openzeppelin/defender-sdk';
-import { ProposalFunctionInputs } from '@openzeppelin/defender-sdk-proposal-client/lib/models/proposal';
 import {
   FacetInfo,
   getSelectors,
@@ -35,6 +34,10 @@ const GAS_LIMIT_CUT_BASE = 100000;
 import { FacetCutAction } from './FacetSelectors';
 // import { FacetCutStruct } from '../typechain-types';
 import { Contract } from 'ethers';
+import { PropertySignature } from 'typescript';
+import { DataHexString } from 'ethers/lib.commonjs/utils/data';
+import { networkInterfaces } from 'os';
+import { Network } from 'inspector/promises';
 
 // Declare an AdminClient object for OpenZeppelin Defender, if integration with Defender is used.
 let client: Defender;
@@ -172,7 +175,7 @@ export async function deployFuncSelectors(
 
   // Variable to track the protocol's maximum upgrade version
   let protocolUpgradeVersion = 0;
-  const selectorsToBeRemoved: ProposalFunctionInputs = []; // Track selectors to be removed
+  const selectorsToBeRemoved: string[] = []; // Track selectors to be removed
   const facetNamesToBeRemoved: string[] = []; // Track facet names to be removed
   // This should be necessary with a fresh install, as with a new chain or non-forked hardhat locally.
   // Loop through deployed facets to identify facets and selectors no longer in the deployment list
@@ -224,7 +227,9 @@ export async function deployFuncSelectors(
     const FacetContract = await ethers.getContractFactory(
       name,
       facetDeployVersionInfo.libraries
-        ? { libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string } }
+        ? {
+            libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string },
+          }
         : undefined,
     );
     // TODO investigate: Duplicate definition of TransferBatch (TransferBatch(address,address,address[],uint256[]), TransferBatch(address,address,address,uint256[],uint256[]))
@@ -410,7 +415,7 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the list of operations (facet cuts) for the diamond upgrade
-  const upgradeCut: FacetInfo[] = [];
+  const upgradeCut = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Remove) {
       // Filter out function selectors that have already been replaced
@@ -447,7 +452,8 @@ export async function deployFuncSelectors(
 
     // If Defender deployment is enabled, create a proposal for the diamond upgrade
     if (process.env.DEFENDER_DEPLOY_ON && defenderSigners[network.name]) {
-      const upgradeFunctionInputs: (string | string[])[][] = [];
+      const upgradeFunctionInputs: string | boolean | (string | boolean)[][] = [];
+
 
       // Format the inputs for the diamond cut operation
       upgradeCut.forEach((e) =>
@@ -720,7 +726,7 @@ export async function deployDiamondFacets(
 
     const upgradeVersion = +facetVersions[0]; // Most recent version to deploy
 
-    // const gasLimitAmount: DataHexString = ethers.toBeHex(1000000); // ToDo unused var
+    const gasLimitAmount: DataHexString = ethers.toBeHex(1000000);
     // Determine the deployed version or mark as undeployed (-1.0)
     const deployedVersion =
       deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
@@ -779,7 +785,7 @@ export async function deployDiamondFacets(
         // Deploy the facet contract with a slightly increased gas price for reliability
         facet = await FacetContract.deploy({
           // add 10% gas
-          gasPrice: gasPrice ? (gasPrice * 110n) / 100n : undefined,
+          gasPrice: gasPrice ? (gasPrice * 110n / 100n) : undefined,
         });
         await facet.deployed(); // Wait for the deployment transaction to confirm
       } catch (e) {
@@ -791,12 +797,12 @@ export async function deployDiamondFacets(
       deployedFacets[name] = {
         address: await facet.getAddress(), // Deployed contract address
         tx_hash: facet.deploymentTransaction()?.hash || '', // Transaction hash for deployment
-        version: deployedVersion, // Version of the deployed facet
+          version: deployedVersion, // Version of the deployed facet
+          // TODO Cleanup if all testing works out.
+        // version: upgradeVersion, // Version of the deployed facet
       };
 
-      log(
-        `${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`,
-      ); // Log successful deployment
+      log(`${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`); // Log successful deployment
     }
   }
 

@@ -1,12 +1,7 @@
 import { ethers, network } from 'hardhat';
-import {
-  dc,
-  GNUS_TOKEN_ID,
-  expect,
-  toWei,
-} from '../scripts/common';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { dc, GNUS_TOKEN_ID, expect, toWei } from '../scripts/common';
 import { assert } from 'chai';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 
 // Exporting a test suite for batch transfer functionality of GNUS ERC20 tokens.
@@ -16,11 +11,11 @@ export function suite() {
     let gdAddr1: GeniusDiamond;
     const gnusDiamond = dc.GeniusDiamond;
     let owner: SignerWithAddress,
-      minter: SignerWithAddress,
-      sender: SignerWithAddress,
+      minter: SignerWithAddress, // ToDO Remove Never Used
+      sender: SignerWithAddress, // ToDo Remove Never Used
       receiver1: SignerWithAddress,
       receiver2: SignerWithAddress;
-    let oldTokenAmount1: BigNumber, oldTokenAmount2: BigNumber;
+    let oldTokenAmount1: bigint, oldTokenAmount2: bigint;
 
     // `before` hook runs once before all tests to set up the testing environment.
     before(async () => {
@@ -29,7 +24,7 @@ export function suite() {
 
       // Retrieve the total supply of the GNUS token and initialize a connected instance.
       const totalSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
-      gdAddr1 = await gnusDiamond.connect(owner);
+      gdAddr1 = (await gnusDiamond.connect(owner)) as GeniusDiamond;
 
       // Fetch the balance of the owner and the two receivers for the GNUS token.
       const ownerSupply = await gnusDiamond['balanceOf(address,uint256)'](
