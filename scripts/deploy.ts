@@ -1,7 +1,6 @@
 import { debug } from 'debug';
-import { ethers, network } from 'hardhat';
+import { ethers, network, config } from 'hardhat';
 import { Defender } from '@openzeppelin/defender-sdk';
-import { ProposalFunctionInputs } from '@openzeppelin/defender-sdk-proposal-client/lib/models/proposal';
 import {
   FacetInfo,
   getSelectors,
@@ -17,7 +16,7 @@ import {
   getSighash,
   PreviousVersionRecord,
 } from '../scripts/common';
-import { DiamondCutFacet, IDiamondCut, GeniusDiamond } from '../typechain-types';
+import { DiamondCutFacet, GeniusDiamond, IDiamondCut } from '../typechain-types';
 import { deployments } from '../scripts/deployments';
 import { Facets, LoadFacetDeployments } from '../scripts/facets';
 import * as util from 'util';
@@ -31,10 +30,13 @@ const GAS_LIMIT_PER_FACET = 60000;
 const GAS_LIMIT_CUT_BASE = 100000;
 
 // Load the FacetCutAction from the diamond.js library to manage actions: adding, replacing facets.
-import { FacetCutAction } from 'contracts-starter/scripts/libraries/diamond';
-import { BytesLike, Contract } from 'ethers';
+import { FacetCutAction } from './FacetSelectors';
+// import { FacetCutStruct } from '../typechain-types';
+import { Contract } from 'ethers';
 import { PropertySignature } from 'typescript';
 import { DataHexString } from 'ethers/lib.commonjs/utils/data';
+import { networkInterfaces } from 'os';
+import { Network } from 'inspector/promises';
 
 // Declare an AdminClient object for OpenZeppelin Defender, if integration with Defender is used.
 let client: Defender;
@@ -137,7 +139,7 @@ export async function deployFuncSelectors(
 
   // Variable to track the protocol's maximum upgrade version
   let protocolUpgradeVersion = 0;
-  const selectorsToBeRemoved: ProposalFunctionInputs = []; // Track selectors to be removed
+  const selectorsToBeRemoved: string[] = []; // Track selectors to be removed
   const facetNamesToBeRemoved: string[] = []; // Track facet names to be removed
 
   // Loop through deployed facets to identify facets and selectors no longer in the deployment list
@@ -190,7 +192,7 @@ export async function deployFuncSelectors(
       name,
       facetDeployVersionInfo.libraries
         ? {
-            libraries: networkDeployInfo.ExternalLibraries,
+            libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string },
           }
         : undefined,
     );
@@ -352,7 +354,7 @@ export async function deployFuncSelectors(
       const res = await client.proposal.addContract({
         address: await diamondCut.getAddress(), // Address of the diamond contract
         abi: JSON.stringify(diamondCut.interface.fragments), // Contract ABI
-        network: network.name, // Map Hardhat network name to Defender network
+        network: network.name, // todo as Network // Map Hardhat network name to Defender network
         name: 'Gnus.ai Diamond', // Name for the contract on Defender
       });
 
@@ -363,7 +365,7 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the function selectors for replacement
-  const replacedFunctionSelectors: ProposalFunctionInputs = [];
+  const replacedFunctionSelectors = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Replace) {
       replacedFunctionSelectors.push(...facetCutInfo.functionSelectors);
@@ -371,11 +373,11 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the list of operations (facet cuts) for the diamond upgrade
-  const upgradeCut: FacetInfo[] = [];
+  const upgradeCut = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Remove) {
       // Filter out function selectors that have already been replaced
-      const newFunctionSelectors: ProposalFunctionInputs = [];
+      const newFunctionSelectors = [];
       for (const removedFuncSelector of facetCutInfo.functionSelectors) {
         if (!replacedFunctionSelectors.includes(removedFuncSelector)) {
           newFunctionSelectors.push(removedFuncSelector);
@@ -395,7 +397,7 @@ export async function deployFuncSelectors(
   log('');
   log('Diamond Cut:', upgradeCut); // Log the details of the diamond cut operations
 
-  const functionCall: string = '0x'; // Placeholder for initialization function call
+  const functionCall: string = '0x'; // any = []; // Placeholder for initialization function call
   const initAddress = ethers.ZeroAddress; // Default initialization address
 
   try {
@@ -406,7 +408,7 @@ export async function deployFuncSelectors(
 
     // If Defender deployment is enabled, create a proposal for the diamond upgrade
     if (process.env.DEFENDER_DEPLOY_ON && defenderSigners[network.name]) {
-      const upgradeFunctionInputs: ProposalFunctionInputs = []; // Placeholder for the diamond cut function inputs
+      const upgradeFunctionInputs: string | boolean | (string | boolean)[][] = [];
 
       // Format the inputs for the diamond cut operation
       upgradeCut.forEach((e) =>
@@ -428,8 +430,7 @@ export async function deployFuncSelectors(
           description: `Update facet`, // Proposal description
           type: 'custom', // Custom admin action
           functionInterface: diamondCutFuncAbi, // ABI of the diamondCut function
-          functionInputs: upgradeFunctionInputs,
-          // functionInputs: [upgradeFunctionInputs, initAddress, functionCall], // Inputs for the diamondCut function
+          functionInputs: [upgradeFunctionInputs, initAddress, functionCall], // Inputs for the diamondCut function
           via: defenderSigners[network.name].via, // Signer via address
           viaType: defenderSigners[network.name].viaType, // Signer via type
         },
@@ -540,7 +541,7 @@ export async function afterDeployCallbacks(
       const tx = {
         to: gnusDiamond.getAddress(), // Address of the GeniusDiamond contract
         data: funcSelector, // Function selector for the initialization function
-        gasLimit:  ethers.toBeHex(1000000), // Set gas limit for the transaction
+        gasLimit: ethers.toBeHex(1000000), // Set gas limit for the transaction
       };
 
       try {
@@ -638,6 +639,7 @@ export async function deployDiamondFacets(
 
     const upgradeVersion = +facetVersions[0]; // Most recent version to deploy
 
+    const gasLimitAmount: DataHexString = ethers.toBeHex(1000000);
     // Determine the deployed version or mark as undeployed (-1.0)
     const deployedVersion =
       deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
@@ -670,16 +672,22 @@ export async function deployDiamondFacets(
 
     if (facetNeedsDeployment) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`); // Log facet deployment details
-
+      
+      // ToDo improve with better gas estimators
       try {
         // Retrieve the current gas price from the network
         const feeData = await ethers.provider.getFeeData();
         const gasPrice = feeData.gasPrice; // Get the current gas price
-        log(`Current gas price: ${gasPrice.toString()}`);
+        if (gasPrice) {
+          log(`Current gas price: ${gasPrice.toString()}`);
+        } else {
+          log('Gas price is null');
+        }
 
         // Deploy the facet contract with a slightly increased gas price for reliability
         facet = await FacetContract.deploy({
-          gasPrice: gasPrice.mul(110).div(100),
+          // add 10% gas
+          gasPrice: gasPrice ? (gasPrice * 110n / 100n) : undefined,
         });
         await facet.deployed(); // Wait for the deployment transaction to confirm
       } catch (e) {
@@ -689,12 +697,12 @@ export async function deployDiamondFacets(
 
       // Record the deployment details for the facet in the network deployment info
       deployedFacets[name] = {
-        address: facet.address, // Deployed contract address
-        tx_hash: facet.deployTransaction.hash, // Transaction hash for deployment
+        address: await facet.getAddress(), // Deployed contract address
+        tx_hash: facet.deploymentTransaction()?.hash || '', // Transaction hash for deployment
         version: deployedVersion, // Version of the deployed facet
       };
 
-      log(`${name} deployed: ${facet.address} tx_hash: ${facet.deployTransaction.hash}`); // Log successful deployment
+      log(`${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`); // Log successful deployment
     }
   }
 
@@ -702,35 +710,35 @@ export async function deployDiamondFacets(
 }
 
 export async function deployExternalLibraries(networkDeployedInfo: INetworkDeployInfo) {
-  // Deploy the InnerVerifier contract
-  const innerVerifierContract = await ethers.getContractFactory('InnerVerifier');
-  const innerVerifier = await innerVerifierContract.deploy();
+  // // Deploy the InnerVerifier contract
+  // const innerVerifierContract = await ethers.getContractFactory('InnerVerifier');
+  // const innerVerifier = await innerVerifierContract.deploy();
 
-  // Deploy the BurnVerifier contract, linking it to the InnerVerifier library
-  const burnVerifierContract = await ethers.getContractFactory('BurnVerifier', {
-    libraries: {
-      InnerVerifier: innerVerifier.address, // Link InnerVerifier to BurnVerifier
-    },
-  });
-  const burnVerifier = await burnVerifierContract.deploy();
+  // // Deploy the BurnVerifier contract, linking it to the InnerVerifier library
+  // const burnVerifierContract = await ethers.getContractFactory('BurnVerifier', {
+  //   libraries: {
+  //     InnerVerifier: innerVerifier.address, // Link InnerVerifier to BurnVerifier
+  //   },
+  // });
+  // const burnVerifier = await burnVerifierContract.deploy();
 
-  // Deploy the ZetherVerifier contract, linking it to the InnerVerifier library
-  const zetherVerifierContract = await ethers.getContractFactory('ZetherVerifier', {
-    libraries: {
-      InnerVerifier: innerVerifier.address, // Link InnerVerifier to ZetherVerifier
-    },
-  });
-  const zetherVerifier = await zetherVerifierContract.deploy();
+  // // Deploy the ZetherVerifier contract, linking it to the InnerVerifier library
+  // const zetherVerifierContract = await ethers.getContractFactory('ZetherVerifier', {
+  //   libraries: {
+  //     InnerVerifier: innerVerifier.address, // Link InnerVerifier to ZetherVerifier
+  //   },
+  // });
+  // const zetherVerifier = await zetherVerifierContract.deploy();
 
   // Deploy the libEncryption library
-  const LibEncryptionContract = await ethers.getContractFactory('libEncryption');
-  const libEncryption = await LibEncryptionContract.deploy();
+  // const LibEncryptionContract = await ethers.getContractFactory('libEncryption');
+  // const libEncryption = await LibEncryptionContract.deploy();
 
-  // Update the network deployment information with the addresses of the deployed libraries
-  networkDeployedInfo.ExternalLibraries = {};
-  networkDeployedInfo.ExternalLibraries.BurnVerifier = burnVerifier.address;
-  networkDeployedInfo.ExternalLibraries.ZetherVerifier = zetherVerifier.address;
-  networkDeployedInfo.ExternalLibraries.libEncryption = libEncryption.address;
+  // // Update the network deployment information with the addresses of the deployed libraries
+  // networkDeployedInfo.ExternalLibraries = {};
+  // networkDeployedInfo.ExternalLibraries.BurnVerifier = burnVerifier.address;
+  // networkDeployedInfo.ExternalLibraries.ZetherVerifier = zetherVerifier.address;
+  // networkDeployedInfo.ExternalLibraries.libEncryption = libEncryption.address;
 }
 
 async function main() {
@@ -752,31 +760,31 @@ async function main() {
 
     // Get the deployer's current balance in ETH
     const deployerBalance = await ethers.provider.getBalance(deployer.address);
-    log(`Deployer balance (in ETH): ${ethers.utils.formatEther(deployerBalance)} ETH`);
+    log(`Deployer balance (in ETH): ${ethers.formatEther(deployerBalance)} ETH`);
 
     // Estimate the gas cost for the deployment
     const estimatedGasCost = await getGasCost();
     log(`Estimated Gas Cost: ${estimatedGasCost} ETH`);
 
     // Convert the estimated gas cost to wei for comparison
-    const estimatedGasCostInWei = ethers.utils.parseUnits(estimatedGasCost, 'ether');
+    const estimatedGasCostInWei = ethers.parseUnits(estimatedGasCost, 'ether');
 
     // Enable detailed logging for the Hardhat network during local testing
-    if (hre.network.name === 'hardhat') {
-      hre.config.networks['hardhat'].loggingEnabled = true;
+    if (network.name === 'hardhat') {
+      config.networks.hardhat.loggingEnabled = true;
     }
 
     // Check if the deployer has sufficient funds to cover the deployment gas cost
-    if (ethers.BigNumber.from(deployerBalance).lt(estimatedGasCostInWei)) {
+    if (deployerBalance < estimatedGasCostInWei) {
       throw new Error(
-        `Not enough funds to deploy. Deployer balance: ${ethers.utils.formatEther(deployerBalance)} ETH, Required: ${estimatedGasCost} ETH`,
+        `Not enough funds to deploy. Deployer balance: ${deployerBalance} ETH, Required: ${estimatedGasCost} ETH`,
       );
     }
 
     log(`Sufficient balance to deploy on ${network.name}`); // Confirm sufficient funds
 
     // Initialize the deployment record for the current network if it doesn't exist
-    const networkName = hre.network.name;
+    const networkName = network.name;
     if (!deployments[networkName]) {
       deployments[networkName] = {
         DiamondAddress: '', // Address of the deployed diamond contract
