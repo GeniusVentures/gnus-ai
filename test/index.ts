@@ -41,6 +41,7 @@ import * as NFTCreateTests from '../test/NFTCreateTests';
 import * as GNUSERC20Tests from '../test/GNUSERC20Tests';
 import * as ERC20BatchTests from '../test/Erc20BatchTests';
 import * as GNUSBridgeTests from '../test/GNUSBridgeTests';
+// import * as MultiChainTests from './MultiChainTests';
 
 import { updateOwnerForTest } from './utils/signer';
 
@@ -263,5 +264,6 @@ describe.only('Genius Diamond DApp Testing', async function () {
     NFTCreateTests.suite();        // Run tests for NFT creation within the GNUS ecosystem.
     ERC20BatchTests.suite();       // Run batch transfer tests for GNUS ERC20 tokens.
     GNUSBridgeTests.suite();       // Run bridge tests for GNUS token transfers across chains.
+    // MultiChainTests.suite();       // Run tests for GNUS token transfers across multiple chains.
   });
 });

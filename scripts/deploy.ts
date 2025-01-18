@@ -48,11 +48,25 @@ let client: AdminClient;
  */
 export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   
-  // Retrieve the list of available accounts on the network.
-  const accounts = await ethers.getSigners();
-  let diamondCutFacet;
-  const contractOwner = accounts[0]; // Use the first account as the contract owner.
+  let provider;
+  let contractOwner;
 
+  // If the Multichain testing scaffold has created a spawned process with a JSON-RPC URL
+  // this needs to be added to the networkDeployInfo object.
+  if (networkDeployInfo.rpcURL?.startsWith('http')) {
+    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+    contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+    ethers.provider = provider;  
+  } else {
+    // Retrieve the list of available accounts on the network.
+    const accounts = await ethers.getSigners();
+    contractOwner = accounts[0]; // Use the first account as the contract owner.
+  }
+  
+  const networkInfo = await ethers.provider.getNetwork();
+  console.log(`Chain ID: ${networkInfo.chainId}`);
+  
+  let diamondCutFacet;
   // Check if DiamondCutFacet is already deployed by looking up its address in the deployment info.
   if (networkDeployInfo.FacetDeployedInfo['DiamondCutFacet']?.address) {
     // Attach the already deployed DiamondCutFacet contract instance to `dc` for further use.
@@ -97,18 +111,18 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   dc.GeniusDiamond = (
     await ethers.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
   ).attach(gnusDiamond.address);
-
+  
   // Update the deployment info for DiamondCutFacet, since the GeniusDiamond contract constructor already references it.
   const funcSelectors = getSelectors(dc.DiamondCutFacet); // Retrieve the function selectors for DiamondCutFacet.
   networkDeployInfo.FacetDeployedInfo.DiamondCutFacet = {
     address: dc.DiamondCutFacet.address,
     tx_hash:
-      dc.DiamondCutFacet.deployTransaction?.hash ||
-      networkDeployInfo.FacetDeployedInfo['DiamondCutFacet'].tx_hash,
+    dc.DiamondCutFacet.deployTransaction?.hash ||
+    networkDeployInfo.FacetDeployedInfo['DiamondCutFacet'].tx_hash,
     version: 0.0,
     funcSelectors: funcSelectors.values, // Store all function selectors for this facet.
   };
-
+  
   log(`Diamond deployed ${gnusDiamond.address}`); // Log the address of the deployed GeniusDiamond contract.
 }
 
@@ -117,6 +131,12 @@ export async function deployFuncSelectors(
   oldNetworkDeployInfo: INetworkDeployInfo | undefined = undefined,
   facetsToDeploy: FacetToDeployInfo = Facets,
 ) {
+  
+  let provider;
+  if (networkDeployInfo.rpcURL?.startsWith('http')) {
+    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+    ethers.provider = provider;  
+  } 
   // Array to store facet cut operations (add, replace, remove selectors)
   const cut: FacetInfo[] = [];
   // Retrieve deployed facet information from network deployment data
@@ -463,10 +483,17 @@ export async function afterDeployCallbacks(
   facetsToDeploy: FacetToDeployInfo = Facets,
   previousVersions: PreviousVersionRecord,
 ) {
-  // Retrieve the list of signers and assign the first signer as the owner
-  const signers = await ethers.getSigners();
-  const owner = signers[0];
-
+  let provider;
+  let owner;
+  if (networkDeployInfo.rpcURL?.startsWith('http')) {
+    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+    owner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+    ethers.provider = provider;  
+  } else {
+    // Retrieve the list of signers and assign the first signer as the owner
+    const signers = await ethers.getSigners();
+    const owner = signers[0];
+  }
   // Reference the GeniusDiamond contract instance for interaction
   const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
 
@@ -596,6 +623,13 @@ export async function deployDiamondFacets(
   log('');
   log('Deploying facets');
 
+  let provider;
+  
+  if (networkDeployInfo.rpcURL?.startsWith('http')) {
+    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+    ethers.provider = provider;  
+  }
+  
   // Retrieve the facets that have already been deployed from the network deployment info
   const deployedFacets = networkDeployInfo.FacetDeployedInfo;
 

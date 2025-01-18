@@ -12,6 +12,7 @@ import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-web3';
 
 dotenv.config();
+const HH_CHAIN_ID = process.env.HH_CHAIN_ID;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -52,8 +53,8 @@ function filterDuplicateFunctions(
   return true;
 }
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+const MOCK_CHAIN_ID = HH_CHAIN_ID ? parseInt(HH_CHAIN_ID) : 31337;
+console.log(`Using chain ID: ${MOCK_CHAIN_ID}`);
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -75,6 +76,7 @@ const config: HardhatUserConfig = {
               : undefined,
           }
         : undefined,
+      chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
     },
     polygon: {
       url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_API_KEY}`,

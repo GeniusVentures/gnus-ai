@@ -12,3 +12,6 @@ artifacts
 
 typechain-types
 fast.test.ts
+logs
+dist
+

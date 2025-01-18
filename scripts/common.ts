@@ -54,6 +54,9 @@ export interface INetworkDeployInfo {
   FacetDeployedInfo: FacetDeployedInfo;
   ExternalLibraries?: any;
   protocolVersion?: number;
+  networkName?: string;
+  chainID?: number;
+  rpcURL?: string;
 }
 
 export type AfterDeployInit = (
