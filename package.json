@@ -55,20 +55,18 @@
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-diamond-abi": "^3.0.1",
     "hardhat-gas-reporter": "^1.0.8",
-    "prettier": "^3.4.2",
-    "prettier-plugin-solidity": "^1.4.1",
-    "solhint": "^5.0.3",
-    "solidity-coverage": "^0.8.0",
-    "typechain": "^8.3.0",
-    "typescript": ">=4.5.0",
+    "prettier": "^2.5.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solhint": "^3.3.7",
+    "solidity-coverage": "^0.7.20",
+    "typechain": "^7.0.0",
+    "typescript": "^4.5.5",
     "uint32": "^0.2.1"
   },
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "^0.15.0",
-    "@axelar-network/interchain-token-service": "^1.2.4",
-    "@nomicfoundation/hardhat-web3-v4": "^1.0.0",
-    "ts-node": "^10.9.2",
-    "web3": "^4.16.0"
-  },
-  "packageManager": "yarn@4.6.0"
+    "@axelar-network/interchain-token-service": "^1.2.1",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "ts-node": "^10.9.1"
+  }
 }
