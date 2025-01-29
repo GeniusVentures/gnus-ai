@@ -18,7 +18,8 @@ import {
 } from '../scripts/common';
 import { DiamondCutFacet, GeniusDiamond, IDiamondCut } from '../typechain-types';
 import { deployments } from '../scripts/deployments';
-import { Facets, LoadFacetDeployments } from '../scripts/facets';
+import { Facets, LoadFacetDeployments //, UpgradeInits 
+} from '../scripts/facets';
 import * as util from 'util';
 import { getGasCost } from '../scripts/getgascost';
 import { defenderSigners } from './DefenderSigners';
@@ -63,7 +64,7 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   }
   
   const networkInfo = await ethers.provider.getNetwork();
-  console.log(`Chain ID: ${networkInfo.chainId}`);
+  log(`Chain ID: ${networkInfo.chainId}`);
   
   let diamondCutFacet;
   // Check if DiamondCutFacet is already deployed by looking up its address in the deployment info.
@@ -161,7 +162,7 @@ export async function deployFuncSelectors(
   let protocolUpgradeVersion = 0;
   const selectorsToBeRemoved: string[] = []; // Track selectors to be removed
   const facetNamesToBeRemoved: string[] = []; // Track facet names to be removed
-  // ToDo TransferBatch is giving a Duplicate Definition error
+  // TODO TransferBatch is giving a Duplicate Definition error
   // Loop through deployed facets to identify facets and selectors no longer in the deployment list
   for (const facetName of Object.keys(deployedFacets)) {
     if (!Object.keys(facetsToDeploy).includes(facetName)) {
@@ -214,7 +215,7 @@ export async function deployFuncSelectors(
         ? { libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string } }
         : undefined,
     );
-    // ToDo investigate: Duplicate definition of TransferBatch (TransferBatch(address,address,address[],uint256[]), TransferBatch(address,address,address,uint256[],uint256[]))
+    // TODO investigate: Duplicate definition of TransferBatch (TransferBatch(address,address,address[],uint256[]), TransferBatch(address,address,address,uint256[],uint256[]))
     const facet = FacetContract.attach(deployedFacets[name].address!);
 
     // Determine if the facet needs an upgrade based on version comparison or missing selectors
@@ -233,7 +234,7 @@ export async function deployFuncSelectors(
     ).values;
     const removedSelectors = origSelectors.filter((v) => !newFuncSelectors.includes(v));
     if (removedSelectors.length) {
-      console.log(`${name} removed ${removedSelectors.length} selectors: [${removedSelectors}]`);
+      log(`${name} removed ${removedSelectors.length} selectors: [${removedSelectors}]`);
     }
 
     let numFuncSelectorsCut = 0; // Counter for selectors removed, added, or replaced
@@ -273,10 +274,11 @@ export async function deployFuncSelectors(
 
       // Retrieve the selector for the initialization function (if defined)
       if (initFunc) {
-        initFuncSelector = getSelector(facet, initFunc);
-        log(`contract: ${facet.address}, initFuncSelector: ${initFuncSelector}`); // Log the initialization function selector
+        initFuncSelector = getSelector(facet, initFunc); 
+        log(`InitFunc for contract: ${facet.address}, initFuncSelector: ${initFuncSelector}`); // Log the initialization function selector
       }
-
+      // get the current chainID and print it to the console.
+      log(`Chain ID: ${network.name}`);
       // Update the deployment information for the facet with the new function selectors
       deployedFacets[name].funcSelectors = newFuncSelectors;
       const replaceFuncSelectors: string[] = []; // Track selectors that need to be replaced
@@ -350,6 +352,11 @@ export async function deployFuncSelectors(
   } else {
     diamondCut.connect(ethers.provider.getSigner(0));
   }
+  
+  // const signer0 = ethers.provider.getSigner(0);
+  // get signer0 address
+  // const signer0Address = await signer0.getAddress();
+  
   // If Defender deployment is enabled and a signer is configured for the current network
   if (process.env.DEFENDER_DEPLOY_ON && defenderSigners[network.name]) {
     log('Deploying contract on defender');
@@ -403,7 +410,7 @@ export async function deployFuncSelectors(
       for (const removedFuncSelector of facetCutInfo.functionSelectors) {
         if (!replacedFunctionSelectors.includes(removedFuncSelector)) {
           newFunctionSelectors.push(removedFuncSelector);
-          console.log('Added selector to remove:', removedFuncSelector);
+          log('Added selector to removal list:', removedFuncSelector);
         }
       }
 
@@ -412,14 +419,14 @@ export async function deployFuncSelectors(
         continue;
       } else {
         facetCutInfo.functionSelectors = newFunctionSelectors;
-        console.log('New selectors to remove:', newFunctionSelectors);
+        log('New selectors to remove:', newFunctionSelectors);
       }
     }
     upgradeCut.push(facetCutInfo); // Add the facet cut to the upgrade list
   }
 
-  console.log('');
-  console.log('Diamond Cut:', upgradeCut); // Log the details of the diamond cut operations
+  log('');
+  log('Diamond Cut:', upgradeCut); // Log the details of the diamond cut operations
 
   const functionCall: string = '0x'; // any = []; // Placeholder for initialization function call
   const initAddress = ethers.ZeroAddress; // Default initialization address
@@ -466,7 +473,11 @@ export async function deployFuncSelectors(
       log(`created proposal on defender ${response.proposalId} `);
     } else {
       // Execute the diamond cut directly if not using Defender
-      // the diamond contract signer should be the contractOwner
+      // TODO: Test that the diamond contract signer should be the contractOwner.  If there is no ContractOwner
+      // than we may have an issue but it may still work for hardhat. 
+      // So needs to be looked to verify  that straight hardhat testing and non-multichain works.
+      // We also need to verify that the contractOwner as defined by the deployment is the ERC173 contractOwner for the diamond contract during testing.
+      
       let tx;
       if (!contractOwner) {
         tx = await diamondCut.diamondCut(
@@ -476,14 +487,14 @@ export async function deployFuncSelectors(
           {gasLimit: GAS_LIMIT_CUT_BASE + totalSelectors * GAS_LIMIT_PER_FACET, // Calculate gas limit
         });
       } else {
-      tx = await diamondCut.connect(contractOwner).diamondCut(
-        upgradeCut, 
-        initAddress, 
-        functionCall, 
-        {gasLimit: GAS_LIMIT_CUT_BASE + totalSelectors * GAS_LIMIT_PER_FACET, // Calculate gas limit
-      });
+        tx = await diamondCut.connect(contractOwner).diamondCut(
+          upgradeCut, 
+          initAddress, 
+          functionCall, 
+          {gasLimit: GAS_LIMIT_CUT_BASE + totalSelectors * GAS_LIMIT_PER_FACET, // Calculate gas limit
+            });
     }
-      console.log(`Diamond cut: tx hash: ${tx.hash}`); // Log the transaction hash
+      log(`Diamond cut: tx hash: ${tx.hash}`); // Log the transaction hash
       // Wait for the transaction to be confirmed
       const receipt = await tx.wait();
       if (!receipt || !receipt.status) {
@@ -514,7 +525,7 @@ export async function deployFuncSelectors(
     }
   }
 
-  console.log('Diamond Facets cuts completed'); // Log completion of the diamond cut operations
+  log('Diamond Facets cuts completed'); // Log completion of the diamond cut operations
 }
 
 export async function afterDeployCallbacks(
@@ -560,6 +571,7 @@ export async function afterDeployCallbacks(
     // Retrieve the previous version of the facet from deployment records
     const previousVersion = previousVersions[name];
 
+    // Determine the initialization function to call based on the version change
     let initFunction: keyof GeniusDiamond | undefined = undefined;
 
     // Determine the initialization function to call based on the version change
@@ -573,9 +585,7 @@ export async function afterDeployCallbacks(
     }
 
     // Log the facet deployment status
-    log(
-      `Facet: ${name}, Last Deployed Version: ${previousVersion}, Deployed Version: ${deployedVersion}`,
-    );
+    log(`Facet: ${name}, Last Deployed Version: ${previousVersion}, Deployed Version: ${deployedVersion}`);
 
     // If an initialization function is defined, execute it
     if (initFunction) {
@@ -584,8 +594,12 @@ export async function afterDeployCallbacks(
         throw new Error('Function selector cannot be null or undefined');
       }
 
-      log(`initFunction being called is ${String(initFunction)}`);
-
+      log(`initFunction being called from ${name} is ${String(initFunction)}`);
+      // facetAddress = networkDeployInfo.[name].address;
+      dc[name] = await ethers.getContractAt(
+        name,
+        networkDeployInfo.FacetDeployedInfo[name]?.address!,
+      );
       // Create a transaction object for the initialization call
       const tx = {
         to: gnusDiamond.getAddress(), // Address of the GeniusDiamond contract
@@ -718,11 +732,27 @@ export async function deployDiamondFacets(
       });
     }
 
+    // log the ethers.provider url and chainID
+    log(`Ethers provider url: ${ethers.provider.connection.url}`);
+    
     // Create the facet contract factory with the required libraries (if any)
-    const FacetContract = await ethers.getContractFactory(
-      name,
-      facetDeployVersionInfo.libraries ? { libraries: externalLibraries } : undefined,
-    );
+    let FacetContract;
+    if (contractOwner) {
+      FacetContract = await ethers.getContractFactory(
+        name,
+        {
+          libraries: externalLibraries,
+          signer: contractOwner,
+        }
+      );
+    } else {
+      FacetContract = await ethers.getContractFactory(
+        name,
+        {
+          libraries: externalLibraries,
+        }
+      );
+    }
 
     if (facetNeedsDeployment) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`); // Log facet deployment details

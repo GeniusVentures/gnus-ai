@@ -50,6 +50,11 @@ class MultiChainTestDeployer {
     this.chainID = config.chainID;
     this.rpcURL = config.rpcURL;
   }
+  
+  // getter for the deployInfo
+  getDeployInfo(): INetworkDeployInfo | null {
+    return this.deployInfo;
+  }
 
   // Factory method to get or create an instance for a network
   static getInstance(config: DeployConfig): MultiChainTestDeployer {
@@ -158,7 +163,7 @@ class MultiChainTestDeployer {
     else if (this.deployInProgress) {
       throw new Error(`Deployment in progress for ${this.networkName}`);
     }
-    // ToDo this is not a valid check for Upgrade, however we need an upgrade checker.
+    // TODO this is not a valid check for Upgrade, however we need an upgrade checker.
     // if (this.gnusDiamond) {
     //   console.log(`Upgrade already completed for ${this.networkName}`);
     //   return;
@@ -215,7 +220,33 @@ class MultiChainTestDeployer {
       
       // Interface Compatibility Test (ERC165 and ERC1155)
       await this.testInterfaceCompatibility();
-
+      
+      // check if the owner is the deployer and transfer ownership to the deployer
+      const deployerGnusDiamond = this.gnusDiamond.connect(deployer);
+      const currentContractOwner = await deployerGnusDiamond.owner();
+      if (currentContractOwner.toLowerCase() === deployerAddress.toLowerCase()) {
+        logger.info(`Ownership is correct, current contractOwner:  ${currentContractOwner}`);
+      } else {
+        logger.info(`Transferring ownership to ${deployerAddress}`);
+        // Impersonate and fund the currentContractOwner
+        await this.provider.send('hardhat_impersonateAccount', [currentContractOwner]);
+        await this.provider.send('hardhat_setBalance', [currentContractOwner, '0x56BC75E2D63100000']);
+        
+        //connect the currentContractOwner to the contract and transfer ownership to the deployer
+        const currentOwner = this.provider.getSigner(currentContractOwner);
+        const currentOwnerGnusDiamond = this.gnusDiamond.connect(currentOwner);
+        const tx = await currentOwnerGnusDiamond.transferOwnership(deployerAddress);
+        await tx.wait();
+        
+        // Verify the ownership transfer
+        const newContractOwner = await currentOwnerGnusDiamond.owner();
+        if (newContractOwner.toLowerCase() === deployerAddress.toLowerCase()) {
+          logger.info(`Ownership transferred to ${newContractOwner}`);
+        } else {
+          throw new Error(`Ownership transfer failed. Current owner: ${newContractOwner}`);
+        }
+      }
+      
       // Backup pre-upgrade Upgrade info
       const deployInfoBeforeUpgraded = JSON.parse(JSON.stringify(this.deployInfo));
 
@@ -290,7 +321,7 @@ class MultiChainTestDeployer {
     return Promise.resolve(updatedFacetsToDeploy);
   }
 
-  // ToDo: this test might be better suited in the MultiChainForkDeployTests.ts file or
+  // TODO: this test might be better suited in the MultiChainForkDeployTests.ts file or
   // it may be that the testInterfaceCompatibility should test the ERC20 interface as well
   private async testInterfaceCompatibility(): Promise<void> {
     if (!this.gnusDiamond) throw new Error('GeniusDiamond is not deployed yet.');

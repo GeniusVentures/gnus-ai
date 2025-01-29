@@ -15,9 +15,9 @@ export const createForkLogger = (forkName: string) => {
         level: "info",
         options: { flags: "w" }, // Clears the file each time the logger is initialized
       }),
-      new transports.Console({
-        format: format.combine(format.colorize(), format.simple()),
-      }),
+      // Uncomment to log to console
+      // new transports.Console({
+      //   format: format.combine(format.colorize(), format.simple()),// }),
     ],
   });
 };
