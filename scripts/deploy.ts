@@ -425,37 +425,6 @@ export async function deployFuncSelectors(
   let functionCall: any = []; // Placeholder for initialization function call
   let initAddress = ethers.constants.AddressZero; // Default initialization address
   
-  // // UpgradeInitInfo added back
-  // if (UpgradeInits[protocolUpgradeVersion]) {
-  //   const upgradeInitInfo = UpgradeInits[protocolUpgradeVersion]; // Retrieve the upgrade initialization information
-  //   let initContract;
-  //   if (networkDeployInfo.FacetDeployedInfo[upgradeInitInfo.initContractName]?.address) {
-  //     initContract = await ethers.getContractAt(
-  //       upgradeInitInfo.initContractName,
-  //       networkDeployInfo.FacetDeployedInfo[upgradeInitInfo.initContractName]?.address!,
-  //     );
-  //   } else {
-  //     const initContractFactory: any = await ethers.getContractFactory(
-  //       upgradeInitInfo.initContractName,
-  //     );
-  //     initContract = await initContractFactory.deploy();
-  //     await initContract.deployed();
-  //   }
-  //   if (!upgradeInitInfo.initArgs) {
-  //     functionCall = initContract.interface.encodeFunctionData(
-  //       upgradeInitInfo.initFuncName,
-  //     );
-  //   } else {
-  //     functionCall = initContract.interface.encodeFunctionData(
-  //       upgradeInitInfo.initFuncName,
-  //       upgradeInitInfo.initArgs,
-  //     );
-  //   }
-  //   initAddress = initContract.address;
-  //   log(`Calling Function:`, upgradeInitInfo);
-  // }
-  // // End UpgradeInitInfo
-  
   try {
     let totalSelectors = 0; // Count the total number of function selectors being modified
     upgradeCut.forEach((e) => {

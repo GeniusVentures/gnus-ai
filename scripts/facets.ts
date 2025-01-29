@@ -15,25 +15,13 @@ export const Facets: FacetToDeployInfo = {
     priority: 110,
     versions: { 0.0: {}, 2.1: {},  2.2: {
       deployInit: 'GNUSBridge_Initialize220',      
-    }, 2.4: {}, 2.5: { deployInit: 'GNUSBridge_Initialize250()'
-    // TODO Cleanup Multichain
-    //  , fromVersions: [0.0, 2.1, 2.2, 2.4] 
-    } },
+    }, 2.4: {}, 2.5: { deployInit: 'GNUSBridge_Initialize250()' } },
   },
   GeniusAI: { priority: 70, versions: { 0.0: { deployInit: 'GeniusAI_Initialize()' }   }  },
   GNUSNFTCollectionName: { priority: 80 },
   ERC20TransferBatch: { priority: 90, versions: { 2.0: {} } },
   GNUSContractAssets: { priority: 100 },
 };
-
-// TODO Cleanup Multichain
-// export const UpgradeInits: UpgradeInitInfo = {
-//   2.5: {
-//     initContractName: 'GNUSBridge',
-//     initFuncName: 'GNUSBridge_Initialize250',
-//     initArgs: [],
-//   },
-// };
 
 /**
  * Imports from the typescript files in /facetdeployments/ directory

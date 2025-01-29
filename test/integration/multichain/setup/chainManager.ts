@@ -120,42 +120,14 @@ class ChainManager {
     const configRpcUrl = chainName.toUpperCase() + '_RPC';
     const chainConfigs: Record<string, ChainConfig> = {
       [chainName]: {
-      name: chainName,
-      rpcUrl: process.env[configRpcUrl]!,
-      forkPort: 8546,
-      blockNumber: process.env[configBlockNumber]
-        ? parseInt(process.env[configBlockNumber]!)
-        : undefined,
-      chainId: process.env[configChainId] !== undefined ? parseInt(process.env[configChainId]!) : undefined,
+        name: chainName,
+        rpcUrl: process.env[configRpcUrl]!,
+        forkPort: 8546,
+        blockNumber: process.env[configBlockNumber]
+          ? parseInt(process.env[configBlockNumber]!)
+          : undefined,
+        chainId: process.env[configChainId] !== undefined ? parseInt(process.env[configChainId]!) : undefined,
       },
-      // TODO Cleanup Multichain
-      // sepolia: {
-      // name: 'sepolia',
-      // rpcUrl: process.env.SEPOLIA_RPC!,
-      // forkPort: 8547,
-      // blockNumber: process.env[configBlockNumber]
-      //   ? parseInt(process.env[configBlockNumber]!)
-      //   : undefined,
-      // chainId: process.env.SEPOLIA_MOCK_CHAIN_ID ? parseInt(process.env.SEPOLIA_MOCK_CHAIN_ID) : undefined,
-      // },
-      // polygon: {
-      // name: 'polygon',
-      // rpcUrl: process.env.POLYGON_RPC!,
-      // forkPort: 8548,
-      // blockNumber: process.env[configBlockNumber]
-      //   ? parseInt(process.env[configBlockNumber]!)
-      //   : undefined,
-      // chainId: process.env.POLYGON_MOCK_CHAIN_ID ? parseInt(process.env.POLYGON_MOCK_CHAIN_ID) : undefined,
-      // },
-      // mainnet: {
-      // name: 'mainnet',
-      // rpcUrl: process.env.MAINNET_RPC!,
-      // forkPort: 8549,
-      // blockNumber: process.env[configBlockNumber]
-      //   ? parseInt(process.env[configBlockNumber]!)
-      //   : undefined,
-      // chainId: process.env.MAINNET_MOCK_CHAIN_ID ? parseInt(process.env.MAINNET_MOCK_CHAIN_ID) : undefined,
-      // },
     };
 
     return chainConfigs[chainName] || null;
