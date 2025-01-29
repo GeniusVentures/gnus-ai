@@ -30,7 +30,7 @@ contract GNUSBridge is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl,
      * @dev Grants the `MINTER_ROLE` to the deploying address and registers ERC20 support in the Diamond Storage.
      * Only callable by the Super Admin.
      */
-    function GNUSBridge_Initialize() public initializer onlySuperAdminRole {
+    function GNUSBridge_Initialize250() public onlySuperAdminRole {
         _grantRole(MINTER_ROLE, _msgSender());
         LibDiamond.diamondStorage().supportedInterfaces[type(IERC20Upgradeable).interfaceId] = true;
     }
