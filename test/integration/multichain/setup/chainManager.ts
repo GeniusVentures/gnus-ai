@@ -128,6 +128,7 @@ class ChainManager {
         : undefined,
       chainId: process.env[configChainId] !== undefined ? parseInt(process.env[configChainId]!) : undefined,
       },
+      // TODO Cleanup Multichain
       // sepolia: {
       // name: 'sepolia',
       // rpcUrl: process.env.SEPOLIA_RPC!,

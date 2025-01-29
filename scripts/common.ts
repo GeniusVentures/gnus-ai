@@ -79,6 +79,16 @@ export interface IFacetToDeployInfo {
   libraries?: string[];
 }
 
+// ToDO CLEANUP MULTICHAIN
+// // UpgradeInitInfo added back
+// export interface IUpgradeInit {
+//   initContractName: string;
+//   initFuncName: string;
+//   initArgs: any;
+// }
+// export type UpgradeInitInfo = Record<string, IUpgradeInit>;
+// // End UpgradeInitInfo added back
+
 export type FacetToDeployInfo = Record<string, IFacetToDeployInfo>;
 
 export type PreviousVersionRecord = Record<string, number>;
