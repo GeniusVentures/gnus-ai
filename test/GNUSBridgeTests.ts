@@ -1,4 +1,4 @@
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { dc, expect, toWei, GNUS_TOKEN_ID } from '../scripts/common';
 import { assert } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -27,6 +27,17 @@ export function suite() {
 
       // Fetch the `MINTER_ROLE` constant from the `gnusDiamond` contract
       minterRole = await gnusDiamond['MINTER_ROLE']();
+    });
+    
+    // The snapshot ID to revert to the initial state after each test.
+    let snapshotId: string;
+
+    beforeEach(async () => {
+      snapshotId = await network.provider.send('evm_snapshot');
+    });
+      
+    afterEach(async () => {
+      await network.provider.send("evm_revert", [snapshotId]);
     });
 
     // Test case to validate the minting and burning functionality

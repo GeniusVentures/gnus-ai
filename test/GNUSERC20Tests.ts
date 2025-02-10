@@ -6,7 +6,6 @@ import { getInterfaceID } from '../scripts/FacetSelectors';
 import { IERC20Upgradeable__factory } from '../typechain-types/factories/IERC20Upgradeable__factory';
 import { deployments } from '../scripts/deployments';
 import { assert } from 'chai';
-import { EscrowAIJob } from '../typechain-types';
 
 // Define the test suite for GNUS ERC20 functionality within the hybrid Genius Diamond contract.
 export function suite() {
@@ -133,7 +132,7 @@ export function suite() {
       // Approve the owner as an operator for all of `addr3`'s ERC20 tokens, allowing unrestricted transfers.
       await gdAddr3.setApprovalForAll(owner, true);
 
-      // ToDo this needs to be redone to account for different implementation
+      // TODO this needs to be redone to account for multichain deployment implementation
       // // Set up the address for the `EscrowAIJob` contract to test ERC1155 `safeTransferFrom`.
       // const escrowAIContractAddress =  EscrowAIJob.address;
 

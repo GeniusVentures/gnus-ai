@@ -1,5 +1,5 @@
 import { Contract, BigNumber, EventFilter, ContractTransaction } from 'ethers';
-import hre, { ethers } from 'hardhat';
+import hre, { ethers, network } from 'hardhat';
 import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
@@ -17,7 +17,7 @@ import {
 } from '../scripts/deploy';
 import { GeniusDiamond, NFTStructOutput } from '../typechain-types/GeniusDiamond';
 import { GNUSNFTFactory } from '../typechain-types/GNUSNFTFactory';
-import { iObjToString } from './iObjToString';
+import { iObjToString } from './utils/iObjToString';
 import {
   dc,
   debuglog,
@@ -37,8 +37,8 @@ import util from 'util';
 import { debug } from 'debug';
 
 // other files suites to execute
-import * as NFTCreateTests from '../test/NFTCreateTests';
 import * as GNUSERC20Tests from '../test/GNUSERC20Tests';
+import * as NFTCreateTests from '../test/NFTCreateTests';
 import * as ERC20BatchTests from '../test/Erc20BatchTests';
 import * as GNUSBridgeTests from '../test/GNUSBridgeTests';
 // import * as MultiChainTests from './MultiChainTests';
@@ -193,6 +193,17 @@ describe.only('Genius Diamond DApp Testing', async function () {
     // Log that all facets have been successfully deployed.
     debuglog('Facets Deployed');
   });
+  
+  // The snapshot ID to revert to the initial state after each test.
+  let snapshotId: string;
+
+  beforeEach(async () => {
+    snapshotId = await network.provider.send('evm_snapshot');
+  });
+    
+  afterEach(async () => {
+    await network.provider.send("evm_revert", [snapshotId]);
+  });
 
   // Test suite to verify facet cut functionality in the diamond contract, which includes checking
   // facets and function selectors for correctness and consistency after upgrades.
@@ -253,17 +264,20 @@ describe.only('Genius Diamond DApp Testing', async function () {
       // Check that `bridgeFee` is zero as expected.
       expect(bridgeFee).to.be.eq(0);
 
-      // Verify that the `protocolVersion` matches the expected version (230).
+      // Verify that the `protocolVersion` matches the expected version (250).
+      // TODO This test needs to be changed by hand to reflect the correct protocol version.
+      // TODOcont This may not be for the best.
       expect(protocolVersion).to.be.eq(BigInt(250));
     });
   }); 
   
   // After all tests in this suite, run additional test suites for GNUS functionality.
-  after(() => {
-    GNUSERC20Tests.suite();       // Run tests for ERC20 functionality of GNUS.
-    NFTCreateTests.suite();        // Run tests for NFT creation within the GNUS ecosystem.
-    ERC20BatchTests.suite();       // Run batch transfer tests for GNUS ERC20 tokens.
-    GNUSBridgeTests.suite();       // Run bridge tests for GNUS token transfers across chains.
-    // MultiChainTests.suite();       // Run tests for GNUS token transfers across multiple chains.
+  after(async function () {
+    // There appears to be a race condition between different tests.
+    // let balance = await(await gnusDiamond['balanceOf(address)'](networkDeployedInfo.DeployerAddress)).toBigInt();
+    await ERC20BatchTests.suite();       // Run batch transfer tests for GNUS ERC20 tokens.
+    await GNUSERC20Tests.suite();       // Run tests for ERC20 functionality of GNUS.
+    await GNUSBridgeTests.suite();       // Run bridge tests for GNUS token transfers across chains.
+    await NFTCreateTests.suite();        // Run tests for NFT creation within the GNUS ecosystem.
   });
 });
