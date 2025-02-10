@@ -120,6 +120,12 @@ export function getInterfaceID(contractInterface: utils.Interface) {
 }
 
 export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeployInfo): Promise<FacetSelectorsDeployed> {
+  let provider;
+  if (networkDeployInfo.rpcURL?.startsWith('http')) {
+    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+    ethers.provider = provider;  
+    // contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  } 
 
   // map funcSelectors to contract address
   const deployedFuncSelectors: Record<string, string> = {};

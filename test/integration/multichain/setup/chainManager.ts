@@ -10,7 +10,6 @@ dotenv.config();
 type ChainConfig = {
   name: string;
   rpcUrl: string;
-  forkPort: number;
   blockNumber?: number;
   chainId?: number;
 };
@@ -18,7 +17,8 @@ type ChainConfig = {
 class ChainManager {
   private static instances: Map<string, JsonRpcProvider> = new Map();
   private static processes: Map<string, ChildProcessWithoutNullStreams> = new Map();
-
+  private static forkPort = 8546;
+  
   static async setupChains(chains: string[]): Promise<Map<string, JsonRpcProvider>> {
     if (this.instances.size > 0) return this.instances;
 
@@ -43,7 +43,7 @@ class ChainManager {
             '--fork',
             chainConfig.rpcUrl,
             '--port',
-            chainConfig.forkPort.toString(),
+            this.forkPort.toString(),
             ...(chainConfig.blockNumber
               ? ['--fork-block-number', chainConfig.blockNumber.toString()]
               : []),
@@ -55,7 +55,7 @@ class ChainManager {
             },
           }
         );
-
+        
         // Redirect logs to custom logger
         child.stdout?.on('data', (data) => logger.info(data.toString()));
         child.stderr?.on('data', (data) => logger.error(data.toString()));
@@ -64,14 +64,17 @@ class ChainManager {
         child.on("info", (err) => logger.info(`Log starting fork ${chainConfig.name}: ${err.message}`));
 
         processes[chainName] = child;
-        rpcUrls[chainName] = `http://127.0.0.1:${chainConfig.forkPort}`;
-
+        rpcUrls[chainName] = `http://127.0.0.1:${this.forkPort.toString()}`;
+        
+        // Increment the port for the next chain
+        this.forkPort++;
+        
         // Ensure the node is ready before proceeding
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        // await new Promise((resolve) => setTimeout(resolve, 5000));
 
         try {
           await waitForNetwork(rpcUrls[chainName], 100000);
-          logger.info(`Network at ${rpcUrls[chainName]} is ready.`);
+          logger.info(`Local ${chainName} network is ready at ${rpcUrls[chainName]}.`);
         } catch (err) {
           if (err instanceof Error) {
             logger.error(`Network validation failed for ${chainName}: ${err.message}`);
@@ -90,7 +93,6 @@ class ChainManager {
         this.processes.set(chainName, child);
       })
     );
-
     return this.instances;
   }
   
@@ -120,13 +122,12 @@ class ChainManager {
     const configRpcUrl = chainName.toUpperCase() + '_RPC';
     const chainConfigs: Record<string, ChainConfig> = {
       [chainName]: {
-        name: chainName,
-        rpcUrl: process.env[configRpcUrl]!,
-        forkPort: 8546,
-        blockNumber: process.env[configBlockNumber]
-          ? parseInt(process.env[configBlockNumber]!)
-          : undefined,
-        chainId: process.env[configChainId] !== undefined ? parseInt(process.env[configChainId]!) : undefined,
+      name: chainName,
+      rpcUrl: process.env[configRpcUrl]!,
+      blockNumber: process.env[configBlockNumber]
+        ? parseInt(process.env[configBlockNumber]!)
+        : undefined,
+      chainId: process.env[configChainId] !== undefined ? parseInt(process.env[configChainId]!) : undefined,
       },
     };
 

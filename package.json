@@ -64,6 +64,7 @@
     "@axelar-network/axelarjs-sdk": "^0.15.0",
     "@axelar-network/interchain-token-service": "^1.2.1",
     "@nomiclabs/hardhat-web3": "^2.0.0",
+    "hardhat-multichain": "git+https://github.com/GeniusVentures/hardhat-multchain.git#10d9db5",
     "ts-node": "^10.9.2"
   }
 }

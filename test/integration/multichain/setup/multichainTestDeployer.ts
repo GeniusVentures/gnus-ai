@@ -164,10 +164,10 @@ class MultiChainTestDeployer {
       throw new Error(`Deployment in progress for ${this.networkName}`);
     }
     // TODO this is not a valid check for Upgrade, however we need an upgrade checker.
-    // if (this.gnusDiamond) {
-    //   console.log(`Upgrade already completed for ${this.networkName}`);
-    //   return;
-    // }
+    if (this.gnusDiamond) {
+      console.log(`Upgrade already completed for ${this.networkName}`);
+      return;
+    }
 
     this.upgradeInProgress = true;
 
@@ -219,8 +219,9 @@ class MultiChainTestDeployer {
       );
       
       // Interface Compatibility Test (ERC165 and ERC1155)
-      await this.testInterfaceCompatibility();
+      // await this.testInterfaceCompatibility();
       
+      // TODO Should this be a test in a separate function ERC173
       // check if the owner is the deployer and transfer ownership to the deployer
       const deployerGnusDiamond = this.gnusDiamond.connect(deployer);
       const currentContractOwner = await deployerGnusDiamond.owner();

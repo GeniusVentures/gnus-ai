@@ -21,7 +21,7 @@ import {
 import { DiamondCutFacet } from '../typechain-types/DiamondCutFacet';
 import { IDiamondCut } from '../typechain-types/IDiamondCut';
 import { deployments } from '../scripts/deployments';
-import { Facets, LoadFacetDeployments //, UpgradeInits 
+import { Facets, LoadFacetDeployments
 } from '../scripts/facets';
 import * as util from 'util';
 import { getGasCost } from '../scripts/getgascost';
@@ -162,7 +162,7 @@ export async function deployFuncSelectors(
   let protocolUpgradeVersion = 0;
   const selectorsToBeRemoved: string[] = []; // Track selectors to be removed
   const facetNamesToBeRemoved: string[] = []; // Track facet names to be removed
-  // TODO TransferBatch is giving a Duplicate Definition error
+  // This should be necessary with a fresh install, as with a new chain or non-forked hardhat locally.
   // Loop through deployed facets to identify facets and selectors no longer in the deployment list
   for (const facetName of Object.keys(deployedFacets)) {
     if (!Object.keys(facetsToDeploy).includes(facetName)) {
@@ -347,10 +347,6 @@ export async function deployFuncSelectors(
     diamondCut.connect(ethers.provider.getSigner(0));
   }
   
-  // const signer0 = ethers.provider.getSigner(0);
-  // get signer0 address
-  // const signer0Address = await signer0.getAddress();
-  
   // If Defender deployment is enabled and a signer is configured for the current network
   if (process.env.DEFENDER_DEPLOY_ON &&
       defenderSigners[network.name]) {
@@ -388,7 +384,7 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the function selectors for replacement
-  const replacedFunctionSelectors = [];
+  const replacedFunctionSelectors: string[] = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Replace) {
       replacedFunctionSelectors.push(...facetCutInfo.functionSelectors);
@@ -396,11 +392,11 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the list of operations (facet cuts) for the diamond upgrade
-  const upgradeCut = [];
+  const upgradeCut: FacetInfo[] = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Remove) {
       // Filter out function selectors that have already been replaced
-      const newFunctionSelectors = [];
+      const newFunctionSelectors: string[] = [];
       for (const removedFuncSelector of facetCutInfo.functionSelectors) {
         if (!replacedFunctionSelectors.includes(removedFuncSelector)) {
           newFunctionSelectors.push(removedFuncSelector);
@@ -491,7 +487,7 @@ export async function deployFuncSelectors(
       }
     }
   } catch (e) {
-    debuglog(`unable to cut facet: \n ${e}`); // Log any errors during the diamond cut
+    log(`unable to cut facet: \n ${e}`); // Log any errors during the diamond cut
   }
 
   // Update the deployment information with the results of the diamond cut
@@ -576,11 +572,7 @@ export async function afterDeployCallbacks(
       }
 
       log(`initFunction being called from ${name} is ${initFunction}`);
-      // facetAddress = networkDeployInfo.[name].address;
-      dc[name] = await ethers.getContractAt(
-        name ,
-        networkDeployInfo.FacetDeployedInfo[name]?.address!,
-      );
+      
       // Create a transaction object for the initialization call
       const tx = {
         to: gnusDiamond.address, // Address of the GeniusDiamond contract
@@ -593,21 +585,21 @@ export async function afterDeployCallbacks(
         const txResponse = await owner.sendTransaction(tx);
         log("Transaction hash:", txResponse.hash); // Log the transaction hash
         await txResponse.wait(); // Wait for the transaction to be confirmed
-        debuglog("Transaction confirmed!"); // Log confirmation
+        log("Transaction confirmed!"); // Log confirmation
       } catch (error) {
-        debuglog(`Error sending transaction: ${error}`); // Log any errors during the transaction
+        log(`Error sending transaction: ${error}`); // Log any errors during the transaction
       }
     }
 
     // If a callback is defined for the facet and the version has changed, execute the callback
     if (facetDeployInfo.callback && (previousVersion != deployedVersion)) {
-      debuglog(`callback function being called is ${facetDeployInfo.callback.name}`);
+      log(`callback function being called is ${facetDeployInfo.callback.name}`);
 
       const afterDeployCallback = facetDeployInfo.callback;
       try {
         await afterDeployCallback(networkDeployInfo); // Execute the callback function
       } catch (e) {
-        debuglog(`Failure in after deploy callbacks for ${name}: \n${e}`); // Log any errors during the callback execution
+        log(`Failure in after deploy callbacks for ${name}: \n${e}`); // Log any errors during the callback execution
       }
     }
   }
@@ -754,7 +746,9 @@ export async function deployDiamondFacets(
       deployedFacets[name] = {
         address: facet.address, // Deployed contract address
         tx_hash: facet.deployTransaction.hash, // Transaction hash for deployment
-        version: upgradeVersion, // Version of the deployed facet
+          version: deployedVersion, // Version of the deployed facet
+          // TODO Cleanup if all testing works out.
+        // version: upgradeVersion, // Version of the deployed facet
       };
 
       log(`${name} deployed: ${facet.address} tx_hash: ${facet.deployTransaction.hash}`); // Log successful deployment
