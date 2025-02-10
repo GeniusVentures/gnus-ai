@@ -9,7 +9,7 @@ import {
   toWei,
 } from '../scripts/common';
 import { assert } from 'chai';
-import { iObjToString } from './iObjToString';
+import { iObjToString } from './utils/iObjToString';
 import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 
 // Import additional test suites for NFT minting functionality
@@ -17,7 +17,7 @@ import * as NFTMintTests from '../test/NFTMintTests';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 
 // Exporting a test suite for testing NFT creation functionality in the GNUS NFT Factory
-export function suite() {
+export async function suite() {
   describe('GNUS NFT Factory Testing', async function () {
     // Variables to store signers, contract instances, and roles
     let signers: HardhatEthersSigner[];
@@ -41,6 +41,18 @@ export function suite() {
       // gdAddr1 = GeniusDiamond__factory.connect(gnusDiamond.address, signers[1]);
       gdAddr1 = await gnusDiamond.connect(signers[1] as HardhatEthersSigner);
     });
+
+    // TODO: add create a setup class for this NFT Factory tests. Then this can be added back
+    // The snapshot ID to revert to the initial state after each test.
+    // let snapshotId: string;
+
+    // beforeEach(async () => {
+    //   snapshotId = await network.provider.send('evm_snapshot');
+    // });
+      
+    // afterEach(async () => {
+    //   await network.provider.send("evm_revert", [snapshotId]);
+    // });
 
     // Test case to validate the burning of GNUS tokens for NFT creation
     it('Testing NFT Factory that GNUS Tokens will burn for address 1', async () => {
@@ -173,8 +185,8 @@ export function suite() {
     });
 
     // Execute additional test suites after completing this one
-    after(() => {
-      NFTMintTests.suite();
+    after(async () => {
+      await NFTMintTests.suite();
     });
   });
 }

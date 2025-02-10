@@ -97,47 +97,49 @@ export function suite() {
       );
     });
 
-    // Test case to verify the blocking and unblocking of transfers.
-    it('Block Transfer', async () => {
-      // Fetch the owner's balance and mint additional tokens to the owner's account.
-      let balance = await gnusDiamond['balanceOf(address)'](owner.address);
-      await gnusDiamond['mint(address,uint256)'](owner.address, toWei(100));
-      balance = await gnusDiamond['balanceOf(address)'](owner.address);
-
-      // Assert that the owner's balance exceeds 100 after minting.
-      expect(balance).to.be.eq(toWei(100));
+  // Test case to verify the blocking and unblocking of transfers.
+  it('Block Transfer Series', async () => {
+    // Fetch the owner's balance and mint additional tokens to the owner's account.
+    let balance = await(await gnusDiamond['balanceOf(address)'](owner.address)).toBigInt();
+    debuglog(`Owner balance before transfer: ${balance.toString()}`);
+    await gnusDiamond['mint(address,uint256)'](owner.address, toWei(100));
+    balance = await (await gnusDiamond['balanceOf(address)'](owner.address)).toBigInt();
+    let expectedBalance = toWei(100).toBigInt();
+    debuglog(`Owner balance after transfer of ${expectedBalance}: ${balance.toString()}`);
+    debuglog(`Expected balance: ${expectedBalance.toString()}`);
+    // Assert that the owner's balance exceeds 100 after minting.
+    expect(balance).to.be.eq(expectedBalance);
 
       // Transfer tokens to `receiver1` and verify their balance.
       await gnusDiamond.transfer(receiver1.address, toWei(10));
       const receiverBalance = await gnusDiamond['balanceOf(address)'](receiver1.address);
       expect(receiverBalance).to.be.eq(toWei(10));
 
-      // Block the owner from transferring tokens and verify the restriction.
-      await gnusDiamond.banTransferorForAll(owner.address);
-      await expect(gnusDiamond.transfer(receiver1.address, toWei(10))).to.be.rejectedWith(
-        Error,
-        'Blocked transferor',
-      );
+    // Block the owner from transferring tokens and verify the restriction.
+    await gnusDiamond.banTransferorForAll(owner.address);
+    await expect(gnusDiamond.transfer(receiver1.address, toWei(10))).to.be.rejectedWith(
+      Error,
+      'Blocked transferor',
+    );
 
-      // Unblock the owner and retry the transfer.
-      await gnusDiamond.allowTransferorForAll(owner.address);
-      await gnusDiamond.transfer(receiver1.address, toWei(1));
+    // Unblock the owner and retry the transfer.
+    await gnusDiamond.allowTransferorForAll(owner.address);
+    await gnusDiamond.transfer(receiver1.address, toWei(1));
 
-      // Block the owner using a batch transfer restriction and verify.
-      await gnusDiamond.banTransferorBatch([0], [owner.address]);
-      await expect(gnusDiamond.transfer(receiver1.address, toWei(10))).to.be.rejectedWith(
-        Error,
-        'Blocked transferor',
-      );
+    // Block the owner using a batch transfer restriction and verify.
+    await gnusDiamond.banTransferorBatch([0], [owner.address]);
+    await expect(gnusDiamond.transfer(receiver1.address, toWei(10))).to.be.rejectedWith(
+      Error,
+      'Blocked transferor',
+    );
 
-      // Remove the batch restriction and verify successful transfer.
-      await gnusDiamond.allowTransferorBatch([0], [owner.address]);
-    });
+    // Remove the batch restriction and verify successful transfer.
+    await gnusDiamond.allowTransferorBatch([0], [owner.address]);
+  });
 
-    // Hook to execute additional test suites after this one completes.
-    after(() => {
-      // Uncomment if additional tests are to be executed sequentially.
-      // NFTMintTests.suite();
-    });
+  // Hook to execute additional test suites after this one completes.
+  after(() => {
+    // Uncomment if additional tests are to be executed sequentially.
+    // NFTMintTests.suite();
   });
 }

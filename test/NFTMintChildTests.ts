@@ -1,4 +1,4 @@
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { BigNumber, utils } from 'ethers';
 import { logEvents } from '.';
 import {
@@ -9,12 +9,13 @@ import {
   dc,
 } from '../scripts/common';
 import { assert } from 'chai';
-import { iObjToString } from './iObjToString';
+import { iObjToString } from './utils/iObjToString';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
 
 // Exporting a test suite for minting child NFTs through the GNUS NFT Factory
-export function suite() {
+export async function suite() {
+  
   describe.only('GNUS NFT Factory Mint Child NFTs Testing', async function () {
     // Variables to store signers, contract instances, and a reference NFT ID
     let signers: SignerWithAddress[];
@@ -23,20 +24,31 @@ export function suite() {
     let gdAddr2: GeniusDiamond;
     const ParentNFTID: BigNumber = BigNumber.from(1); // Reference to the parent NFT
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-
+    // const startingSupply = await gnusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
+    
     // `before` hook to set up the testing environment
     before(async () => {
       // Retrieve available signers for testing
       signers = await ethers.getSigners();
-
+      
       // Assign the first signer as the owner
       owner = signers[0].address;
-
+      
       // Connect the `gnusDiamond` contract to different signers
       gdAddr1 = await gnusDiamond.connect(signers[1]);
       gdAddr2 = await gnusDiamond.connect(signers[2]);
     });
 
+    // let snapshotId: string;
+
+    // beforeEach(async () => {
+    //   snapshotId = await network.provider.send('evm_snapshot');
+    // });
+      
+    // afterEach(async () => {
+    //   await network.provider.send("evm_revert", [snapshotId]);
+    // });
+    
     // Test case to validate minting restrictions for unauthorized users
     it("Testing NFT Factory to mint child NFT's of Addr1 Token", async () => {
       // Calculate the child NFT ID based on the parent NFT ID

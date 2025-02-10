@@ -8,7 +8,7 @@ import * as NFTMintChildTests from '../test/NFTMintChildTests';
 import { GNUSNFTFactory } from '../typechain-types';
 
 // Exporting a test suite for minting NFTs through the GNUS NFT Factory
-export function suite() {
+export async function suite() {
   describe.only('GNUS NFT Factory Mint Testing', async function () {
     // Variables to store signers, contract instances, and a reference NFT ID
     let signers: SignerWithAddress[];
@@ -18,6 +18,17 @@ export function suite() {
     const addr1ParentNFT: bigint = 1n; // Reference to the parent NFT
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
 
+    // // The snapshot ID to revert to the initial state after each test.
+    // let snapshotId: string;
+
+    // beforeEach(async () => {
+    //   snapshotId = await network.provider.send('evm_snapshot');
+    // });
+      
+    // afterEach(async () => {
+    //   await network.provider.send("evm_revert", [snapshotId]);
+    // });
+    
     // `before` hook to set up the testing environment
     before(async () => {
       // Retrieve available signers for testing
@@ -78,8 +89,8 @@ export function suite() {
     });
 
     // Hook to execute additional test suites after completing this one
-    after(() => {
-      NFTMintChildTests.suite();
+    after(async () => {
+      await NFTMintChildTests.suite();
     });
   });
 }
