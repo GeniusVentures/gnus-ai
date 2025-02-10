@@ -10,6 +10,7 @@ import { Fragment } from '@ethersproject/abi';
 import fs from 'fs';
 import util from 'util';
 import { ExternalApiCreateProposalRequest } from "@openzeppelin/defender-admin-client/lib/models/proposal";
+import { JsonRpcProvider } from '@ethersproject/providers';
 
 chai.use(chaiAsPromised);
 
@@ -54,9 +55,7 @@ export interface INetworkDeployInfo {
   FacetDeployedInfo: FacetDeployedInfo;
   ExternalLibraries?: any;
   protocolVersion?: number;
-  networkName?: string;
-  chainID?: number;
-  rpcURL?: string;
+  provider?: JsonRpcProvider | undefined;
 }
 
 export type AfterDeployInit = (

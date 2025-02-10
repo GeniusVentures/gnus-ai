@@ -115,12 +115,12 @@ const config: HardhatUserConfig = {
       sepolia: {
         rpcUrl: sepoliaUrl,
         blockNumber: sepoliaBlock,
-        chainId: 11169111
+        chainId: 11155111
       }, 
       amoy: {
         rpcUrl: amoyUrl,
         blockNumber: amoyBlock,
-        chainId: 11180002
+        chainId: 80002
       },
     }
   },
@@ -139,7 +139,7 @@ const config: HardhatUserConfig = {
         80002: {
           hardforkHistory: {
             london: 10000000,
-          }
+          },
         },
       },
     },
