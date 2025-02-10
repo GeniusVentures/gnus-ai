@@ -9,6 +9,7 @@ import chaiAsPromised from 'chai-as-promised';
 import fs from 'fs';
 import util from 'util';
 import { CreateProposalRequest } from '@openzeppelin/defender-sdk-proposal-client';
+import { JsonRpcProvider } from '@ethersproject/providers';
 
 chai.use(chaiAsPromised);
 
@@ -54,9 +55,7 @@ export interface INetworkDeployInfo {
   FacetDeployedInfo: FacetDeployedInfo;
   ExternalLibraries?: unknown;
   protocolVersion?: number;
-  networkName?: string;
-  chainID?: number;
-  rpcURL?: string;
+  provider?: JsonRpcProvider | undefined;
 }
 
 export type AfterDeployInit = (

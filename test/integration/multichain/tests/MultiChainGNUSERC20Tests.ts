@@ -7,50 +7,38 @@ import { getInterfaceID } from '../../../../scripts/FacetSelectors';
 import { IERC20Upgradeable__factory, IERC165Upgradeable__factory, IERC1155Upgradeable__factory } from '../../../../typechain-types';
 import { toWei } from '../../../../scripts/common';
 import { deployments } from '../../../../scripts/deployments';
+import { multichain } from 'hardhat-multichain';
 
 describe('Multichain GNUS ERC20 Hybrid Tests', function () {
   this.timeout(0); // Extend timeout for deployments and testing
 
-  let chains: Map<string, any>;
   const diamonds: Map<string, GeniusDiamond> = new Map();
+  const chains = multichain.getProviders();
+
 
   before(async function () {
-    // Setup chains based on command-line arguments
-    const chainArgs = process.env.CHAINS?.split(',') || ['sepolia'];
-    chains = await ChainManager.setupChains(chainArgs);
 
+    // TODO: This should be moved to a separate script with a multiton pattern so it is not repeated for a single chain over various tests
     // Deploy the diamond contracts on each chain
     for (const [chainName, provider] of chains.entries()) {
-      ethers.provider = provider;
+      // TODO Replace with Hardhat-Multichain types
+      // ethers.provider = provider;
       const { chainId } = await provider.getNetwork();
       const deployConfig = {
         networkName: chainName,
         chainID: chainId,
-        rpcURL: provider.connection.url,
+        provider: provider,
       };
-
-      const multichainDeployer = MultiChainTestDeployer.getInstance(deployConfig);
-      // await multichainDeployer.deploy();
-      await multichainDeployer.upgrade();
-
-      // Store the deployed diamond for reuse in tests
-      const diamond = multichainDeployer.getDiamond();
-      expect(diamond).to.not.be.null;
-      diamonds.set(chainName, diamond!);
-      // deploymentInfo.set(chainName, deployments[chainName]);
+      const deployer = MultiChainTestDeployer.getInstance(deployConfig);
+      // TODO The deployment status on a particular chain should be switch with the deployer
+      // await deployer.deploy();
+      await deployer.upgrade();
     }
-  });
-
-  after(function () {
-    // Cleanup chain processes and deployment instances
-    ChainManager.cleanup();
-    MultiChainTestDeployer.cleanup();
   });
 
   it('should verify GNUS ERC20 interface compatibility on all chains', async function () {
     for (const [chainName, diamond] of diamonds.entries()) {
       let provider = chains.get(chainName);
-      ethers.provider = provider;
       console.log(`Verifying ERC20 interface on chain: ${chainName}`);
       const IERC165Interface = IERC165Upgradeable__factory.createInterface();
       const IERC165InterfaceID = getInterfaceID(IERC165Interface);
@@ -61,19 +49,21 @@ describe('Multichain GNUS ERC20 Hybrid Tests', function () {
     }
   });
 
-  // it('should verify MINTER role is set for the owner on all chains', async function () {
-  //   for (const [chainName, diamond] of diamonds.entries()) {
-  //     let provider = chains.get(chainName);
-  //     ethers.provider = provider;
-  //     console.log(`Verifying MINTER role on chain: ${chainName}`);
-  //     const ownershipFacet = await ethers.getContractAt('GeniusOwnershipFacet', diamond.address);
-  //     const minterRole = await diamond['MINTER_ROLE']();
-  //     const deployerAddress = deployments[chainName].DeployerAddress;
-  //     const owner = await ownershipFacet.owner();
-  //     const hasMinterRole = await ownershipFacet.hasRole(minterRole, deployerAddress);
-  //     expect(hasMinterRole).to.be.true;
-  //   }
-  // });
+  it('should verify MINTER role is set for the owner on all chains', async function () {
+    for (const [chainName, diamond] of diamonds.entries()) {
+      let provider = chains.get(chainName);
+      console.log(`Verifying MINTER role on chain: ${chainName}`);
+      // const ethersProvider = new ethers.providers.JsonRpcProvider(provider?.connection.url);
+      const ethersLocal = require('ethers').ether;
+      ethersLocal.provider = provider;
+      const ownershipFacet = await ethersLocal.getContractAt('GeniusOwnershipFacet', diamond.address);
+      const minterRole = await diamond['MINTER_ROLE']();
+      const deployerAddress = deployments[chainName].DeployerAddress;
+      const owner = await ownershipFacet.owner();
+      const hasMinterRole = await ownershipFacet.hasRole(minterRole, deployerAddress);
+      expect(hasMinterRole).to.be.true;
+    }
+  });
 
   // it('should mint and transfer GNUS tokens correctly on all chains', async function () {
   //   for (const [chainName, diamond] of diamonds.entries()) {

@@ -14886,9 +14886,9 @@ hardhat-gas-reporter@^1.0.8:
     eth-gas-reporter "^0.2.25"
     sha1 "^1.1.1"
 
-"hardhat-multichain@git+https://github.com/GeniusVentures/hardhat-multchain.git#10d9db5":
+"hardhat-multichain@git+https://github.com/GeniusVentures/hardhat-multchain.git#c9cdd33":
   version "0.0.1"
-  resolved "git+https://github.com/GeniusVentures/hardhat-multchain.git#10d9db584de4330da9d3181cf14f4d5d23aa0421"
+  resolved "git+https://github.com/GeniusVentures/hardhat-multchain.git#c9cdd33603064491a9021108cd117b9eb2ec10ab"
 
 hardhat@^2.9.0:
   version "2.22.18"

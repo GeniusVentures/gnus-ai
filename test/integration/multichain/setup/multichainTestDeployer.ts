@@ -1,4 +1,6 @@
 import { ethers } from 'hardhat';
+// import { ethers as ethersType } from 'ethers';
+import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types';
 import { Signer } from 'ethers';
 import * as util from 'util';
 import { JsonRpcProvider } from '@ethersproject/providers';
@@ -27,90 +29,71 @@ import { createForkLogger } from '../utils/logger';
 import { waitForNetwork } from '../utils/network-utils';
 import { GetUpdatedFacets, attachGNUSDiamond  } from '../../../../scripts/upgrade';
 
-type DeployConfig = {
-  networkName: string;
-  chainID: number;
-  rpcURL: string;
+interface ChainInfo {
+  chainName: string;
+  provider: JsonRpcProvider;
 };
 
 class MultiChainTestDeployer {
   private static instances: Map<string, MultiChainTestDeployer> = new Map();
-  private networkName: string;
-  private chainID: number;
-  private rpcURL: string;
-  private provider: JsonRpcProvider | null = null;
+  private chainName: string;
+  private provider: JsonRpcProvider;
   private gnusDiamond: GeniusDiamond | null = null;
   private deployInfo: INetworkDeployInfo | null = null;
-  private previousDeployedVersions: PreviousVersionRecord = {};
   private deployInProgress = false;
   private upgradeInProgress = false;
+  private ethersMultichain: typeof ethers & HardhatEthersHelpers;
 
-  private constructor(config: DeployConfig) {
-    this.networkName = config.networkName;
-    this.chainID = config.chainID;
-    this.rpcURL = config.rpcURL;
+  private constructor(config: ChainInfo) {
+    this.chainName = config.chainName;
+    this.provider = config.provider;
+    this.ethersMultichain = ethers;
+    this.ethersMultichain.provider = this.provider;
   }
   
   // getter for the deployInfo
   getDeployInfo(): INetworkDeployInfo | null {
     return this.deployInfo;
   }
+  
+  setDeployInfo(deployInfo: INetworkDeployInfo): void {
+    this.deployInfo = deployInfo;
+  }
 
   // Factory method to get or create an instance for a network
-  static getInstance(config: DeployConfig): MultiChainTestDeployer {
-    if (!this.instances.has(config.networkName)) {
-      this.instances.set(config.networkName, new MultiChainTestDeployer(config));
+  static getInstance(chainInfo: ChainInfo): MultiChainTestDeployer {
+    if (!this.instances.has(chainInfo.provider.network.name)) {
+      this.instances.set(chainInfo.chainName, new MultiChainTestDeployer(chainInfo));
     }
-    return this.instances.get(config.networkName)!;
+    return this.instances.get(chainInfo.chainName)!;
   }
 
   // Main deployment logic
   async deploy(): Promise<void> {
     if (this.deployInProgress) {
-      throw new Error(`Deployment already in progress for ${this.networkName}`);
+      throw new Error(`Deployment already in progress for ${this.chainName}`);
     }
     else if (this.upgradeInProgress) {
-      throw new Error(`Upgrade in progress for ${this.networkName}`);
+      throw new Error(`Upgrade in progress for ${this.chainName}`);
     }
     if (this.gnusDiamond) {
-      console.log(`Deployment already completed for ${this.networkName}`);
+      console.log(`Deployment already completed for ${this.chainName}`);
       return;
     }
 
     this.deployInProgress = true;
 
     try {
-      const logger = createForkLogger(this.networkName);
-      logger.info(`Starting deployment for ${this.networkName}`);
-
-      // Set up provider and validate network
-      this.provider = new ethers.providers.JsonRpcProvider(this.rpcURL);
-      if (this.provider) {
-        ethers.provider = this.provider;
-      } else {
-        throw new Error('Provider is not initialized.');
-      }
-      await waitForNetwork(this.rpcURL, 100000);
-
       // Load existing deployments
       await LoadFacetDeployments();
 
       // Initialize deployment info
-      this.deployInfo = deployments[this.networkName] || {
-        networkName: this.networkName,
-        chainID: this.chainID,
-        rpcURL: this.rpcURL,
+      this.deployInfo = deployments[this.chainName] || {
+        provider: this.provider,
         DiamondAddress: '',
         DeployerAddress: '',
         FacetDeployedInfo: {},
       };
-
-      // add the chainId to the deployInfo
-      this.deployInfo.chainID = this.chainID;
-      // add the rpcURL to the deployInfo
-      this.deployInfo.rpcURL = this.rpcURL; 
-      // add the provider to the deployInfo
-      this.deployInfo.networkName = this.networkName;
       
       // Impersonate the deployer and fund their account
       const deployerAddress = this.deployInfo.DeployerAddress;
@@ -142,12 +125,11 @@ class MultiChainTestDeployer {
       // Execute Post-Deployment Callbacks
       // await afterDeployCallbacks(this.deployInfo, undefined, this.previousDeployedVersions);
 
-      logger.info(`Deployment completed for ${this.networkName}`);
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`Deployment failed for ${this.networkName}: ${error.message}`);
+        console.error(`Deployment failed for ${this.chainName}: ${error.message}`);
       } else {
-        console.error(`Deployment failed for ${this.networkName}: ${String(error)}`);
+        console.error(`Deployment failed for ${this.chainName}: ${String(error)}`);
       }
       throw error;
     } finally {
@@ -158,66 +140,56 @@ class MultiChainTestDeployer {
   // Main upgrade logic
   async upgrade(): Promise<void> {
     if (this.upgradeInProgress) {
-      throw new Error(`Upgrade already in progress for ${this.networkName}`);
+      throw new Error(`Upgrade already in progress for ${this.chainName}`);
     }
     else if (this.deployInProgress) {
-      throw new Error(`Deployment in progress for ${this.networkName}`);
+      throw new Error(`Deployment in progress for ${this.chainName}`);
     }
     // TODO this is not a valid check for Upgrade, however we need an upgrade checker.
-    if (this.gnusDiamond) {
-      console.log(`Upgrade already completed for ${this.networkName}`);
-      return;
-    }
+    const protocolInfo = await this.provider.getNetwork();
+    // if ((await this.gnusDiamond?.protocolInfo())) {
+    //   console.log(`Upgrade already completed for ${this.chainName}`);
+    //   return;
+    // }
 
     this.upgradeInProgress = true;
 
     try {
-      const logger = createForkLogger(this.networkName);
-      logger.info(`Starting Upgrade for ${this.networkName}`);
 
-      // Set up provider and validate network
-      this.provider = new ethers.providers.JsonRpcProvider(this.rpcURL);
-      ethers.provider = this.provider;
-      await waitForNetwork(this.rpcURL, 100000);;
+      console.info(`Starting Upgrade for ${this.chainName}`);
 
       // Initialize Upgrade info (existing deployments or new)
-      this.deployInfo = deployments[this.networkName] || {
-        networkName: this.networkName,
-        chainID: this.chainID,
-        rpcURL: this.rpcURL,
+      this.deployInfo = deployments[this.chainName] || {
+        provider: this.provider,
         DiamondAddress: '',
         DeployerAddress: '',
         FacetDeployedInfo: {},
       };
 
-      // add the chainId to the deployInfo
-      this.deployInfo.chainID = this.chainID;
-      // add the rpcURL to the deployInfo
-      this.deployInfo.rpcURL = this.rpcURL; 
-      // add the provider to the deployInfo
-      this.deployInfo.networkName = this.networkName;
-
       // Impersonate the deployer and fund their account
       const deployerAddress = this.deployInfo.DeployerAddress;
-      const deployer = await this.impersonateAndFundDeployer(this.provider, deployerAddress);
+      const deployer = await this.impersonateAndFundDeployer(deployerAddress);
       
       // Deploy and Load GNUS Diamond instance
       await deployGNUSDiamond(this.deployInfo);
+      
+      
       this.gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
       // deploy Diamond
       const diamondAddress = this.deployInfo.DiamondAddress;
       dc._gnusDiamond = (
-        await ethers.getContractFactory('contracts/GeniusDiamond.sol:GeniusDiamond')
+        await this.ethersMultichain.getContractFactory('contracts/GeniusDiamond.sol:GeniusDiamond')
       ).attach(diamondAddress);
       dc.gnusDiamond = (
-        await ethers.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
+        await this.ethersMultichain.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
       ).attach(diamondAddress);
       
-      const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet');
+      const DiamondCutFacet = await this.ethersMultichain.getContractFactory('DiamondCutFacet');
       dc.DiamondCutFacet = DiamondCutFacet.attach(
         this.deployInfo.FacetDeployedInfo.DiamondCutFacet.address!,
       );
       
+      // TODO Should this be tested here because it causes issues if the diamond is not deployed with ERC1155 already.
       // Interface Compatibility Test (ERC165 and ERC1155)
       // await this.testInterfaceCompatibility();
       
@@ -226,15 +198,15 @@ class MultiChainTestDeployer {
       const deployerGnusDiamond = this.gnusDiamond.connect(deployer);
       const currentContractOwner = await deployerGnusDiamond.owner();
       if (currentContractOwner.toLowerCase() === deployerAddress.toLowerCase()) {
-        logger.info(`Ownership is correct, current contractOwner:  ${currentContractOwner}`);
+        console.log(`Ownership is correct, current contractOwner:  ${currentContractOwner}`);
       } else {
-        logger.info(`Transferring ownership to ${deployerAddress}`);
+        console.log(`Transferring ownership to ${deployerAddress}`);
         // Impersonate and fund the currentContractOwner
         await this.provider.send('hardhat_impersonateAccount', [currentContractOwner]);
         await this.provider.send('hardhat_setBalance', [currentContractOwner, '0x56BC75E2D63100000']);
         
         //connect the currentContractOwner to the contract and transfer ownership to the deployer
-        const currentOwner = this.provider.getSigner(currentContractOwner);
+        const currentOwner = this.provider?.getSigner(currentContractOwner);
         const currentOwnerGnusDiamond = this.gnusDiamond.connect(currentOwner);
         const tx = await currentOwnerGnusDiamond.transferOwnership(deployerAddress);
         await tx.wait();
@@ -242,7 +214,7 @@ class MultiChainTestDeployer {
         // Verify the ownership transfer
         const newContractOwner = await currentOwnerGnusDiamond.owner();
         if (newContractOwner.toLowerCase() === deployerAddress.toLowerCase()) {
-          logger.info(`Ownership transferred to ${newContractOwner}`);
+          console.log(`Ownership transferred to ${newContractOwner}`);
         } else {
           throw new Error(`Ownership transfer failed. Current owner: ${newContractOwner}`);
         }
@@ -261,12 +233,12 @@ class MultiChainTestDeployer {
       // if (!this.deployInfo!.ExternalLibraries) await deployExternalLibraries(this.deployInfo!);
       await deployAndInitDiamondFacets(this.deployInfo!, updatedFacetsToDeploy);
 
-      logger.info(`Upgrade completed for ${this.networkName}`);
+      console.log(`Upgrade completed for ${this.chainName}`);
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`Upgrade failed for ${this.networkName}: ${error.message}`);
+        console.error(`Upgrade failed for ${this.chainName}: ${error.message}`);
       } else {
-        console.error(`Upgrade failed for ${this.networkName}: ${String(error)}`);
+        console.error(`Upgrade failed for ${this.chainName}: ${String(error)}`);
       }
       throw error;
     } finally {
@@ -281,14 +253,14 @@ class MultiChainTestDeployer {
    * @param deployerAddress - The address of the deployer account.
    * @param balance - The balance to set for the deployer account (in hex format).
    */
-  async impersonateAndFundDeployer(provider: JsonRpcProvider, deployerAddress: string): Promise<Signer> {
+  async impersonateAndFundDeployer(deployerAddress: string): Promise<Signer> {
     try {
-      await provider.send('hardhat_impersonateAccount', [deployerAddress]);
-      const deployer = provider.getSigner(deployerAddress);
+      await this.provider.send('hardhat_impersonateAccount', [deployerAddress]);
+      const deployer = this.provider.getSigner(deployerAddress);
       
       // Check current balance
-      const balance = await provider.getBalance(deployerAddress);
-      const balanceInEth = parseFloat(ethers.utils.formatEther(balance));
+      const balance = await this.provider.getBalance(deployerAddress);
+      const balanceInEth = parseFloat(this.ethersMultichain.utils.formatEther(balance));
       
       // Calculate the target balance (next highest amount in ETH rounded to 1 followed by all zeros, minimum 100 ETH)
       let targetBalanceInEth = Math.ceil(balanceInEth / 100) * 100;
@@ -297,17 +269,17 @@ class MultiChainTestDeployer {
       }
       
       // Calculate the amount to fund
-      const targetBalance = ethers.utils.parseEther(targetBalanceInEth.toString());
+      const targetBalance = this.ethersMultichain.utils.parseEther(targetBalanceInEth.toString());
       const amountToFund = targetBalance.sub(balance);
       
       // Fund the account
-      await provider.send('hardhat_setBalance', [deployerAddress, amountToFund.toHexString()]);
+      await this.provider.send('hardhat_setBalance', [deployerAddressf, amountToFund.toHexString()]);
       return deployer;
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`Impersonation and funding failed for ${deployerAddress}: ${error.message}`);
+        console.error(`Impersonation and funding failed for ${deployerAddress}: ${error.message}`);ff
       } else {
-        console.error(`Impersonation and funding failed for ${deployerAddress}: ${String(error)}`);
+        console.error(`Impersonation and funding failed for ${defployerAddress}: ${String(error)}`);
       }
       throw error;
     }
@@ -327,7 +299,7 @@ class MultiChainTestDeployer {
   private async testInterfaceCompatibility(): Promise<void> {
     if (!this.gnusDiamond) throw new Error('GeniusDiamond is not deployed yet.');
 
-    const logger = createForkLogger(this.networkName);
+    const logger = createForkLogger(this.chainName);
     const IERC165Interface = IERC165Upgradeable__factory.createInterface();
     const IERC165ID = getInterfaceID(IERC165Interface);
     const IERC1155Interface = IERC1155Upgradeable__factory.createInterface();
