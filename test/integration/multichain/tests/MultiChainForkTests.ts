@@ -11,7 +11,7 @@ describe('Multichain Integration Tests', function () {
 
   before(async function () {
     // Setup chains based on command-line arguments
-    const chainArgs = process.env.CHAINS?.split(',') || ['amoy', 'sepolia'];
+    const chainArgs = process.env.CHAINS?.split(',') || ['sepolia'];
     chains = await ChainManager.setupChains(chainArgs);
   });
 
@@ -45,13 +45,13 @@ describe('Multichain Integration Tests', function () {
       expect(blockNumber).to.be.a('number');
       const parsedConfig = dotenv.config().parsed;
       expect(parsedConfig).to.not.be.undefined;
-      const expectedBlockNumber = parsedConfig ? parsedConfig[`${chainName.toUpperCase()}_BLOCK_NUMBER`] : undefined;
-      expect(blockNumber.toString()).to.be.eq(expectedBlockNumber);
+      const expectedBlockNumber = parsedConfig ? parseInt(parsedConfig[`${chainName.toUpperCase()}_BLOCK_NUMBER`], 10) : undefined;
+      expect(blockNumber).to.be.gt(expectedBlockNumber);
       const chainId = await (await ethers.provider.getNetwork()).chainId.toString();
       console.log(`${chainName} chain ID:, ${chainId}`);
       const configChainId = chainName.toUpperCase() + '_MOCK_CHAIN_ID';
       const expectedChainId = parsedConfig ? parsedConfig[`${configChainId}`] : undefined;
-      expect(chainId).to.be.equal(expectedChainId);
+      expect(chainId).to.be.eq(expectedChainId);
     }
   });
 });

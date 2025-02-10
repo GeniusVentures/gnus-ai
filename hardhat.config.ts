@@ -9,9 +9,47 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 import '@nomicfoundation/hardhat-ethers';
 import '@nomicfoundation/hardhat-web3-v4';
+import 'hardhat-multichain';
 
 dotenv.config();
-const HH_CHAIN_ID = process.env.HH_CHAIN_ID;
+
+/*
+ * Destructuring environment variables required for the configuration.
+ * These variables are fetched from the `.env` file to avoid hardcoding sensitive data.
+ * - HH_CHAIN_ID: Custom chain ID for the Hardhat network (default is 31337 if not set).
+ * - DEPLOYER_PRIVATE_KEY: Private key of the deployer account.
+ * - SEPOLIA_RPC: RPC URL for the Sepolia network.
+ * - ETHEREUM_RPC: RPC URL for the Ethereum network.
+ * - POLYGON_RPC: RPC URL for the Polygon network.
+ * - AMOY_RPC: RPC URL for the Amoy network.
+ * - ETH_BLOCK: Block number for the Ethereum network.
+ * - POLY_BLOCK: Block number for the Polygon network.
+ * - AMOY_BLOCK: Block number for the Amoy network.
+ * - SEPOLIA_BLOCK: Block number for the Sepolia network.
+ */
+const { 
+  HH_CHAIN_ID,
+  DEPLOYER_PRIVATE_KEY, 
+  SEPOLIA_RPC, 
+  ETHEREUM_RPC,
+  POLYGON_RPC,
+  POLYGON_AMOY_RPC, 
+  ETH_BLOCK,
+  POLY_BLOCK,
+  AMOY_BLOCK,
+  SEPOLIA_BLOCK,
+} = process.env;
+
+// Exported constants for reusability in other parts of the project (e.g., testing scripts)
+export const ethUrl: string = ETHEREUM_RPC || ""; // Ethereum RPC URL
+export const polyUrl: string = POLYGON_RPC || ""; // Polygon RPC URL
+export const amoyUrl: string = POLYGON_AMOY_RPC || ""; // Amoy RPC URL
+export const sepoliaUrl: string = SEPOLIA_RPC || ""; // Sepolia RPC URL
+// These set default values as well so missing environment variables set default to latest block.
+export const ethBlock: number = parseInt(ETH_BLOCK || "0"); // Ethereum block number
+export const polyBlock: number = parseInt(POLY_BLOCK || "0"); // Polygon block number
+export const amoyBlock: number = parseInt(AMOY_BLOCK || "0"); // Amoy block number
+export const sepoliaBlock: number = parseInt(SEPOLIA_BLOCK || "0"); // Sepolia block number
 
 task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
   // Retrieve the list of accounts
@@ -76,6 +114,28 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  chainManager: {
+    chains: {
+      ethereum: {
+        rpcUrl: ethUrl,
+        blockNumber: ethBlock,
+      }, 
+      polygon: {
+        rpcUrl: polyUrl,
+        blockNumber: polyBlock,
+      }, 
+      sepolia: {
+        rpcUrl: sepoliaUrl,
+        blockNumber: sepoliaBlock,
+        chainId: 11169111
+      }, 
+      amoy: {
+        rpcUrl: amoyUrl,
+        blockNumber: amoyBlock,
+        chainId: 11180002
+      },
+    }
+  },
   networks: {
     hardhat: {
       forking: process.env.FORK_URL
@@ -87,6 +147,13 @@ const config: HardhatUserConfig = {
           }
         : undefined,
       chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
+      chains: {
+        80002: {
+          hardforkHistory: {
+            london: 10000000,
+          }
+        },
+      },
     },
     polygon: {
       url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_API_KEY}`,
@@ -94,16 +161,15 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     sepolia: {
-      url: `https://nd-964-217-560.p2pify.com/${process.env.CHAINSTACK_ETH_TEST_API_KEY}`,
-      chainId: 11155111,
+      url: `https://eth-sepolia.g.alchemy.com/v2/Am1o01UUQ8B9zEjiPRg6iro-TfV6Os_m`,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       timeout: 100000,
     },
-    arbitrum_sepolia: {
-      url: `https://lb.drpc.org/ogrpc?network=arbitrum-sepolia&dkey=${process.env.DRPC_API_KEY}`,
-      chainId: 421614,
-      accounts: [process.env.PRIVATE_KEY || ''],
-    },
+    // arbitrum_sepolia: {
+    //   url: `https://lb.drpc.org/ogrpc?network=arbitrum-sepolia&dkey=${process.env.DRPC_API_KEY}`,
+    //   chainId: 421614,
+    //   accounts: [process.env.PRIVATE_KEY || ''],
+    // },
     arbitrum: {
       url: `https://lb.drpc.org/ogrpc?network=arbitrum&dkey=${process.env.DRPC_API_KEY}`,
       chainId: 42161,

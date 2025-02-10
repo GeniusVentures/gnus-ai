@@ -133,9 +133,14 @@ export function getInterfaceID(contractInterface: Interface) {
   return interfaceID;
 }
 
-export async function getDeployedFuncSelectors(
-  networkDeployInfo: INetworkDeployInfo,
-): Promise<FacetSelectorsDeployed> {
+export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeployInfo): Promise<FacetSelectorsDeployed> {
+  let provider;
+  if (networkDeployInfo.rpcURL?.startsWith('http')) {
+    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+    ethers.provider = provider;  
+    // contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  } 
+
   // map funcSelectors to contract address
   const deployedFuncSelectors: Record<string, string> = {};
   // map contract name to container of funcSelectors

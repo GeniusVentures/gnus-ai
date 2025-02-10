@@ -18,7 +18,7 @@ import {
 } from '../scripts/common';
 import { DiamondCutFacet, GeniusDiamond, IDiamondCut } from '../typechain-types';
 import { deployments } from '../scripts/deployments';
-import { Facets, LoadFacetDeployments //, UpgradeInits 
+import { Facets, LoadFacetDeployments
 } from '../scripts/facets';
 import * as util from 'util';
 import { getGasCost } from '../scripts/getgascost';
@@ -162,7 +162,7 @@ export async function deployFuncSelectors(
   let protocolUpgradeVersion = 0;
   const selectorsToBeRemoved: string[] = []; // Track selectors to be removed
   const facetNamesToBeRemoved: string[] = []; // Track facet names to be removed
-  // TODO TransferBatch is giving a Duplicate Definition error
+  // This should be necessary with a fresh install, as with a new chain or non-forked hardhat locally.
   // Loop through deployed facets to identify facets and selectors no longer in the deployment list
   for (const facetName of Object.keys(deployedFacets)) {
     if (!Object.keys(facetsToDeploy).includes(facetName)) {
@@ -353,10 +353,6 @@ export async function deployFuncSelectors(
     diamondCut.connect(ethers.provider.getSigner(0));
   }
   
-  // const signer0 = ethers.provider.getSigner(0);
-  // get signer0 address
-  // const signer0Address = await signer0.getAddress();
-  
   // If Defender deployment is enabled and a signer is configured for the current network
   if (process.env.DEFENDER_DEPLOY_ON && defenderSigners[network.name]) {
     log('Deploying contract on defender');
@@ -394,7 +390,7 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the function selectors for replacement
-  const replacedFunctionSelectors = [];
+  const replacedFunctionSelectors: string[] = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Replace) {
       replacedFunctionSelectors.push(...facetCutInfo.functionSelectors);
@@ -402,11 +398,11 @@ export async function deployFuncSelectors(
   }
 
   // Prepare the list of operations (facet cuts) for the diamond upgrade
-  const upgradeCut = [];
+  const upgradeCut: FacetInfo[] = [];
   for (const facetCutInfo of cut) {
     if (facetCutInfo.action === FacetCutAction.Remove) {
       // Filter out function selectors that have already been replaced
-      const newFunctionSelectors = [];
+      const newFunctionSelectors: string[] = [];
       for (const removedFuncSelector of facetCutInfo.functionSelectors) {
         if (!replacedFunctionSelectors.includes(removedFuncSelector)) {
           newFunctionSelectors.push(removedFuncSelector);
@@ -502,7 +498,7 @@ export async function deployFuncSelectors(
       }
     }
   } catch (e) {
-    debuglog(`unable to cut facet: \n ${e}`); // Log any errors during the diamond cut
+    log(`unable to cut facet: \n ${e}`); // Log any errors during the diamond cut
   }
 
   /* eslint-disable indent */
@@ -614,7 +610,7 @@ export async function afterDeployCallbacks(
         await txResponse.wait(); // Wait for the transaction to be confirmed
         log('Transaction confirmed!'); // Log confirmation
       } catch (error) {
-        debuglog(`Error sending transaction: ${error}`); // Log any errors during the transaction
+        log(`Error sending transaction: ${error}`); // Log any errors during the transaction
       }
     }
 
@@ -626,7 +622,7 @@ export async function afterDeployCallbacks(
       try {
         await afterDeployCallback(networkDeployInfo); // Execute the callback function
       } catch (e) {
-        debuglog(`Failure in after deploy callbacks for ${name}: \n${e}`); // Log any errors during the callback execution
+        log(`Failure in after deploy callbacks for ${name}: \n${e}`); // Log any errors during the callback execution
       }
     }
   }

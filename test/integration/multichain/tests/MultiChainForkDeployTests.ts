@@ -131,9 +131,9 @@ describe('Multichain Integration Tests with Diamond Deployment', function () {
     }
   });
   
-  it('Testing MINTER Role is set', async () => {
+  it('should verify that MINTER Role is set', async () => {
     for (const [chainName, provider] of chains.entries()) {
-      log(`Validating ERC20 interface on chain: ${chainName}`);
+      console.log(`Validating ERC20 interface on chain: ${chainName}`);
       const deployConfig = {
         networkName: chainName,
         chainID: provider.network.chainId,
@@ -143,14 +143,11 @@ describe('Multichain Integration Tests with Diamond Deployment', function () {
       const multichainDeployerInstance = MultiChainTestDeployer.getInstance(deployConfig);
       const diamond = multichainDeployerInstance.getDiamond();
       expect(diamond).to.not.be.null;
-      const ownershipFacet = await ethers.getContractAt(
-        'GeniusOwnershipFacet',
-        diamond?.address ? diamond.address.toString() : '',
-      );
       
       // Check if the owner has the `MINTER_ROLE`, allowing them to mint tokens.
       const minterRole = await diamond?.MINTER_ROLE();
-      expect(await ownershipFacet.hasRole(minterRole, multichainDeployerInstance.getDeployInfo()?.DeployerAddress)).to.be.eq(true);
+      const deployerAddress = await multichainDeployerInstance.getDeployInfo()?.DeployerAddress;
+      expect(await diamond?.['hasRole(bytes32,address)'](minterRole!, deployerAddress!)).to.be.eq(true);
     }
   });
 
