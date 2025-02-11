@@ -49,13 +49,12 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   
   let provider;
   let contractOwner;
-
   // If the Multichain testing scaffold has created a spawned process with a JSON-RPC URL
   // this (and the chainID and name) should have been added to the networkDeployInfo object.
-  if (networkDeployInfo.rpcURL?.startsWith('http')) {
-    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
-    contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  if (networkDeployInfo.provider?.connection.url.startsWith('http')) {
+    provider = networkDeployInfo.provider;
     ethers.provider = provider;  
+    contractOwner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
   } else 
   {
     // Retrieve the list of available accounts on the network.
@@ -137,10 +136,10 @@ export async function deployFuncSelectors(
   
   let provider;
   let contractOwner;
-  if (networkDeployInfo.rpcURL?.startsWith('http')) {
-    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
-    ethers.provider = provider;  
-    contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  if (networkDeployInfo.provider?.connection.url?.startsWith('http')) {
+    provider = networkDeployInfo.provider;
+    ethers.provider = networkDeployInfo.provider;
+    contractOwner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
   } 
   // Array to store facet cut operations (add, replace, remove selectors)
   const cut: FacetInfo[] = [];
@@ -531,10 +530,10 @@ export async function afterDeployCallbacks(
 ) {
   let provider;
   let owner;
-  if (networkDeployInfo.rpcURL?.startsWith('http')) {
-    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
-    owner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  if (networkDeployInfo.provider?.connection.url.startsWith('http')) {
+    provider = networkDeployInfo.provider
     ethers.provider = provider;  
+    owner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
   } else {
     // Retrieve the list of signers and assign the first signer as the owner
     const signers = await ethers.getSigners();
@@ -679,9 +678,8 @@ export async function deployDiamondFacets(
 
   let provider;
   let contractOwner;
-  
-  if (networkDeployInfo.rpcURL?.startsWith('http')) {
-    provider = new ethers.providers.JsonRpcProvider(networkDeployInfo.rpcURL);
+  if (networkDeployInfo.provider?.connection.url.startsWith('http')) {
+    provider = networkDeployInfo.provider;
     ethers.provider = provider;  
     contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
   }
