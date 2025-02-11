@@ -1,0 +1,173 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Unit Tests",
+            "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js"],
+            "program": "${workspaceFolder}/test/index.ts",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "resolveSourceMapLocations": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/**/*.ts"],
+            "sourceMaps": true,
+            "smartStep": true,
+            // "stopOnEntry": true,
+            "trace": true
+        },
+        {
+            "name": "Multichain Plugin Test",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+            "args": [ 
+                "test-multichain", 
+                "./test/integration/multichain/tests/MultiChainPluginForkDeployTests.ts",
+                "./test/integration/multichain/tests/MultiChainGNUSERC20Tests.ts",             
+                // "./test/integration/multichain/tests/MultiChainErc20BatchTests.ts", 
+                "--chains", "sepolia", "--logs", "logs"],
+            "runtimeArgs": [ "--preserve-symlinks" ],
+            "skipFiles": [
+                "<node_internals>/**", 
+                "${workspaceFolder}/node_modules/**/*.js", 
+                // "${workspaceFolder}/dist/**/*.js",
+                // "${workspaceFolder}/node_modules/hardhat-multichain/dist/**/*.js",
+                // "!${workspaceFolder}/node_modules/hardhat-multichain/**/*.ts",
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/dist/**/*.js", 
+                "${workspaceFolder}/**/*.ts",
+                // "${workspaceFolder}/**/*.ts",
+                // "${workspaceFolder}/nod_modules/hardhat-multichain/dist/**/*.js",
+                // "${workspaceFolder}/node_modules/hardhat-multichain/**/*.ts",
+            ],
+            "sourceMaps": true,
+            "smartStep": true,
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "Multichain Plugin Sepolia,Amoy Test",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+            "args": [ 
+                "test-multichain", 
+                "./test/integration/multichain/tests/MultiChainPluginForkDeployTests.ts",
+                "./test/integration/multichain/tests/MultiChainGNUSERC20Tests.ts",             
+                // "./test/integration/multichain/tests/MultiChainErc20BatchTests.ts", 
+                "--chains", "sepolia,amoy", "--logs", "logs"],
+            "runtimeArgs": [ "--preserve-symlinks" ],
+            "skipFiles": [
+                "<node_internals>/**", 
+                "${workspaceFolder}/node_modules/**/*.js", 
+                // "${workspaceFolder}/dist/**/*.js",
+                // "${workspaceFolder}/node_modules/hardhat-multichain/dist/**/*.js",
+                // "!${workspaceFolder}/node_modules/hardhat-multichain/**/*.ts",
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/dist/**/*.js", 
+                "${workspaceFolder}/**/*.ts",
+                // "${workspaceFolder}/**/*.ts",
+                // "${workspaceFolder}/nod_modules/hardhat-multichain/dist/**/*.js",
+                // "${workspaceFolder}/node_modules/hardhat-multichain/**/*.ts",
+            ],
+            "sourceMaps": true,
+            "smartStep": true,
+            "console": "integratedTerminal",
+        },
+        {
+            "name": " MultiChain Fork Test",
+            "type": "node",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/test/integration/multichain/tests/MultiChainForkTests.ts",
+            "env": {
+                "DEBUG" : "hardhat*",
+                "CHAINS" : "polygon_amoy"
+            },
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "test",
+                "${workspaceFolder}/test/integration/multichain/tests/MultiChainForkTests.ts"
+            ],
+            "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "resolveSourceMapLocations": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/**/*.ts"],
+            "sourceMaps": true,
+            "smartStep": true,
+        },
+        {
+            "name": " MultiChain ERC20 Tests",
+            "type": "node",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/test/integration/multichain/tests/ MultiChainGNUSERC20Tests.ts",
+            "env": {
+                "DEBUG" : "hardhat*",
+                "CHAINS" : "sepolia"
+            },
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "test",
+                "${workspaceFolder}/test/integration/multichain/tests/ MultiChainGNUSERC20Tests.ts"
+            ],
+            "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "resolveSourceMapLocations": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/**/*.ts"],
+            "sourceMaps": true,
+            "smartStep": true,
+        },
+        {
+            "name": " MultiChain Fork Deploy Test",
+            "type": "node",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/test/integration/multichain/tests/MultiChainForkDeployTests.ts",
+            "env": {
+                "DEBUG" : "hardhat*",
+                "CHAINS" : "polygon_amoy"
+            },
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "test",
+                "${workspaceFolder}/test/integration/multichain/tests/MultiChainForkDeployTests.ts"
+            ],
+            "skipFiles": [
+                "<node_internals>/**", 
+                "${workspaceFolder}/node_modules/**/*.js", 
+                "${workspaceFolder}/dist/**/*.js"],
+                "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "resolveSourceMapLocations": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/**/*.ts"],
+            "sourceMaps": true,
+            "smartStep": true,
+        },
+        {
+            "name": "test index",
+            "type": "node",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/test/index.ts",
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "test",
+                "${workspaceFolder}/test/index.ts"
+            ],
+            "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**/*.js", "${workspaceFolder}/dist/**/*.js"],
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "resolveSourceMapLocations": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/**/*.ts"],
+            "sourceMaps": true,
+            "smartStep": true,
+        },
+    ]
+}
