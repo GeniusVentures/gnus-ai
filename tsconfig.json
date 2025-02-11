@@ -12,6 +12,6 @@
     "checkJs": false,
     "typeRoots": ["node_modules/@types", "./types"],
   },
-  "include": ["./scripts", "./test", "./typechain", "./types"],
+  "include": ["./scripts", "./test", "./typechain-types"],
   "files": ["./hardhat.config.ts"]
 }
