@@ -43,12 +43,16 @@ class MultiChainTestDeployer {
   private deployInProgress = false;
   private upgradeInProgress = false;
   private ethersMultichain: typeof ethers & HardhatEthersHelpers;
+  private upgradeCompleted: boolean;
+  private deployCompleted: boolean;
 
   private constructor(config: ChainInfo) {
     this.chainName = config.chainName;
     this.provider = config.provider;
     this.ethersMultichain = ethers;
     this.ethersMultichain.provider = this.provider;
+    this.upgradeCompleted = false;
+    this.deployCompleted = false;
   }
   
   // getter for the deployInfo
@@ -70,23 +74,30 @@ class MultiChainTestDeployer {
 
   // Main deployment logic
   async deploy(): Promise<void> {
-    if (this.deployInProgress) {
-      throw new Error(`Deployment already in progress for ${this.chainName}`);
-    }
-    else if (this.upgradeInProgress) {
-      throw new Error(`Upgrade in progress for ${this.chainName}`);
-    }
-    if (this.gnusDiamond) {
+    if (this.deployCompleted) {
       console.log(`Deployment already completed for ${this.chainName}`);
       return;
     }
+    else if (this.deployInProgress) {
+      console.log(`Deployment already in progress for ${this.chainName}`);
+      // Wait for the deployment to complete
+      while (this.deployInProgress) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      return;
+    } else if (this.upgradeInProgress) {
+     console.log(`Upgrade in progress for ${this.chainName}`);
+     while (this.upgradeInProgress) {
+       await new Promise((resolve) => setTimeout(resolve, 1000));
+     }
+     return;
+    }
 
-    this.deployInProgress = true;
-
+    
     try {
       // Load existing deployments
       await LoadFacetDeployments();
-
+      
       // Initialize deployment info
       this.deployInfo = deployments[this.chainName] || {
         provider: this.provider,
@@ -94,6 +105,15 @@ class MultiChainTestDeployer {
         DeployerAddress: '',
         FacetDeployedInfo: {},
       };
+      
+      if (this.deployInfo!.DiamondAddress) {
+        console.log('Diamond Deployment Found. No need for new deployment.');
+        return;
+      }
+      
+      this.deployInProgress = true;
+      
+      this.deployInfo!.provider = this.provider;
       
       // Impersonate the deployer and fund their account
       const deployerAddress = this.deployInfo.DeployerAddress;
@@ -134,6 +154,7 @@ class MultiChainTestDeployer {
       throw error;
     } finally {
       this.deployInProgress = false;
+      this.deployCompleted = true;
     }
   }
   
@@ -165,6 +186,8 @@ class MultiChainTestDeployer {
         DeployerAddress: '',
         FacetDeployedInfo: {},
       };
+      
+      this.deployInfo!.provider = this.provider;
 
       // Impersonate the deployer and fund their account
       const deployerAddress = this.deployInfo.DeployerAddress;
@@ -242,7 +265,8 @@ class MultiChainTestDeployer {
       }
       throw error;
     } finally {
-      this.deployInProgress = false;
+      this.upgradeInProgress = false;
+      this.upgradeCompleted = true;
     }
   }
   
@@ -273,13 +297,13 @@ class MultiChainTestDeployer {
       const amountToFund = targetBalance.sub(balance);
       
       // Fund the account
-      await this.provider.send('hardhat_setBalance', [deployerAddressf, amountToFund.toHexString()]);
+      await this.provider.send('hardhat_setBalance', [deployerAddress, amountToFund.toHexString()]);
       return deployer;
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`Impersonation and funding failed for ${deployerAddress}: ${error.message}`);ff
+        console.error(`Impersonation and funding failed for ${deployerAddress}: ${error.message}`);
       } else {
-        console.error(`Impersonation and funding failed for ${defployerAddress}: ${String(error)}`);
+        console.error(`Impersonation and funding failed for ${deployerAddress}: ${String(error)}`);
       }
       throw error;
     }
