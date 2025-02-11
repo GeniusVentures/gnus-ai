@@ -4,20 +4,15 @@ import { multichain } from 'hardhat-multichain';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
 import { debug } from 'debug';
-
-// IERC20Upgradeable__factory
 import { IERC20Upgradeable__factory } from '../../../../typechain-types';
 import { getInterfaceID } from '../../../../scripts/FacetSelectors';
 
 describe('Multichain Integration Tests with Diamond Deployment', function () {
   const log: debug.Debugger = debug('GNUSDeploy:log');
-  this.timeout(0); // Extend timeout to accommodate deployments and debugging
-
+  // this.timeout(0); // Extend timeout to accommodate deployments and debugging
   const chains = multichain.getProviders();
 
   before(async function () {
-
-    // TODO: This should be moved to a separate script with a multiton pattern so it is not repeated for a single chain over various tests
     // Deploy the diamond contracts on each chain
     for (const [chainName, provider] of chains.entries()) {
       // TODO Replace with Hardhat-Multichain types
@@ -28,7 +23,7 @@ describe('Multichain Integration Tests with Diamond Deployment', function () {
       };
       const deployer = MultiChainTestDeployer.getInstance(chainInfo);
       // TODO The deployment status on a particular chain should be switch with the deployer
-      // await deployer.deploy();
+      await deployer.deploy();
       await deployer.upgrade();
     }
   });
@@ -92,16 +87,12 @@ describe('Multichain Integration Tests with Diamond Deployment', function () {
         provider: provider,
       };
       const deployer = MultiChainTestDeployer.getInstance(chainInfo);
-
       // Retrieve the deployed GNUS Diamond contract
       const diamond = deployer.getDiamond();
       expect(diamond).to.not.be.null;
-      
       const IERC20UpgradeableInterface = IERC20Upgradeable__factory.createInterface();
-
       // Generate the ERC20 interface ID by XORing with the base interface ID.
       const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
-      
       // Assert that the `gnusDiamond` contract supports the ERC20 interface.
       assert(
         await diamond?.supportsInterface(IERC20InterfaceID._hex),
