@@ -1,7 +1,6 @@
 import { ethers } from 'hardhat';
 import { expect, assert } from 'chai';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import ChainManager from '../setup/chainManager';
 import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
 import { getInterfaceID } from '../../../../scripts/FacetSelectors';
 import { IERC20Upgradeable__factory, IERC165Upgradeable__factory, IERC1155Upgradeable__factory } from '../../../../typechain-types';
@@ -9,198 +8,150 @@ import { toWei } from '../../../../scripts/common';
 import { deployments } from '../../../../scripts/deployments';
 import { multichain } from 'hardhat-multichain';
 import { debug } from 'debug';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
-describe('Multichain GNUS ERC20 Hybrid Tests', function () {
+describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
   this.timeout(0); // Extend timeout for deployments and testing
+  const log: debug.Debugger = debug('GNUSDeploy:log');
 
-  const diamonds: Map<string, GeniusDiamond> = new Map();
+  // Get the existing providers for each chain created by the Hardhat-Multichain 
   const chains = multichain.getProviders();
-  const ethersMultichain = ethers;
-  const snapshots: Map<string, string> = new Map();
   
-
-  before(async function () {
-    const log: debug.Debugger = debug('GNUSDeploy:log');
-    // Deploy the diamond contracts on each chain
-    for (const [chainName, provider] of chains.entries()) {
-      // TODO: Add the default hardhat network to the chain manager 
-      const { chainId } = await provider.getNetwork();
-      const deployConfig = {
-        chainName: chainName,
-        provider: provider,
-      };
-      const deployer = MultiChainTestDeployer.getInstance(deployConfig);
-      await deployer.deploy();
-      await deployer.upgrade();
-      // Retrieve the deployed GNUS Diamond contract
-      const diamond = deployer.getDiamond();
-      if (diamond) {
-        // Add the diamond to the map
-        diamonds.set(chainName, diamond);
-      } else {
-        throw new Error(`Failed to retrieve diamond on chain ${chainName}`);
-      }
-    }
-  });  
+  for (const [chainName, provider] of chains.entries()) {
     
-  // The snapshot ID to revert to the initial state after each test.
-  let snapshotId: string;
-  
-  beforeEach(async () => {
-    // Take a snapshot of each chain before each test
-    for (const [chainName, provider] of chains.entries()) {
-      snapshotId = await provider.send('evm_snapshot', []);
-      snapshots.set(chainName, snapshotId);
-    }
-  });
-    
-  afterEach(async () => {
-    for (const [chainName, provider] of chains.entries()) {
-      snapshotId = snapshots.get(chainName) as string;
-      await provider.send("evm_revert", [snapshotId]);
-    }
-  });
-
-  it('should verify GNUS ERC20 interface compatibility on all chains', async function () {
-    for (const [chainName, provider] of chains.entries()) {
-      console.log(`Validating ERC20 interface on chain: ${chainName}`);
-      const chainInfo = {
-        chainName: chainName,
-        provider: provider,
-      };
-      const deployer = MultiChainTestDeployer.getInstance(chainInfo);
-      // Retrieve the deployed GNUS Diamond contract
-      const diamond = deployer.getDiamond();
-      expect(diamond).to.not.be.null;
-      const IERC20UpgradeableInterface = IERC20Upgradeable__factory.createInterface();
-      // Generate the ERC20 interface ID by XORing with the base interface ID.
-      const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
-      // Assert that the `gnusDiamond` contract supports the ERC20 interface.
-      assert(
-        await diamond?.supportsInterface(IERC20InterfaceID._hex),
-        "Doesn't support IERC20Upgradeable",
-      );
-      
-      // Test ERC165 interface compatibility for ERC20 '0x37c8e2a0'
-      const supportsERC20 = await diamond?.supportsInterface(IERC20InterfaceID._hex);
-      expect(supportsERC20).to.be.true;
-
-      console.log(`ERC20 interface validated on ${chainName}`);
-    }
-  });
-
-  it('should verify MINTER role is set for the owner on all chains', async function () {
-    for (const [chainName, diamond] of diamonds.entries()) {
-      let provider = chains.get(chainName);
-      console.log(`Verifying MINTER role on chain: ${chainName}`);
-      if (provider) {
-        ethersMultichain.provider = provider;
-      } else {
-        throw new Error(`Provider for chain ${chainName} is undefined`);
-      }
-      const ownershipFacet = await ethersMultichain.getContractAt('GeniusOwnershipFacet', diamond.address);
-      const minterRole = await diamond['MINTER_ROLE']();
-      const deployerAddress = deployments[chainName].DeployerAddress;
-      const owner = await ownershipFacet.owner();
-      const hasMinterRole = await ownershipFacet.hasRole(minterRole, deployerAddress);
-      expect(hasMinterRole).to.be.true;
-    }
-  });
-
-  it('should mint and transfer GNUS tokens correctly on all chains', async function () {
-    for (const [chainName, diamond] of diamonds.entries()) {
-      console.log(`Testing mint and transfer on chain: ${chainName}`);
-      let provider = chains.get(chainName);
-      if (provider) {
-        ethersMultichain.provider = provider;
-      } else {
-        throw new Error(`Provider for chain ${chainName} is undefined`);
-      }
-      const signers = await ethersMultichain.getSigners();
-      const owner = deployments[chainName].DeployerAddress;
-      
+    describe(`GNUS ERC20 Hybrid Tests on ${chainName}`, async function () {
+      let deployer: MultiChainTestDeployer;
+      let deployment: boolean | void;
+      let upgrade: boolean | void;
+      let signersList: SignerWithAddress[];
+      let signer0: string;
+      let signer1: string;
+      let signer2: string;
+      let signer0Diamond: GeniusDiamond;
+      let signer1Diamond: GeniusDiamond;
+      let signer2Diamond: GeniusDiamond;
       // get the signer for the owner
-      const ownerSigner = ethersMultichain.provider.getSigner(owner);
+      let owner: string;
+      let ownerSigner: SignerWithAddress;
+      let ownerDiamond: GeniusDiamond;
+      let gnusDiamond: GeniusDiamond;
       
-      // Retrieve the owner's balance, which should be zero initially.
-      let ownerSupply = await diamond['balanceOf(address)'](owner);
-
-      // Mint GNUS tokens
-      const result = await diamond.connect(ownerSigner)['mint(address,uint256)'](owner, toWei(150));
-      const updatedOwnerBalance = await diamond['balanceOf(address)'](owner);
-      expect(updatedOwnerBalance.eq(toWei(150))).to.be.true;
-
-      // Transfer GNUS tokens
-      await diamond.connect(ownerSigner).transfer(signers[3].address, toWei(150));
-      const recipientBalance = await diamond.connect(ownerSigner)['balanceOf(address)'](signers[3].address);
-      expect(recipientBalance.eq(toWei(150))).to.be.true;
-    }
-  });
-
-  it('should handle transferFrom and approval correctly on all chains', async function () {
-    for (const [chainName, diamond] of diamonds.entries()) {
-      console.log(`Testing transferFrom and approval on chain: ${chainName}`);
-      let provider = chains.get(chainName);
-      if (provider) {
+      let ethersMultichain: typeof ethers;
+      let snapshotId: string;
+      
+      before(async function () {
+        const deployConfig = {
+          chainName: chainName,
+          provider: provider,
+        };
+        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
+        deployment = await deployer.deploy();
+        expect(deployment).to.be.true;
+        upgrade = await deployer.upgrade();
+        expect(upgrade).to.be.true;
+        // Retrieve the deployed GNUS Diamond contract
+        gnusDiamond = await deployer.getDiamond();    
+        if (!gnusDiamond) {
+          throw new Error(`gnusDiamond is null for chain ${chainName}`);
+        }
+        
+        ethersMultichain = ethers;
         ethersMultichain.provider = provider;
-      } else {
-        throw new Error(`Provider for chain ${chainName} is undefined`);
-      }
-      const signers = await ethersMultichain.getSigners();
+        
+        // Retrieve the signers for the chain
+        signersList = await ethersMultichain.getSigners();
+        signer0 = signersList[0].address;
+        signer1 = signersList[1].address;
+        signer2 = signersList[2].address;
+        signer0Diamond = gnusDiamond.connect(signersList[0]);
+        signer1Diamond = gnusDiamond.connect(signersList[1]);
+        signer2Diamond = gnusDiamond.connect(signersList[2]);
+        
+        // get the signer for the owner
+        owner = deployments[chainName].DeployerAddress;
+        ownerSigner = await ethersMultichain.getSigner(owner);
+        ownerDiamond = gnusDiamond.connect(ownerSigner);
+        
+      });
       
-      // get the signer for the owner
-      const owner = deployments[chainName].DeployerAddress;
-      const ownerSigner = ethersMultichain.provider.getSigner(owner);
+      // The snapshot ID to revert to the initial state after each test.
+      beforeEach(async function () {
+        snapshotId = await provider.send('evm_snapshot', []);
+      });
       
-      // // Check balances (used for debugging)
-      // let ownerBalance = (await diamond['balanceOf(address)'](owner)).toString();
-      // let signer0Balance = (await diamond['balanceOf(address)'](signers[0].address)).toString();
-      // let signer3Balance = (await diamond['balanceOf(address)'](signers[3].address)).toString();
-      // let signer4Balance = (await diamond['balanceOf(address)'](signers[4].address)).toString();
+      afterEach(async () => {
+        await provider.send('evm_revert', [snapshotId]);
+      });
 
-      // Owner Mints GNUS tokens into signer3 account
-      await diamond.connect(ownerSigner)['mint(address,uint256)'](signers[3].address, toWei(100));
-            
-      // Check transferFrom expect to fail because signer4 trying to transfer for signer3
-      const gnusForSigner4 = await diamond.connect(signers[4]);
-      await expect(
-        gnusForSigner4.transferFrom(signers[3].address, signers[0].address, toWei(150))
-      ).to.eventually.be.rejectedWith(Error, /ERC20: insufficient allowance/);
-      
-            // Check balances (used for debugging)
-      let ownerBalance = (await diamond['balanceOf(address)'](owner)).toString();
-      let signer0Balance = (await diamond['balanceOf(address)'](signers[0].address)).toString();
-      let signer3Balance = (await diamond['balanceOf(address)'](signers[3].address)).toString();
-      let signer4Balance = (await diamond['balanceOf(address)'](signers[4].address)).toString();
-      
-      const gnusForOwner = await diamond.connect(ownerSigner);
-      // Signer3 Approves transferFrom by owner
-      const gnusForSigner3 = await diamond.connect(signers[3]);
-      await gnusForSigner3.approve(owner, toWei(10));
-      // Transfer GNUS tokens
-      await expect(
-         gnusForOwner.transferFrom(signers[3].address, signers[0].address, toWei(10))
-         ).to.eventually.be.fulfilled;
-               
-      // Attempt transfer beyond allowance
-      await expect(
-        gnusForOwner.transferFrom(signers[3].address, signers[0].address, toWei(200))
-      ).to.eventually.be.rejectedWith(Error, /ERC20: insufficient allowance/);
-      
-      
-            // Check balances (used for debugging)
-      ownerBalance = (await diamond['balanceOf(address)'](owner)).toString();
-      signer0Balance = (await diamond['balanceOf(address)'](signers[0].address)).toString();
-      signer3Balance = (await diamond['balanceOf(address)'](signers[3].address)).toString();
-      signer4Balance = (await diamond['balanceOf(address)'](signers[4].address)).toString();
-      
-      // setApprovalForAll is for 1155 and 721 tokens so it should fail.  Probably unnecessary test
-      await gnusForSigner3.setApprovalForAll(owner, true);
-      
-      // Transfer all tokens
-      await expect(
-        gnusForOwner.transferFrom(signers[3].address, signers[0].address, toWei(90))
-        ).to.eventually.be.rejectedWith(Error, /ERC20: insufficient allowance/);
-    }
-  });
+      it('should verify GNUS ERC20 interface compatibility on all chains', async function () {
+        console.log(`Validating ERC20 interface on chain: ${chainName}`);
+
+        const IERC20UpgradeableInterface = IERC20Upgradeable__factory.createInterface();
+        // Generate the ERC20 interface ID by XORing with the base interface ID.
+        const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
+        // Assert that the `gnusDiamond` contract supports the ERC20 interface.
+        assert(
+          await gnusDiamond?.supportsInterface(IERC20InterfaceID._hex),
+          "Doesn't support IERC20Upgradeable",
+        );
+        
+        // Test ERC165 interface compatibility for ERC20 '0x37c8e2a0'
+        const supportsERC20 = await gnusDiamond?.supportsInterface(IERC20InterfaceID._hex);
+        expect(supportsERC20).to.be.true;
+
+        console.log(`ERC20 interface validated on ${chainName}`);
+      });
+
+      it('should verify MINTER role is set for the owner on all chains', async function () {
+        console.log(`Verifying MINTER role on chain: ${chainName}`);
+
+        const ownershipFacet = await ethersMultichain.getContractAt('GeniusOwnershipFacet', gnusDiamond.address);
+        const minterRole = await gnusDiamond['MINTER_ROLE']();
+        const deployerAddress = deployments[chainName].DeployerAddress;
+        const owner = await ownershipFacet.owner();
+        const hasMinterRole = await ownershipFacet.hasRole(minterRole, deployerAddress);
+        expect(hasMinterRole).to.be.true;
+      });
+
+      it('should mint and transfer GNUS tokens correctly on all chains', async function () {
+        console.log(`Testing mint and transfer on chain: ${chainName}`);
+        
+
+        // Mint GNUS tokens
+        await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
+        const updatedOwnerBalance = await gnusDiamond['balanceOf(address)'](owner);
+        expect(updatedOwnerBalance.eq(toWei(150))).to.be.true;
+
+        // Transfer GNUS tokens
+        await ownerDiamond.transfer(signer2, toWei(150));
+        const recipientBalance = await ownerDiamond['balanceOf(address)'](signer2);
+        expect(recipientBalance.eq(toWei(150))).to.be.true;
+      });
+
+      it('should handle transferFrom and approval correctly on all chains', async function () {
+        console.log(`Testing transferFrom and approval on chain: ${chainName}`);
+        // transferFrom expect to fail because signer2 trying to transferFrom without approval
+        await expect(signer2Diamond.transferFrom(signer1, signer0, toWei(150))).to.eventually.be.rejectedWith(Error, /ERC20: insufficient allowance/);
+        
+        // Mint GNUS tokens to signer2    
+        await ownerDiamond['mint(address,uint256)'](signer2, toWei(100));
+        // Signer2 Approves transferFrom by owner
+        await signer2Diamond.approve(owner, toWei(10));
+        // Owner transfers GNUS tokens from signer2 to signer0
+        await expect(ownerDiamond.transferFrom(signer2, signer0, toWei(10))
+          ).to.eventually.be.fulfilled;
+                
+        // Attempt transfer beyond allowance
+        await expect(ownerDiamond.transferFrom(signer2, signer0, toWei(200))
+          ).to.eventually.be.rejectedWith(Error, /ERC20: insufficient allowance/);
+        
+        // setApprovalForAll is for 1155 and 721 tokens so it should fail.  Probably unnecessary test
+        await signer2Diamond.setApprovalForAll(owner, true);
+        
+        // Transfer all tokens
+        await expect(ownerDiamond.transferFrom(signer2, signer0, toWei(90))
+          ).to.eventually.be.rejectedWith(Error, /ERC20: insufficient allowance/);
+      });
+    });
+  }
 });
