@@ -22,7 +22,7 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
       let deployer: MultiChainTestDeployer;
       let deployment: boolean | void;
       let upgrade: boolean | void;
-      let signersList: SignerWithAddress[];
+      let signers: SignerWithAddress[];
       let signer0: string;
       let signer1: string;
       let signer2: string;
@@ -58,13 +58,13 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
         ethersMultichain.provider = provider;
         
         // Retrieve the signers for the chain
-        signersList = await ethersMultichain.getSigners();
-        signer0 = signersList[0].address;
-        signer1 = signersList[1].address;
-        signer2 = signersList[2].address;
-        signer0Diamond = gnusDiamond.connect(signersList[0]);
-        signer1Diamond = gnusDiamond.connect(signersList[1]);
-        signer2Diamond = gnusDiamond.connect(signersList[2]);
+        signers = await ethersMultichain.getSigners();
+        signer0 = signers[0].address;
+        signer1 = signers[1].address;
+        signer2 = signers[2].address;
+        signer0Diamond = gnusDiamond.connect(signers[0]);
+        signer1Diamond = gnusDiamond.connect(signers[1]);
+        signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
         owner = deployments[chainName].DeployerAddress;
@@ -100,9 +100,9 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
       
       it(`verify that diamond is deployed and we can get hardhat signers on ${chainName}`, async function () {
         
-        expect(signersList).to.be.an('array');
-        expect(signersList).to.have.lengthOf(20);
-        expect(signersList[0]).to.be.instanceOf(SignerWithAddress);
+        expect(signers).to.be.an('array');
+        expect(signers).to.have.lengthOf(20);
+        expect(signers[0]).to.be.instanceOf(SignerWithAddress);
 
         expect(owner).to.not.be.undefined;
         expect(owner).to.be.a('string');
