@@ -50,11 +50,11 @@ describe('Testing Batch transfer erc20', async function () {
     ethersMultichain.provider = provider;
     
     // Retrieve the signers for the chain
-    const signersList = await ethersMultichain.getSigners();
-    const signer0 = signersList[0].address;
-    const signer1 = signersList[1].address;
-    const signer0Diamond = gnusDiamond.connect(signersList[0]);
-    const signer1Diamond = gnusDiamond.connect(signersList[1]);
+    const signers = await ethersMultichain.getSigners();
+    const signer0 = signers[0].address;
+    const signer1 = signers[1].address;
+    const signer0Diamond = gnusDiamond.connect(signers[0]);
+    const signer1Diamond = gnusDiamond.connect(signers[1]);
     // get the signer for the owner
     const owner = deployments[chainName].DeployerAddress;
     const ownerSigner = await ethersMultichain.getSigner(owner);

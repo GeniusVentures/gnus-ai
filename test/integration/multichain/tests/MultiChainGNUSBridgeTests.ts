@@ -12,9 +12,7 @@ import { deployments } from '../../../../scripts/deployments';
 import { multichain } from 'hardhat-multichain';
 import hre from 'hardhat';
 
-
 describe('GNUS Bridge Testing', async function () {
-
   const log: debug.Debugger = debug('GNUSDeploy:log');
   this.timeout(0); // Extend timeout to accommodate deployments
   
@@ -26,7 +24,7 @@ describe('GNUS Bridge Testing', async function () {
       let deployer: MultiChainTestDeployer;
       let deployment: boolean | void;
       let upgrade: boolean | void;
-      let signersList: SignerWithAddress[];
+      let signers: SignerWithAddress[];
       let signer0: string;
       let signer1: string;
       let signer2: string;
@@ -62,13 +60,13 @@ describe('GNUS Bridge Testing', async function () {
         ethersMultichain.provider = provider;
         
         // Retrieve the signers for the chain
-        signersList = await ethersMultichain.getSigners();
-        signer0 = signersList[0].address;
-        signer1 = signersList[1].address;
-        signer2 = signersList[2].address;
-        signer0Diamond = gnusDiamond.connect(signersList[0]);
-        signer1Diamond = gnusDiamond.connect(signersList[1]);
-        signer2Diamond = gnusDiamond.connect(signersList[2]);
+        signers = await ethersMultichain.getSigners();
+        signer0 = signers[0].address;
+        signer1 = signers[1].address;
+        signer2 = signers[2].address;
+        signer0Diamond = gnusDiamond.connect(signers[0]);
+        signer1Diamond = gnusDiamond.connect(signers[1]);
+        signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
         owner = deployments[chainName].DeployerAddress;
@@ -76,7 +74,6 @@ describe('GNUS Bridge Testing', async function () {
         ownerDiamond = gnusDiamond.connect(ownerSigner);
         
       });
-      
       
       beforeEach(async function () {
         snapshotId = await provider.send('evm_snapshot', []);

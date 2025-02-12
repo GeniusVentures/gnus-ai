@@ -27,6 +27,7 @@
             "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
             "args": [ 
                 "test-multichain", 
+                "./test/integration/multichain/tests/NFTFactoryTests.ts",
                 "./test/integration/multichain/tests/MultiChainForkDeployTests.ts",
                 "./test/integration/multichain/tests/MultiChainGNUSBridgeTests.ts",
                 "./test/integration/multichain/tests/MultiChainGNUSERC20Tests.ts",             
@@ -54,6 +55,7 @@
             "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
             "args": [ 
                 "test-multichain", 
+                "./test/integration/multichain/tests/NFTFactoryTests.ts",
                 "./test/integration/multichain/tests/MultiChainForkDeployTests.ts",
                 "./test/integration/multichain/tests/MultiChainGNUSBridgeTests.ts",                
                 "./test/integration/multichain/tests/MultiChainGNUSERC20Tests.ts",             
