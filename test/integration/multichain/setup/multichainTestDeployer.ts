@@ -38,7 +38,7 @@ class MultiChainTestDeployer {
   private static instances: Map<string, MultiChainTestDeployer> = new Map();
   private chainName: string;
   private provider: JsonRpcProvider;
-  private gnusDiamond: GeniusDiamond | null = null;
+  private gnusDiamond: GeniusDiamond;;
   private deployInfo: INetworkDeployInfo | null = null;
   private deployInProgress = false;
   private upgradeInProgress = false;
@@ -53,6 +53,7 @@ class MultiChainTestDeployer {
     this.ethersMultichain.provider = this.provider;
     this.upgradeCompleted = false;
     this.deployCompleted = false;
+    this.gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
   }
   
   // getter for the deployInfo
@@ -66,17 +67,17 @@ class MultiChainTestDeployer {
 
   // Factory method to get or create an instance for a network
   static getInstance(chainInfo: ChainInfo): MultiChainTestDeployer {
-    if (!this.instances.has(chainInfo.provider.network.name)) {
+    if (!this.instances.has(chainInfo.chainName)) {
       this.instances.set(chainInfo.chainName, new MultiChainTestDeployer(chainInfo));
     }
     return this.instances.get(chainInfo.chainName)!;
   }
 
   // Main deployment logic
-  async deploy(): Promise<void> {
+  async deploy(): Promise<boolean | void> {
     if (this.deployCompleted) {
       console.log(`Deployment already completed for ${this.chainName}`);
-      return;
+      return Promise.resolve(true);
     }
     else if (this.deployInProgress) {
       console.log(`Deployment already in progress for ${this.chainName}`);
@@ -108,23 +109,20 @@ class MultiChainTestDeployer {
       
       if (this.deployInfo!.DiamondAddress) {
         console.log('Diamond Deployment Found. No need for new deployment.');
+          // Impersonate the deployer and fund their account
+          await this.impersonateAndFundDeployer(this.deployInfo.DeployerAddress);
         return;
       }
+      
+      await this.impersonateAndFundDeployer(this.deployInfo.DeployerAddress);
       
       this.deployInProgress = true;
       
       this.deployInfo!.provider = this.provider;
       
-      // Impersonate the deployer and fund their account
-      const deployerAddress = this.deployInfo.DeployerAddress;
-      await this.provider.send('hardhat_impersonateAccount', [deployerAddress]);
-      const deployer = this.provider.getSigner(deployerAddress);
-      await this.provider.send('hardhat_setBalance', [deployerAddress, '0x56BC75E2D63100000']);
-      
-      
       // Deploy GNUS Diamond
       await deployGNUSDiamond(this.deployInfo);
-      this.gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
+
 
       // Interface Compatibility Test (ERC165 and ERC1155)
       await this.testInterfaceCompatibility();
@@ -155,18 +153,32 @@ class MultiChainTestDeployer {
     } finally {
       this.deployInProgress = false;
       this.deployCompleted = true;
+      
+      return Promise.resolve(true);
     }
   }
   
   // Main upgrade logic
-  async upgrade(): Promise<void> {
-    if (this.upgradeInProgress) {
-      throw new Error(`Upgrade already in progress for ${this.chainName}`);
+  async upgrade(): Promise<boolean | void> {
+    if (this.deployInProgress) {
+      console.log(`Deployment already in progress for ${this.chainName}`);
+      // Wait for the deployment to complete
+      while (this.deployInProgress) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    } else if (this.upgradeInProgress) {
+     console.log(`Upgrade in progress for ${this.chainName}`);
+     while (this.upgradeInProgress) {
+       // Wait for the upgrade to complete
+       await new Promise((resolve) => setTimeout(resolve, 1000));
+     }
+    } 
+    if (this.upgradeCompleted) {
+      console.log(`Upgrade already completed for ${this.chainName}`);
+      return Promise.resolve(true);
     }
-    else if (this.deployInProgress) {
-      throw new Error(`Deployment in progress for ${this.chainName}`);
-    }
-    // TODO this is not a valid check for Upgrade, however we need an upgrade checker.
+    
+    // TODO Create Valid Upgrade Checker So we don't rerun upgrades repeatedly.
     const protocolInfo = await this.provider.getNetwork();
     // if ((await this.gnusDiamond?.protocolInfo())) {
     //   console.log(`Upgrade already completed for ${this.chainName}`);
@@ -267,6 +279,8 @@ class MultiChainTestDeployer {
     } finally {
       this.upgradeInProgress = false;
       this.upgradeCompleted = true;
+      
+      return Promise.resolve(true);
     }
   }
   
@@ -282,22 +296,8 @@ class MultiChainTestDeployer {
       await this.provider.send('hardhat_impersonateAccount', [deployerAddress]);
       const deployer = this.provider.getSigner(deployerAddress);
       
-      // Check current balance
-      const balance = await this.provider.getBalance(deployerAddress);
-      const balanceInEth = parseFloat(this.ethersMultichain.utils.formatEther(balance));
-      
-      // Calculate the target balance (next highest amount in ETH rounded to 1 followed by all zeros, minimum 100 ETH)
-      let targetBalanceInEth = Math.ceil(balanceInEth / 100) * 100;
-      if (targetBalanceInEth < 100) {
-        targetBalanceInEth = 100;
-      }
-      
-      // Calculate the amount to fund
-      const targetBalance = this.ethersMultichain.utils.parseEther(targetBalanceInEth.toString());
-      const amountToFund = targetBalance.sub(balance);
-      
       // Fund the account
-      await this.provider.send('hardhat_setBalance', [deployerAddress, amountToFund.toHexString()]);
+      await this.provider.send('hardhat_setBalance', [deployerAddress, '0x56BC75E2D63100000']);
       return deployer;
     } catch (error) {
       if (error instanceof Error) {
@@ -337,7 +337,7 @@ class MultiChainTestDeployer {
   }
 
   // Retrieve deployed GNUS Diamond instance
-  getDiamond(): GeniusDiamond | null {
+  getDiamond(): GeniusDiamond {
     return this.gnusDiamond;
   }
 

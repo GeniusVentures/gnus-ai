@@ -36,8 +36,8 @@ const {
   POLYGON_RPC,
   POLYGON_AMOY_RPC, 
   ETH_BLOCK,
-  POLY_BLOCK,
-  AMOY_BLOCK,
+  POLYGON_BLOCK,
+  POLYGON_AMOY_BLOCK,
   SEPOLIA_BLOCK,
 } = process.env;
 
@@ -48,8 +48,8 @@ export const amoyUrl: string = POLYGON_AMOY_RPC || ""; // Amoy RPC URL
 export const sepoliaUrl: string = SEPOLIA_RPC || ""; // Sepolia RPC URL
 // These set default values as well so missing environment variables set default to latest block.
 export const ethBlock: number = parseInt(ETH_BLOCK || "0"); // Ethereum block number
-export const polyBlock: number = parseInt(POLY_BLOCK || "0"); // Polygon block number
-export const amoyBlock: number = parseInt(AMOY_BLOCK || "0"); // Amoy block number
+export const polyBlock: number = parseInt(POLYGON_BLOCK || "0"); // Polygon block number
+export const amoyBlock: number = parseInt(POLYGON_AMOY_BLOCK || "0"); // Amoy block number
 export const sepoliaBlock: number = parseInt(SEPOLIA_BLOCK || "0"); // Sepolia block number
 
 task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
@@ -117,7 +117,7 @@ const config: HardhatUserConfig = {
         blockNumber: sepoliaBlock,
         chainId: 11155111
       }, 
-      amoy: {
+      polygon_amoy: {
         rpcUrl: amoyUrl,
         blockNumber: amoyBlock,
         chainId: 80002

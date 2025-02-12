@@ -1,169 +1,177 @@
 import { expect, assert } from 'chai';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import ChainManager from '../setup/chainManager';
 import { ethers } from 'hardhat';
 import { debug } from 'debug';
-
-// IERC20Upgradeable__factory
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { deployments } from '../../../../scripts/deployments';
 import { IERC20Upgradeable__factory } from '../../../../typechain-types';
 import { getInterfaceID } from '../../../../scripts/FacetSelectors';
+import { multichain } from 'hardhat-multichain';
+import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
+import hre from 'hardhat';
 
-describe('Multichain Integration Tests with Diamond Deployment', function () {
+describe('Multichain Fork and Diamond Deployment Tests', async function () {
   const log: debug.Debugger = debug('GNUSDeploy:log');
   this.timeout(0); // Extend timeout to accommodate deployments
-
-  let chains: Map<string, any>;
-
-  before(async function () {
-    // Setup chains based on command-line arguments
-    const chainArgs = process.env.CHAINS?.split(',') || ['sepolia'];
-    chains = await ChainManager.setupChains(chainArgs);
-
-    // Deploy the diamond contracts on each chain
-    for (const [chainName, provider] of chains.entries()) {
-      ethers.provider = provider;
-      const { chainId } = await provider.getNetwork();
-      const deployConfig = {
-        networkName: chainName,
-        chainID: chainId,
-        rpcURL: provider.connection.url,
-      };
-      const deployer = MultiChainTestDeployer.getInstance(deployConfig);
-      // TODO The deployment status on a particular chain should be switch with the deployer
-      // await deployer.deploy();
-      await deployer.upgrade();
-    }
-  });
-
-  after(function () {
-    // Cleanup chain processes and deployment instances
-    ChainManager.cleanup();
-    MultiChainTestDeployer.cleanup();
-  });
-
-  it('should verify that chain providers are defined and have valid block numbers', async function () {
-    for (const [chainName, provider] of chains.entries()) {
-      log(`Checking chain provider for: ${chainName}`);
-      expect(provider).to.not.be.undefined;
-
-      ethers.provider = provider;
-      const blockNumber = await ethers.provider.getBlockNumber();
-      log(`Block number for ${chainName}: ${blockNumber}`);
-      expect(blockNumber).to.be.a('number');
-      expect(blockNumber).to.be.greaterThan(0);
-    }
-  });
-
-  it('should verify the deployment of GNUS Diamond and validate interface compatibility', async function () {
-    for (const [chainName, provider] of chains.entries()) {
-      log(`Validating diamond deployment on chain: ${chainName}`);
-      const deployConfig = {
-        networkName: chainName,
-        chainID: provider.network.chainId,
-        rpcURL: provider.connection.url,
-      };
-      const deployer = MultiChainTestDeployer.getInstance(deployConfig);
-
-      // Retrieve the deployed GNUS Diamond contract
-      const diamond = deployer.getDiamond();
-      expect(diamond).to.not.be.null;
-
-      // Test ERC165 interface compatibility
-      const supportsERC165 = await diamond?.supportsInterface('0x01ffc9a7');
-      expect(supportsERC165).to.be.true;
-
-      log(`Diamond deployed and validated on ${chainName}`);
-    }
-  });
   
-  it('should verify ERC165 supported interface for ERC1155', async function () {
-    for (const [chainName, provider] of chains.entries()) {
-      log(`Validating ERC1155 interface on chain: ${chainName}`);
-      const deployConfig = {
-        networkName: chainName,
-        chainID: provider.network.chainId,
-        rpcURL: provider.connection.url,
-      };
-      const deployer = MultiChainTestDeployer.getInstance(deployConfig);
-
-      // Retrieve the deployed GNUS Diamond contract
-      const diamond = deployer.getDiamond();
-      expect(diamond).to.not.be.null;
-
-      // Test ERC165 interface compatibility for ERC1155
-      const supportsERC1155 = await diamond?.supportsInterface('0xd9b67a26');
-      expect(supportsERC1155).to.be.true;
-
-      log(`ERC1155 interface validated on ${chainName}`);
-    }
-  });
+  const chains = multichain.getProviders();
   
-  it('should verify ERC165 supported interface for ERC20', async function () {
-    for (const [chainName, provider] of chains.entries()) {
-      log(`Validating ERC20 interface on chain: ${chainName}`);
-      const deployConfig = {
-        networkName: chainName,
-        chainID: provider.network.chainId,
-        rpcURL: provider.connection.url,
-      };
-      const deployer = MultiChainTestDeployer.getInstance(deployConfig);
-
-      // Retrieve the deployed GNUS Diamond contract
-      const diamond = deployer.getDiamond();
-      expect(diamond).to.not.be.null;
-      
-      const IERC20UpgradeableInterface = IERC20Upgradeable__factory.createInterface();
-
-      // Generate the ERC20 interface ID by XORing with the base interface ID.
-      const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
-      
-      // Assert that the `gnusDiamond` contract supports the ERC20 interface.
-      assert(
-        await diamond?.supportsInterface(IERC20InterfaceID._hex),
-        "Doesn't support IERC20Upgradeable",
-      );
-      
-      // Test ERC165 interface compatibility for ERC20 '0x37c8e2a0'
-      const supportsERC20 = await diamond?.supportsInterface(IERC20InterfaceID._hex);
-      expect(supportsERC20).to.be.true;
-
-      log(`ERC20 interface validated on ${chainName}`);
-    }
-  });
+  for (const [chainName, provider] of chains.entries()) { 
   
-  it('should verify that MINTER Role is set', async () => {
-    for (const [chainName, provider] of chains.entries()) {
-      console.log(`Validating ERC20 interface on chain: ${chainName}`);
-      const deployConfig = {
-        networkName: chainName,
-        chainID: provider.network.chainId,
-        rpcURL: provider.connection.url,
-      };
-      // Retrieve the deployed GNUS Diamond contract
-      const multichainDeployerInstance = MultiChainTestDeployer.getInstance(deployConfig);
-      const diamond = multichainDeployerInstance.getDiamond();
-      expect(diamond).to.not.be.null;
+    describe(`Testing ${chainName} chain and deployment`, async function () {
+      let deployer: MultiChainTestDeployer;
+      let deployment: boolean | void;
+      let upgrade: boolean | void;
+      let signersList: SignerWithAddress[];
+      let signer0: string;
+      let signer1: string;
+      let signer2: string;
+      let signer0Diamond: GeniusDiamond;
+      let signer1Diamond: GeniusDiamond;
+      let signer2Diamond: GeniusDiamond;
+      // get the signer for the owner
+      let owner: string;
+      let ownerSigner: SignerWithAddress;
+      let ownerDiamond: GeniusDiamond;
+      let gnusDiamond: GeniusDiamond;
       
-      // Check if the owner has the `MINTER_ROLE`, allowing them to mint tokens.
-      const minterRole = await diamond?.MINTER_ROLE();
-      const deployerAddress = await multichainDeployerInstance.getDeployInfo()?.DeployerAddress;
-      expect(await diamond?.['hasRole(bytes32,address)'](minterRole!, deployerAddress!)).to.be.eq(true);
-    }
-  });
+      let ethersMultichain: typeof ethers;
+      let snapshotId: string;
+      
+      before(async function () {
+        const deployConfig = {
+          chainName: chainName,
+          provider: provider,
+        };
+        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
+        deployment = await deployer.deploy();
+        expect(deployment).to.be.true;
+        upgrade = await deployer.upgrade();
+        expect(upgrade).to.be.true;
+        // Retrieve the deployed GNUS Diamond contract
+        gnusDiamond = await deployer.getDiamond();    
+        if (!gnusDiamond) {
+          throw new Error(`gnusDiamond is null for chain ${chainName}`);
+        }
+        
+        ethersMultichain = ethers;
+        ethersMultichain.provider = provider;
+        
+        // Retrieve the signers for the chain
+        signersList = await ethersMultichain.getSigners();
+        signer0 = signersList[0].address;
+        signer1 = signersList[1].address;
+        signer2 = signersList[2].address;
+        signer0Diamond = gnusDiamond.connect(signersList[0]);
+        signer1Diamond = gnusDiamond.connect(signersList[1]);
+        signer2Diamond = gnusDiamond.connect(signersList[2]);
+        
+        // get the signer for the owner
+        owner = deployments[chainName].DeployerAddress;
+        ownerSigner = await ethersMultichain.getSigner(owner);
+        ownerDiamond = gnusDiamond.connect(ownerSigner);
+        
+      });
+      
+      
+      beforeEach(async function () {
+        snapshotId = await provider.send('evm_snapshot', []);
+      });
+        
+      afterEach(async () => {
+        await provider.send('evm_revert', [snapshotId]);
+      });
+          
+          
+      it(`should ensure that ${chainName} chain object can be retrieved and reused`, async function () {
+            
+        expect(provider).to.not.be.undefined;
+        expect(deployer).to.not.be.undefined;
+        expect(deployment).to.be.true;
+        expect(upgrade).to.be.true;
+        
+        expect(gnusDiamond).to.not.be.null;
+        
+        const { chainId } = await provider.getNetwork();
+        expect(chainId).to.be.a('number');
 
-  it('should ensure that each chain object can be retrieved and reused', async function () {
-    for (const [chainName, provider] of chains.entries()) {
-      log(`Retrieving chain object for: ${chainName}`);
-      const retrievedProvider = await ChainManager.getChain(chainName);
-      expect(retrievedProvider).to.not.be.undefined;
-      const providerConnectionUrl = provider.connection.url;
-      const retrievedConnectionUrl = retrievedProvider.connection.url;
-      expect(retrievedProvider.connection.url).to.equal(provider.connection.url);
+        expect(provider.connection.url).to.satisfy((url: string) => url.startsWith('http://') || url.startsWith('https://'));
+      });
+      
+      it(`verify that diamond is deployed and we can get hardhat signers on ${chainName}`, async function () {
+        
+        expect(signersList).to.be.an('array');
+        expect(signersList).to.have.lengthOf(20);
+        expect(signersList[0]).to.be.instanceOf(SignerWithAddress);
 
-      ethers.provider = retrievedProvider;
-      const blockNumber = await ethers.provider.getBlockNumber();
-      log(`Block number for retrieved ${chainName} provider: ${blockNumber}`);
-      expect(blockNumber).to.be.a('number');
-    }
-  });
+        expect(owner).to.not.be.undefined;
+        expect(owner).to.be.a('string');
+        // expect(owner).to.be.properAddress;
+        expect(ownerSigner).to.be.instanceOf(SignerWithAddress);
+      });
+        
+      it(`should verify that ${chainName} providers are defined and have valid block numbers`, async function () {
+        log(`Checking chain provider for: ${chainName}`);
+        expect(provider).to.not.be.undefined;
+
+        const blockNumber = await ethersMultichain.provider.getBlockNumber();
+        log(`Block number for ${chainName}: ${blockNumber}`);
+        
+        expect(blockNumber).to.be.a('number');
+        expect(blockNumber).to.be.greaterThan(0);
+        
+        const configBlockNumber = hre.config.chainManager?.chains?.[chainName]?.blockNumber;
+        expect(blockNumber).to.be.gte(configBlockNumber);
+        
+      });
+
+
+      it(`should validate ERC165 interface compatibility on ${chainName}`, async function () {
+
+        // Test ERC165 interface compatibility
+        const supportsERC165 = await gnusDiamond?.supportsInterface('0x01ffc9a7');
+        expect(supportsERC165).to.be.true;
+
+        log(`Diamond deployed and validated on ${chainName}`);
+      });
+      
+      it(`should verify ERC165 supported interface for ERC1155 on ${chainName}`, async function () {
+  
+        // Test ERC165 interface compatibility for ERC1155
+        const supportsERC1155 = await gnusDiamond?.supportsInterface('0xd9b67a26');
+        expect(supportsERC1155).to.be.true;
+  
+        log(`ERC1155 interface validated on ${chainName}`);
+      });
+      
+      it(`should verify ERC165 supported interface for ERC20 on ${chainName}`, async function () {
+        log(`Validating ERC20 interface on chain: ${chainName}`);
+        // Retrieve the deployed GNUS Diamond contract
+        const IERC20UpgradeableInterface = IERC20Upgradeable__factory.createInterface();
+        // Generate the ERC20 interface ID by XORing with the base interface ID.
+        const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
+        // Assert that the `gnusDiamond` contract supports the ERC20 interface.
+        assert(
+          await gnusDiamond?.supportsInterface(IERC20InterfaceID._hex),
+          "Doesn't support IERC20Upgradeable",
+        );
+        
+        // Test ERC165 interface compatibility for ERC20 '0x37c8e2a0'
+        const supportsERC20 = await gnusDiamond?.supportsInterface(IERC20InterfaceID._hex);
+        expect(supportsERC20).to.be.true;
+
+        log(`ERC20 interface validated on ${chainName}`);
+      });
+      
+      it(`should verify that MINTER Role is set on ${chainName}`, async () => {
+        console.log(`Validating ERC20 interface on chain: ${chainName}`);
+        
+        // Check if the owner has the `MINTER_ROLE`, allowing them to mint tokens.
+        const minterRole = await gnusDiamond?.MINTER_ROLE();
+        // get the signer for the owner
+        const owner = deployments[chainName].DeployerAddress;
+        expect(await gnusDiamond?.['hasRole(bytes32,address)'](minterRole!, owner!)).to.be.eq(true);
+      });
+    });  
+  }
 });
