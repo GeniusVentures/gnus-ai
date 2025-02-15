@@ -11,16 +11,29 @@ import { debug } from 'debug';
 import { deployments } from '../../../../scripts/deployments';
 import { multichain } from 'hardhat-multichain';
 import hre from 'hardhat';
+import { JsonRpcProvider } from '@ethersproject/providers';
 
-describe('GNUS Bridge Testing', async function () {
+describe('GNUS Bridge Tests', async function () {
   const log: debug.Debugger = debug('GNUSDeploy:log');
   this.timeout(0); // Extend timeout to accommodate deployments
   
-  const chains = multichain.getProviders();
+  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+  
+  // Check the process.argv for the Hardhat network name
+  if (process.argv.includes('test-multichain')) {
+    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (chainNames.includes('hardhat')) {
+      chains = chains.set('hardhat', ethers.provider);
+      
+    }
+  } else if (process.argv.includes('test')) {
+    chains = chains.set('hardhat', ethers.provider);
+  }
+  
   
   for (const [chainName, provider] of chains.entries()) { 
   
-    describe(`GNUS Bridge Tests of ${chainName}`, async function () {
+    describe(`${chainName} GNUS Bridge Tests`, async function () {
       let deployer: MultiChainTestDeployer;
       let deployment: boolean | void;
       let upgrade: boolean | void;
@@ -69,7 +82,7 @@ describe('GNUS Bridge Testing', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName].DeployerAddress;
+        owner = deployments[chainName]?.DeployerAddress ?? signer0;
         ownerSigner = await ethersMultichain.getSigner(owner);
         ownerDiamond = gnusDiamond.connect(ownerSigner);
         

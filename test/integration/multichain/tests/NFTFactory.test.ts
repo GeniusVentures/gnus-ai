@@ -22,16 +22,19 @@ import { deployments } from '../../../../scripts/deployments';
 import { multichain } from 'hardhat-multichain';
 import hre from 'hardhat';
 
-describe('GNUS NFT Factory Testing Suite', async function () {
+describe('GNUS NFT Factory Tests', async function () {
   // Exporting a test suite for testing NFT creation functionality in the GNUS NFT Factory
   const log: debug.Debugger = debug('GNUSDeploy:log');
   this.timeout(0); // Extend timeout to accommodate deployments
   
-  const chains = multichain.getProviders();
+  // Get the existing providers for each chain created by the Hardhat-Multichain 
+  let chains = multichain.getProviders();
+  // Adds the local chain to the list of chains for a full deployment test
+  chains = chains.set('hardhat', ethers.provider);
   
   for (const [chainName, provider] of chains.entries()) { 
     
-    describe(`GNUS NFT Factory Tests ${chainName}`, async function () {
+    describe(`${chainName} GNUS NFT Factory Tests`, async function () {
       let deployer: MultiChainTestDeployer;
       let deployment: boolean | void;
       let upgrade: boolean | void;
@@ -82,8 +85,8 @@ describe('GNUS NFT Factory Testing Suite', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName].DeployerAddress;
-        ownerSigner = await ethersMultichain.getSigner(owner);
+        owner = deployments[chainName]?.DeployerAddress;
+        ownerSigner = await ethersMultichain.getSigner(owner) ?? signers[0];
         ownerDiamond = gnusDiamond.connect(ownerSigner);
 
         // Retrieve the total supply of GNUS tokens for reference
@@ -135,7 +138,7 @@ describe('GNUS NFT Factory Testing Suite', async function () {
       it('Testing NFT Factory to mint GNUS Token', async () => {
         // Attempt to mint GNUS tokens directly, expecting rejection due to factory restrictions
         await expect(
-          gnusDiamond["mint(address,uint256,uint256,bytes)"](owner, GNUS_TOKEN_ID, toWei(2000), []),
+          ownerDiamond["mint(address,uint256,uint256,bytes)"](owner, GNUS_TOKEN_ID, toWei(2000), []),
         ).to.eventually.be.rejectedWith(
           Error,
           /Shouldn\'t mint GNUS tokens tokens, only deposit and withdraw/,

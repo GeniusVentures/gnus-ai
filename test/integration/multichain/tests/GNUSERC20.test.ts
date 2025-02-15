@@ -9,17 +9,29 @@ import { deployments } from '../../../../scripts/deployments';
 import { multichain } from 'hardhat-multichain';
 import { debug } from 'debug';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { JsonRpcProvider } from '@ethersproject/providers';
 
 describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
   this.timeout(0); // Extend timeout for deployments and testing
   const log: debug.Debugger = debug('GNUSDeploy:log');
 
-  // Get the existing providers for each chain created by the Hardhat-Multichain 
-  const chains = multichain.getProviders();
+  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+  
+  // Check the process.argv for the Hardhat network name
+  if (process.argv.includes('test-multichain')) {
+    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (chainNames.includes('hardhat')) {
+      chains = chains.set('hardhat', ethers.provider);
+      
+    }
+  } else if (process.argv.includes('test')) {
+    chains = chains.set('hardhat', ethers.provider);
+  }
+  
   
   for (const [chainName, provider] of chains.entries()) {
     
-    describe(`GNUS ERC20 Hybrid Tests on ${chainName}`, async function () {
+    describe(`${chainName} GNUS ERC20 Tests`, async function () {
       let deployer: MultiChainTestDeployer;
       let deployment: boolean | void;
       let upgrade: boolean | void;
@@ -68,8 +80,8 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName].DeployerAddress;
-        ownerSigner = await ethersMultichain.getSigner(owner);
+        owner = deployments[chainName]?.DeployerAddress;
+        ownerSigner = await ethersMultichain.getSigner(owner) ?? signers[0];
         ownerDiamond = gnusDiamond.connect(ownerSigner);
         
       });
@@ -104,12 +116,10 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 
       it('should verify MINTER role is set for the owner on all chains', async function () {
         console.log(`Verifying MINTER role on chain: ${chainName}`);
-
         const ownershipFacet = await ethersMultichain.getContractAt('GeniusOwnershipFacet', gnusDiamond.address);
         const minterRole = await gnusDiamond['MINTER_ROLE']();
-        const deployerAddress = deployments[chainName].DeployerAddress;
-        const owner = await ownershipFacet.owner();
-        const hasMinterRole = await ownershipFacet.hasRole(minterRole, deployerAddress);
+        const owner = await ownershipFacet.connect(ownerSigner).owner();
+        const hasMinterRole = await ownershipFacet.hasRole(minterRole, owner);
         expect(hasMinterRole).to.be.true;
       });
 
