@@ -44,6 +44,8 @@ let client: Defender;
  * and updates the network deployment information to keep track of deployed facets and their function selectors.
  *
  * @param networkDeployInfo - The deployment information for the current network, including addresses and transaction hashes.
+ * 
+ * @returns The address of the deployed GeniusDiamond contract.
  */
 export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   
@@ -126,6 +128,7 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   };
   
   log(`Diamond deployed ${gnusDiamond.address}`); // Log the address of the deployed GeniusDiamond contract.
+  return [gnusDiamond.address, dc.DiamondCutFacet.address]; // Return the address of the deployed GeniusDiamond contract.`
 }
 
 export async function deployFuncSelectors(
@@ -468,11 +471,11 @@ export async function deployFuncSelectors(
       log(`created proposal on defender ${response.proposalId} `);
     } else {
       // Execute the diamond cut directly if not using Defender
+
       // TODO: Test that the diamond contract signer should be the contractOwner.  If there is no ContractOwner
       // than we may have an issue but it may still work for hardhat. 
       // So needs to be looked to verify  that straight hardhat testing and non-multichain works.
       // We also need to verify that the contractOwner as defined by the deployment is the ERC173 contractOwner for the diamond contract during testing.
-      
       let tx;
       if (!contractOwner) {
         tx = await diamondCut.diamondCut(
@@ -789,7 +792,6 @@ export async function deployDiamondFacets(
 }
 
 export async function deployExternalLibraries(networkDeployedInfo: INetworkDeployInfo) {
-  // ToDO - Add an external library deployment assembler here
 
   networkDeployedInfo.ExternalLibraries = {};
   // Initialize the external libraries object

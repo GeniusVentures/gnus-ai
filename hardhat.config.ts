@@ -10,6 +10,7 @@ import 'solidity-coverage';
 import '@nomicfoundation/hardhat-ethers';
 import '@nomicfoundation/hardhat-web3-v4';
 import 'hardhat-multichain';
+// import { multichain } from 'hardhat';
 
 dotenv.config();
 
@@ -51,10 +52,20 @@ export const polyBlock: number = parseInt(POLYGON_BLOCK || "0"); // Polygon bloc
 export const amoyBlock: number = parseInt(POLYGON_AMOY_BLOCK || "0"); // Amoy block number
 export const sepoliaBlock: number = parseInt(SEPOLIA_BLOCK || "0"); // Sepolia block number
 
+let multichainTestHardhat = '';
+// If this is a test-multichain task then we need to parse the --chains argument to get the chain names
+if (process.argv.includes('test-multichain')) {
+  const chains = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+  if (chains.includes('hardhat') || chains.includes('localhost') || !chains) {
+    multichainTestHardhat = 'http://localhost:8545';
+  }
+}
+export const multichainHardhat = multichainTestHardhat;
+
+// Task to print the list of accounts
 task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
   // Retrieve the list of accounts
   const accounts = await hre.ethers.getSigners();
-
   for (const account of accounts) {
     console.log(account.address);
   }
@@ -134,7 +145,10 @@ const config: HardhatUserConfig = {
         blockNumber: amoyBlock,
         chainId: 80002
       },
-    }
+      hardhat: { 
+        rpcUrl: multichainHardhat,
+      },
+    },
   },
   networks: {
     hardhat: {
