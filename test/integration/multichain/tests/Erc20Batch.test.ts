@@ -1,13 +1,6 @@
 import { ethers, network } from 'hardhat';
 import { BigNumber, utils } from 'ethers';
-import {
-  dc,
-  debuglog,
-  GNUS_TOKEN_ID,
-  expect,
-  toBN,
-  toWei,
-} from '../../../../scripts/common';
+import {dc,debuglog,GNUS_TOKEN_ID,expect,toBN,toWei,} from '../../../../scripts/common';
 import { assert } from 'chai';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
@@ -15,54 +8,81 @@ import MultiChainTestDeployer from '../setup/multichainTestDeployer';
 import { multichain } from 'hardhat-multichain';
 import { deployments } from '../../../../scripts/deployments';
 import { debug } from 'debug';
+import { JsonRpcProvider } from '@ethersproject/providers';
 
-describe('Testing Batch transfer erc20', async function () {
+describe('ERC20 Batch Transfer Tests', async function () {
   this.timeout(0); // Extend timeout for deployments and testing
   const log: debug.Debugger = debug('GNUSDeploy:log');
-
-  // Get the existing providers for each chain created by the Hardhat-Multichain 
-  const chains = multichain.getProviders();
   
-  // Create maps to store the deployed diamond contracts, snapshots, signers, and owners
-  // const diamonds: Map<string, GeniusDiamond> = new Map();
-  const ethersMultichain = ethers;
-  const snapshots: Map<string, string> = new Map();
-  const signers: Map<string, SignerWithAddress[]> = new Map();
-  const owners: Map<string, string> = new Map();
-  const ownerSigners: Map<string, SignerWithAddress> = new Map();
-  
-  for (const [chainName, provider] of chains.entries()) {
-    const { chainId } = await provider.getNetwork();
-    const deployConfig = {
-      chainName: chainName,
-      provider: provider,
-    };
-    const deployer = MultiChainTestDeployer.getInstance(deployConfig);
-    await deployer.deploy();
-    await deployer.upgrade();
-    // Retrieve the deployed GNUS Diamond contract
-    const gnusDiamond = await deployer.getDiamond();    
-    if (!gnusDiamond) {
-      throw new Error(`gnusDiamond is null for chain ${chainName}`);
+  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+  // Check the process.argv for the Hardhat network name
+  if (process.argv.includes('test-multichain')) {
+    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (chainNames.includes('hardhat')) {
+      chains = chains.set('hardhat', ethers.provider);
+      
     }
-    
-    let ethersMultichain = ethers;
-    ethersMultichain.provider = provider;
-    
-    // Retrieve the signers for the chain
-    const signers = await ethersMultichain.getSigners();
-    const signer0 = signers[0].address;
-    const signer1 = signers[1].address;
-    const signer0Diamond = gnusDiamond.connect(signers[0]);
-    const signer1Diamond = gnusDiamond.connect(signers[1]);
-    // get the signer for the owner
-    const owner = deployments[chainName].DeployerAddress;
-    const ownerSigner = await ethersMultichain.getSigner(owner);
-    const ownerDiamond = gnusDiamond.connect(ownerSigner);
-    
-    describe(`Chain: ${chainName}`, async function () {
-      // The snapshot ID to revert to the initial state after each test.
+  } else if (process.argv.includes('test')) {
+    chains = chains.set('hardhat', ethers.provider);
+  }
+  
+  for (const [chainName, provider] of chains.entries()) { 
+  
+    describe(`${chainName} ERC20 Batch Transfers`, async function () {
+      let deployer: MultiChainTestDeployer;
+      let deployment: boolean | void;
+      let upgrade: boolean | void;
+      let signers: SignerWithAddress[];
+      let signer0: string;
+      let signer1: string;
+      let signer2: string;
+      let signer0Diamond: GeniusDiamond;
+      let signer1Diamond: GeniusDiamond;
+      let signer2Diamond: GeniusDiamond;
+      // get the signer for the owner
+      let owner: string;
+      let ownerSigner: SignerWithAddress;
+      let ownerDiamond: GeniusDiamond;
+      let gnusDiamond: GeniusDiamond;
+      
+      let ethersMultichain: typeof ethers;
       let snapshotId: string;
+      
+      before(async function () {
+        const deployConfig = {
+          chainName: chainName,
+          provider: provider,
+        };
+        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
+        deployment = await deployer.deploy();
+        expect(deployment).to.be.true;
+        upgrade = await deployer.upgrade();
+        expect(upgrade).to.be.true;
+        // Retrieve the deployed GNUS Diamond contract
+        gnusDiamond = await deployer.getDiamond();    
+        if (!gnusDiamond) {
+          throw new Error(`gnusDiamond is null for chain ${chainName}`);
+        }
+        
+        ethersMultichain = ethers;
+        ethersMultichain.provider = provider;
+        
+        // Retrieve the signers for the chain
+        signers = await ethersMultichain.getSigners();
+        signer0 = signers[0].address;
+        signer1 = signers[1].address;
+        signer2 = signers[2].address;
+        signer0Diamond = gnusDiamond.connect(signers[0]);
+        signer1Diamond = gnusDiamond.connect(signers[1]);
+        signer2Diamond = gnusDiamond.connect(signers[2]);
+        
+        // get the signer for the owner
+        owner = deployments[chainName]?.DeployerAddress ?? signer0;
+        ownerSigner = await ethersMultichain.getSigner(owner);
+        ownerDiamond = gnusDiamond.connect(ownerSigner);
+         
+      });
+    
       beforeEach(async function () {
         snapshotId = await provider.send('evm_snapshot', []);
       });
