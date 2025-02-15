@@ -22,7 +22,7 @@ nvm use 18
 
 2. Clone this repository and move into the gnus-ai root directory. 
 ```bash
-git clone https://github.com
+git clone https://github.com/GeniusVentures/gnus-ai.git
 cd gnus-ai
 ```
 
@@ -34,18 +34,20 @@ vim .env
 
 4. Install the node dependencies in the local node_modules folder. 
 ```bash
-npm install
+yarn install
 ``` 
 
 5. Compiling the contracts
 ```bash
-npm run compile 
+yarn compile 
 ```
 
 6. Compiling and testing the contracts
 ```bash
-npm run test
+yarn test
 ```
 
-
-
+7. Testing Multichain Forks for Sepolia and Polygon Amoy
+```bash
+yarn hardhat test-multichain ./test/integration/multichain/tests/* --chains sepolia,polygon_amoy --logs logs
+```
