@@ -92,7 +92,10 @@ describe('ERC20 Batch Transfer Tests', async function () {
       });
         
       it('Batch Transferring to two addresses', async () => {
-        
+        // Fetch the owner's balance.
+        // This may be non-zero on forked chains so comparisons must take this into account.
+        let initBalance = await (await gnusDiamond['balanceOf(address,uint256)']
+          (owner, GNUS_TOKEN_ID)).toBigInt();
         const preTransferBalance0 = await gnusDiamond['balanceOf(address,uint256)'](
           signer2,
           GNUS_TOKEN_ID,
@@ -102,7 +105,7 @@ describe('ERC20 Batch Transfer Tests', async function () {
           GNUS_TOKEN_ID,
         );
         // Test case to verify batch transfers of ERC20 tokens.
-        let balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        let balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();    
         debuglog(`Owner balance before transfer1: ${balance.toString()}`);
         // Mint 150 GNUS tokens to the owner’s address and verify the updated balance.
         await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
@@ -150,14 +153,14 @@ describe('ERC20 Batch Transfer Tests', async function () {
       });
         
       // Test case to verify the blocking and unblocking of transfers.
-      it('Block Transfer Series', async () => {
+      it(`should verify the blocking and unblocking of transfers on ${chainName}`, async () => {
         // Fetch the owner's balance and mint additional tokens to the owner's account.
-        let balance = await(await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
-        debuglog(`Owner balance before transfer: ${balance.toString()}`);
+        let initBalance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        debuglog(`Owner balance before transfer: ${initBalance.toString()}`);
         
         await ownerDiamond['mint(address,uint256)'](owner, toWei(100));
-        balance = await (await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
-        let expectedBalance = toWei(100).toBigInt();
+        let balance = await (await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
+        let expectedBalance = initBalance + toWei(100).toBigInt();
         debuglog(`Owner balance after transfer of ${expectedBalance}: ${balance.toString()}`);
         debuglog(`Expected balance: ${expectedBalance.toString()}`);
         
@@ -197,10 +200,4 @@ describe('ERC20 Batch Transfer Tests', async function () {
       });
     });     
   }
-  
-  // Hook to execute additional test suites after this one completes.
-  after(() => {
-    // Uncomment if additional tests are to be executed sequentially.
-    // NFTMintTests.suite();
-  });
 });

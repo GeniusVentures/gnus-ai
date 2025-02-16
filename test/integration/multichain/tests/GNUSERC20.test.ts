@@ -110,7 +110,8 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
         // Test ERC165 interface compatibility for ERC20 '0x37c8e2a0'
         const supportsERC20 = await gnusDiamond?.supportsInterface(IERC20InterfaceID._hex);
         expect(supportsERC20).to.be.true;
-
+        
+        const OwnerBalance = await gnusDiamond['balanceOf(address)'](owner);
         console.log(`ERC20 interface validated on ${chainName}`);
       });
 
@@ -125,10 +126,14 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 
       it(`should mint and transfer GNUS tokens correctly on ${chainName}`, async function () {
         console.log(`Testing mint and transfer on chain: ${chainName}`);
+        // Fetch the owner's balance. 
+        // This may be non-zero on forked chains so comparisons must take this into account.
+        let initBalance = await (await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
         // Mint GNUS tokens
         await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
-        const updatedOwnerBalance = await gnusDiamond['balanceOf(address)'](owner);
-        expect(updatedOwnerBalance.eq(toWei(150))).to.be.true;
+        const updatedOwnerBalance = await (await gnusDiamond['balanceOf(address)'](owner));
+        const expectedBalance = initBalance + toWei(150).toBigInt();
+        expect(updatedOwnerBalance.eq(expectedBalance));
 
         // Transfer GNUS tokens
         await ownerDiamond.transfer(signer2, toWei(150));
