@@ -139,16 +139,13 @@ class MultiChainTestDeployer {
 
       // Backup pre-upgrade deployment info
       const deployInfoBeforeUpgraded = JSON.parse(JSON.stringify(this.deployInfo));
-      
-      // // Deploy Diamond Facets
-      // const facetsToDeploy: FacetToDeployInfo = {};
 
       // Define facets to be deployed, sourced from the `Facets` object.
       let facetsToDeploy: FacetToDeployInfo = Facets;
       await deployDiamondFacets(this.deployInfo, facetsToDeploy);
       
       // // Deploy and Initialize Diamond Facets
-      await deployAndInitDiamondFacets(this.deployInfo, facetsToDeploy); 
+      await deployAndInitDiamondFacets(this.deployInfo, facetsToDeploy);
       
     } catch (error) {
       if (error instanceof Error) {

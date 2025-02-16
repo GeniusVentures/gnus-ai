@@ -33,7 +33,7 @@ const {
   HH_CHAIN_ID,
   DEPLOYER_PRIVATE_KEY, 
   SEPOLIA_RPC, 
-  ETHEREUM_RPC,
+  MAINNET_RPC,
   POLYGON_RPC,
   POLYGON_AMOY_RPC, 
   ETH_BLOCK,
@@ -42,8 +42,8 @@ const {
   SEPOLIA_BLOCK,
 } = process.env;
 
-// Exported constants for reusability in other parts of the project (e.g., testing scripts)
-export const ethUrl: string = ETHEREUM_RPC || ""; // Ethereum RPC URL
+// default blank RPC URLs will return an error. Must be configured in the .env file. 
+export const ethUrl: string = MAINNET_RPC || ""; // Ethereum RPC URL
 export const polyUrl: string = POLYGON_RPC || ""; // Polygon RPC URL
 export const amoyUrl: string = POLYGON_AMOY_RPC || ""; // Amoy RPC URL
 export const sepoliaUrl: string = SEPOLIA_RPC || ""; // Sepolia RPC URL
@@ -115,7 +115,7 @@ const config: HardhatUserConfig = {
   },
   chainManager: {
     chains: {
-      ethereum: {
+      mainnet: {
         rpcUrl: ethUrl,
         blockNumber: ethBlock,
       }, 

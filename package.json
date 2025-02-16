@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "npx hardhat test",
+    "test-multichain": "npx hardhat test-multichain",
     "compile": "npx hardhat compile",
     "upgrade": "npx hardhat run scripts/upgrade.ts",
     "deploy": "npx hardhat run scripts/deploy.ts",
