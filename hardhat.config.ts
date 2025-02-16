@@ -36,22 +36,38 @@ const {
   MAINNET_RPC,
   POLYGON_RPC,
   POLYGON_AMOY_RPC, 
-  ETH_BLOCK,
+  MAINNET_BLOCK,
   POLYGON_BLOCK,
   POLYGON_AMOY_BLOCK,
   SEPOLIA_BLOCK,
+  BASE_RPC,
+  BASE_BLOCK,
+  BASE_SEPOLIA_RPC,
+  BASE_SEPOLIA_BLOCK,
+  BSC_RPC,
+  BSC_BLOCK,
+  BSC_TESTNET_RPC,
+  BSC_TESTNET_BLOCK,
 } = process.env;
 
 // default blank RPC URLs will return an error. Must be configured in the .env file. 
-export const ethUrl: string = MAINNET_RPC || ""; // Ethereum RPC URL
+export const mainnetUrl: string = MAINNET_RPC || ""; // Ethereum RPC URL
 export const polyUrl: string = POLYGON_RPC || ""; // Polygon RPC URL
 export const amoyUrl: string = POLYGON_AMOY_RPC || ""; // Amoy RPC URL
 export const sepoliaUrl: string = SEPOLIA_RPC || ""; // Sepolia RPC URL
+export const baseUrl: string = BASE_RPC || ""; // Base RPC URL
 // These set default values as well so missing environment variables set default to latest block.
-export const ethBlock: number = parseInt(ETH_BLOCK || "0"); // Ethereum block number
+export const mainnetBlock: number = parseInt(MAINNET_BLOCK || "0"); // Ethereum block number
 export const polyBlock: number = parseInt(POLYGON_BLOCK || "0"); // Polygon block number
 export const amoyBlock: number = parseInt(POLYGON_AMOY_BLOCK || "0"); // Amoy block number
 export const sepoliaBlock: number = parseInt(SEPOLIA_BLOCK || "0"); // Sepolia block number
+export const baseBlock: number = parseInt(BASE_BLOCK || "0"); // Base block number
+export const baseSepoliaUrl: string = BASE_SEPOLIA_RPC || ""; // Base Sepolia RPC URL
+export const baseSepoliaBlock: number = parseInt(BASE_SEPOLIA_BLOCK || "0"); // Base Sepolia block number
+export const bscUrl: string = BSC_RPC || ""; // BSC RPC URL
+export const bscBlock: number = parseInt(BSC_BLOCK || "0"); // BSC block number
+export const bscTestnetUrl: string = BSC_TESTNET_RPC || ""; // BSC Testnet RPC URL
+export const bscTestnetBlock: number = parseInt(BSC_TESTNET_BLOCK || "0"); // BSC Testnet block number
 
 let multichainTestHardhat = '';
 // If this is a test-multichain task then we need to parse the --chains argument to get the chain names
@@ -116,8 +132,8 @@ const config: HardhatUserConfig = {
   chainManager: {
     chains: {
       mainnet: {
-        rpcUrl: ethUrl,
-        blockNumber: ethBlock,
+        rpcUrl: mainnetUrl,
+        blockNumber: mainnetBlock,
       }, 
       polygon: {
         rpcUrl: polyUrl,
@@ -136,6 +152,22 @@ const config: HardhatUserConfig = {
       hardhat: { 
         rpcUrl: multichainHardhat,
       },
+      base: {
+        rpcUrl: baseUrl,
+        blockNumber: baseBlock,
+      },
+      base_sepolia: {
+        rpcUrl: baseSepoliaUrl,
+        blockNumber: baseSepoliaBlock,
+      },
+      bsc: {
+        rpcUrl: bscUrl,
+        blockNumber: bscBlock,
+      },
+      bsc_testnet: {
+        rpcUrl: bscTestnetUrl,
+        blockNumber: bscTestnetBlock,
+      },
     },
   },
   networks: {
@@ -149,8 +181,38 @@ const config: HardhatUserConfig = {
           }
         : undefined,
       chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
+      // Chains without Hardhat built in definitions
       chains: {
         80002: {
+          hardforkHistory: {
+            london: 10000000,
+          },
+        },
+        137: {
+          hardforkHistory: {
+            london: 10000000,
+          },
+        },
+        // BNB (BSC) chain
+        56: {
+          hardforkHistory: {
+            london: 10000000,
+          },
+        },
+        // BNB Smart Chain Testnet chain
+        97: {
+          hardforkHistory: {
+            london: 100000000,
+          }
+        },
+        // Base chain
+        8453: {
+          hardforkHistory: {
+            london: 10000000,
+          },
+        },
+         // Base Testnet chain
+        84532: {
           hardforkHistory: {
             london: 10000000,
           },
