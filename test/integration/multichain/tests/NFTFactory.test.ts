@@ -20,17 +20,24 @@ import MultiChainTestDeployer from '../setup/multichainTestDeployer';
 import { debug } from 'debug';
 import { deployments } from '../../../../scripts/deployments';
 import { multichain } from 'hardhat-multichain';
-import hre from 'hardhat';
+import { JsonRpcProvider } from '@ethersproject/providers';
 
-describe('GNUS NFT Factory Tests', async function () {
+describe('NFT Factory Tests', async function () {
   // Exporting a test suite for testing NFT creation functionality in the GNUS NFT Factory
   const log: debug.Debugger = debug('GNUSDeploy:log');
   this.timeout(0); // Extend timeout to accommodate deployments
   
-  // Get the existing providers for each chain created by the Hardhat-Multichain 
-  let chains = multichain.getProviders();
-  // Adds the local chain to the list of chains for a full deployment test
-  chains = chains.set('hardhat', ethers.provider);
+  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+  // Check the process.argv for the Hardhat network name
+  if (process.argv.includes('test-multichain')) {
+    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (chainNames.includes('hardhat')) {
+      chains = chains.set('hardhat', ethers.provider);
+      
+    }
+  } else if (process.argv.includes('test')) {
+    chains = chains.set('hardhat', ethers.provider);
+  }
   
   for (const [chainName, provider] of chains.entries()) { 
     
@@ -85,8 +92,8 @@ describe('GNUS NFT Factory Tests', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName]?.DeployerAddress;
-        ownerSigner = await ethersMultichain.getSigner(owner) ?? signers[0];
+        owner = deployments[chainName]?.DeployerAddress || signer0;
+        ownerSigner = await ethersMultichain.getSigner(owner);
         ownerDiamond = gnusDiamond.connect(ownerSigner);
 
         // Retrieve the total supply of GNUS tokens for reference
@@ -222,11 +229,12 @@ describe('GNUS NFT Factory Tests', async function () {
         debuglog(`NfTInfo ${iObjToString(newNFTInfo)}`);
 
         // Iterate through the created child NFTs and log their details
-        for (let i = 0; i < 3; i++) {
-          const nftID = newParentNFTID.shl(128).or(i);
-          const nftInfo = await signer1Diamond.getNFTInfo(nftID);
-          debuglog(`nftInfo${i.toString()} ${iObjToString(nftInfo)}}`);
-        }
+      //   // This is really just for debugging, could be removed.
+      //   for (let i = 0; i < 3; i++) {
+      //     const nftID = newParentNFTID.shl(128).or(i);
+      //     const nftInfo = await signer1Diamond.getNFTInfo(nftID);
+      //     debuglog(`nftInfo${i.toString()} ${iObjToString(nftInfo)}}`);
+      //   }
       });
 
       // Test case to validate minting restrictions for unauthorized users
@@ -277,7 +285,7 @@ describe('GNUS NFT Factory Tests', async function () {
       
             
       // Test case to validate minting restrictions for unauthorized users
-      it("Testing NFT Factory to mint child NFT's of Addr1 Token", async () => {
+      it("Testing NFT Factory to mint child NFTs of Addr1 Token", async () => {
         // Calculate the child NFT ID based on the parent NFT ID
         const addr1childNFT1 = ParentNFTID.shl(128).or(0);
 
@@ -332,11 +340,12 @@ describe('GNUS NFT Factory Tests', async function () {
         debuglog(`Total GNUS burned: ${utils.formatEther(burntSupply)}`);
 
         // Iterate through the child NFTs to log their total supply
-        for (let i = 0; i < 3; i++) {
-          const nftID = ParentNFTID.shl(128).or(i);
-          const totalSupply = await signer1Diamond['totalSupply(uint256)'](nftID);
-          debuglog(`Total Supply for ParentNFT1:NFT${i + 1} ${totalSupply}`);
-        }
+        // Only needed for troubleshooting.
+        // for (let i = 0; i < 3; i++) {
+        //   const nftID = ParentNFTID.shl(128).or(i);
+        //   const totalSupply = await signer1Diamond['totalSupply(uint256)'](nftID);
+        //   debuglog(`Total Supply for ParentNFT1:NFT${i + 1} ${totalSupply}`);
+        // }
 
         // Retrieve and store symbols for the GNUS token and parent NFT
         const symbols: string[] = [];
@@ -373,6 +382,8 @@ describe('GNUS NFT Factory Tests', async function () {
             } ${symbols[parentNFT]}::ChildNFT${childNFT} NFTs`,
           );
         });
+        
+        // TODO There is no test at the end of all this processing.  Its just a lot of logging.
       });
     });
   }

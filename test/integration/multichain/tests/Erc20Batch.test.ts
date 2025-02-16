@@ -77,7 +77,7 @@ describe('ERC20 Batch Transfer Tests', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName]?.DeployerAddress ?? signer0;
+        owner = deployments[chainName]?.DeployerAddress || signer0;
         ownerSigner = await ethersMultichain.getSigner(owner);
         ownerDiamond = gnusDiamond.connect(ownerSigner);
          
@@ -94,7 +94,7 @@ describe('ERC20 Batch Transfer Tests', async function () {
       it('Batch Transferring to two addresses', async () => {
         
         const preTransferBalance0 = await gnusDiamond['balanceOf(address,uint256)'](
-          signer0,
+          signer2,
           GNUS_TOKEN_ID,
         );
         const preTransferBalance1 = await gnusDiamond['balanceOf(address,uint256)'](
@@ -108,17 +108,17 @@ describe('ERC20 Batch Transfer Tests', async function () {
         await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
         balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance after transfer2: ${balance.toString()}`);
-        // Execute a batch transfer to `signer0` and `signer1` with specified token amounts.
+        // Execute a batch transfer to `signer2` and `signer1` with specified token amounts.
         await ownerDiamond.transferBatch(
-          [signer0, signer1],
+          [signer2, signer1],
           [toWei(2), toWei(1)],
         );
         
         balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance3: ${balance.toString()}`);
-        // Retrieve updated balances for `signer0` and `signer1`.
+        // Retrieve updated balances for `signer2` and `signer1`.
         const updatedAmount1 = await gnusDiamond['balanceOf(address,uint256)'](
-          signer0,
+          signer2,
           GNUS_TOKEN_ID,
         );
         const updatedAmount2 = await gnusDiamond['balanceOf(address,uint256)'](
@@ -164,35 +164,35 @@ describe('ERC20 Batch Transfer Tests', async function () {
         // Assert that the owner's balance exceeds 100 after minting.
         expect(balance).to.be.eq(expectedBalance);
         
-        // Transfer tokens to `signer0` and verify their balance.
-        let receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer0)).toBigInt();
-        await ownerDiamond.transfer(signer0, toWei(10));
-        receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer0)).toBigInt() ;
+        // Transfer tokens to `signer2` and verify their balance.
+        let receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer2)).toBigInt();
+        await ownerDiamond.transfer(signer2, toWei(10));
+        receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer2)).toBigInt() ;
         expectedBalance = toWei(10).toBigInt();
         // Expect the receiver's balance to match the transferred amount.
         expect(receiverBalance).to.be.eq(expectedBalance);
         
         // Block the owner from transferring tokens and verify the restriction.
-        await ownerDiamond.banTransferorForAll(signer0);
-        await expect(signer0Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
+        await ownerDiamond.banTransferorForAll(signer2);
+        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
             Error,
             'Blocked transferor',
         );
 
         // Unblock the owner and retry the transfer.
-        await ownerDiamond.allowTransferorForAll(signer0);
-        await expect(signer0Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
+        await ownerDiamond.allowTransferorForAll(signer2);
+        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
 
         // Block the owner using a batch transfer restriction and verify.
-        await ownerDiamond.banTransferorBatch([0], [signer0]);
-        await expect(signer0Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
+        await ownerDiamond.banTransferorBatch([0], [signer2]);
+        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
           Error,
           'Blocked transferor',
         );
         
         // Remove the batch restriction and verify successful transfer.
-        await ownerDiamond.allowTransferorBatch([0], [signer0]);
-        await expect(signer0Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
+        await ownerDiamond.allowTransferorBatch([0], [signer2]);
+        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
         
       });
     });     
