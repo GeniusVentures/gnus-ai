@@ -30,7 +30,7 @@
         },
         {
             "name": "Multichain Plugin Test",
-            "type": "node",
+            "type": "node",,
             "request": "launch",
             // "preLaunchTask": "tsc: build - tsconfig.json",
             "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
@@ -41,8 +41,12 @@
                 "${workspaceFolder}/test/integration/multichain/tests/GNUSBridge.test.ts",
                 "${workspaceFolder}/test/integration/multichain/tests/GNUSERC20.test.ts",             
                 "${workspaceFolder}/test/integration/multichain/tests/Erc20Batch.test.ts",
-                "--chains", "sepolia,hardhat", "--logs", "logs"
-                // "--chains", "hardhat", "--logs", "logs"
+                // "--chains", "hardhat", "--logs", "logs",
+                // "--chains", "sepolia", "--logs", "logs",
+                // "--chains", "polygon_amoy", "--logs", "logs",
+                "--chains", "hardhat,sepolia", "--logs", "logs",
+                // "--chains", "sepolia,polygon_amoy", "--logs", "logs",
+                // "--chains", "hardhat,sepolia,polygon_amoy", "--logs", "logs", 
             ],
             "runtimeArgs": [ "--preserve-symlinks" ],
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],

@@ -30,10 +30,10 @@ import util from 'util';
 import { debug } from 'debug';
 
 // other files suites to execute
-import * as GNUSERC20Tests from '../test/GNUSERC20Tests';
-import * as NFTCreateTests from '../test/NFTCreateTests';
-import * as ERC20BatchTests from '../test/Erc20BatchTests';
-import * as GNUSBridgeTests from '../test/GNUSBridgeTests';
+import * as GNUSERC20Tests from './GNUSERC20Tests';
+import * as NFTCreateTests from './NFTCreateTests';
+import * as ERC20BatchTests from './Erc20BatchTests';
+import * as GNUSBridgeTests from './GNUSBridgeTests';
 // import * as MultiChainTests from './MultiChainTests';
 
 import { updateOwnerForTest } from './utils/signer';
