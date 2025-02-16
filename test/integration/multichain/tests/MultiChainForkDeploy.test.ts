@@ -56,8 +56,8 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
           provider: provider,
         };
         deployer = await MultiChainTestDeployer.getInstance(deployConfig);
-        // deployment = await deployer.deploy();
-        // expect(deployment).to.be.true;
+        deployment = await deployer.deploy();
+        expect(deployment).to.be.true;
         upgrade = await deployer.upgrade();
         expect(upgrade).to.be.true;
         // Retrieve the deployed GNUS Diamond contract
@@ -79,10 +79,9 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName]?.DeployerAddress ?? signer0;
+        owner = deployments[chainName]?.DeployerAddress || signer0;
         ownerSigner = await ethersMultichain.getSigner(owner);
         ownerDiamond = gnusDiamond.connect(ownerSigner);
-         
       });
       
       beforeEach(async function () {
@@ -140,10 +139,15 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
         expect(blockNumber).to.be.lte(configBlockNumber + 500);
         
       });
+      
+      it(`should verify ERC173 contract ownership on ${chainName}`, async function () {
+        // check if the owner is the deployer and transfer ownership to the deployer
+        const currentContractOwner = await ownerDiamond.owner();
+        expect(currentContractOwner.toLowerCase()).to.be.eq(await owner.toLowerCase());
+      });
 
 
       it(`should validate ERC165 interface compatibility on ${chainName}`, async function () {
-
         // Test ERC165 interface compatibility
         const supportsERC165 = await gnusDiamond?.supportsInterface('0x01ffc9a7');
         expect(supportsERC165).to.be.true;

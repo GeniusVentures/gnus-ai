@@ -80,8 +80,8 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
         signer2Diamond = gnusDiamond.connect(signers[2]);
         
         // get the signer for the owner
-        owner = deployments[chainName]?.DeployerAddress;
-        ownerSigner = await ethersMultichain.getSigner(owner) ?? signers[0];
+        owner = deployments[chainName]?.DeployerAddress || signer0;
+        ownerSigner = await ethersMultichain.getSigner(owner);
         ownerDiamond = gnusDiamond.connect(ownerSigner);
         
       });
@@ -123,10 +123,8 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
         expect(hasMinterRole).to.be.true;
       });
 
-      it('should mint and transfer GNUS tokens correctly on all chains', async function () {
+      it(`should mint and transfer GNUS tokens correctly on ${chainName}`, async function () {
         console.log(`Testing mint and transfer on chain: ${chainName}`);
-        
-
         // Mint GNUS tokens
         await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
         const updatedOwnerBalance = await gnusDiamond['balanceOf(address)'](owner);
