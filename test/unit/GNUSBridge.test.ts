@@ -1,17 +1,13 @@
-import { dc, expect, toWei, GNUS_TOKEN_ID } from '../../../../scripts/common';
-import { ethers } from 'hardhat';
-import { assert } from 'chai';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
-import { getInterfaceID } from '../../../../scripts/FacetSelectors';
-import { IERC20Upgradeable__factory } from '../../../../typechain-types/factories/IERC20Upgradeable__factory';
-import { INetworkDeployInfo } from '../../../../scripts/common';
-import MultiChainTestDeployer from '../setup/multichainTestDeployer';
 import { debug } from 'debug';
-import { deployments } from '../../../../scripts/deployments';
-import { multichain } from 'hardhat-multichain';
-import hre from 'hardhat';
+import { expect } from 'chai';
+import { ethers } from 'hardhat';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import { multichain } from 'hardhat-multichain';
+import {debuglog,toWei,} from '../../scripts/common';
+import MultiChainTestDeployer from '../setup/multichainTestDeployer';
+import { deployments } from '../../scripts/deployments';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
 describe('GNUS Bridge Tests', async function () {
   const log: debug.Debugger = debug('GNUSDeploy:log');
@@ -26,10 +22,9 @@ describe('GNUS Bridge Tests', async function () {
       chains = chains.set('hardhat', ethers.provider);
       
     }
-  } else if (process.argv.includes('test')) {
+  } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
     chains = chains.set('hardhat', ethers.provider);
   }
-  
   
   for (const [chainName, provider] of chains.entries()) { 
   
@@ -68,7 +63,7 @@ describe('GNUS Bridge Tests', async function () {
         if (!gnusDiamond) {
           throw new Error(`gnusDiamond is null for chain ${chainName}`);
         }
-        
+
         ethersMultichain = ethers;
         ethersMultichain.provider = provider;
         
@@ -156,6 +151,32 @@ describe('GNUS Bridge Tests', async function () {
         // Verify the balance of the signer is zero after burning
         balance = await gnusDiamond['balanceOf(address)'](signer2);
         expect(balance).to.be.eq(toWei(0));
+      });
+      
+      // Test case to validate the decreaseAllowance functionality
+      it('Testing Decrease Allowance', async () => {
+        // Verify the initial allowance of the owner to the signer is zero
+        let allowance = await ownerDiamond.allowance(owner, signer2);
+        expect(allowance).to.be.eq(toWei(0));
+
+        // Increase the allowance of the owner to the signer
+        await ownerDiamond.approve(signer2, toWei(100));
+
+        // Validate the updated allowance
+        allowance = await ownerDiamond.allowance(owner, signer2);
+        expect(allowance).to.be.eq(toWei(100));
+
+        // Decrease the allowance of the owner to the signer
+        await ownerDiamond.decreaseAllowance(signer2, toWei(50));
+
+        // Validate the updated allowance
+        allowance = await ownerDiamond.allowance(owner, signer2);
+        expect(allowance).to.be.eq(toWei(50));
+
+        // Attempt to decrease the allowance of the owner to the signer with insufficient funds
+        await expect(
+          ownerDiamond.decreaseAllowance(signer2, toWei(100)),
+        ).to.be.rejectedWith(Error, 'ERC20: decreased allowance below zero');
       });
     });
   } 

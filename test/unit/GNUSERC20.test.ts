@@ -1,15 +1,17 @@
-import { ethers } from 'hardhat';
-import { expect, assert } from 'chai';
-import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
-import { getInterfaceID } from '../../../../scripts/FacetSelectors';
-import { IERC20Upgradeable__factory, IERC165Upgradeable__factory, IERC1155Upgradeable__factory } from '../../../../typechain-types';
-import { toWei } from '../../../../scripts/common';
-import { deployments } from '../../../../scripts/deployments';
-import { multichain } from 'hardhat-multichain';
 import { debug } from 'debug';
+import { expect, assert } from 'chai';
+import { ethers } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import { multichain } from 'hardhat-multichain';
+import {debuglog,toWei,} from '../../scripts/common';
+import MultiChainTestDeployer from '../setup/multichainTestDeployer';
+import { deployments } from '../../scripts/deployments';
+import { getInterfaceID } from '../../scripts/FacetSelectors';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
+import { 
+  IERC20Upgradeable__factory, 
+} from '../../typechain-types';
 
 describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
   this.timeout(0); // Extend timeout for deployments and testing
@@ -24,11 +26,10 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
       chains = chains.set('hardhat', ethers.provider);
       
     }
-  } else if (process.argv.includes('test')) {
+  } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
     chains = chains.set('hardhat', ethers.provider);
   }
-  
-  
+   
   for (const [chainName, provider] of chains.entries()) {
     
     describe(`${chainName} GNUS ERC20 Tests`, async function () {

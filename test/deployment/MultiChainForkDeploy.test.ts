@@ -1,15 +1,15 @@
-import { expect, assert } from 'chai';
-import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { ethers } from 'hardhat';
 import { debug } from 'debug';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { deployments } from '../../../../scripts/deployments';
-import { IERC20Upgradeable__factory } from '../../../../typechain-types';
-import { getInterfaceID } from '../../../../scripts/FacetSelectors';
-import { multichain } from 'hardhat-multichain';
-import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
+import { expect, assert } from 'chai';
+import { ethers } from 'hardhat';
 import hre from 'hardhat';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import { multichain } from 'hardhat-multichain';
+import MultiChainTestDeployer from '../setup/multichainTestDeployer';
+import { deployments } from '../../scripts/deployments';
+import { IERC20Upgradeable__factory } from '../../typechain-types';
+import { getInterfaceID } from '../../scripts/FacetSelectors';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
 describe('Multichain Fork and Diamond Deployment Tests', async function () {
   const log: debug.Debugger = debug('GNUSDeploy:log');
@@ -24,7 +24,7 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
       chains = chains.set('hardhat', ethers.provider);
       
     }
-  } else if (process.argv.includes('test')) {
+  } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
     chains = chains.set('hardhat', ethers.provider);
   }
   
@@ -90,8 +90,7 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
         
       afterEach(async () => {
         await provider.send('evm_revert', [snapshotId]);
-      });
-          
+      });       
           
       it(`should ensure that ${chainName} chain object can be retrieved and reused`, async function () {
             
@@ -106,7 +105,7 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
         expect(chainId).to.be.a('number');
         
         // For some reason connection.url test has an error with hardhat chain when running 
-        // tests with `yarn test-multichain`It does work with `npx test-multichain ...`
+        // tests with `yarn test-multichain`. This does work with `npx test-multichain ...`
         // expect(provider.connection.url).to.satisfy((url: string) => url.startsWith('http://'));
       });
       
@@ -139,7 +138,6 @@ describe('Multichain Fork and Diamond Deployment Tests', async function () {
         expect(blockNumber).to.be.gte(configBlockNumber);
         
         expect(blockNumber).to.be.lte(configBlockNumber + 500);
-        
       });
       
       it(`should verify ERC173 contract ownership on ${chainName}`, async function () {

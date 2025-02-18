@@ -11,7 +11,6 @@ import 'solidity-coverage';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-web3';
 import 'hardhat-multichain';
-// import { multichain } from 'hardhat';
 
 dotenv.config();
 
@@ -71,11 +70,14 @@ export const bscTestnetBlock: number = parseInt(BSC_TESTNET_BLOCK || "0"); // BS
 
 let multichainTestHardhat = '';
 // If this is a test-multichain task then we need to parse the --chains argument to get the chain names
-if (process.argv.includes('test-multichain')) {
+if (process.argv.includes('test-multichain') && process.argv.includes('--chains')) {
   const chains = process.argv[process.argv.indexOf('--chains') + 1].split(',');
   if (chains.includes('hardhat') || chains.includes('localhost') || !chains) {
     multichainTestHardhat = 'http://localhost:8545';
   }
+}
+if (process.argv.includes('coverage')) {
+  multichainTestHardhat = 'http://localhost:8555';
 }
 export const multichainHardhat = multichainTestHardhat;
 
