@@ -4,7 +4,7 @@ import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types';
 import { Signer } from 'ethers';
 import * as util from 'util';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 import { 
   deployGNUSDiamond, 
   deployDiamondFacets, 
@@ -12,22 +12,22 @@ import {
   afterDeployCallbacks, 
   deployAndInitDiamondFacets,
   deployExternalLibraries
-} from '../../../../scripts/deploy';
+} from '../../scripts/deploy';
 import { 
-  dc, 
+  dc,
   INetworkDeployInfo, 
   FacetToDeployInfo,
   FacetDeployedInfo, 
   PreviousVersionRecord 
-} from '../../../../scripts/common';
-import { deployments} from '../../../../scripts/deployments';
+} from '../../scripts/common';
+import { deployments} from '../../scripts/deployments';
 import { assert } from 'chai';
-import { Facets, LoadFacetDeployments } from '../../../../scripts/facets';
-import { getInterfaceID } from '../../../../scripts/FacetSelectors';
-import { IERC165Upgradeable__factory, IERC1155Upgradeable__factory } from '../../../../typechain-types';
+import { Facets, LoadFacetDeployments } from '../../scripts/facets';
+import { getInterfaceID } from '../../scripts/FacetSelectors';
+import { IERC165Upgradeable__factory, IERC1155Upgradeable__factory } from '../../typechain-types';
 import { createForkLogger } from '../utils/logger';
 import { waitForNetwork } from '../utils/network-utils';
-import { GetUpdatedFacets, attachGNUSDiamond  } from '../../../../scripts/upgrade';
+import { GetUpdatedFacets, attachGNUSDiamond  } from '../../scripts/upgrade';
 
 interface ChainInfo {
   chainName: string;

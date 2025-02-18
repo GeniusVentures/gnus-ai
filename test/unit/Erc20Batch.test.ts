@@ -1,14 +1,14 @@
-import { ethers, network } from 'hardhat';
-import { BigNumber, utils } from 'ethers';
-import {dc,debuglog,GNUS_TOKEN_ID,expect,toBN,toWei,} from '../../../../scripts/common';
-import { assert } from 'chai';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../../../../typechain-types/GeniusDiamond';
-import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { multichain } from 'hardhat-multichain';
-import { deployments } from '../../../../scripts/deployments';
 import { debug } from 'debug';
+import { expect, assert } from 'chai';
+import { ethers } from 'hardhat';
+import { utils } from 'ethers';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import { multichain } from 'hardhat-multichain';
+import {debuglog,GNUS_TOKEN_ID,toWei,} from '../../scripts/common';
+import MultiChainTestDeployer from '../setup/multichainTestDeployer';
+import { deployments } from '../../scripts/deployments';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
 describe('ERC20 Batch Transfer Tests', async function () {
   this.timeout(0); // Extend timeout for deployments and testing
@@ -22,7 +22,7 @@ describe('ERC20 Batch Transfer Tests', async function () {
       chains = chains.set('hardhat', ethers.provider);
       
     }
-  } else if (process.argv.includes('test')) {
+  } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
     chains = chains.set('hardhat', ethers.provider);
   }
   
