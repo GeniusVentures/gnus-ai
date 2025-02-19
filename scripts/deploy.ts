@@ -34,10 +34,6 @@ const GAS_LIMIT_CUT_BASE = 100000;
 import { FacetCutAction } from './FacetSelectors';
 // import { FacetCutStruct } from '../typechain-types';
 import { Contract } from 'ethers';
-import { PropertySignature } from 'typescript';
-import { DataHexString } from 'ethers/lib.commonjs/utils/data';
-import { networkInterfaces } from 'os';
-import { Network } from 'inspector/promises';
 
 // Declare an AdminClient object for OpenZeppelin Defender, if integration with Defender is used.
 let client: Defender;
@@ -227,9 +223,7 @@ export async function deployFuncSelectors(
     const FacetContract = await ethers.getContractFactory(
       name,
       facetDeployVersionInfo.libraries
-        ? {
-            libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string },
-          }
+        ? { libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string } }
         : undefined,
     );
     // TODO investigate: Duplicate definition of TransferBatch (TransferBatch(address,address,address[],uint256[]), TransferBatch(address,address,address,uint256[],uint256[]))
@@ -452,7 +446,7 @@ export async function deployFuncSelectors(
 
     // If Defender deployment is enabled, create a proposal for the diamond upgrade
     if (process.env.DEFENDER_DEPLOY_ON && defenderSigners[network.name]) {
-      const upgradeFunctionInputs: string | boolean | (string | boolean)[][] = [];
+      const upgradeFunctionInputs: (string | string[])[][] = [];
 
 
       // Format the inputs for the diamond cut operation
@@ -726,7 +720,7 @@ export async function deployDiamondFacets(
 
     const upgradeVersion = +facetVersions[0]; // Most recent version to deploy
 
-    const gasLimitAmount: DataHexString = ethers.toBeHex(1000000);
+    // const gasLimitAmount: DataHexString = ethers.toBeHex(1000000); // ToDo unused var
     // Determine the deployed version or mark as undeployed (-1.0)
     const deployedVersion =
       deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
@@ -785,7 +779,7 @@ export async function deployDiamondFacets(
         // Deploy the facet contract with a slightly increased gas price for reliability
         facet = await FacetContract.deploy({
           // add 10% gas
-          gasPrice: gasPrice ? (gasPrice * 110n / 100n) : undefined,
+          gasPrice: gasPrice ? (gasPrice * 110n) / 100n : undefined,
         });
         await facet.deployed(); // Wait for the deployment transaction to confirm
       } catch (e) {
@@ -802,7 +796,9 @@ export async function deployDiamondFacets(
         // version: upgradeVersion, // Version of the deployed facet
       };
 
-      log(`${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`); // Log successful deployment
+      log(
+        `${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`,
+      ); // Log successful deployment
     }
   }
 
