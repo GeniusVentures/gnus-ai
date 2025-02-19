@@ -1,8 +1,7 @@
 import { ethers } from 'hardhat';
-import { BytesLike, Contract, Fragment, Interface } from 'ethers';
+import { Contract, Fragment, Interface } from 'ethers';
 import { FacetSelectorsDeployed, INetworkDeployInfo } from './common';
 import { DiamondLoupeFacet } from '../typechain-types';
-import { IDiamondCut } from '../typechain-types';
 
 export enum FacetCutAction {
   Add = 0,

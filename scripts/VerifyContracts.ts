@@ -60,7 +60,7 @@ async function main() {
       if (networkName !== 'hardhat') {
         writeDeployedInfo(deployments);
         log(
-            `Finished Verifying GNUS Contracts/Facets at ${networkDeployInfo.DiamondAddress}`,
+          `Finished Verifying GNUS Contracts/Facets at ${networkDeployInfo.DiamondAddress}`,
         );
       }
     }

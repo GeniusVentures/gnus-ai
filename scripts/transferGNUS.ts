@@ -29,7 +29,7 @@ async function transferToken() {
     tokenId,
     EvmChain.ARBITRUM_SEPOLIA,
     signerAddress.address,
-    ethers.utils.parseEther('2'),
+    ethers.parseEther('2'),
     '0x',
     gas,
     {
@@ -39,6 +39,6 @@ async function transferToken() {
   await tx.wait();
 }
 
-transferToken().then((result) => {
+transferToken().then(() => {
   console.log('Sent token.');
 });

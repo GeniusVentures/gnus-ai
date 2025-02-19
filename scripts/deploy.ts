@@ -33,10 +33,6 @@ const GAS_LIMIT_CUT_BASE = 100000;
 import { FacetCutAction } from './FacetSelectors';
 // import { FacetCutStruct } from '../typechain-types';
 import { Contract } from 'ethers';
-import { PropertySignature } from 'typescript';
-import { DataHexString } from 'ethers/lib.commonjs/utils/data';
-import { networkInterfaces } from 'os';
-import { Network } from 'inspector/promises';
 
 // Declare an AdminClient object for OpenZeppelin Defender, if integration with Defender is used.
 let client: Defender;
@@ -191,9 +187,7 @@ export async function deployFuncSelectors(
     const FacetContract = await ethers.getContractFactory(
       name,
       facetDeployVersionInfo.libraries
-        ? {
-            libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string },
-          }
+        ? { libraries: networkDeployInfo.ExternalLibraries as { [key: string]: string } }
         : undefined,
     );
     const facet = FacetContract.attach(deployedFacets[name].address!);
@@ -408,7 +402,7 @@ export async function deployFuncSelectors(
 
     // If Defender deployment is enabled, create a proposal for the diamond upgrade
     if (process.env.DEFENDER_DEPLOY_ON && defenderSigners[network.name]) {
-      const upgradeFunctionInputs: string | boolean | (string | boolean)[][] = [];
+      const upgradeFunctionInputs: (string | string[])[][] = [];
 
       // Format the inputs for the diamond cut operation
       upgradeCut.forEach((e) =>
@@ -430,7 +424,11 @@ export async function deployFuncSelectors(
           description: `Update facet`, // Proposal description
           type: 'custom', // Custom admin action
           functionInterface: diamondCutFuncAbi, // ABI of the diamondCut function
-          functionInputs: [upgradeFunctionInputs, initAddress, functionCall], // Inputs for the diamondCut function
+          functionInputs: [
+            JSON.stringify(upgradeFunctionInputs),
+            initAddress,
+            functionCall,
+          ], // Inputs for the diamondCut function
           via: defenderSigners[network.name].via, // Signer via address
           viaType: defenderSigners[network.name].viaType, // Signer via type
         },
@@ -453,6 +451,7 @@ export async function deployFuncSelectors(
     log(`unable to cut facet: \n ${e}`); // Log any errors during the diamond cut
   }
 
+  /* eslint-disable indent */
   // Update the deployment information with the results of the diamond cut
   for (const facetCutInfo of upgradeCut) {
     for (const facetModified of facetCutInfo.functionSelectors) {
@@ -639,7 +638,7 @@ export async function deployDiamondFacets(
 
     const upgradeVersion = +facetVersions[0]; // Most recent version to deploy
 
-    const gasLimitAmount: DataHexString = ethers.toBeHex(1000000);
+    // const gasLimitAmount: DataHexString = ethers.toBeHex(1000000); // ToDo unused var
     // Determine the deployed version or mark as undeployed (-1.0)
     const deployedVersion =
       deployedFacets[name]?.version ?? (deployedFacets[name]?.tx_hash ? 0.0 : -1.0);
@@ -663,16 +662,11 @@ export async function deployDiamondFacets(
     // Create the facet contract factory with the required libraries (if any)
     const FacetContract = await ethers.getContractFactory(
       name,
-      facetDeployVersionInfo.libraries
-        ? {
-            libraries: externalLibraries,
-          }
-        : undefined,
+      facetDeployVersionInfo.libraries ? { libraries: externalLibraries } : undefined,
     );
 
     if (facetNeedsDeployment) {
       log(`Deploying ${name} size: ${FacetContract.bytecode.length}`); // Log facet deployment details
-      
       // ToDo improve with better gas estimators
       try {
         // Retrieve the current gas price from the network
@@ -687,7 +681,7 @@ export async function deployDiamondFacets(
         // Deploy the facet contract with a slightly increased gas price for reliability
         facet = await FacetContract.deploy({
           // add 10% gas
-          gasPrice: gasPrice ? (gasPrice * 110n / 100n) : undefined,
+          gasPrice: gasPrice ? (gasPrice * 110n) / 100n : undefined,
         });
         await facet.deployed(); // Wait for the deployment transaction to confirm
       } catch (e) {
@@ -702,7 +696,9 @@ export async function deployDiamondFacets(
         version: deployedVersion, // Version of the deployed facet
       };
 
-      log(`${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`); // Log successful deployment
+      log(
+        `${name} deployed: ${facet.address} tx_hash: ${facet.deploymentTransaction()?.hash}`,
+      ); // Log successful deployment
     }
   }
 
@@ -710,10 +706,14 @@ export async function deployDiamondFacets(
 }
 
 export async function deployExternalLibraries(networkDeployedInfo: INetworkDeployInfo) {
+  console.log(
+    `Deploying external libraries for Diamond at ${networkDeployedInfo.DiamondAddress} on ${network.name}`,
+  );
+  // ToDo remove unused function
   // // Deploy the InnerVerifier contract
   // const innerVerifierContract = await ethers.getContractFactory('InnerVerifier');
   // const innerVerifier = await innerVerifierContract.deploy();
-
+  //
   // // Deploy the BurnVerifier contract, linking it to the InnerVerifier library
   // const burnVerifierContract = await ethers.getContractFactory('BurnVerifier', {
   //   libraries: {
@@ -721,7 +721,7 @@ export async function deployExternalLibraries(networkDeployedInfo: INetworkDeplo
   //   },
   // });
   // const burnVerifier = await burnVerifierContract.deploy();
-
+  //
   // // Deploy the ZetherVerifier contract, linking it to the InnerVerifier library
   // const zetherVerifierContract = await ethers.getContractFactory('ZetherVerifier', {
   //   libraries: {
@@ -729,11 +729,11 @@ export async function deployExternalLibraries(networkDeployedInfo: INetworkDeplo
   //   },
   // });
   // const zetherVerifier = await zetherVerifierContract.deploy();
-
+  //
   // Deploy the libEncryption library
   // const LibEncryptionContract = await ethers.getContractFactory('libEncryption');
   // const libEncryption = await LibEncryptionContract.deploy();
-
+  //
   // // Update the network deployment information with the addresses of the deployed libraries
   // networkDeployedInfo.ExternalLibraries = {};
   // networkDeployedInfo.ExternalLibraries.BurnVerifier = burnVerifier.address;

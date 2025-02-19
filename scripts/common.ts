@@ -8,6 +8,7 @@ export const expect = chai.expect;
 import chaiAsPromised from 'chai-as-promised';
 import fs from 'fs';
 import util from 'util';
+import { CreateProposalRequest } from '@openzeppelin/defender-sdk-proposal-client';
 
 chai.use(chaiAsPromised);
 
@@ -140,10 +141,10 @@ export const diamondCutFuncAbi = {
   name: 'diamondCut',
 };
 
-// export interface IDefenderViaInfo {
-//   via: ExternalApiCreateProposalRequest['via'],
-//   viaType: ExternalApiCreateProposalRequest['viaType'];
-// }
+export interface IDefenderViaInfo {
+  via: CreateProposalRequest['via'];
+  viaType: CreateProposalRequest['viaType'];
+}
 
 export function createPreviousVersionRecordWithMap(
   facetInfo: FacetDeployedInfo,
