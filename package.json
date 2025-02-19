@@ -12,7 +12,7 @@
     "getgascost": "npx hardhat run scripts/getgascost.ts",
     "getaccessinfo": "npx hardhat run scripts/getaccessinfo.ts"
   },
-  "author": "gvtopcoder",
+  "authors": ["SuperGenius", "Am0rfu5"],
   "license": "MIT",
   "devDependencies": {
     "@gnus.ai/contracts-upgradeable-diamond": "=4.5.0",
@@ -70,5 +70,5 @@
     "ts-node": "^10.9.2",
     "web3": "^4.16.0"
   },
-  "packageManager": "yarn@4.5.3"
+  "packageManager": "yarn@4.6.0"
 }
