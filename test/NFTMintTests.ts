@@ -1,18 +1,11 @@
 import { ethers } from 'hardhat';
-import { BigNumber, utils } from 'ethers';
 import { logEvents } from '.';
-import {
-  dc,
-  debuglog,
-  GNUS_TOKEN_ID,
-  expect,
-  toWei,
-} from '../scripts/common';
+import { dc, debuglog, GNUS_TOKEN_ID, expect, toWei } from '../scripts/common';
 import { assert } from 'chai';
-import { iObjToString } from './iObjToString';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { GeniusDiamond } from '../typechain-types/contracts/GeniusDiamond';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { GeniusDiamond } from '../typechain-types';
 import * as NFTMintChildTests from '../test/NFTMintChildTests';
+import { GNUSNFTFactory } from '../typechain-types';
 
 // Exporting a test suite for minting NFTs through the GNUS NFT Factory
 export function suite() {
@@ -22,7 +15,7 @@ export function suite() {
     let owner: string;
     let gdAddr1: GeniusDiamond;
     let gdAddr2: GeniusDiamond;
-    const addr1ParentNFT: BigNumber = BigNumber.from(1); // Reference to the parent NFT
+    const addr1ParentNFT: bigint = 1n; // Reference to the parent NFT
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
 
     // `before` hook to set up the testing environment
@@ -34,15 +27,15 @@ export function suite() {
       owner = signers[0].address;
 
       // Connect the `gnusDiamond` contract to different signers
-      gdAddr1 = await gnusDiamond.connect(signers[1]);
-      gdAddr2 = await gnusDiamond.connect(signers[2]);
+      gdAddr1 = (await gnusDiamond.connect(signers[1])) as GNUSNFTFactory;
+      gdAddr2 = (await gnusDiamond.connect(signers[2])) as GNUSNFTFactory;
     });
 
     // Test case to validate minting restrictions for unauthorized users
     it('Testing NFT Factory to mint child tokens of GNUS with address 2', async () => {
       // Attempt to mint child tokens as an unauthorized user, expecting rejection
       await expect(
-        gdAddr2['mint(address,uint256,uint256,bytes)'](
+        gdAddr2. .mint(
           signers[2].address, // Recipient address
           addr1ParentNFT, // Parent NFT ID
           toWei(5), // Amount to mint
