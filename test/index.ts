@@ -50,7 +50,7 @@ export async function logEvents(tx: ContractTransaction) {
   }
 }
 
-// Main test suite for the Genius Diamond DApp, which includes initialization, deployment, 
+// Main test suite for the Genius Diamond DApp, which includes initialization, deployment,
 // and verification of the GNUS Diamond contract and its facets.
 describe.only('Genius Diamond DApp Testing', async function () {
   // Declare a variable to store the deployed GeniusDiamond contract instance.
