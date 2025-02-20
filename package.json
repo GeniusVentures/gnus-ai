@@ -15,7 +15,10 @@
     "getgascost": "npx hardhat run scripts/getgascost.ts",
     "getaccessinfo": "npx hardhat run scripts/getaccessinfo.ts"
   },
-  "authors": ["SuperGenius", "Am0rfu5"],
+  "authors": [
+    "SuperGenius",
+    "Am0rfu5"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@gnus.ai/contracts-upgradeable-diamond": "=4.5.0",
@@ -58,7 +61,7 @@
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-diamond-abi": "^3.0.1",
     "hardhat-gas-reporter": "^1.0.8",
-    "hardhat-multichain": "git+https://github.com/GeniusVentures/hardhat-multchain.git#2bba26",
+    "hardhat-multichain": "git+https://github.com/GeniusVentures/hardhat-multchain.git",
     "prettier": "^3.4.2",
     "prettier-plugin-solidity": "^1.4.1",
     "solhint": "^5.0.3",
