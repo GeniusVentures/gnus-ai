@@ -232,7 +232,7 @@ class MultiChainTestDeployer {
         await this.ethersMultichain.getContractFactory('contracts/GeniusDiamond.sol:GeniusDiamond')
       ).attach(diamondAddress);
       dc.gnusDiamond = (
-        await this.ethersMultichain.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
+        await this.ethersMultichain.getContractFactory('hardhat-diamond-abi/HardhatDiamondABI.sol:GeniusDiamond')
       ).attach(diamondAddress);
       
       const DiamondCutFacet = await this.ethersMultichain.getContractFactory('DiamondCutFacet');

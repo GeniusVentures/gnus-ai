@@ -51,7 +51,7 @@ export async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
     await ethers.getContractFactory('contracts/GeniusDiamond.sol:GeniusDiamond')
   ).attach(diamondAddress);
   dc.GeniusDiamond = (
-    await ethers.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
+    await ethers.getContractFactory('hardhat-diamond-abi/HardhatDiamondABI.sol:GeniusDiamond')
   ).attach(diamondAddress);
 
   log(`Diamond attached ${diamondAddress}`);

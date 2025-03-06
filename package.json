@@ -52,7 +52,7 @@
     "ethers": "^5.5.4",
     "hardhat": "^2.9.0",
     "hardhat-abi-exporter": "^2.8.0",
-    "hardhat-diamond-abi": "^2.0.0",
+    "hardhat-diamond-abi": "git+https://github.com/Am0rfu5/hardhat-diamond-abi",
     "hardhat-gas-reporter": "^1.0.8",
     "hardhat-multichain": "git+https://github.com/GeniusVentures/hardhat-multchain.git#2bba26",
     "prettier": "^2.5.1",

@@ -113,7 +113,7 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
 
   // Attach the GeniusDiamond contract to the `dc` object using the ABI for interaction through `hardhat-diamond-abi`.
   dc.GeniusDiamond = (
-    await ethers.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
+    await ethers.getContractFactory('hardhat-diamond-abi/HardhatDiamondABI.sol:GeniusDiamond')
   ).attach(gnusDiamond.address);
   
   // Update the deployment info for DiamondCutFacet, since the GeniusDiamond contract constructor already references it.
@@ -140,7 +140,7 @@ export async function deployFuncSelectors(
   let provider;
   let contractOwner;
   if (networkDeployInfo.provider?.connection.url?.startsWith('http')) {
-    provider = networkDeployInfo.provider;
+    provider = networkDeployInfo.provider || undefined;
     ethers.provider = networkDeployInfo.provider;
     contractOwner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
   } 
@@ -526,6 +526,9 @@ export async function afterDeployCallbacks(
     const signers = await ethers.getSigners();
     owner = signers[0];
   }
+  
+  // await LoadFacetDeployments();
+  
   // Reference the GeniusDiamond contract instance for interaction
   const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
 
@@ -623,9 +626,10 @@ export async function deployAndInitDiamondFacets(
   await deployDiamondFacets(networkDeployInfo, facetsToDeploy);
 
   // Deep copy the updated network deployment info after facet deployment
-  const deployInfoWithOldFacet: INetworkDeployInfo = Object.assign(
+  let deployInfoWithOldFacet: INetworkDeployInfo = Object.assign(
     JSON.parse(JSON.stringify(networkDeployInfo)),
   );
+  deployInfoWithOldFacet.provider = networkDeployInfo.provider;
 
   // Iterate over deployed facets to reconcile their deployment history
   for (const key in deployInfoWithOldFacet.FacetDeployedInfo) {

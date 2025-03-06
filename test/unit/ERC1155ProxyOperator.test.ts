@@ -132,8 +132,11 @@ describe('ERC1155 Proxy Operator Tests', async function () {
       });
 
       describe('creators', function () {
+      
+        
         // TODO: Implement ERC1155ProxyOperator creators test.
         // it('should return the creator of a given token ID', async function () {
+        // // Assign the creator role to the signer 
         //   const tokenId = 1;
         //   const creator = signer1;
 
