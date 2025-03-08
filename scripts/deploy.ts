@@ -55,7 +55,7 @@ export async function deployGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
   let contractOwner;
   // If the Multichain testing scaffold has created a spawned process with a JSON-RPC URL
   // this (and the chainID and name) should have been added to the networkDeployInfo object.
-  if (networkDeployInfo.provider?.connection.url.startsWith('http')) {
+  if (networkDeployInfo.provider && (await networkDeployInfo.provider.getNetwork()).chainId !== 31337) {
     provider = networkDeployInfo.provider;
     ethers.provider = provider;  
     contractOwner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
@@ -139,11 +139,13 @@ export async function deployFuncSelectors(
   
   let provider;
   let contractOwner;
-  if (networkDeployInfo.provider?.connection.url?.startsWith('http')) {
+  if (networkDeployInfo.provider && (await networkDeployInfo.provider.getNetwork()).chainId !== 31337) {
     provider = networkDeployInfo.provider || undefined;
     ethers.provider = networkDeployInfo.provider;
     contractOwner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
-  } 
+  } else {
+    contractOwner = (await ethers.getSigners())[0];
+  }
   // Array to store facet cut operations (add, replace, remove selectors)
   const cut: FacetInfo[] = [];
   // Retrieve deployed facet information from network deployment data
@@ -517,7 +519,7 @@ export async function afterDeployCallbacks(
 ) {
   let provider;
   let owner;
-  if (networkDeployInfo.provider?.connection.url.startsWith('http')) {
+  if (networkDeployInfo.provider && (await networkDeployInfo.provider?.getNetwork()).chainId !== 31337) {
     provider = networkDeployInfo.provider
     ethers.provider = provider;  
     owner = await ethers.provider.getSigner(networkDeployInfo.DeployerAddress);
@@ -662,10 +664,13 @@ export async function deployDiamondFacets(
 
   let provider;
   let contractOwner;
-  if (networkDeployInfo.provider?.connection.url.startsWith('http')) {
+  if (networkDeployInfo.provider && (await networkDeployInfo.provider?.getNetwork()).chainId !== 31337) {
     provider = networkDeployInfo.provider;
     ethers.provider = provider;  
     contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  }
+  else {
+    contractOwner = (await ethers.getSigners())[0];
   }
   
   // Retrieve the facets that have already been deployed from the network deployment info

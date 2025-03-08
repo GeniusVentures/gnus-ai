@@ -144,7 +144,7 @@ class MultiChainTestDeployer {
       let facetsToDeploy: FacetToDeployInfo = Facets;
       await deployDiamondFacets(this.deployInfo, facetsToDeploy);
       
-      // // Deploy and Initialize Diamond Facets
+      // Deploy and Initialize Diamond Facets
       await deployAndInitDiamondFacets(this.deployInfo, facetsToDeploy);
       
     } catch (error) {
@@ -245,7 +245,7 @@ class MultiChainTestDeployer {
       await this.testInterfaceCompatibility();
       
       // TODO This should be a test in a separate function ERC173
-      if (this.chainName !== 'hardhat') {
+      // if (this.chainName !== 'hardhat') {
         // check if the owner is the deployer and transfer ownership to the deployer
         const deployerGnusDiamond = this.gnusDiamond.connect(this.deployer);
         const currentContractOwner = await deployerGnusDiamond.owner();
@@ -270,7 +270,7 @@ class MultiChainTestDeployer {
             throw new Error(`Ownership transfer failed. Current owner: ${newContractOwner}`);
           }
         }
-      }
+      // }
       
       // Backup pre-upgrade Upgrade info
       const deployInfoBeforeUpgraded = JSON.parse(JSON.stringify(this.deployInfo));
