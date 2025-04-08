@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
+import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-diamond-abi';
@@ -8,9 +9,9 @@ import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
-import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-web3';
 import 'hardhat-multichain';
+import '@gnus.ai/hardhat-diamonds'
 
 dotenv.config();
 
@@ -28,13 +29,13 @@ dotenv.config();
  * - AMOY_BLOCK: Block number for the Amoy network.
  * - SEPOLIA_BLOCK: Block number for the Sepolia network.
  */
-const { 
+const {
   HH_CHAIN_ID,
-  DEPLOYER_PRIVATE_KEY, 
-  SEPOLIA_RPC, 
+  DEPLOYER_PRIVATE_KEY,
+  SEPOLIA_RPC,
   MAINNET_RPC,
   POLYGON_RPC,
-  POLYGON_AMOY_RPC, 
+  POLYGON_AMOY_RPC,
   MAINNET_BLOCK,
   POLYGON_BLOCK,
   POLYGON_AMOY_BLOCK,
@@ -136,22 +137,22 @@ const config: HardhatUserConfig = {
       mainnet: {
         rpcUrl: mainnetUrl,
         blockNumber: mainnetBlock,
-      }, 
+      },
       polygon: {
         rpcUrl: polyUrl,
         blockNumber: polyBlock,
-      }, 
+      },
       sepolia: {
         rpcUrl: sepoliaUrl,
         blockNumber: sepoliaBlock,
         chainId: 11155111
-      }, 
+      },
       polygon_amoy: {
         rpcUrl: amoyUrl,
         blockNumber: amoyBlock,
         chainId: 80002
       },
-      hardhat: { 
+      hardhat: {
         rpcUrl: multichainHardhat,
       },
       base: {
@@ -176,11 +177,11 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: process.env.FORK_URL
         ? {
-            url: process.env.FORK_URL,
-            blockNumber: process.env.FORK_BLOCK_NUMBER
-              ? parseInt(process.env.FORK_BLOCK_NUMBER)
-              : undefined,
-          }
+          url: process.env.FORK_URL,
+          blockNumber: process.env.FORK_BLOCK_NUMBER
+            ? parseInt(process.env.FORK_BLOCK_NUMBER)
+            : undefined,
+        }
         : undefined,
       chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
       // Chains without Hardhat built in definitions
@@ -213,7 +214,7 @@ const config: HardhatUserConfig = {
             london: 10000000,
           },
         },
-         // Base Testnet chain
+        // Base Testnet chain
         84532: {
           hardforkHistory: {
             london: 10000000,
@@ -292,9 +293,9 @@ const config: HardhatUserConfig = {
           ? process.env.POLYGONSCAN_API_KEY
           : '',
       polygon_amoy:
-          process.env.POLYGONSCAN_API_KEY !== undefined
-              ? process.env.POLYGONSCAN_API_KEY
-              : '',
+        process.env.POLYGONSCAN_API_KEY !== undefined
+          ? process.env.POLYGONSCAN_API_KEY
+          : '',
       sepolia: process.env.ETHERSCAN_API_KEY || '',
       mainnet: process.env.ETHERSCAN_API_KEY || '',
       bsc: process.env.BSCSCAN_API_KEY || '',
@@ -351,6 +352,12 @@ const config: HardhatUserConfig = {
     flat: true,
     spacing: 2,
     pretty: true,
+  },
+  diamonds: {
+    'GeniusDiamond': {
+      deploymentsPath: 'diamonds',
+      contractsPath: 'contracts/gnus-ai',
+    }
   },
   diamondAbi: {
     name: 'GeniusDiamond',

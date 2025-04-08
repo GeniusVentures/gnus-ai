@@ -1,9 +1,46 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {
+          "name": "Multichain Diamonds",
+          "type": "node",
+          "request": "launch",
+          "preLaunchTask": "tsc: build - tsconfig.json",
+          "outFiles": [
+            "${workspaceFolder}/dist/**/*.js"
+          ],
+          "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+          "args": [
+            "test-multichain",
+            "${workspaceFolder}/test/deployment/GeniusDiamondMultichainDeployment.test.ts",
+            // "${workspaceFolder}/multichain/tests/GNUSERC20Tests.ts",
+            // "${workspaceFolder}/test/unit/NFTFactoryTests.ts",
+            // "${workspaceFolder}/test/unit/MultiChainForkDeployTests.ts",
+            // "${workspaceFolder}/test/unit/GNUSBridgeTests.ts",
+            // "${workspaceFolder}/test/unit/Erc20BatchTests.ts",
+            "--chains",
+            "hardhat",
+            // "polygon_amoy",
+            // "sepolia",
+            "--logs",
+            "logs"
+          ],
+          "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v18.20.5/bin/node",
+          "runtimeArgs": [
+            "--preserve-symlinks"
+          ],
+          "skipFiles": [
+            "<node_internals>/**",
+            "${workspaceFolder}/node_modules/**/*.js",
+          ],
+          "resolveSourceMapLocations": [
+            "${workspaceFolder}/dist/**/*.js",
+            "${workspaceFolder}/**/*.ts",
+          ],
+          "sourceMaps": true,
+          "smartStep": true,
+          "console": "integratedTerminal",
+        },
         {
             "name": "Unit Tests",
             "type": "node",
@@ -86,6 +123,46 @@
             "sourceMaps": true,
             "smartStep": true,
             "console": "integratedTerminal",
+        },
+        {
+          "name": "Diamond Deployment Tests",
+          "type": "node",
+          "request": "launch",
+          "preLaunchTask": "tsc: build - tsconfig.json",
+          "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+          "args": [ 
+              "test-multichain", 
+              "${workspaceFolder}/test/deployment/DiamondMultichainDeployment.test.ts",
+              "${workspaceFolder}/test/deployment/DiamondDeployment.test.ts",
+              "--chains", 
+              "hardhat",
+              // "polygon_amoy", 
+              // "mainnet",
+              // "polygon",
+              // "bsc",
+              // "base",
+              // "bsc_testnet",
+              // "base_sepolia",
+              // "hardhat,sepolia",
+              // "sepolia,polygon_amoy",
+              // "hardhat,sepolia,polygon_amoy",  
+              "--logs", "logs",
+          ],
+          "runtimeArgs": [ "--preserve-symlinks" ],
+          "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+          "skipFiles": [
+              "<node_internals>/**", 
+              "${workspaceFolder}/node_modules/**/*.js", 
+          ],
+          "resolveSourceMapLocations": [
+              "${workspaceFolder}/dist/**/*.js", 
+              "${workspaceFolder}/**/*.ts",
+              "${workspaceFolder}/node_modules/hardhat/**/*.js",
+              "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+          ],
+          "sourceMaps": true,
+          "smartStep": true,
+          "console": "integratedTerminal",
         },
         {
             "name": "Multichain Plugin Sepolia,Amoy Test",

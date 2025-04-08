@@ -157,7 +157,7 @@ class MultiChainTestDeployer {
     } finally {
       this.deployInProgress = false;
       this.deployCompleted = true;
-      
+
       return Promise.resolve(true);
     }
   }
@@ -247,7 +247,7 @@ class MultiChainTestDeployer {
       // TODO This should be a test in a separate function ERC173
       // if (this.chainName !== 'hardhat') {
         // check if the owner is the deployer and transfer ownership to the deployer
-        const deployerGnusDiamond = this.gnusDiamond.connect(this.deployer);
+        const deployerGnusDiamond = this.gnusDiamond.connect(this.deployer);        
         const currentContractOwner = await deployerGnusDiamond.owner();
         if (currentContractOwner.toLowerCase() === (await this.deployer.getAddress()).toLowerCase()) {
           console.log(`Ownership is correct, current contractOwner:  ${currentContractOwner}`);
