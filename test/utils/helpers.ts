@@ -10,3 +10,7 @@ export function getInterfaceID(contractInterface: utils.Interface) {
 
   return interfaceID;
 }
+
+export function toWei(value: number | string): BigNumber {
+  return ethers.utils.parseEther(value.toString());
+}

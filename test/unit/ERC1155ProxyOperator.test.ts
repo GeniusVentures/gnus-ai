@@ -1,71 +1,64 @@
 import { debug } from 'debug';
-import { ethers } from 'hardhat';
+import { pathExistsSync } from "fs-extra";
 import { expect, assert } from 'chai';
+import { ethers } from 'hardhat';
 import { utils } from 'ethers';
+import hre from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { debuglog, GNUS_TOKEN_ID, toWei, } from '../../scripts/common';
-import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { deployments } from '../../scripts/deployments';
-import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
+import { getInterfaceID, toWei } from '../utils/helpers';
+import { Diamond, deleteDeployInfo } from '@gnus.ai/diamonds';
+import { GeniusDiamond } from '../../typechain-types';
+import { GNUS_TOKEN_ID } from '../../scripts/common';
+import { debuglog } from 'util';
 import { ERC1155ProxyOperator } from '../../typechain-types';
+import { LocalDiamondDeployer } from '../setup/LocalDiamondDeployer';
 
 describe('ERC1155 Proxy Operator Tests', async function () {
-  this.timeout(0); // Extend timeout for deployments and testing
-  const log: debug.Debugger = debug('GNUSDeploy:log');
-  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+  const diamondName = 'GeniusDiamond';
+  const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
+  this.timeout(0); // Extended indefinitely for diamond deployment time
 
-  // Check the process.argv for the Hardhat network name
+  let chains = multichain.getProviders() || new Map<string, JsonRpcProvider>();
 
   if (process.argv.includes('test-multichain')) {
-    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
-    if (chainNames.includes('hardhat')) {
-      chains = chains.set('hardhat', ethers.provider);
+    const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (networkNames.includes('hardhat')) {
+      chains.set('hardhat', ethers.provider);
     }
   } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    chains = chains.set('hardhat', ethers.provider);
+    chains.set('hardhat', ethers.provider);
   }
 
-  for (const [chainName, provider] of chains.entries()) {
-    
-    describe(`${chainName} ERC20 Batch Transfers`, async function () {
-      let deployer: MultiChainTestDeployer;
-      let deployment: boolean | void;
-      let upgrade: boolean | void;
+  for (const [networkName, provider] of chains.entries()) {
+    describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
+      let diamond: Diamond;
       let signers: SignerWithAddress[];
       let signer0: string;
       let signer1: string;
       let signer2: string;
+      let owner: string;
+      let ownerSigner: SignerWithAddress;
+      let geniusDiamond: GeniusDiamond;
       let signer0Diamond: GeniusDiamond;
       let signer1Diamond: GeniusDiamond;
       let signer2Diamond: GeniusDiamond;
-      // get the signer for the owner
-      let owner: string;
-      let ownerSigner: SignerWithAddress;
       let ownerDiamond: GeniusDiamond;
-      let gnusDiamond: GeniusDiamond;
+      let erc1155ProxyOperator: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamond;
-
       before(async function () {
-        const deployConfig = {
-          chainName: chainName,
-          provider: provider,
-        };
-        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
-        deployment = await deployer.deploy();
-        expect(deployment).to.be.true;
-        upgrade = await deployer.upgrade();
-        expect(upgrade).to.be.true;
-        // Retrieve the deployed GNUS Diamond contract
-        gnusDiamond = await deployer.getDiamond();
-        if (!gnusDiamond) {
-          throw new Error(`gnusDiamond is null for chain ${chainName}`);
-        }
+        const diamondDeployer = await LocalDiamondDeployer.getInstance(diamondName, networkName, provider);
+        await diamondDeployer.setVerbose(true);
+        diamond = await diamondDeployer.getDiamondDeployed();
+        let deployedDiamondData = diamond.getDeployedDiamondData();
+
+        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as GeniusDiamond;
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider;
@@ -75,15 +68,15 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         signer0 = signers[0].address;
         signer1 = signers[1].address;
         signer2 = signers[2].address;
-        signer0Diamond = gnusDiamond.connect(signers[0]);
-        signer1Diamond = gnusDiamond.connect(signers[1]);
-        signer2Diamond = gnusDiamond.connect(signers[2]);
+        signer0Diamond = geniusDiamond.connect(signers[0]);
+        signer1Diamond = geniusDiamond.connect(signers[1]);
+        signer2Diamond = geniusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = deployments[chainName]?.DeployerAddress || signer0;
+        owner = deployedDiamondData.DeployerAddress;  //  this will be = signer0 for hardhat;
         ownerSigner = await ethersMultichain.getSigner(owner);
-        ownerDiamond = gnusDiamond.connect(ownerSigner);
-      
+        ownerDiamond = geniusDiamond.connect(ownerSigner);
+
         const ERC1155ProxyOperatorFactory = await ethers.getContractFactory('ERC1155ProxyOperator');
         // erc1155ProxyOperator = ERC1155ProxyOperatorFactory.attach(ownerDiamond.address);
         erc1155ProxyOperator = ownerDiamond;
@@ -132,8 +125,8 @@ describe('ERC1155 Proxy Operator Tests', async function () {
       });
 
       describe('creators', function () {
-      
-        
+
+
         // TODO: Implement ERC1155ProxyOperator creators test.
         // it('should return the creator of a given token ID', async function () {
         // // Assign the creator role to the signer 
@@ -152,4 +145,3 @@ describe('ERC1155 Proxy Operator Tests', async function () {
     });
   };
 });
-  

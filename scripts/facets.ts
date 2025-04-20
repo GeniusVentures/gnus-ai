@@ -1,6 +1,6 @@
-import { 
+import {
   FacetToDeployInfo //, UpgradeInitInfo
- } from './common';
+} from './common';
 import { glob } from 'glob';
 
 export const Facets: FacetToDeployInfo = {
@@ -9,15 +9,17 @@ export const Facets: FacetToDeployInfo = {
   GeniusOwnershipFacet: { priority: 30 },
   GNUSNFTFactory: {
     priority: 40,
-    versions: { 0.0: {  deployInit: 'GNUSNFTFactory_Initialize()' }, 2.3: { deployInit: 'GNUSNFTFactory_Initialize()', upgradeInit: "GNUSNFTFactory_Initialize230()", fromVersions: [0.0, 2.0] }  },
+    versions: { 0.0: { deployInit: 'GNUSNFTFactory_Initialize()' }, 2.3: { deployInit: 'GNUSNFTFactory_Initialize()', upgradeInit: "GNUSNFTFactory_Initialize230()", fromVersions: [0.0, 2.0] }, 2.5:  },
   },
   GNUSBridge: {
     priority: 110,
-    versions: { 0.0: {}, 2.1: {},  2.2: {
-      deployInit: 'GNUSBridge_Initialize220',      
-    }, 2.4: {}, 2.5: { deployInit: 'GNUSBridge_Initialize250()' } },
+    versions: {
+      0.0: {}, 2.1: {}, 2.2: {
+        deployInit: 'GNUSBridge_Initialize220',
+      }, 2.4: {}, 2.5: { deployInit: 'GNUSBridge_Initialize250()' }
+    },
   },
-  GeniusAI: { priority: 70, versions: { 0.0: { deployInit: 'GeniusAI_Initialize()' }   }  },
+  GeniusAI: { priority: 70, versions: { 0.0: { deployInit: 'GeniusAI_Initialize()' } } },
   GNUSNFTCollectionName: { priority: 80 },
   ERC20TransferBatch: { priority: 90, versions: { 2.0: {} } },
   GNUSContractAssets: { priority: 100 },

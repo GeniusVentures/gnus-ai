@@ -354,14 +354,19 @@ const config: HardhatUserConfig = {
     pretty: true,
   },
   diamonds: {
-    'GeniusDiamond': {
-      deploymentsPath: 'diamonds',
-      contractsPath: 'contracts/gnus-ai',
+    paths: {
+      'GeniusDiamond': {
+        deploymentsPath: 'diamonds',
+        contractsPath: 'contracts/gnus-ai',
+      }
     }
   },
   diamondAbi: {
     name: 'GeniusDiamond',
     strict: false,
+    include: [
+      'gnus-ai/*',
+    ],
     exclude: [
       'hardhat-diamond-abi/.*',
       'Zether',

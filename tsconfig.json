@@ -9,6 +9,6 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["./scripts", "./test", "./typechain-types"],
+  "include": ["./scripts", "./test", "./typechain-types", "test/setup/DiamondsMultichainTestDeployer.ts"],
   "files": ["./hardhat.config.ts"]
 }

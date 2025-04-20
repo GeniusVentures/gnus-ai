@@ -58,7 +58,7 @@
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-diamond-abi": "git+https://github.com/Am0rfu5/hardhat-diamond-abi",
     "hardhat-gas-reporter": "^1.0.8",
-    "hardhat-multichain": "git+https://github.com/GeniusVentures/hardhat-multchain.git#2bba26",
+    "hardhat-multichain": "git+https://github.com/GeniusVentures/hardhat-multchain.git#2bba2620a7c76abcf754aa6afa7f4b53fce18a05",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.7",

@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-          "name": "Multichain Diamonds",
+          "name": "Diamonds Deployment",
           "type": "node",
           "request": "launch",
           "preLaunchTask": "tsc: build - tsconfig.json",
@@ -12,12 +12,12 @@
           "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
           "args": [
             "test-multichain",
-            "${workspaceFolder}/test/deployment/GeniusDiamondMultichainDeployment.test.ts",
-            // "${workspaceFolder}/multichain/tests/GNUSERC20Tests.ts",
-            // "${workspaceFolder}/test/unit/NFTFactoryTests.ts",
-            // "${workspaceFolder}/test/unit/MultiChainForkDeployTests.ts",
-            // "${workspaceFolder}/test/unit/GNUSBridgeTests.ts",
-            // "${workspaceFolder}/test/unit/Erc20BatchTests.ts",
+            "${workspaceFolder}/test/deployment/GeniusDiamondDeployment.test.ts",
+            "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
+            "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
+            "${workspaceFolder}/test/unit/NFTFactory.test.ts",
+            "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
+            "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
             "--chains",
             "hardhat",
             // "polygon_amoy",
@@ -50,6 +50,7 @@
             "args": [ 
                 "test-multichain", 
                 "${workspaceFolder}/test/unit/NFTFactory.test.ts",
+                "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
                 "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
                 "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
                 "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
