@@ -8,7 +8,9 @@ import {
   impersonateSigner,
   setEtherBalance,
   DiamondConfig,
-  cutKey
+  DiamondPathsConfig,
+  cutKey,
+  impersonateAndFundSigner
 } from '@gnus.ai/diamonds';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers } from 'hardhat';
@@ -21,6 +23,7 @@ import '@gnus.ai/hardhat-diamonds';
 export interface LocalDiamondDeployerConfig extends DiamondConfig {
   provider?: JsonRpcProvider;
   signer?: SignerWithAddress;
+  localDiamondDeployerKey?: string;
 }
 
 export class LocalDiamondDeployer {
@@ -33,67 +36,91 @@ export class LocalDiamondDeployer {
   private provider: JsonRpcProvider;
   private signer: SignerWithAddress;
   private diamondName: string;
-  private networkName: string;
-  private chainId: number;
+  private networkName: string = 'hardhat';
+  private chainId: number = 31337;
   private repository: DeploymentRepository;
 
   constructor(config: LocalDiamondDeployerConfig, repository: DeploymentRepository) {
-    this.config = config;
+    this.config = config as DiamondConfig;
     this.diamondName = config.diamondName;
-    this.networkName = config.networkName || 'hardhat';
-    this.chainId = config.chainId || 31337;
     this.provider = config.provider || ethers.provider;
+    if (!config.networkName) {
+      // TODO account for "unknown" as hardhat 
+      config.networkName = (this.provider as JsonRpcProvider)._network.name;
+    } else {
+      this.networkName = config.networkName;
+    }
+    if (!config.chainId) {
+      config.chainId = (this.provider as JsonRpcProvider)._network.chainId;
+    } else {
+      this.chainId = config.chainId;
+    }
     this.signer = config.signer!;
+    // this.config.signer = this.signer;
     this.repository = repository!;
 
-    // TODO make provider signer and repository optional
+    // TODO make provider signer and repository optional (this may be handled in diamond constructor already)
     this.diamond = new Diamond(this.config, repository);
     this.diamond.setProvider(this.provider);
     this.diamond.setSigner(this.signer);
   }
 
-  public static async getInstance(
-    diamondName: string,
-    networkName?: string,
-    provider?: JsonRpcProvider
-  ): Promise<LocalDiamondDeployer> {
-    if (!provider) {
-      provider = ethers.provider;
+  public static async getInstance(config: LocalDiamondDeployerConfig): Promise<LocalDiamondDeployer> {
+    if (!config.provider) {
+      config.provider = ethers.provider;
+    } else {
+      ethers.provider = config.provider;
     }
-    if (!networkName) {
-      networkName = (await provider.getNetwork()).name;
+    if (!config.networkName) {
+      const networkName = (await config.provider?.getNetwork()).name || 'hardhat';
+      config.networkName = networkName === 'unknown' ? 'hardhat' : networkName;
     }
-    const chainId = (await provider.getNetwork()).chainId || 31337;
-    const key = await (cutKey(diamondName, networkName, chainId.toString()));
-    if (!this.instances.has(key)) {
-      const hardhatDiamonds: DiamondConfig = hre.diamonds?.getDiamondConfig(diamondName);
-      const config: DiamondConfig = {
-        diamondName: diamondName,
-        networkName: networkName,
-        chainId: chainId,
-        deploymentsPath: hardhatDiamonds?.deploymentsPath || 'diamonds',
-        contractsPath: hardhatDiamonds?.contractsPath || 'contracts',
-        callbacksPath: hardhatDiamonds?.callbacksPath || join('diamonds', diamondName, 'callbacks'),
-      };
+    if (!config.chainId) {
+      config.chainId = (await config.provider.getNetwork()).chainId || 31337;
+    }
 
+    const key = config.localDiamondDeployerKey || await (cutKey(config.diamondName, config.networkName, config.chainId.toString()));
+
+    if (!this.instances.has(key)) {
+      const hardhatDiamonds: DiamondPathsConfig = hre.diamonds?.getDiamondConfig(config.diamondName);
+      const deployedDiamondDataFileName = `${config.diamondName.toLowerCase()}-${config.networkName.toLowerCase()}-${config.chainId.toString()}.json`;
+      const defaultDeployedDiamondDataFilePath = join(
+        'diamonds',
+        config.diamondName,
+        'deployments',
+        deployedDiamondDataFileName
+      );
+      const defaultConfigFilePath = join(
+        'diamonds',
+        config.diamondName,
+        `${config.diamondName.toLowerCase()}.config.json`
+      );
+
+      config.deploymentsPath = config.deploymentsPath || hardhatDiamonds?.deploymentsPath
+        || 'diamonds';
+      config.contractsPath = hardhatDiamonds?.contractsPath || 'contracts';
+      config.callbacksPath = hardhatDiamonds?.callbacksPath
+        || join('diamonds', config.diamondName, 'callbacks');
+      config.deployedDiamondDataFilePath = config.deployedDiamondDataFilePath
+        || hardhatDiamonds?.deployedDiamondDataFilePath
+        || defaultDeployedDiamondDataFilePath;
+      config.configFilePath = config.configFilePath
+        || hardhatDiamonds?.configFilePath
+        || defaultConfigFilePath;
 
       const repository = new FileDeploymentRepository(config);
-      // repository.setWriteDeployedDiamondData(hardhatDiamonds?.writeDeployedDiamondData ?? true);
-      repository.setWriteDeployedDiamondData(hardhatDiamonds?.writeDeployedDiamondData ?? false);
+      repository.setWriteDeployedDiamondData(config.writeDeployedDiamondData || hardhatDiamonds?.writeDeployedDiamondData || false);
       const deployedDiamondData = repository.loadDeployedDiamondData();
 
-      const [signer] = await ethers.getSigners();
-      let diamondSigner: SignerWithAddress;
+      const [signer0] = await ethers.getSigners();
+      // ethers.provider = config.provider;
       if (!deployedDiamondData.DeployerAddress) {
-        diamondSigner = signer;
+        config.signer = signer0;
       } else {
-        diamondSigner = await ethers.getSigner(deployedDiamondData.DeployerAddress);
-        await impersonateSigner(deployedDiamondData.DeployerAddress);
-        await setEtherBalance(deployedDiamondData.DeployerAddress, ethers.utils.parseEther('1'));
+        config.signer = await ethers.getSigner(deployedDiamondData.DeployerAddress);
+        await impersonateAndFundSigner(deployedDiamondData.DeployerAddress, config.provider);
       }
 
-      config.signer = diamondSigner;
-      config.provider = provider;
       const instance = new LocalDiamondDeployer(config, repository);
       this.instances.set(key, instance);
     }
@@ -133,7 +160,7 @@ export class LocalDiamondDeployer {
   public async getDiamondDeployed(): Promise<Diamond> {
     if (this.deployComplete && this.diamond) {
       return this.diamond;
-    } else { }
+    }
     const diamond = await this.deployDiamond();
     return diamond;
   }

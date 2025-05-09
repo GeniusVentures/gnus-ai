@@ -6,8 +6,8 @@ import hre from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { getInterfaceID } from '../../scripts/utils/helpers';
-import { LocalDiamondDeployer } from '../../scripts/setup/LocalDiamondDeployer';
+import { getInterfaceID } from '../../../scripts/utils/helpers';
+import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../../scripts/setup/LocalDiamondDeployer';
 import {
   Diamond,
   getDeployedFacetInterfaces,
@@ -17,14 +17,11 @@ import {
   getDeployedFacets
 } from '@gnus.ai/diamonds';
 import {
-  GeniusDiamond,
-  IERC20Upgradeable__factory,
-  IDiamondCut__factory,
-  IDiamondLoupe__factory
-} from '../..//typechain-types';
+  GeniusDiamond
+} from '../../../typechain-types';
 import { DeployedDiamondData } from '@gnus.ai/diamonds/src';
 
-describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
+describe('🧪 Diamond Pre-Deployment Comparison Tests', async function () {
   const diamondName = 'GeniusDiamond';
   const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
   this.timeout(0); // Extended indefinitely for diamond deployment time
@@ -60,7 +57,17 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 
       let deployedDiamondData: DeployedDiamondData;
       before(async function () {
-        const diamondDeployer = await LocalDiamondDeployer.getInstance(diamondName, networkName, provider);
+        const config = {
+          diamondName: diamondName,
+          networkName: networkName,
+          provider: provider,
+          chainId: (await provider.getNetwork()).chainId,
+          writeDeployedDiamondData: true,
+          deployedDiamondDataFilePath: `diamonds/GeniusDiamond/deployments/geniusdiamond-v2.4-sepolia-31337.json`,
+          configFilePath: `diamonds/GeniusDiamond/geniusdiamond-sepolia-v2.5-step1.config.json`,
+          localDiamondDeployerKey: 'geniusdiamond-sepolia-v2.5-step1',
+        } as LocalDiamondDeployerConfig;
+        const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
         // diamondDeployer.deployDiamond();
         diamond = await diamondDeployer.getDiamond();
         deployedDiamondData = diamond.getDeployedDiamondData();
@@ -82,8 +89,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         signer2Diamond = geniusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = deployedDiamondData.DeployerAddress;  //  this will be = signer0 for hardhat;
+        owner = await diamond.getSigner()?.getAddress()!;
         ownerSigner = await ethersMultichain.getSigner(owner);
+
         ownerDiamond = geniusDiamond.connect(ownerSigner);
       });
 
@@ -95,15 +103,37 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         await provider.send('evm_revert', [snapshotId]);
       });
 
-      it('🧪 Should report any issues with facets and selectors that do not match', async function () {
-        const passFail = await diffDeployedFacets(deployedDiamondData?.DiamondAddress!, diamond.provider!, deployedDiamondData);
-        expect(passFail).to.be.true;
+      it(`🧪 Should validate that the Diamond Address and Deployer Address are correct`, async function () {
+        const diamondAddress = deployedDiamondData.DiamondAddress;
+        const deployerAddress = deployedDiamondData.DeployerAddress;
+
+        // Retrieve the deployed diamond address from the contract
+        const diamondAddressFromContract = await ownerDiamond.address as string;
+        expect(diamondAddressFromContract).to.equal(diamondAddress);
+        // Retrieve the deployer address from the contract
+        const deployerAddressFromContract = await geniusDiamond.owner() as string;
+        expect(deployerAddressFromContract).to.equal(deployerAddress);
       });
 
-      it('🧪 Should compare the deployed facets with the config', async function () {
-        const onChainFacets = await getDeployedFacets(deployedDiamondData.DiamondAddress!, ownerSigner);
+      it('🧪 Should report any issues with deployed function selectors matching previously deployed diamond data',
+        async function () {
+          // const deployedDiamondData = diamond.getDeployedDiamondData();
+          const passFail = await diffDeployedFacets(
+            deployedDiamondData,
+            diamond.provider!,
+          );
+          expect(passFail).to.be.true;
+        });
 
-        const comparison = compareFacetSelectors(deployedDiamondData.FacetDeployedInfo!, onChainFacets);
+      it('🧪 Should compare the deployed facets with previously deployed diamond data', async function () {
+        const onChainFacets = await getDeployedFacets(
+          deployedDiamondData.DiamondAddress!,
+          ownerSigner,
+          undefined,
+          // true  // uncheck for console list of deployedContracts
+        );
+
+        const comparison = compareFacetSelectors(deployedDiamondData.DeployedFacets!, onChainFacets);
         let passFail: boolean = true;;
         for (const [facetName, diff] of Object.entries(comparison)) {
           if (diff.extraOnChain.length || diff.missingOnChain.length) {
@@ -119,17 +149,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
             }
           }
         }
+
         expect(passFail).to.be.true;
         console.log("✅ All facets match!");
-      });
-
-      it('🧪 Should compare the deployed facet initializer setup with the config', async function () {
-        const facetInit = diamond.getDeployConfig().protocolInitFacet;
-        const protocolVersion = diamond.getDeployConfig().protocolVersion;
-        const initFunctionName = diamond.getDeployConfig().facets[facetInit!].versions?.[protocolVersion]?.deployInit;
-        const protocolFacetOk = await isProtocolInitRegistered(deployedDiamondData, facetInit!, initFunctionName!);
-        console.log(protocolFacetOk ? "✅ Protocol initializer present." : "❌ Protocol initializer missing.");
-        expect(protocolFacetOk).to.be.true;
       });
     });
   }

@@ -12,7 +12,6 @@
     "upgrade": "npx hardhat run scripts/upgrade.ts",
     "deploy": "npx hardhat run scripts/deploy.ts",
     "verify": "npx hardhat run scripts/VerifyContracts.ts",
-    "exec": "cd zokrates; npm exec ts-node build.ts",
     "getgascost": "npx hardhat run scripts/getgascost.ts",
     "getaccessinfo": "npx hardhat run scripts/getaccessinfo.ts"
   },
@@ -20,7 +19,7 @@
   "license": "MIT",
   "devDependencies": {
     "@gnus.ai/contracts-upgradeable-diamond": "=4.5.0",
-    "@gnus.ai/diamonds": "https://github.com/GeniusVentures/diamonds#main",
+    "@gnus.ai/diamonds": "https://github.com/GeniusVentures/diamonds",
     "@gnus.ai/hardhat-diamonds": "https://github.com/GeniusVentures/hardhat-diamonds",
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",

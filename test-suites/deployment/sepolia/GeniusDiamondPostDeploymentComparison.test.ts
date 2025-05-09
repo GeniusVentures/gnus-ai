@@ -6,8 +6,8 @@ import hre from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { getInterfaceID } from '../../scripts/utils/helpers';
-import { LocalDiamondDeployer } from '../../scripts/setup/LocalDiamondDeployer';
+import { getInterfaceID } from '../../../scripts/utils/helpers';
+import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../../scripts/setup/LocalDiamondDeployer';
 import {
   Diamond,
   getDeployedFacetInterfaces,
@@ -18,13 +18,10 @@ import {
 } from '@gnus.ai/diamonds';
 import {
   GeniusDiamond,
-  IERC20Upgradeable__factory,
-  IDiamondCut__factory,
-  IDiamondLoupe__factory
-} from '../..//typechain-types';
+} from '../../../typechain-types';
 import { DeployedDiamondData } from '@gnus.ai/diamonds/src';
 
-describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
+describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
   const diamondName = 'GeniusDiamond';
   const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
   this.timeout(0); // Extended indefinitely for diamond deployment time
@@ -60,7 +57,16 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 
       let deployedDiamondData: DeployedDiamondData;
       before(async function () {
-        const diamondDeployer = await LocalDiamondDeployer.getInstance(diamondName, networkName, provider);
+        const config = {
+          diamondName: diamondName,
+          networkName: networkName,
+          provider: provider,
+          chainId: (await provider.getNetwork()).chainId,
+          writeDeployedDiamondData: false,
+          configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
+          deployedDiamondDataFilePath: `diamonds/GeniusDiamond/deployments/geniusdiamond-sepolia-11155112.json`,
+        } as LocalDiamondDeployerConfig;
+        const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
         // diamondDeployer.deployDiamond();
         diamond = await diamondDeployer.getDiamond();
         deployedDiamondData = diamond.getDeployedDiamondData();
@@ -82,8 +88,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         signer2Diamond = geniusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = deployedDiamondData.DeployerAddress;  //  this will be = signer0 for hardhat;
+        owner = await diamond.getSigner()?.getAddress()!;
         ownerSigner = await ethersMultichain.getSigner(owner);
+
         ownerDiamond = geniusDiamond.connect(ownerSigner);
       });
 
@@ -95,15 +102,26 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         await provider.send('evm_revert', [snapshotId]);
       });
 
-      it('🧪 Should report any issues with facets and selectors that do not match', async function () {
-        const passFail = await diffDeployedFacets(deployedDiamondData?.DiamondAddress!, diamond.provider!, deployedDiamondData);
-        expect(passFail).to.be.true;
-      });
+      it('🧪 Should report any issues with facets and selectors that do not match',
+        async function () {
+          const newDeployedDiamondData = diamond.getDeployedDiamondData();
+          const passFail = await diffDeployedFacets(
+            newDeployedDiamondData,
+            diamond.provider!,
+          );
+          expect(passFail).to.be.true;
+        });
 
       it('🧪 Should compare the deployed facets with the config', async function () {
-        const onChainFacets = await getDeployedFacets(deployedDiamondData.DiamondAddress!, ownerSigner);
+        const newDeployedDiamondData = diamond.getDeployedDiamondData();
+        const onChainFacets = await getDeployedFacets(
+          newDeployedDiamondData.DiamondAddress!,
+          ownerSigner,
+          undefined,
+          // true  // uncheck for console list of deployedContracts
+        );
 
-        const comparison = compareFacetSelectors(deployedDiamondData.FacetDeployedInfo!, onChainFacets);
+        const comparison = compareFacetSelectors(deployedDiamondData.DeployedFacets!, onChainFacets);
         let passFail: boolean = true;;
         for (const [facetName, diff] of Object.entries(comparison)) {
           if (diff.extraOnChain.length || diff.missingOnChain.length) {
@@ -119,6 +137,7 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
             }
           }
         }
+
         expect(passFail).to.be.true;
         console.log("✅ All facets match!");
       });

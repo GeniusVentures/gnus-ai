@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { toWei } from '../../scripts/common';
+import { toWei } from '../common';
 
 /**
  * Impersonates a signer account. This is primarily used in Hardhat's testing environment

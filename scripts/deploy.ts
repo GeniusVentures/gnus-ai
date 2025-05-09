@@ -369,7 +369,7 @@ export async function deployFuncSelectors(
       listedContracts.find(
         (e: { address: string }) => e.address.toLowerCase() === diamondCut.address.toLowerCase(),
       )
-    ) {
+    ) {-
       log('Diamond Contract was listed on defender');
     } else {
       // Add the diamond contract to Defender if it isn't listed

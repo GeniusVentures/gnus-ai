@@ -1,42 +1,49 @@
-import { iObjToString } from '../utils/iObjToString';
+import { iObjToString } from '../../scripts/utils/iObjToString';
+import { BigNumber, utils } from 'ethers';
+import { GNUS_TOKEN_ID, toBN } from '../../scripts/common';
+import { debuglog } from 'util';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { logEvents } from '../../scripts/utils/logEvents';
+
 import { debug } from 'debug';
 import { pathExistsSync } from "fs-extra";
-import { expect, assert, use } from 'chai';
+import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
-import { BigNumber, utils } from 'ethers';
 import hre from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { getInterfaceID, toWei } from '../utils/helpers';
+import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
+import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond, deleteDeployInfo } from '@gnus.ai/diamonds';
-import { GeniusDiamond } from '../../typechain-types';
-import { GNUS_TOKEN_ID, toBN } from '../../scripts/common';
-import { debuglog } from 'util';
-import { LocalDiamondDeployer } from '../setup/LocalDiamondDeployer';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-use(chaiAsPromised);
+import {
+  GeniusDiamond,
+  IERC20Upgradeable__factory,
+  IDiamondCut__factory,
+  IDiamondLoupe__factory
+} from '../../typechain-types';
+import { config } from 'dotenv';
 
-import { logEvents } from '../utils/logEvents';
+chai.use(chaiAsPromised);
 
 describe('NFT Factory Tests', async function () {
   const diamondName = 'GeniusDiamond';
   const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
   this.timeout(0); // Extended indefinitely for diamond deployment time
 
-  let chains = multichain.getProviders() || new Map<string, JsonRpcProvider>();
+  let networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
 
   if (process.argv.includes('test-multichain')) {
     const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
     if (networkNames.includes('hardhat')) {
-      chains.set('hardhat', ethers.provider);
+      networkProviders.set('hardhat', ethers.provider);
     }
   } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    chains.set('hardhat', ethers.provider);
+    networkProviders.set('hardhat', ethers.provider);
   }
 
-  for (const [networkName, provider] of chains.entries()) {
+  for (const [networkName, provider] of networkProviders.entries()) {
     describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
       let diamond: Diamond;
       let signers: SignerWithAddress[];
@@ -53,10 +60,19 @@ describe('NFT Factory Tests', async function () {
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
+
       const ParentNFTID: BigNumber = toBN(1); // Reference to the parent NFT
 
       before(async function () {
-        const diamondDeployer = await LocalDiamondDeployer.getInstance(diamondName, networkName, provider);
+        const config = {
+          diamondName: diamondName,
+          networkName: networkName,
+          provider: provider,
+          chainId: (await provider.getNetwork()).chainId,
+          writeDeployedDiamondData: false,
+          configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
+        } as LocalDiamondDeployerConfig;
+        const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
         await diamondDeployer.setVerbose(true);
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
@@ -78,14 +94,17 @@ describe('NFT Factory Tests', async function () {
         signer2Diamond = geniusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = deployedDiamondData.DeployerAddress;  //  this will be = signer0 for hardhat;
+        owner = diamond.getDeployedDiamondData().DeployerAddress;
+        if (!owner) {
+          diamond.setSigner(signers[0]);
+          owner = signer0;
+          ownerSigner
+        }
         ownerSigner = await ethersMultichain.getSigner(owner);
+
         ownerDiamond = geniusDiamond.connect(ownerSigner);
 
         snapshotId = await provider.send('evm_snapshot', []);
-      });
-
-      beforeEach(async function () {
       });
 
       after(async () => {
