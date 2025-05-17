@@ -16,7 +16,7 @@ git checkout diamonds/GeniusDiamond/deployments/geniusdiamond-sepolia-11155112.j
 To run the test suite, use the following command:
 
 ```bash
-yarn test-multichain test-suites/deployment/sepolia/GeniusDiamondDeployment.test.ts --chains sepolia 
+yarn test-multichain test-suites/deployment/sepolia/GeniusDiamondDeployment.test.ts --chains sepolia --logs log
 ```
 
 ## Specific Issues and Solutions
@@ -24,4 +24,4 @@ yarn test-multichain test-suites/deployment/sepolia/GeniusDiamondDeployment.test
 - **Issue**: The previous upgrade did not complete properly. This led to a situation where the Diamond has function selectors registered for two different version of the same contract- GeniusAI.
 - **Solution**: The upgrade process needs to be modified to ensure that the function selectors are registered correctly. This is done by performing a two stage deployment.
   - **Stage 1**: Remove the function selectors that are registered but not needed for the previous version of the contract. This leaves only the correct version of the contract registered.
-  - **Stage 2**: Upgrade the rest of the contract as needed.    
+  - **Stage 2**: Upgrade the rest of the contract as needed.
