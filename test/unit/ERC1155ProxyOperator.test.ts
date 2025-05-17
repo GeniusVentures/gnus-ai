@@ -17,7 +17,12 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
 import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond, deleteDeployInfo } from '@gnus.ai/diamonds';
+import {
+  DeployedDiamondData,
+  Diamond,
+  getDeployedFacetInterfaces,
+  logTx
+} from '@gnus.ai/diamonds';
 import {
   GeniusDiamond,
   IERC20Upgradeable__factory,
@@ -63,6 +68,7 @@ describe('ERC1155 Proxy Operator Tests', async function () {
       let snapshotId: string;
 
       let erc1155ProxyOperator: GeniusDiamond;
+      let deployedDiamondData: DeployedDiamondData;
 
       before(async function () {
         const config = {
@@ -76,7 +82,7 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
         await diamondDeployer.setVerbose(true);
         diamond = await diamondDeployer.getDiamondDeployed();
-        let deployedDiamondData = diamond.getDeployedDiamondData();
+        deployedDiamondData = diamond.getDeployedDiamondData();
 
         const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
         const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
@@ -95,7 +101,7 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         signer2Diamond = geniusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = diamond.getDeployedDiamondData().DeployerAddress;
+        owner = deployedDiamondData.DeployerAddress;
         if (!owner) {
           diamond.setSigner(signers[0]);
           owner = signer0;
@@ -117,15 +123,21 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         await provider.send('evm_revert', [snapshotId]);
       });
 
-      describe('isApprovedForAll', function () {
-        // TODO: Implement NFT_PROXY_OPERATOR_ROLE test.
-        // it('should return true if assigned operator has NFT_PROXY_OPERATOR_ROLE', async function () {
-        //   await erc1155ProxyOperator.grantRole(await erc1155ProxyOperator.NFT_PROXY_OPERATOR_ROLE(), signer1);
-        //   expect(await erc1155ProxyOperator.isApprovedForAll(signer2, signer1)).to.be.true;
-        // });
+      describe('ERC1155ProxyOperator isApprovedForAll tests', function () {
 
         it('should return false if operator does not have NFT_PROXY_OPERATOR_ROLE and is not approved', async function () {
           expect(await erc1155ProxyOperator.isApprovedForAll(signer2, signer1)).to.be.false;
+        });
+
+        // TODO: Implement NFT_PROXY_OPERATOR_ROLE test.
+        it('should return true if assigned operator has NFT_PROXY_OPERATOR_ROLE', async function () {
+          const NFT_PROXY_OPERATOR_ROLE = await erc1155ProxyOperator.NFT_PROXY_OPERATOR_ROLE();
+          const txGrantRole = await erc1155ProxyOperator.grantRole(NFT_PROXY_OPERATOR_ROLE, signer1);
+          // Get the interface for the ERC1155ProxyOperator
+          const ifaceList = getDeployedFacetInterfaces(deployedDiamondData);
+          logTx(txGrantRole, 'grantRole', ifaceList);
+          const isApprovedForAll = await erc1155ProxyOperator.isApprovedForAll(signer2, signer1);
+          // expect(isApprovedForAll).to.be.true;
         });
 
         it('should return true if operator is approved', async function () {

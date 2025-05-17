@@ -42,6 +42,46 @@
           "console": "integratedTerminal",
         },
         {
+          "name": "Seplolia 2.4->2.5 upgrade test",
+          "type": "node",
+          "request": "launch",
+          // "preLaunchTask": "tsc: build - tsconfig.json",
+          "outFiles": [
+            "${workspaceFolder}/dist/**/*.js"
+          ],
+          "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+          "args": [
+            "test-multichain",
+            "${workspaceFolder}/test-suites/deployment/sepolia/GeniusDiamondDeploymentSuite.test.ts",
+            "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
+            "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
+            "${workspaceFolder}/test/unit/NFTFactory.test.ts",
+            "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
+            "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
+            "--chains",
+            // "hardhat",
+            // "polygon_amoy",
+            "sepolia",
+            "--logs",
+            "logs"
+          ],
+          "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v18.20.5/bin/node",
+          "runtimeArgs": [
+            "--preserve-symlinks"
+          ],
+          "skipFiles": [
+            "<node_internals>/**",
+            "${workspaceFolder}/node_modules/**/*.js",
+          ],
+          "resolveSourceMapLocations": [
+            "${workspaceFolder}/dist/**/*.js",
+            "${workspaceFolder}/**/*.ts",
+          ],
+          "sourceMaps": true,
+          "smartStep": true,
+          "console": "integratedTerminal",
+        },        
+        {
             "name": "Unit Tests",
             "type": "node",
             "request": "launch",
