@@ -30,8 +30,8 @@
             "--preserve-symlinks"
           ],
           "skipFiles": [
-            "<node_internals>/**",
-            "${workspaceFolder}/node_modules/**/*.js",
+            // "<node_internals>/**",
+            // "${workspaceFolder}/node_modules/**/*.js",
           ],
           "resolveSourceMapLocations": [
             "${workspaceFolder}/dist/**/*.js",

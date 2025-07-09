@@ -20,7 +20,7 @@ import { config } from 'dotenv';
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
   const diamondName = 'GeniusDiamond';
   const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
-  this.timeout(0); // Extended indefinitely for diamond deployment time
+  this.timeout(0);
 
   let networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
 
