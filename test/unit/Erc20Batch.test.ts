@@ -1,85 +1,68 @@
-import { debuglog } from 'util';
-import { iObjToString } from '../../scripts/utils/iObjToString';
-import { BigNumber, utils } from 'ethers';
-import { GNUS_TOKEN_ID, toBN } from '../../scripts/common';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { logEvents } from '../../scripts/utils/logEvents';
-
 import { debug } from 'debug';
-import { pathExistsSync } from "fs-extra";
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
-import hre from 'hardhat';
+import { utils } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
-import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond, deleteDeployInfo } from '@gnus.ai/diamonds';
-import {
-  GeniusDiamond,
-  IERC20Upgradeable__factory,
-  IDiamondCut__factory,
-  IDiamondLoupe__factory
-} from '../../typechain-types';
-import { config } from 'dotenv';
+import { debuglog, GNUS_TOKEN_ID, toWei, } from '../../scripts/common';
+import MultiChainTestDeployer from '../setup/multichainTestDeployer';
+import { deployments } from '../../scripts/deployments';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
-chai.use(chaiAsPromised);
+describe('ERC20 Batch Transfer Tests', async function () {
+  this.timeout(0); // Extend timeout for deployments and testing
+  const log: debug.Debugger = debug('GNUSDeploy:log');
 
-describe('NFT Factory Tests', async function () {
-  const diamondName = 'GeniusDiamond';
-  const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
-  this.timeout(0); // Extended indefinitely for diamond deployment time
-
-  let networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
-
+  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+  // Check the process.argv for the Hardhat network name
   if (process.argv.includes('test-multichain')) {
-    const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
-    if (networkNames.includes('hardhat')) {
-      networkProviders.set('hardhat', ethers.provider);
+    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (chainNames.includes('hardhat')) {
+      chains = chains.set('hardhat', ethers.provider);
+
     }
   } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    networkProviders.set('hardhat', ethers.provider);
+    chains = chains.set('hardhat', ethers.provider);
   }
 
-  for (const [networkName, provider] of networkProviders.entries()) {
-    describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
-      let diamond: Diamond;
+  for (const [chainName, provider] of chains.entries()) {
+
+    describe(`${chainName} ERC20 Batch Transfers`, async function () {
+      let deployer: MultiChainTestDeployer;
+      let deployment: boolean | void;
+      let upgrade: boolean | void;
       let signers: SignerWithAddress[];
       let signer0: string;
       let signer1: string;
       let signer2: string;
-      let owner: string;
-      let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamond;
       let signer0Diamond: GeniusDiamond;
       let signer1Diamond: GeniusDiamond;
       let signer2Diamond: GeniusDiamond;
+      // get the signer for the owner
+      let owner: string;
+      let ownerSigner: SignerWithAddress;
       let ownerDiamond: GeniusDiamond;
+      let gnusDiamond: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamond;
-
       before(async function () {
-        const config = {
-          diamondName: diamondName,
-          networkName: networkName,
+        const deployConfig = {
+          chainName: chainName,
           provider: provider,
-          chainId: (await provider.getNetwork()).chainId,
-          writeDeployedDiamondData: false,
-          configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
-        } as LocalDiamondDeployerConfig;
-        const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
-        await diamondDeployer.setVerbose(true);
-        diamond = await diamondDeployer.getDiamondDeployed();
-        let deployedDiamondData = diamond.getDeployedDiamondData();
-
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as GeniusDiamond;
+        };
+        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
+        deployment = await deployer.deploy();
+        expect(deployment).to.be.true;
+        upgrade = await deployer.upgrade();
+        expect(upgrade).to.be.true;
+        // Retrieve the deployed GNUS Diamond contract
+        gnusDiamond = await deployer.getDiamond();
+        if (!gnusDiamond) {
+          throw new Error(`gnusDiamond is null for chain ${chainName}`);
+        }
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider;
@@ -89,19 +72,15 @@ describe('NFT Factory Tests', async function () {
         signer0 = signers[0].address;
         signer1 = signers[1].address;
         signer2 = signers[2].address;
-        signer0Diamond = geniusDiamond.connect(signers[0]);
-        signer1Diamond = geniusDiamond.connect(signers[1]);
-        signer2Diamond = geniusDiamond.connect(signers[2]);
+        signer0Diamond = gnusDiamond.connect(signers[0]);
+        signer1Diamond = gnusDiamond.connect(signers[1]);
+        signer2Diamond = gnusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = diamond.getDeployedDiamondData().DeployerAddress;
-        if (!owner) {
-          diamond.setSigner(signers[0]);
-          owner = signer0;
-          ownerSigner
-        }
+        owner = deployments[chainName]?.DeployerAddress || signer0;
         ownerSigner = await ethersMultichain.getSigner(owner);
-        ownerDiamond = geniusDiamond.connect(ownerSigner);
+        ownerDiamond = gnusDiamond.connect(ownerSigner);
+
       });
 
       beforeEach(async function () {
@@ -115,22 +94,22 @@ describe('NFT Factory Tests', async function () {
       it('Batch Transferring to two addresses', async () => {
         // Fetch the owner's balance.
         // This may be non-zero on forked chains so comparisons must take this into account.
-        let initBalance = await (await geniusDiamond['balanceOf(address,uint256)']
+        let initBalance = await (await gnusDiamond['balanceOf(address,uint256)']
           (owner, GNUS_TOKEN_ID)).toBigInt();
-        const preTransferBalance0 = await geniusDiamond['balanceOf(address,uint256)'](
+        const preTransferBalance0 = await gnusDiamond['balanceOf(address,uint256)'](
           signer2,
           GNUS_TOKEN_ID,
         );
-        const preTransferBalance1 = await geniusDiamond['balanceOf(address,uint256)'](
+        const preTransferBalance1 = await gnusDiamond['balanceOf(address,uint256)'](
           signer1,
           GNUS_TOKEN_ID,
         );
         // Test case to verify batch transfers of ERC20 tokens.
-        let balance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        let balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance before transfer1: ${balance.toString()}`);
         // Mint 150 GNUS tokens to the owner’s address and verify the updated balance.
         await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
-        balance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance after transfer2: ${balance.toString()}`);
         // Execute a batch transfer to `signer2` and `signer1` with specified token amounts.
         await ownerDiamond.transferBatch(
@@ -138,19 +117,19 @@ describe('NFT Factory Tests', async function () {
           [toWei(2), toWei(1)],
         );
 
-        balance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance3: ${balance.toString()}`);
         // Retrieve updated balances for `signer2` and `signer1`.
-        const updatedAmount1 = await geniusDiamond['balanceOf(address,uint256)'](
+        const updatedAmount1 = await gnusDiamond['balanceOf(address,uint256)'](
           signer2,
           GNUS_TOKEN_ID,
         );
-        const updatedAmount2 = await geniusDiamond['balanceOf(address,uint256)'](
+        const updatedAmount2 = await gnusDiamond['balanceOf(address,uint256)'](
           signer1,
           GNUS_TOKEN_ID,
         );
 
-        balance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance4: ${balance.toString()}`);
         // Assert that the updated balances match the expected values after the transfer.
         assert(
@@ -160,7 +139,7 @@ describe('NFT Factory Tests', async function () {
           )}, but equals ${utils.formatEther(updatedAmount1)}`,
         );
 
-        balance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance5: ${balance.toString()}`);
         assert(
           updatedAmount2.eq(toWei(1).add(preTransferBalance1)),
@@ -169,18 +148,18 @@ describe('NFT Factory Tests', async function () {
           )}, but equals ${utils.formatEther(updatedAmount2)}`,
         );
 
-        balance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance6: ${balance.toString()}`);
       });
 
       // Test case to verify the blocking and unblocking of transfers.
-      it(`should verify the blocking and unblocking of transfers on ${networkName}`, async () => {
+      it(`should verify the blocking and unblocking of transfers on ${chainName}`, async () => {
         // Fetch the owner's balance and mint additional tokens to the owner's account.
-        let initBalance = await (await geniusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
+        let initBalance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
         debuglog(`Owner balance before transfer: ${initBalance.toString()}`);
 
         await ownerDiamond['mint(address,uint256)'](owner, toWei(100));
-        let balance = await (await geniusDiamond['balanceOf(address)'](owner)).toBigInt();
+        let balance = await (await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
         let expectedBalance = initBalance + toWei(100).toBigInt();
         debuglog(`Owner balance after transfer of ${expectedBalance}: ${balance.toString()}`);
         debuglog(`Expected balance: ${expectedBalance.toString()}`);
@@ -189,9 +168,9 @@ describe('NFT Factory Tests', async function () {
         expect(balance).to.be.eq(expectedBalance);
 
         // Transfer tokens to `signer2` and verify their balance.
-        let receiverBalance = await (await geniusDiamond['balanceOf(address)'](signer2)).toBigInt();
+        let receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer2)).toBigInt();
         await ownerDiamond.transfer(signer2, toWei(10));
-        receiverBalance = await (await geniusDiamond['balanceOf(address)'](signer2)).toBigInt();
+        receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer2)).toBigInt();
         expectedBalance = toWei(10).toBigInt();
         // Expect the receiver's balance to match the transferred amount.
         expect(receiverBalance).to.be.eq(expectedBalance);

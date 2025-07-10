@@ -1,17 +1,27 @@
 import * as dotenv from 'dotenv';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
+<<<<<<< HEAD
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
+=======
+import '@nomicfoundation/hardhat-toolbox';
+>>>>>>> gvprivate/feature/full-upgrade
 import 'hardhat-diamond-abi';
 import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
+<<<<<<< HEAD
 import '@nomiclabs/hardhat-web3';
 import 'hardhat-multichain';
 import '@gnus.ai/hardhat-diamonds'
+=======
+import '@nomicfoundation/hardhat-ethers';
+import '@nomicfoundation/hardhat-web3-v4';
+import 'hardhat-multichain';
+>>>>>>> gvprivate/feature/full-upgrade
 
 dotenv.config();
 
@@ -29,6 +39,7 @@ dotenv.config();
  * - AMOY_BLOCK: Block number for the Amoy network.
  * - SEPOLIA_BLOCK: Block number for the Sepolia network.
  */
+<<<<<<< HEAD
 const {
   HH_CHAIN_ID,
   DEPLOYER_PRIVATE_KEY,
@@ -36,6 +47,15 @@ const {
   MAINNET_RPC,
   POLYGON_RPC,
   POLYGON_AMOY_RPC,
+=======
+const { 
+  HH_CHAIN_ID,
+  DEPLOYER_PRIVATE_KEY, 
+  SEPOLIA_RPC, 
+  MAINNET_RPC,
+  POLYGON_RPC,
+  POLYGON_AMOY_RPC, 
+>>>>>>> gvprivate/feature/full-upgrade
   MAINNET_BLOCK,
   POLYGON_BLOCK,
   POLYGON_AMOY_BLOCK,
@@ -84,6 +104,10 @@ export const multichainHardhat = multichainTestHardhat;
 
 // Task to print the list of accounts
 task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
+<<<<<<< HEAD
+=======
+  // Retrieve the list of accounts
+>>>>>>> gvprivate/feature/full-upgrade
   const accounts = await hre.ethers.getSigners();
   for (const account of accounts) {
     console.log(account.address);
@@ -92,21 +116,29 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
 
 const elementSeenSet = new Set<string>();
 // filter out duplicate function signatures
-function genSignature(name: string, inputs: Array<any>, type: string): string {
-  return `${type} ${name}(${inputs.reduce((previous, key) => {
+function genSignature(name: string, inputs: Array<unknown>, type: string): string {
+  return `${type} ${name}(${inputs.reduce((previous: string, key) => {
     const comma = previous.length ? ',' : '';
-    return previous + comma + key.internalType;
+    return previous + comma + (key as { internalType: string }).internalType;
   }, '')})`;
 }
 
 function filterDuplicateFunctions(
-  abiElement: any,
+  abiElement: { type: string; name?: string; inputs?: Array<{ internalType: string }> },
   index: number,
-  fullAbiL: any[],
+  fullAbiL: Array<{
+    type: string;
+    name?: string;
+    inputs?: Array<{ internalType: string }>;
+  }>,
   fullyQualifiedName: string,
 ) {
   if (['function', 'event'].includes(abiElement.type)) {
-    const funcSignature = genSignature(abiElement.name, abiElement.inputs, abiElement.type);
+    const funcSignature = genSignature(
+      abiElement.name || '',
+      abiElement.inputs || [],
+      abiElement.type,
+    );
     if (elementSeenSet.has(funcSignature)) {
       return false;
     }
@@ -123,6 +155,10 @@ const MOCK_CHAIN_ID = HH_CHAIN_ID ? parseInt(HH_CHAIN_ID) : 31337;
 console.log(`Using chain ID: ${MOCK_CHAIN_ID}`);
 
 const config: HardhatUserConfig = {
+  typechain: {
+    outDir: 'typechain-types', // Ensure this matches your expected output folder
+    target: 'ethers-v6', // Match the version of Ethers.js you're using
+  },
   solidity: {
     version: '0.8.9',
     settings: {
@@ -137,22 +173,38 @@ const config: HardhatUserConfig = {
       mainnet: {
         rpcUrl: mainnetUrl,
         blockNumber: mainnetBlock,
+<<<<<<< HEAD
       },
       polygon: {
         rpcUrl: polyUrl,
         blockNumber: polyBlock,
       },
+=======
+      }, 
+      polygon: {
+        rpcUrl: polyUrl,
+        blockNumber: polyBlock,
+      }, 
+>>>>>>> gvprivate/feature/full-upgrade
       sepolia: {
         rpcUrl: sepoliaUrl,
         blockNumber: sepoliaBlock,
         chainId: 11155111
+<<<<<<< HEAD
       },
+=======
+      }, 
+>>>>>>> gvprivate/feature/full-upgrade
       polygon_amoy: {
         rpcUrl: amoyUrl,
         blockNumber: amoyBlock,
         chainId: 80002
       },
+<<<<<<< HEAD
       hardhat: {
+=======
+      hardhat: { 
+>>>>>>> gvprivate/feature/full-upgrade
         rpcUrl: multichainHardhat,
       },
       base: {
@@ -214,7 +266,11 @@ const config: HardhatUserConfig = {
             london: 10000000,
           },
         },
+<<<<<<< HEAD
         // Base Testnet chain
+=======
+         // Base Testnet chain
+>>>>>>> gvprivate/feature/full-upgrade
         84532: {
           hardforkHistory: {
             london: 10000000,
@@ -364,6 +420,7 @@ const config: HardhatUserConfig = {
   diamondAbi: {
     name: 'GeniusDiamond',
     strict: false,
+<<<<<<< HEAD
     include: [
       'gnus-ai/*',
     ],
@@ -377,6 +434,9 @@ const config: HardhatUserConfig = {
       'libEncryption',
       'contracts/mocks/.*',
     ],
+=======
+    exclude: ['hardhat-diamond-abi/.*', 'libEncryption', 'contracts/mocks/.*'],
+>>>>>>> gvprivate/feature/full-upgrade
     filter: filterDuplicateFunctions,
   },
 };

@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { toWei } from '../common';
 
@@ -24,7 +23,7 @@ export async function impersonateSigner(signerAddress: string) {
  * @param address - The address to set the Ether balance for.
  * @param amount - The desired balance as a `BigNumber`.
  */
-export async function setEtherBalance(address: string, amount: BigNumber) {
+export async function setEtherBalance(address: string, amount: bigint) {
   await hre.network.provider.send('hardhat_setBalance', [
     address, // Address to modify the balance of
     amount.toHexString().replace('0x0', '0x'), // Amount to set, formatted as a hex string

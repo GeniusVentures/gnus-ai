@@ -13,20 +13,16 @@ import {
 } from '../scripts/common';
 import { deployments } from '../scripts/deployments';
 import { Facets, LoadFacetDeployments } from '../scripts/facets';
-import {
-  afterDeployCallbacks,
-  deployAndInitDiamondFacets,
-  deployExternalLibraries,
-  deployFuncSelectors,
-} from './deploy';
+import { deployAndInitDiamondFacets, deployExternalLibraries } from './deploy';
 import hre, { ethers } from 'hardhat';
-import fs from 'fs';
+// import fs from 'fs';
 import util from 'util';
 const log: debug.Debugger = debug('GNUSUpgrade:log');
 
-// @ts-ignore
+// ToDO Remove this or leave it?
 log.color = '158';
 
+// ToDo remove the unused variable?
 export async function GetUpdatedFacets(
   facetsDeployed: FacetDeployedInfo,
 ): Promise<FacetToDeployInfo> {
@@ -47,6 +43,7 @@ export async function attachGNUSDiamond(networkDeployInfo: INetworkDeployInfo) {
 
   // deploy Diamond
   const diamondAddress = networkDeployInfo.DiamondAddress;
+  // ToDo What is with the _GeniusDiamond that is never used?
   dc._GeniusDiamond = (
     await ethers.getContractFactory('contracts/GeniusDiamond.sol:GeniusDiamond')
   ).attach(diamondAddress);

@@ -1,85 +1,68 @@
-import { iObjToString } from '../../scripts/utils/iObjToString';
-import { BigNumber, utils } from 'ethers';
-import { GNUS_TOKEN_ID, toBN } from '../../scripts/common';
-import { debuglog } from 'util';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { logEvents } from '../../scripts/utils/logEvents';
-
 import { debug } from 'debug';
-import { pathExistsSync } from "fs-extra";
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import hre from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
-import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond, deleteDeployInfo } from '@gnus.ai/diamonds';
-import {
-  GeniusDiamond,
-  IERC20Upgradeable__factory,
-  IDiamondCut__factory,
-  IDiamondLoupe__factory
-} from '../../typechain-types';
-import { config } from 'dotenv';
-
-chai.use(chaiAsPromised);
+import { debuglog, toWei, } from '../../scripts/common';
+import MultiChainTestDeployer from '../setup/multichainTestDeployer';
+import { deployments } from '../../scripts/deployments';
+import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
 describe('GNUS Bridge Tests', async function () {
-  const diamondName = 'GeniusDiamond';
-  const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
-  this.timeout(0); // Extended indefinitely for diamond deployment time
+  const log: debug.Debugger = debug('GNUSDeploy:log');
+  this.timeout(0); // Extend timeout to accommodate deployments
 
-  let networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
+  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
 
+  // Check the process.argv for the Hardhat network name
   if (process.argv.includes('test-multichain')) {
-    const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
-    if (networkNames.includes('hardhat')) {
-      networkProviders.set('hardhat', ethers.provider);
+    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+    if (chainNames.includes('hardhat')) {
+      chains = chains.set('hardhat', ethers.provider);
+
     }
   } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    networkProviders.set('hardhat', ethers.provider);
+    chains = chains.set('hardhat', ethers.provider);
   }
 
-  for (const [networkName, provider] of networkProviders.entries()) {
-    describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
-      let diamond: Diamond;
+  for (const [chainName, provider] of chains.entries()) {
+
+    describe(`${chainName} GNUS Bridge Tests`, async function () {
+      let deployer: MultiChainTestDeployer;
+      let deployment: boolean | void;
+      let upgrade: boolean | void;
       let signers: SignerWithAddress[];
       let signer0: string;
       let signer1: string;
       let signer2: string;
-      let owner: string;
-      let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamond;
       let signer0Diamond: GeniusDiamond;
       let signer1Diamond: GeniusDiamond;
       let signer2Diamond: GeniusDiamond;
+      // get the signer for the owner
+      let owner: string;
+      let ownerSigner: SignerWithAddress;
       let ownerDiamond: GeniusDiamond;
+      let gnusDiamond: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamond;
-
       before(async function () {
-        const config = {
-          diamondName: diamondName,
-          networkName: networkName,
+        const deployConfig = {
+          chainName: chainName,
           provider: provider,
-          chainId: (await provider.getNetwork()).chainId,
-          writeDeployedDiamondData: false,
-          configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
-        } as LocalDiamondDeployerConfig;
-        const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
-        await diamondDeployer.setVerbose(true);
-        diamond = await diamondDeployer.getDiamondDeployed();
-        let deployedDiamondData = diamond.getDeployedDiamondData();
-
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as GeniusDiamond;
+        };
+        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
+        deployment = await deployer.deploy();
+        expect(deployment).to.be.true;
+        upgrade = await deployer.upgrade();
+        expect(upgrade).to.be.true;
+        // Retrieve the deployed GNUS Diamond contract
+        gnusDiamond = await deployer.getDiamond();
+        if (!gnusDiamond) {
+          throw new Error(`gnusDiamond is null for chain ${chainName}`);
+        }
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider;
@@ -89,23 +72,15 @@ describe('GNUS Bridge Tests', async function () {
         signer0 = signers[0].address;
         signer1 = signers[1].address;
         signer2 = signers[2].address;
-        signer0Diamond = geniusDiamond.connect(signers[0]);
-        signer1Diamond = geniusDiamond.connect(signers[1]);
-        signer2Diamond = geniusDiamond.connect(signers[2]);
+        signer0Diamond = gnusDiamond.connect(signers[0]);
+        signer1Diamond = gnusDiamond.connect(signers[1]);
+        signer2Diamond = gnusDiamond.connect(signers[2]);
 
         // get the signer for the owner
-        owner = diamond.getDeployedDiamondData().DeployerAddress;
-        if (!owner) {
-          diamond.setSigner(signers[0]);
-          owner = signer0;
-          ownerSigner
-        }
+        owner = deployments[chainName]?.DeployerAddress || signer0;
         ownerSigner = await ethersMultichain.getSigner(owner);
-        ownerDiamond = geniusDiamond.connect(ownerSigner);
+        ownerDiamond = gnusDiamond.connect(ownerSigner);
 
-        const ERC1155ProxyOperatorFactory = await ethers.getContractFactory('ERC1155ProxyOperator');
-        // erc1155ProxyOperator = ERC1155ProxyOperatorFactory.attach(ownerDiamond.address);
-        erc1155ProxyOperator = ownerDiamond;
       });
 
       beforeEach(async function () {
@@ -116,13 +91,6 @@ describe('GNUS Bridge Tests', async function () {
         await provider.send('evm_revert', [snapshotId]);
       });
 
-      // Validate the owner has the `MINTER_ROLE`
-      it('should return true if owner has MINTER_ROLE', async () => {
-        const minterRole = await ownerDiamond.MINTER_ROLE();
-        const hasRole = await ownerDiamond.hasRole(minterRole, owner);
-        expect(hasRole).to.be.true;
-      });
-
       // Test case to validate the minting and burning functionality
       it('Testing Mint/Burn', async () => {
         // Retrieve the minter role
@@ -131,55 +99,57 @@ describe('GNUS Bridge Tests', async function () {
         // Ensure a signer without the `MINTER_ROLE` cannot mint tokens
         await expect(
           signer2Diamond['mint(address,uint256)'](signer2, toWei(1)),
-        ).to.be.revertedWith(
+        ).to.be.rejectedWith(
+          Error,
           `AccessControl: account ${signer2.toLowerCase()} is missing role ${minterRole}`,
         );
 
         // Ensure a signer without the `MINTER_ROLE` cannot burn tokens
         await expect(
           signer2Diamond['burn(address,uint256)'](signer0, toWei(1)),
-        ).to.be.revertedWith(
+        ).to.be.rejectedWith(
+          Error,
           `AccessControl: account ${signer2.toLowerCase()} is missing role ${minterRole}`,
         );
 
         // Verify the initial token balance of a signer is zero
-        let balance = await geniusDiamond['balanceOf(address)'](signer2);
+        let balance = await gnusDiamond['balanceOf(address)'](signer2);
         expect(balance).to.be.eq(toWei(0));
 
-        // Mint tokens to the signer2's account and validate the updated balance
+        // Mint tokens to the signer's account and validate the updated balance
         await ownerDiamond['mint(address,uint256)'](signer2, toWei(100));
-        balance = await geniusDiamond['balanceOf(address)'](signer2);
+        balance = await gnusDiamond['balanceOf(address)'](signer2);
         expect(balance).to.be.eq(toWei(100));
 
         // Fetch the total supply of tokens
-        const supply = await geniusDiamond['totalSupply()']();
+        const supply = await gnusDiamond['totalSupply()']();
 
         // Burn tokens from the signer's account and validate the supply reduction
         await ownerDiamond['burn(address,uint256)'](signer2, toWei(100));
-        const supplyAfterBurned = await geniusDiamond['totalSupply()']();
+        const supplyAfterBurned = await gnusDiamond['totalSupply()']();
 
         // Assert that the supply has decreased by the burned amount
         expect(supply.sub(supplyAfterBurned)).to.be.eq(toWei(100));
 
         // Verify the signer's balance is zero after burning
-        balance = await geniusDiamond['balanceOf(address)'](signer2);
+        balance = await gnusDiamond['balanceOf(address)'](signer2);
         expect(balance).to.be.eq(toWei(0));
 
         // Mint tokens again and validate that the total supply returns to its original value
         await ownerDiamond['mint(address,uint256)'](signer2, toWei(100));
-        const supplyAfterMint = await geniusDiamond['totalSupply()']();
+        const supplyAfterMint = await gnusDiamond['totalSupply()']();
         expect(supplyAfterMint).to.be.eq(supply);
 
         // Attempt to burn tokens using the multi-dimensional burn function with invalid permissions
         await expect(
-          geniusDiamond['burn(address,uint256,uint256)'](signer2, 0, toWei(100)),
+          gnusDiamond['burn(address,uint256,uint256)'](signer2, 0, toWei(100)),
         ).to.be.rejectedWith(Error, 'ERC1155: caller is not owner nor approved');
 
         // Burn tokens using the multi-dimensional burn function with the correct permissions
         await signer2Diamond['burn(address,uint256,uint256)'](signer2, toWei(0), toWei(100));
 
         // Verify the balance of the signer is zero after burning
-        balance = await geniusDiamond['balanceOf(address)'](signer2);
+        balance = await gnusDiamond['balanceOf(address)'](signer2);
         expect(balance).to.be.eq(toWei(0));
       });
 
@@ -206,7 +176,7 @@ describe('GNUS Bridge Tests', async function () {
         // Attempt to decrease the allowance of the owner to the signer with insufficient funds
         await expect(
           ownerDiamond.decreaseAllowance(signer2, toWei(100)),
-        ).to.be.revertedWith('ERC20: decreased allowance below zero');
+        ).to.be.rejectedWith(Error, 'ERC20: decreased allowance below zero');
       });
     });
   }
