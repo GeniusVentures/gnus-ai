@@ -1,5 +1,5 @@
 import { GeniusDiamond } from '../../typechain-types';
-import { dc, debuglog, INetworkDeployInfo, AfterDeployInit } from '../common';
+import { dc, debuglog, INetworkDeployInfo, AfterDeployInit } from '../../notes/archive/common';
 import { Facets } from '../facets';
 import hre, { ethers } from 'hardhat';
 import util from 'util';

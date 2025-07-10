@@ -5,9 +5,9 @@ import { utils } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { debuglog, GNUS_TOKEN_ID, toWei, } from '../../scripts/common';
+import { debuglog, GNUS_TOKEN_ID, toWei, } from '../../notes/archive/common';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { deployments } from '../../scripts/deployments';
+import { deployments } from '../../notes/archive/deployments';
 import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 import { ERC1155ProxyOperator } from '../../typechain-types';
 

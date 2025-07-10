@@ -1,7 +1,7 @@
 import debug from 'debug';
 import hre from 'hardhat';
-import { INetworkDeployInfo, writeDeployedInfo } from '../scripts/common';
-import { deployments } from '../scripts/deployments';
+import { INetworkDeployInfo, writeDeployedInfo } from '../notes/archive/common';
+import { deployments } from '../notes/archive/deployments';
 import { BaseContract } from 'ethers';
 import { LoadFacetDeployments } from '../scripts/facets';
 
@@ -37,16 +37,16 @@ export async function VerifyContracts(networkDeployInfo: INetworkDeployInfo) {
     if (!facetContractInfo.verified) {
       const facetAddress = facetContractInfo.address;
       log(`Verifying GNUS Facet ${facetName} at address ${facetAddress}`);
-      
+
       const facetContract: BaseContract = await ethers.getContractAt(
         facetName,
         networkDeployInfo.DiamondAddress,
       );
-      
+
       await hre.run('verify:verify', {
         address: facetAddress,
       });
-      
+
       facetContractInfo.verified = true;
     }
   }
@@ -63,16 +63,16 @@ async function main() {
     debug.enable('GNUS.*:log');
     const networkName = hre.network.name;
     log.enabled = true;
-    
+
     if (networkName in deployments) {
       const networkDeployInfo: INetworkDeployInfo = deployments[networkName];
-      
+
       if (!['hardhat', 'localhost'].includes(networkName)) {
         await LoadFacetDeployments();
         await VerifyContracts(networkDeployInfo);
         log(`Finished verifying GNUS Diamond at ${networkDeployInfo.DiamondAddress}`);
       }
-      
+
       if (networkName !== 'hardhat') {
         writeDeployedInfo(deployments);
         log(

@@ -5,29 +5,29 @@ import { Signer } from 'ethers';
 import * as util from 'util';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
-import { 
-  deployGNUSDiamond, 
-  deployDiamondFacets, 
-  deployFuncSelectors, 
-  afterDeployCallbacks, 
+import {
+  deployGNUSDiamond,
+  deployDiamondFacets,
+  deployFuncSelectors,
+  afterDeployCallbacks,
   deployAndInitDiamondFacets,
   deployExternalLibraries
 } from '../../scripts/deploy';
-import { 
+import {
   dc,
-  INetworkDeployInfo, 
+  INetworkDeployInfo,
   FacetToDeployInfo,
-  FacetDeployedInfo, 
-  PreviousVersionRecord 
-} from '../../scripts/common';
-import { deployments} from '../../scripts/deployments';
+  FacetDeployedInfo,
+  PreviousVersionRecord
+} from '../../notes/archive/common';
+import { deployments } from ../../ notes / archive / deploymentss';
 import { assert } from 'chai';
 import { Facets, LoadFacetDeployments } from '../../scripts/facets';
-import { getInterfaceID } from '../../scripts/FacetSelectors';
+import { getInterfaceID } from '../../notes/archive/FacetSelectors';
 import { IERC165Upgradeable__factory, IERC1155Upgradeable__factory } from '../../typechain-types';
 import { createForkLogger } from '../utils/logger';
 import { waitForNetwork } from '../utils/network-utils';
-import { GetUpdatedFacets, attachGNUSDiamond  } from '../../scripts/upgrade';
+import { GetUpdatedFacets, attachGNUSDiamond } from '../../notes/archive/upgrade';
 
 interface ChainInfo {
   chainName: string;
@@ -57,12 +57,12 @@ class MultiChainTestDeployer {
     this.gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
     this.deployer = this.provider.getSigner(deployments[this.chainName]?.DeployerAddress) || this.provider.getSigner(0);
   }
-  
+
   // getter for the deployInfo
   getDeployInfo(): INetworkDeployInfo | null {
     return this.deployInfo;
   }
-  
+
   setDeployInfo(deployInfo: INetworkDeployInfo): void {
     this.deployInfo = deployInfo;
   }
@@ -89,51 +89,51 @@ class MultiChainTestDeployer {
       }
       return;
     } else if (this.upgradeInProgress) {
-     console.log(`Upgrade in progress for ${this.chainName}`);
-     while (this.upgradeInProgress) {
-       await new Promise((resolve) => setTimeout(resolve, 1000));
-     }
-     return;
+      console.log(`Upgrade in progress for ${this.chainName}`);
+      while (this.upgradeInProgress) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+      return;
     }
 
     this.deployInProgress = true;
-    
+
     try {
       // Load existing deployments into the global 
       await LoadFacetDeployments();
-      
+
       // Initialize deployment info, default to signer[0] as deployer
       this.deployInfo = deployments[this.chainName] || {
         provider: this.provider,
         DiamondAddress: '',
-        DeployerAddress:  this.deployer.getAddress(),
+        DeployerAddress: this.deployer.getAddress(),
         FacetDeployedInfo: {},
       };
-      
-      
+
+
       if (this.deployInfo!.DiamondAddress) {
         console.log('Diamond Deployment Found. No need for new deployment.');
         this.deployInfo!.provider = this.provider;
         // Impersonate the deployer and fund their account
         await this.impersonateAndFundAccount(this.deployInfo.DeployerAddress);
-        
-         // Deploy GNUS Diamond
+
+        // Deploy GNUS Diamond
         await deployGNUSDiamond(this.deployInfo);
         return;
       } else {
-      // Retrieve the signers for the chain, set hardhat default signer[0] as Deployer
+        // Retrieve the signers for the chain, set hardhat default signer[0] as Deployer
         this.deployInfo.DeployerAddress = await this.deployer.getAddress();
       }
-      
-      
+
+
       let diamondAddress;
       let diamondCutAddress;
       // Deploy and Load GNUS Diamond instance
-      [diamondAddress, diamondCutAddress] =  await deployGNUSDiamond(this.deployInfo);
-      
+      [diamondAddress, diamondCutAddress] = await deployGNUSDiamond(this.deployInfo);
+
       // Attach GNUS Diamond instance
       this.gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-      
+
       // Interface Compatibility Test (ERC165 and ERC1155)
       await this.testInterfaceCompatibility();
 
@@ -143,10 +143,10 @@ class MultiChainTestDeployer {
       // Define facets to be deployed, sourced from the `Facets` object.
       let facetsToDeploy: FacetToDeployInfo = Facets;
       await deployDiamondFacets(this.deployInfo, facetsToDeploy);
-      
+
       // // Deploy and Initialize Diamond Facets
       await deployAndInitDiamondFacets(this.deployInfo, facetsToDeploy);
-      
+
     } catch (error) {
       if (error instanceof Error) {
         console.error(`Deployment failed for ${this.chainName}: ${error.message}`);
@@ -157,11 +157,11 @@ class MultiChainTestDeployer {
     } finally {
       this.deployInProgress = false;
       this.deployCompleted = true;
-      
+
       return Promise.resolve(true);
     }
   }
-  
+
   // Main upgrade logic
   async upgrade(): Promise<boolean | void> {
     if (this.deployInProgress) {
@@ -172,18 +172,18 @@ class MultiChainTestDeployer {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     } else if (this.upgradeInProgress) {
-     console.log(`Upgrade in progress for ${this.chainName}`);
-     while (this.upgradeInProgress) {
-       // Wait for the upgrade to complete
+      console.log(`Upgrade in progress for ${this.chainName}`);
+      while (this.upgradeInProgress) {
+        // Wait for the upgrade to complete
         console.log('⏱️ Waiting for upgrade to complete');
-       await new Promise((resolve) => setTimeout(resolve, 1000));
-     }
-    } 
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
     if (this.upgradeCompleted) {
       console.log(`⏏️ Upgrade already completed for ${this.chainName}`);
       return Promise.resolve(true);
     }
-    
+
     const protocolInfo = await this.provider.getNetwork();
 
     this.upgradeInProgress = true;
@@ -191,7 +191,7 @@ class MultiChainTestDeployer {
     try {
 
       console.info(`Starting Upgrade for ${this.chainName}`);
-      
+
       if (!this.deployInfo) {
         // Initialize Upgrade info (existing deployments or new)
         this.deployInfo = deployments[this.chainName] || {
@@ -200,12 +200,12 @@ class MultiChainTestDeployer {
           DeployerAddress: '',
           FacetDeployedInfo: {},
         };
-        
+
         this.deployInfo!.provider = this.provider;
       }
-      
+
       this.gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
-      
+
       let deployerAddress: string;
       if (this.deployInfo!.DeployerAddress && this.deployInfo!.DiamondAddress) {
         console.log('Diamond Deployment Found. No need for new deployment.');
@@ -216,15 +216,15 @@ class MultiChainTestDeployer {
         // This is all done for Hardhat Network or other chains where this a first time deployment
         // Retrieve the signers for the chain, set hardhat default signer[0] as Deployer
         this.deployInfo.DeployerAddress = await this.deployer.getAddress();
-        
+
         let diamondAddress;
         let diamondCutAddress;
         // Deploy and Load GNUS Diamond instance and setup deployInfo
-        [this.deployInfo.DiamondAddress, this.deployInfo.FacetDeployedInfo.DiamondCutFacet.address] =  await deployGNUSDiamond(this.deployInfo);
+        [this.deployInfo.DiamondAddress, this.deployInfo.FacetDeployedInfo.DiamondCutFacet.address] = await deployGNUSDiamond(this.deployInfo);
       }
-      
+
       // Attach GNUS Diamond instance, this done already if this was deployed
-      
+
       // TODO the use of dc._gnusDiamond and dc.gnusDiamond is confusing, should be refactored
       // deploy Diamond
       const diamondAddress = this.deployInfo.DiamondAddress;
@@ -234,16 +234,16 @@ class MultiChainTestDeployer {
       dc.gnusDiamond = (
         await this.ethersMultichain.getContractFactory('hardhat-diamond-abi/GeniusDiamond.sol:GeniusDiamond')
       ).attach(diamondAddress);
-      
+
       const DiamondCutFacet = await this.ethersMultichain.getContractFactory('DiamondCutFacet');
       dc.DiamondCutFacet = DiamondCutFacet.attach(
         this.deployInfo.FacetDeployedInfo.DiamondCutFacet.address!,
       );
-      
+
       // TODO Should this be tested here because it causes issues if the diamond is not deployed with ERC1155 already.
       // Interface Compatibility Test (ERC165 and ERC1155)
       await this.testInterfaceCompatibility();
-      
+
       // TODO This should be a test in a separate function ERC173
       if (this.chainName !== 'hardhat') {
         // check if the owner is the deployer and transfer ownership to the deployer
@@ -255,13 +255,13 @@ class MultiChainTestDeployer {
           console.log(`Transferring ownership to ${this.deployer.getAddress()}`);
           // Impersonate and fund the currentContractOwner
           await this.impersonateAndFundAccount(currentContractOwner);
-          
+
           //connect the currentContractOwner to the contract and transfer ownership to the deployer
           const currentOwner = this.provider?.getSigner(currentContractOwner);
           const currentOwnerGnusDiamond = this.gnusDiamond.connect(currentOwner);
           const tx = await currentOwnerGnusDiamond.transferOwnership(await this.deployer.getAddress());
           await tx.wait();
-          
+
           // Verify the ownership transfer
           const newContractOwner = await currentOwnerGnusDiamond.owner();
           if (newContractOwner.toLowerCase() === (await this.deployer.getAddress()).toLowerCase()) {
@@ -271,20 +271,20 @@ class MultiChainTestDeployer {
           }
         }
       }
-      
+
       // Backup pre-upgrade Upgrade info
       const deployInfoBeforeUpgraded = JSON.parse(JSON.stringify(this.deployInfo));
 
       // Deploy Diamond Facets
       const facetsToDeploy: FacetToDeployInfo = {};
-      
+
       const updatedFacetsToDeploy = await GetUpdatedFacets(this.deployInfo!.FacetDeployedInfo);
       console.log(util.inspect(updatedFacetsToDeploy));
-      
+
       // await deployDiamondFacets(this.deployInfo!, updatedFacetsToDeploy);
       // if (!this.deployInfo!.ExternalLibraries) await deployExternalLibraries(this.deployInfo!);
       await deployAndInitDiamondFacets(this.deployInfo!, updatedFacetsToDeploy);
-      
+
       console.log(`Upgrade completed for ${this.chainName}`);
     } catch (error) {
       if (error instanceof Error) {
@@ -296,11 +296,11 @@ class MultiChainTestDeployer {
     } finally {
       this.upgradeInProgress = false;
       this.upgradeCompleted = true;
-      
+
       return Promise.resolve(true);
     }
   }
-  
+
   /**
    * Impersonates the deployer account and funds it to a balance that is rounded to the next highest 100 ETH.
    * 
@@ -312,7 +312,7 @@ class MultiChainTestDeployer {
     try {
       await this.provider.send('hardhat_impersonateAccount', [deployerAddress]);
       const deployer = this.provider.getSigner(deployerAddress);
-      
+
       // Fund the account
       await this.provider.send('hardhat_setBalance', [deployerAddress, '0x56BC75E2D63100000']);
       return deployer;
@@ -328,7 +328,7 @@ class MultiChainTestDeployer {
 
   private async GetUpdatedFacets(facetsDeployed: FacetDeployedInfo): Promise<FacetToDeployInfo> {
     const updatedFacetsToDeploy: FacetToDeployInfo = {};
-  
+
     for (const name in Facets) {
       updatedFacetsToDeploy[name] = Facets[name];
     }

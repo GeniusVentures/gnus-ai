@@ -1,5 +1,5 @@
 import { GeniusDiamond, ERC1155ProxyOperator } from '../../typechain-types';
-import { dc, debuglog, INetworkDeployInfo, AfterDeployInit, getSighash } from '../common';
+import { dc, debuglog, INetworkDeployInfo, AfterDeployInit, getSighash } from '../../notes/archive/common';
 import { Facets } from '../facets';
 import { ethers, network } from 'hardhat';
 

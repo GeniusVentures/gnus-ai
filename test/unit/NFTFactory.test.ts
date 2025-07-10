@@ -5,10 +5,10 @@ import { BigNumber, utils } from 'ethers';
 import { multichain } from 'hardhat-multichain';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { debuglog, GNUS_TOKEN_ID, toBN, toWei, } from '../../scripts/common';
+import { debuglog, GNUS_TOKEN_ID, toBN, toWei, } from '../../notes/archive/common';
 import { iObjToString } from '../utils/iObjToString';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { deployments } from '../../scripts/deployments';
+import { deployments } from '../../notes/archive/deployments';
 import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
 import { logEvents } from '../utils/logEvents';

@@ -4,10 +4,10 @@ import { ethers } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { debuglog, toWei, } from '../../scripts/common';
+import { debuglog, toWei, } from '../../notes/archive/common';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
-import { deployments } from '../../scripts/deployments';
-import { getInterfaceID } from '../../scripts/FacetSelectors';
+import { deployments } from '../../notes/archive/deployments';
+import { getInterfaceID } from '../../notes/archive/FacetSelectors';
 import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 import {
   IERC20Upgradeable__factory,
