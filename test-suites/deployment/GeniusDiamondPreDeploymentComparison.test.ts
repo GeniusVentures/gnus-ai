@@ -3,9 +3,12 @@ import { pathExistsSync } from "fs-extra";
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@omicfoundation/hardhat-ethers/signers';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { JsonRpcProvider } from 'ethers';
 import { multichain } from 'hardhat-multichain';
+
+// Type alias for provider compatibility
+type ProviderType = JsonRpcProvider | any;
 import { getInterfaceID } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import {
@@ -15,26 +18,26 @@ import {
   compareFacetSelectors,
   isProtocolInitRegistered,
   getDeployedFacets
-} from '@gnus.ai/diamonds';
+} from 'diamonds';
 import {
   GeniusDiamond
 } from '../../typechain-types';
-import { DeployedDiamondData } from '@gnus.ai/diamonds/src';
+import { DeployedDiamondData } from 'diamonds';
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
   const diamondName = 'GeniusDiamond';
   const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
   this.timeout(0); // Extended indefinitely for diamond deployment time
 
-  let networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
+  let networkProviders = multichain.getProviders() || new Map<string, ProviderType>();
 
   if (process.argv.includes('test-multichain')) {
     const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
     if (networkNames.includes('hardhat')) {
-      networkProviders.set('hardhat', ethers.provider);
+      networkProviders.set('hardhat', ethers.provider as any);
     }
   } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    networkProviders.set('hardhat', ethers.provider);
+    networkProviders.set('hardhat', ethers.provider as any);
   }
 
   for (const [networkName, provider] of networkProviders.entries()) {
@@ -72,10 +75,10 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 
         const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
         const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as GeniusDiamond;
+        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
 
         ethersMultichain = ethers;
-        ethersMultichain.provider = provider;
+        ethersMultichain.provider = provider as any;
 
         // Retrieve the signers for the chain
         signers = await ethersMultichain.getSigners();
@@ -86,7 +89,7 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         signer1Diamond = geniusDiamond.connect(signers[1]);
         signer2Diamond = geniusDiamond.connect(signers[2]);
 
-        owner = diamond.getDeployedDiamondData().DeployerAddress;
+        owner = diamond.getDeployedDiamondData().DeployerAddress!;
         if (!owner) {
           diamond.setSigner(signers[0]);
           owner = signer0;
@@ -113,7 +116,7 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
           }
           const passFail = await diffDeployedFacets(
             deployedDiamondData,
-            diamond.provider!,
+            diamond.provider! as any as any,
           );
           expect(passFail).to.be.true;
         });

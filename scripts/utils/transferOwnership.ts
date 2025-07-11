@@ -1,6 +1,6 @@
 import { ethers, network } from 'hardhat';
 import { parseEther, formatEther } from 'ethers';
-import { GeniusOwnershipFacet } from '../../typechain-types'; // Update the path to your typechain types
+import { GeniusDiamond } from '../../typechain-types'; // Update the path to your typechain types
 import { INetworkDeployInfo } from '../common'; // Update the path to your common types
 
 async function main(networkDeployInfo: INetworkDeployInfo) {
@@ -33,13 +33,13 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
     value: fundAmount,
   });
 
-  // Connect to the GeniusOwnershipFacet
-  console.log(`Connecting to GeniusOwnershipFacet at: ${DiamondAddress}`);
+  // Connect to the GeniusDiamond (ownership functions are part of the diamond)
+  console.log(`Connecting to GeniusDiamond at: ${DiamondAddress}`);
   const ownershipFacet = (await ethers.getContractAt(
     'GeniusOwnershipFacet',
     DiamondAddress,
     deployerSigner,
-  )) as GeniusOwnershipFacet;
+  )) as GeniusDiamond;
 
   // Transfer ownership to the deployer address
   console.log(`Transferring contract ownership to: ${DeployerAddress}`);

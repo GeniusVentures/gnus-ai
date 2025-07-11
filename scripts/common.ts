@@ -1,29 +1,28 @@
-import { BaseContract, parseEther } from 'ethers';
+import { BaseContract } from 'ethers';
 import { ethers } from 'hardhat';
+import { parseEther, Interface, FunctionFragment } from 'ethers';
 import { debug } from 'debug';
 import * as chai from 'chai';
 
 export const assert = chai.assert;
 export const expect = chai.expect;
 import chaiAsPromised from 'chai-as-promised';
+
 import fs from 'fs';
 import util from 'util';
-import { CreateProposalRequest } from '@openzeppelin/defender-sdk-proposal-client';
+// import { ExternalApiCreateProposalRequest } from "@openzeppelin/defender-admin-client/lib/models/proposal";
 import { JsonRpcProvider } from '@ethersproject/providers';
 
 chai.use(chaiAsPromised);
 
 declare global {
-  // eslint-disable-next-line no-var
-  var debuglog: debug.Debugger;
+  export var debuglog: debug.Debugger;
 }
 
 global.debuglog = debug('GNUSUnitTest:log');
 global.debuglog.color = '158';
 
 export const debuglog = global.debuglog;
-
-// export const toBN = BigNumber.from;
 export const GNUS_TOKEN_ID = 0n;
 
 export interface IFacetDeployedInfo {
@@ -53,7 +52,7 @@ export interface INetworkDeployInfo {
   DiamondAddress: string;
   DeployerAddress: string;
   FacetDeployedInfo: FacetDeployedInfo;
-  ExternalLibraries?: unknown;
+  ExternalLibraries?: any;
   protocolVersion?: number;
   provider?: JsonRpcProvider | undefined;
 }
@@ -64,8 +63,8 @@ export type AfterDeployInit = (
 
 export interface IVersionInfo {
   fromVersions?: number[];
-  deployInit?: string; // init for when not upgrading and first deployment
-  upgradeInit?: string; // upgradeInit if version is upgrading from previous version
+  deployInit?: string;          // init for when not upgrading and first deployment
+  upgradeInit?: string;   // upgradeInit if version is upgrading from previous version
   deployInclude?: string[];
   callback?: AfterDeployInit;
 }
@@ -87,22 +86,20 @@ export function toWei(value: number | string): bigint {
 }
 
 export function getSighash(funcSig: string): string {
-  const iface = new ethers.Interface([funcSig]);
-  const func = iface.getFunction(funcSig);
-  if (func) {
-    return func.selector;
-  }
-  throw new Error(`Function signature ${funcSig} not found`);
+  const iface = new Interface([funcSig]);
+  const func = iface.getFunction(funcSig.split('(')[0]);
+  if (!func) throw new Error(`Function not found: ${funcSig}`);
+  return func.selector;
 }
 
 export function writeDeployedInfo(deployments: { [key: string]: INetworkDeployInfo }) {
   fs.writeFileSync(
     'scripts/deployments.ts',
     `\nimport { INetworkDeployInfo } from "../scripts/common";\n` +
-    `export const deployments: { [key: string]: INetworkDeployInfo } = ${util.inspect(
-      deployments,
-      { depth: null },
-    )};\n`,
+      `export const deployments: { [key: string]: INetworkDeployInfo } = ${util.inspect(
+        deployments,
+        { depth: null },
+      )};\n`,
     'utf8',
   );
 }
@@ -144,13 +141,11 @@ export const diamondCutFuncAbi = {
 };
 
 export interface IDefenderViaInfo {
-  via: CreateProposalRequest['via'];
-  viaType: CreateProposalRequest['viaType'];
+  via: any;
+  viaType: any;
 }
 
-export function createPreviousVersionRecordWithMap(
-  facetInfo: FacetDeployedInfo,
-): PreviousVersionRecord {
+export function createPreviousVersionRecordWithMap(facetInfo: FacetDeployedInfo): PreviousVersionRecord {
   const previousVersionRecord: PreviousVersionRecord = {};
 
   // Using Object.entries() to get key-value pairs and then mapping over them

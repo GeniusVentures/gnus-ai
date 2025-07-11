@@ -3,7 +3,7 @@ import hre from 'hardhat';
 import { INetworkDeployInfo, writeDeployedInfo } from '../common';
 import { deployments } from '../../notes/archive/deployments';
 import util from 'util';
-import { LoadFacetDeployments } from '../facets';
+// import { LoadFacetDeployments } from '../facets';
 import {
   getDeployedFuncSelectors,
   getInterfaceID,
@@ -21,7 +21,7 @@ async function main() {
   // Enable debug logging if this script is the main module
   if (require.main === module) {
     debug.enable('GNUS.*:log');
-    await LoadFacetDeployments(); // Load the facet deployments
+    // await LoadFacetDeployments(); // Load the facet deployments
     const networkName = hre.network.name; // Get the current network name
     log.enabled = true; // Enable logging
 

@@ -68,7 +68,7 @@ async function main() {
       const networkDeployInfo: INetworkDeployInfo = deployments[networkName];
 
       if (!['hardhat', 'localhost'].includes(networkName)) {
-        await LoadFacetDeployments();
+        // await LoadFacetDeployments();
         await VerifyContracts(networkDeployInfo);
         log(`Finished verifying GNUS Diamond at ${networkDeployInfo.DiamondAddress}`);
       }

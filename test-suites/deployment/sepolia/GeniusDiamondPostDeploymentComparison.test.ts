@@ -4,8 +4,11 @@ import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { JsonRpcProvider } from 'ethers';
 import { multichain } from 'hardhat-multichain';
+
+// Type alias for provider compatibility
+type ProviderType = JsonRpcProvider | any;
 import { getInterfaceID } from '../../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../../scripts/setup/LocalDiamondDeployer';
 import {
@@ -19,7 +22,7 @@ import {
 import {
   GeniusDiamond,
 } from '../../../typechain-types';
-import { DeployedDiamondData } from 'diamonds/src';
+import { DeployedDiamondData } from 'diamonds';
 
 describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
   const diamondName = 'GeniusDiamond';
@@ -31,10 +34,10 @@ describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
   if (process.argv.includes('test-multichain')) {
     const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
     if (networkNames.includes('hardhat')) {
-      networkProviders.set('hardhat', ethers.provider);
+      networkProviders.set('hardhat', ethers.provider as any);
     }
   } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    networkProviders.set('hardhat', ethers.provider);
+    networkProviders.set('hardhat', ethers.provider as any);
   }
 
   for (const [networkName, provider] of networkProviders.entries()) {
@@ -73,10 +76,10 @@ describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
 
         const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
         const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as GeniusDiamond;
+        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
 
         ethersMultichain = ethers;
-        ethersMultichain.provider = provider;
+        ethersMultichain.provider = provider as any;
 
         // Retrieve the signers for the chain
         signers = await ethersMultichain.getSigners();
@@ -107,7 +110,7 @@ describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
           const newDeployedDiamondData = diamond.getDeployedDiamondData();
           const passFail = await diffDeployedFacets(
             newDeployedDiamondData,
-            diamond.provider!,
+            diamond.provider! as any,
           );
           expect(passFail).to.be.true;
         });

@@ -13,7 +13,8 @@
     "deploy": "npx hardhat run scripts/deploy.ts",
     "verify": "npx hardhat run scripts/VerifyContracts.ts",
     "getgascost": "npx hardhat run scripts/getgascost.ts",
-    "getaccessinfo": "npx hardhat run scripts/getaccessinfo.ts"
+    "getaccessinfo": "npx hardhat run scripts/getaccessinfo.ts",
+    "build": "npx tsc"
   },
   "authors": [
     "SuperGenius",
@@ -60,7 +61,7 @@
     "globals": "^15.14.0",
     "hardhat": "^2.22.17",
     "hardhat-abi-exporter": "^2.8.0",
-    "hardhat-diamond-abi": "^3.0.1",
+    "hardhat-diamond-abi": "https://github.com/Am0rfu5/hardhat-diamond-abi.git",
     "hardhat-diamonds": "https://github.com/GeniusVentures/hardhat-diamonds.git",
     "hardhat-gas-reporter": "^1.0.8",
     "hardhat-multichain": "https://github.com/GeniusVentures/hardhat-multichain.git#main",

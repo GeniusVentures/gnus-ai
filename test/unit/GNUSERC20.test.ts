@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { expect, assert } from 'chai';
 import hre from 'hardhat';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { JsonRpcProvider } from 'ethers';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { multichain } from 'hardhat-multichain';
 import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
@@ -21,7 +21,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	type ProviderType = JsonRpcProvider | HardhatEthersProvider;
-	const networkProviders = (multichain.getProviders() as Map<string, ProviderType>) || new Map<string, ProviderType>();
+	const networkProviders = (multichain.getProviders() as unknown as Map<string, ProviderType>) || new Map<string, ProviderType>();
 
 	if (process.argv.includes('test-multichain')) {
 		const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
@@ -42,10 +42,11 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 			let owner: string;
 			let ownerSigner: SignerWithAddress;
 			let geniusDiamond: GeniusDiamond;
-			// let signer0Diamond: GeniusDiamond;
-			// let signer1Diamond: GeniusDiamond;
+			let signer0Diamond: GeniusDiamond;
+			let signer1Diamond: GeniusDiamond;
 			let signer2Diamond: GeniusDiamond;
 			let ownerDiamond: GeniusDiamond;
+			let erc1155ProxyOperator: GeniusDiamond;
 
 			let ethersMultichain: typeof hre.ethers;
 			let snapshotId: string;
@@ -57,7 +58,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 					diamondName: diamondName,
 					networkName: networkName,
 					provider: provider,
-					chainId: (await provider.getNetwork()).chainId,
+					chainId: Number((await provider.getNetwork()).chainId),
 					writeDeployedDiamondData: false,
 					configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
 				} as LocalDiamondDeployerConfig;
@@ -71,7 +72,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				geniusDiamond = (await hre.ethers.getContractAt(
 					diamondArtifactName,
 					deployedDiamondData.DiamondAddress!,
-				)) as GeniusDiamond;
+				)) as unknown as GeniusDiamond;
 
 				ethersMultichain = hre.ethers;
 				if ('_hardhatProvider' in provider) {
@@ -88,7 +89,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				signer2Diamond = geniusDiamond.connect(signers[2]);
 
 				// get the signer for the owner
-				owner = diamond.getDeployedDiamondData().DeployerAddress;
+				owner = diamond.getDeployedDiamondData().DeployerAddress!;
 				if (!owner) {
 					diamond.setSigner(signers[0]);
 					owner = signer0;
@@ -99,7 +100,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				ownerDiamond = geniusDiamond.connect(ownerSigner);
 
 				const ERC1155ProxyOperatorFactory =
-					await ethers.getContractFactory('ERC1155ProxyOperator');
+					await hre.ethers.getContractFactory('ERC1155ProxyOperator');
 				// erc1155ProxyOperator = ERC1155ProxyOperatorFactory.attach(ownerDiamond.address);
 				erc1155ProxyOperator = ownerDiamond;
 				snapshotId = await provider.send('evm_snapshot', []);
@@ -117,13 +118,13 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
 				// Assert that the `geniusDiamond` contract supports the ERC20 interface.
 				assert(
-					await geniusDiamond?.supportsInterface(IERC20InterfaceID._hex),
+					await geniusDiamond?.supportsInterface(IERC20InterfaceID.toString(16).padStart(8, '0')),
 					"Doesn't support IERC20Upgradeable",
 				);
 
 				// Test ERC165 interface compatibility for ERC20 '0x37c8e2a0'
 				const supportsERC20 = await geniusDiamond?.supportsInterface(
-					IERC20InterfaceID._hex,
+					IERC20InterfaceID.toString(16).padStart(8, '0'),
 				);
 				expect(supportsERC20).to.be.true;
 
@@ -135,7 +136,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				console.log(`Verifying MINTER role on chain: ${networkName}`);
 				const ownershipFacet = await ethersMultichain.getContractAt(
 					'GeniusOwnershipFacet',
-					geniusDiamond.address,
+					await geniusDiamond.getAddress(), 
 				);
 				const minterRole = await geniusDiamond['MINTER_ROLE']();
 				const owner = await ownershipFacet.connect(ownerSigner).owner();
@@ -149,17 +150,17 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				// This may be non-zero on forked chains so comparisons must take this into account.
 				const initBalance = await (
 					await geniusDiamond['balanceOf(address)'](owner)
-				).toBigInt();
+				);
 				// Mint GNUS tokens
 				await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
-				const updatedOwnerBalance = await await geniusDiamond['balanceOf(address)'](owner);
-				const expectedBalance = initBalance + toWei(150).toBigInt();
-				expect(updatedOwnerBalance.eq(expectedBalance));
+				const updatedOwnerBalance = await geniusDiamond['balanceOf(address)'](owner);
+				const expectedBalance = initBalance + toWei(150);
+				expect(updatedOwnerBalance === expectedBalance).to.be.true;
 
 				// Transfer GNUS tokens
 				await ownerDiamond.transfer(signer2, toWei(150));
 				const recipientBalance = await ownerDiamond['balanceOf(address)'](signer2);
-				expect(recipientBalance.eq(toWei(150))).to.be.true;
+				expect(recipientBalance === toWei(150)).to.be.true;
 			});
 
 			it('should handle transferFrom and approval correctly on all chains', async function () {
