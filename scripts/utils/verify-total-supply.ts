@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, Contract, Provider, JsonRpcProvider, formatUnits } from 'ethers';
 import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
 import * as dotenv from 'dotenv';
 
@@ -31,7 +31,7 @@ const INFURA_API_KEY = process.env.INFURA_API_KEY;
 async function checkTotalSupply(
   network: string,
   diamondAddress: string,
-  provider: ethers.providers.Provider,
+  provider: Provider,
 ) {
   const contract = new ethers.Contract(diamondAddress, ABI, provider);
   let totalSupply: string | null = null;
@@ -46,7 +46,7 @@ async function checkTotalSupply(
 
     // Query totalSupply
     const supply = await contract.totalSupply();
-    totalSupply = ethers.utils.formatUnits(supply, 18); // Format based on 18 decimals
+    totalSupply = formatUnits(supply, 18); // Format based on 18 decimals
   } catch (error) {
     console.error(
       `Error querying totalSupply for ${diamondAddress} on ${network}: ${(error as any).message}`,
@@ -65,7 +65,7 @@ async function main() {
 
     console.log(`\nChecking ${network}...`);
     const RPC_ENDPOINT = `${RPC_URLS[network]}${INFURA_API_KEY}`;
-    const provider = new ethers.providers.JsonRpcProvider(RPC_ENDPOINT);
+    const provider = new JsonRpcProvider(RPC_ENDPOINT);
 
     const { DiamondAddress } = data;
     const totalSupply = await checkTotalSupply(network, DiamondAddress, provider);

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, Contract, Provider, JsonRpcProvider } from 'ethers';
 import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
 import * as dotenv from 'dotenv';
 
@@ -29,9 +29,9 @@ const INFURA_API_KEY = process.env.INFURA_API_KEY;
 async function checkERC165Support(
   network: string,
   diamondAddress: string,
-  provider: ethers.providers.Provider,
+  provider: Provider,
 ) {
-  const contract = new ethers.Contract(diamondAddress, ABI, provider);
+  const contract = new Contract(diamondAddress, ABI, provider);
 
   const results: { [key: string]: boolean } = {};
   try {
@@ -56,7 +56,7 @@ async function main() {
 
     console.log(`\nChecking ${network}...`);
     const RPC_ENDPOINT = RPC_URLS[network] + INFURA_API_KEY;
-    const provider = new ethers.providers.JsonRpcProvider(RPC_ENDPOINT);
+    const provider = new JsonRpcProvider(RPC_ENDPOINT);
 
     const { DiamondAddress } = data;
     const results = await checkERC165Support(network, DiamondAddress, provider);

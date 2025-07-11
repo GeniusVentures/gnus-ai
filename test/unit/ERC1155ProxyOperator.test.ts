@@ -1,9 +1,9 @@
 import { debug } from 'debug';
 import { ethers } from 'hardhat';
 import { expect, assert } from 'chai';
-import { utils } from 'ethers';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { multichain } from 'hardhat-multichain';
 import { debuglog, GNUS_TOKEN_ID, toWei } from '../../scripts/common';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';

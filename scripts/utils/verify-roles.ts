@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, Contract, Provider, JsonRpcProvider, keccak256, toUtf8Bytes } from 'ethers';
 import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
 import * as dotenv from 'dotenv';
 
@@ -24,7 +24,7 @@ const ROLE_NAMES = {
 // Generate keccak256 hashes for all roles
 const ROLES = Object.entries(ROLE_NAMES).reduce(
   (acc: { [key: string]: string }, [key, value]) => {
-    acc[key] = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(value));
+    acc[key] = keccak256(toUtf8Bytes(value));
     return acc;
   },
   {},
@@ -47,7 +47,7 @@ const INFURA_API_KEY = process.env.INFURA_API_KEY;
 async function fetchRoles(
   network: string,
   contractAddress: string,
-  provider: ethers.providers.Provider,
+  provider: Provider,
 ) {
   const contract = new ethers.Contract(contractAddress, ABI, provider);
   const roles: { [key: string]: string[] } = {};
@@ -86,7 +86,7 @@ async function main() {
 
     console.log(`\nChecking ${network}...`);
     const RPC_ENDPOINT = RPC_URLS[network] + INFURA_API_KEY;
-    const provider = new ethers.providers.JsonRpcProvider(RPC_ENDPOINT);
+    const provider = new JsonRpcProvider(RPC_ENDPOINT);
 
     const { DiamondAddress } = data;
 

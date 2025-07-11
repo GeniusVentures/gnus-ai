@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { JsonRpcProvider } from "ethers";
 
 /**
  * Waits for the network to be available by polling the JSON-RPC endpoint.
@@ -7,7 +7,7 @@ import { ethers } from "ethers";
  * @returns A promise that resolves when the network is ready or rejects on timeout.
  */
 async function waitForNetwork(url: string, timeout: number = 30000): Promise<void> {
-  const provider = new ethers.providers.JsonRpcProvider(url);
+  const provider = new JsonRpcProvider(url);
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeout) {

@@ -26,7 +26,7 @@ export async function impersonateSigner(signerAddress: string) {
 export async function setEtherBalance(address: string, amount: bigint) {
   await hre.network.provider.send('hardhat_setBalance', [
     address, // Address to modify the balance of
-    amount.toHexString().replace('0x0', '0x'), // Amount to set, formatted as a hex string
+    '0x' + amount.toString(16), // Amount to set, formatted as a hex string
   ]);
 }
 

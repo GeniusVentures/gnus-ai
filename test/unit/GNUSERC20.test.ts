@@ -4,6 +4,7 @@ import { expect, assert } from 'chai';
 import hre from 'hardhat';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { multichain } from 'hardhat-multichain';
 import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
 import {
@@ -20,15 +21,15 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	type ProviderType = JsonRpcProvider | HardhatEthersProvider;
-	const networkProviders = multichain.getProviders() || new Map<string, ProviderType>();
+	const networkProviders = (multichain.getProviders() as Map<string, ProviderType>) || new Map<string, ProviderType>();
 
 	if (process.argv.includes('test-multichain')) {
 		const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
 		if (networkNames.includes('hardhat')) {
-			networkProviders.set('hardhat', hre.ethers.provider);
+			networkProviders.set('hardhat', hre.ethers.provider as ProviderType);
 		}
 	} else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-		networkProviders.set('hardhat', hre.ethers.provider);
+		networkProviders.set('hardhat', hre.ethers.provider as ProviderType);
 	}
 
 	for (const [networkName, provider] of networkProviders.entries()) {
@@ -73,7 +74,9 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				)) as GeniusDiamond;
 
 				ethersMultichain = hre.ethers;
-				ethersMultichain.provider = provider;
+				if ('_hardhatProvider' in provider) {
+					ethersMultichain.provider = provider as HardhatEthersProvider;
+				}
 
 				// Retrieve the signers for the chain
 				signers = await ethersMultichain.getSigners();

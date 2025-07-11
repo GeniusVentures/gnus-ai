@@ -1,11 +1,11 @@
 import { debug } from 'debug';
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
-import { BigNumber, utils } from 'ethers';
 import { multichain } from 'hardhat-multichain';
 import { JsonRpcProvider } from '@ethersproject/providers';
+import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { debuglog, GNUS_TOKEN_ID, toBN, toWei } from '../../scripts/common';
+import { debuglog, GNUS_TOKEN_ID, toWei } from '../../scripts/common';
 import { iObjToString } from '../utils/iObjToString';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
 import { deployments } from '../../notes/archive/deployments';

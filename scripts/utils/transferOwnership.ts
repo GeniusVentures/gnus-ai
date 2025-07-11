@@ -1,4 +1,5 @@
 import { ethers, network } from 'hardhat';
+import { parseEther, formatEther } from 'ethers';
 import { GeniusOwnershipFacet } from '../../typechain-types'; // Update the path to your typechain types
 import { INetworkDeployInfo } from '../common'; // Update the path to your common types
 
@@ -24,9 +25,9 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
   const deployerSigner = await ethers.getSigner(DeployerAddress);
 
   // Fund the impersonated deployer account
-  const fundAmount = ethers.utils.parseEther('10'); // Adjust as needed
+  const fundAmount = parseEther('10'); // Adjust as needed
   const [funder] = await ethers.getSigners();
-  console.log(`Funding deployer account with ${ethers.utils.formatEther(fundAmount)} ETH`);
+  console.log(`Funding deployer account with ${formatEther(fundAmount)} ETH`);
   await funder.sendTransaction({
     to: DeployerAddress,
     value: fundAmount,
@@ -66,6 +67,7 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
 const networkDeployInfo: INetworkDeployInfo = {
   DiamondAddress: '0xYourDiamondProxyAddress', // Replace with the actual diamond address
   DeployerAddress: '', // Replace with the actual deployer address
+  FacetDeployedInfo: {}, // Add empty facet deployed info
 };
 
 main(networkDeployInfo)
