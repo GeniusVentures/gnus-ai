@@ -1,42 +1,45 @@
-import { ethers } from "ethers";
-import { deployments } from "../../notes/archive/deployments"; // Adjust the path to your `deployments.ts`
-import * as dotenv from "dotenv";
+import { ethers } from 'ethers';
+import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const ABI = [
-  "function supportsInterface(bytes4 interfaceId) external view returns (bool)",
-  "function getRoleAdmin(bytes32 role) external view returns (bytes32)",
-  "function hasRole(bytes32 role, address account) external view returns (bool)",
-  "function getRoleMember(bytes32 role, uint256 index) external view returns (address)",
-  "function getRoleMemberCount(bytes32 role) external view returns (uint256)",
+  'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+  'function getRoleAdmin(bytes32 role) external view returns (bytes32)',
+  'function hasRole(bytes32 role, address account) external view returns (bool)',
+  'function getRoleMember(bytes32 role, uint256 index) external view returns (address)',
+  'function getRoleMemberCount(bytes32 role) external view returns (uint256)',
 ];
 
 // Predefined role constants
 const ROLE_NAMES = {
-  DEFAULT_ADMIN_ROLE: "DEFAULT_ADMIN_ROLE",
-  UPGRADER_ROLE: "UPGRADER_ROLE",
-  NFT_PROXY_OPERATOR_ROLE: "NFT_PROXY_OPERATOR_ROLE",
-  MINTER_ROLE: "MINTER_ROLE",
-  CREATOR_ROLE: "CREATOR_ROLE",
+  DEFAULT_ADMIN_ROLE: 'DEFAULT_ADMIN_ROLE',
+  UPGRADER_ROLE: 'UPGRADER_ROLE',
+  NFT_PROXY_OPERATOR_ROLE: 'NFT_PROXY_OPERATOR_ROLE',
+  MINTER_ROLE: 'MINTER_ROLE',
+  CREATOR_ROLE: 'CREATOR_ROLE',
 };
 
 // Generate keccak256 hashes for all roles
-const ROLES = Object.entries(ROLE_NAMES).reduce((acc: { [key: string]: string }, [key, value]) => {
-  acc[key] = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(value));
-  return acc;
-}, {});
+const ROLES = Object.entries(ROLE_NAMES).reduce(
+  (acc: { [key: string]: string }, [key, value]) => {
+    acc[key] = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(value));
+    return acc;
+  },
+  {},
+);
 
 // Load RPC URLs from environment or define them here
 const RPC_URLS: { [key: string]: string } = {
-  mainnet: process.env.MAINNET_RPC || "",
-  polygon: process.env.POLYGON_RPC || "",
-  polygon_amoy: process.env.POLYGON_AMOY_RPC || "",
-  sepolia: process.env.SEPOLIA_RPC || "",
-  base: process.env.BASE_RPC || "",
-  base_sepolia: process.env.BASE_SEPOLIA_RPC || "",
-  bsc: process.env.BSC_RPC || "",
-  bsc_testnet: process.env.BSC_TESTNET_RPC || "",
+  mainnet: process.env.MAINNET_RPC || '',
+  polygon: process.env.POLYGON_RPC || '',
+  polygon_amoy: process.env.POLYGON_AMOY_RPC || '',
+  sepolia: process.env.SEPOLIA_RPC || '',
+  base: process.env.BASE_RPC || '',
+  base_sepolia: process.env.BASE_SEPOLIA_RPC || '',
+  bsc: process.env.BSC_RPC || '',
+  bsc_testnet: process.env.BSC_TESTNET_RPC || '',
 };
 
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
@@ -44,7 +47,7 @@ const INFURA_API_KEY = process.env.INFURA_API_KEY;
 async function fetchRoles(
   network: string,
   contractAddress: string,
-  provider: ethers.providers.Provider
+  provider: ethers.providers.Provider,
 ) {
   const contract = new ethers.Contract(contractAddress, ABI, provider);
   const roles: { [key: string]: string[] } = {};
@@ -62,9 +65,11 @@ async function fetchRoles(
       }
 
       console.log(`Role: ${roleName}`);
-      console.log(`  Members: ${roles[roleName].join(", ")}`);
+      console.log(`  Members: ${roles[roleName].join(', ')}`);
     } catch (error) {
-      console.error(`Error fetching role ${roleName} for ${contractAddress}: ${(error as any).message}`);
+      console.error(
+        `Error fetching role ${roleName} for ${contractAddress}: ${(error as any).message}`,
+      );
       roles[roleName] = [];
     }
   }
@@ -91,8 +96,8 @@ async function main() {
 }
 
 main()
-  .then(() => console.log("Done"))
+  .then(() => console.log('Done'))
   .catch((error) => {
-    console.error("Script failed:", error);
+    console.error('Script failed:', error);
     process.exit(1);
   });

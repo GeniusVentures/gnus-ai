@@ -1396,10 +1396,11 @@ __metadata:
     "@openzeppelin/defender-sdk": "npm:^2.0.0"
     "@openzeppelin/defender-sdk-proposal-client": "npm:^2.0.0"
     "@typechain/ethers-v6": "npm:^0.5.0"
-    "@typechain/hardhat": "npm:^9.0.0"
+    "@typechain/hardhat": "npm:^9.1.0"
     "@types/chai": "npm:^4.2.0"
     "@types/chai-as-promised": "npm:^8.0.1"
     "@types/debug": "npm:^4.1.12"
+    "@types/fs-extra": "npm:^11.0.4"
     "@types/glob": "npm:^8.1.0"
     "@types/mocha": "npm:>=9.1.0"
     "@types/node": "npm:>=18.0.0"
@@ -1411,6 +1412,7 @@ __metadata:
     chai: "npm:^4.2.0"
     chai-as-promised: "npm:^7.1.1"
     contracts-starter: "https://github.com/mudgen/diamond-2-hardhat.git"
+    diamonds: "https://github.com/GeniusVentures/diamonds.git#main"
     dotenv: "npm:^16.4.7"
     eslint: "npm:^9.17.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -1423,8 +1425,9 @@ __metadata:
     hardhat: "npm:^2.22.17"
     hardhat-abi-exporter: "npm:^2.8.0"
     hardhat-diamond-abi: "npm:^3.0.1"
+    hardhat-diamonds: "https://github.com/GeniusVentures/hardhat-diamonds.git"
     hardhat-gas-reporter: "npm:^1.0.8"
-    hardhat-multichain: "git+https://github.com/GeniusVentures/hardhat-multchain.git"
+    hardhat-multichain: "https://github.com/GeniusVentures/hardhat-multichain.git#main"
     prettier: "npm:^3.4.2"
     prettier-plugin-solidity: "npm:^1.4.1"
     solhint: "npm:^5.0.3"
@@ -3047,7 +3050,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typechain/hardhat@npm:^9.0.0":
+"@typechain/hardhat@npm:^9.1.0":
   version: 9.1.0
   resolution: "@typechain/hardhat@npm:9.1.0"
   dependencies:
@@ -3145,6 +3148,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/fs-extra@npm:^11.0.4":
+  version: 11.0.4
+  resolution: "@types/fs-extra@npm:11.0.4"
+  dependencies:
+    "@types/jsonfile": "npm:*"
+    "@types/node": "npm:*"
+  checksum: 10c0/9e34f9b24ea464f3c0b18c3f8a82aefc36dc524cc720fc2b886e5465abc66486ff4e439ea3fb2c0acebf91f6d3f74e514f9983b1f02d4243706bdbb7511796ad
+  languageName: node
+  linkType: hard
+
 "@types/glob@npm:^7.1.1":
   version: 7.2.0
   resolution: "@types/glob@npm:7.2.0"
@@ -3176,6 +3189,15 @@ __metadata:
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 10c0/a996a745e6c5d60292f36731dd41341339d4eeed8180bb09226e5c8d23759067692b1d88e5d91d72ee83dfc00d3aca8e7bd43ea120516c17922cbcb7c3e252db
+  languageName: node
+  linkType: hard
+
+"@types/jsonfile@npm:*":
+  version: 6.1.4
+  resolution: "@types/jsonfile@npm:6.1.4"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/b12d068b021e4078f6ac4441353965769be87acf15326173e2aea9f3bf8ead41bd0ad29421df5bbeb0123ec3fc02eb0a734481d52903704a1454a1845896b9eb
   languageName: node
   linkType: hard
 
@@ -3215,11 +3237,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=13.7.0, @types/node@npm:>=18.0.0":
-  version: 24.0.12
-  resolution: "@types/node@npm:24.0.12"
+  version: 24.0.13
+  resolution: "@types/node@npm:24.0.13"
   dependencies:
     undici-types: "npm:~7.8.0"
-  checksum: 10c0/333777c3416b758bbdb72a09e9db5599ff7789dca519d3fcf8150a1c56c79d808e0009e92d52016e80033b3c52724def08aad2c5b396e28f00dbdfe40a1756a4
+  checksum: 10c0/e1f3d4ea8973b1f2f987814ac5343d05ad8b56bf7fa41755295dee0ce0f7b4e2de4f3daef5296429180228970cef0d70f2ad873c61dbafc6f5eeca9d023aba76
   languageName: node
   linkType: hard
 
@@ -3873,7 +3895,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.5.1, axios@npm:^1.7.4":
+"axios@npm:^1.10.0, axios@npm:^1.5.1, axios@npm:^1.7.4":
   version: 1.10.0
   resolution: "axios@npm:1.10.0"
   dependencies:
@@ -4685,7 +4707,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4, debug@npm:^4.3.5":
+"debug@npm:4, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.4.1":
   version: 4.4.1
   resolution: "debug@npm:4.4.1"
   dependencies:
@@ -4802,6 +4824,24 @@ __metadata:
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: 10c0/58bd06ec20e19529b06f7ad07ddab60e504d9e0faca4bd23079fac2d279c3594334d736508dc350e06e510aba5e22e4594483b3a6562ce7c17dd797f4cc4ad2c
+  languageName: node
+  linkType: hard
+
+"diamonds@https://github.com/GeniusVentures/diamonds.git#main":
+  version: 1.0.0
+  resolution: "diamonds@https://github.com/GeniusVentures/diamonds.git#commit=b69499fd75f560ac71ab0f47debce6ff68a39a05"
+  dependencies:
+    "@ethersproject/abstract-signer": "npm:^5.8.0"
+    axios: "npm:^1.10.0"
+    debug: "npm:^4.4.1"
+    fs-extra: "npm:^11.3.0"
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    ethers: ^6.0.0
+    hardhat: ^2.0.0
+    ts-node: ^10.0.0
+    typescript: ^5.0.0
+  checksum: 10c0/5a16e96054c65f5628fdb2912267b6fdb2d4d21eefbafa7ea5f31e44a8ede8bbc6608110bc3887eb4cfe6b63dc6824e976fc528a5a3ec9e82051aa2e5f0ef874
   languageName: node
   linkType: hard
 
@@ -5752,7 +5792,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:^11.1.0, fs-extra@npm:^11.2.0":
+"fs-extra@npm:^11.1.0, fs-extra@npm:^11.2.0, fs-extra@npm:^11.3.0":
   version: 11.3.0
   resolution: "fs-extra@npm:11.3.0"
   dependencies:
@@ -6176,6 +6216,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hardhat-diamonds@https://github.com/GeniusVentures/hardhat-diamonds.git":
+  version: 1.0.0
+  resolution: "hardhat-diamonds@https://github.com/GeniusVentures/hardhat-diamonds.git#commit=ffbce7144e8a5021ee6ca37c78f15990502f00cc"
+  peerDependencies:
+    diamonds: ^1.0.0
+    ethers: ^6.0.0
+    hardhat: ^2.0.0
+  checksum: 10c0/471b89a476365b1084ef318be176ff46322b279ce90d108d07328a6d8918bc54804fd33c7f12c7d5156a22cb1a27647a4b1ae17c621e8a3395fb9acdd95980b7
+  languageName: node
+  linkType: hard
+
 "hardhat-gas-reporter@npm:^1.0.8":
   version: 1.0.10
   resolution: "hardhat-gas-reporter@npm:1.0.10"
@@ -6189,15 +6240,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hardhat-multichain@git+https://github.com/GeniusVentures/hardhat-multchain.git":
-  version: 0.0.1
-  resolution: "hardhat-multichain@https://github.com/GeniusVentures/hardhat-multchain.git#commit=ee13faff57f1d4d94e4c1826981875d1da370d41"
+"hardhat-multichain@https://github.com/GeniusVentures/hardhat-multichain.git#main":
+  version: 1.0.0
+  resolution: "hardhat-multichain@https://github.com/GeniusVentures/hardhat-multichain.git#commit=072bd5e109acdcf39cadfa4439c5d927721bb143"
   dependencies:
     winston: "npm:^3.8.0"
   peerDependencies:
-    ethers: ^5.5.4
-    hardhat: ^2.0.0
-  checksum: 10c0/852826ba5c2c28f40aafd48ec741a6399b26a512bfa9fb0ead71880e08383a7cc08accd970880f4e5ff320fd80011beff59d7f2f1126f5ba02f972d1b0446ad7
+    ethers: ^6.0.0
+    hardhat: ^2.22.1
+  checksum: 10c0/657aab7d7b7d5fb017551df45b20585c6045546134a283256789850ccf604373d295853d77887e87541a303efc5762ae8de7c8365ab06b0a6fb8b812c2460757
   languageName: node
   linkType: hard
 
@@ -8888,12 +8939,12 @@ __metadata:
   linkType: hard
 
 "socks@npm:^2.8.3":
-  version: 2.8.5
-  resolution: "socks@npm:2.8.5"
+  version: 2.8.6
+  resolution: "socks@npm:2.8.6"
   dependencies:
     ip-address: "npm:^9.0.5"
     smart-buffer: "npm:^4.2.0"
-  checksum: 10c0/e427d0eb0451cfd04e20b9156ea8c0e9b5e38a8d70f21e55c30fbe4214eda37cfc25d782c63f9adc5fbdad6d062a0f127ef2cefc9a44b6fee2b9ea5d1ed10827
+  checksum: 10c0/15b95db4caa359c80bfa880ff3e58f3191b9ffa4313570e501a60ee7575f51e4be664a296f4ee5c2c40544da179db6140be53433ce41ec745f9d51f342557514
   languageName: node
   linkType: hard
 

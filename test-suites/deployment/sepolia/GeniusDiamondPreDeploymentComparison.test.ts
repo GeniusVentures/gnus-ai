@@ -15,7 +15,7 @@ import {
   compareFacetSelectors,
   isProtocolInitRegistered,
   getDeployedFacets
-} from '@gnus.ai/diamonds';
+} from 'diamonds';
 import {
   GeniusDiamond
 } from '../../../typechain-types';

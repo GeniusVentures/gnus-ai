@@ -1,12 +1,15 @@
-import debug from "debug";
-import hre from "hardhat";
-import { INetworkDeployInfo, writeDeployedInfo } from "../../notes/archive/common";
-import { deployments } from "../../notes/archive/deployments";
-import util from "util";
-import { LoadFacetDeployments } from "../facets";
-import { getDeployedFuncSelectors, getInterfaceID } from "../../notes/archive/FacetSelectors";
+import debug from 'debug';
+import hre from 'hardhat';
+import { INetworkDeployInfo, writeDeployedInfo } from '../../notes/archive/common';
+import { deployments } from '../../notes/archive/deployments';
+import util from 'util';
+import { LoadFacetDeployments } from '../facets';
+import {
+  getDeployedFuncSelectors,
+  getInterfaceID,
+} from '../../notes/archive/FacetSelectors';
 
-const log: debug.Debugger = debug("GNUSShowFacets:log");
+const log: debug.Debugger = debug('GNUSShowFacets:log');
 const ethers = hre.ethers;
 
 /**
@@ -17,7 +20,7 @@ const ethers = hre.ethers;
 async function main() {
   // Enable debug logging if this script is the main module
   if (require.main === module) {
-    debug.enable("GNUS.*:log");
+    debug.enable('GNUS.*:log');
     await LoadFacetDeployments(); // Load the facet deployments
     const networkName = hre.network.name; // Get the current network name
     log.enabled = true; // Enable logging

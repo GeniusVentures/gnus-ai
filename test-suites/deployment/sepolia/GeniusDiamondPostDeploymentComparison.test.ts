@@ -3,7 +3,7 @@ import { pathExistsSync } from "fs-extra";
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
 import { getInterfaceID } from '../../../scripts/utils/helpers';
@@ -15,11 +15,11 @@ import {
   compareFacetSelectors,
   isProtocolInitRegistered,
   getDeployedFacets
-} from '@gnus.ai/diamonds';
+} from 'diamonds';
 import {
   GeniusDiamond,
 } from '../../../typechain-types';
-import { DeployedDiamondData } from '@gnus.ai/diamonds/src';
+import { DeployedDiamondData } from 'diamonds/src';
 
 describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
   const diamondName = 'GeniusDiamond';

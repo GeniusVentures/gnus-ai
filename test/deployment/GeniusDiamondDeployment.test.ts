@@ -1,21 +1,22 @@
 import { debug } from 'debug';
-import { pathExistsSync } from "fs-extra";
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
 import { getInterfaceID } from '../../scripts/utils/helpers';
-import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond, deleteDeployInfo } from '@gnus.ai/diamonds';
+import {
+  LocalDiamondDeployer,
+  LocalDiamondDeployerConfig,
+} from '../../scripts/setup/LocalDiamondDeployer';
+import { Diamond, deleteDeployInfo } from 'diamonds';
 import {
   GeniusDiamond,
   IERC20Upgradeable__factory,
   IDiamondCut__factory,
-  IDiamondLoupe__factory
+  IDiamondLoupe__factory,
 } from '../../typechain-types';
-import { config } from 'dotenv';
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
   const diamondName = 'GeniusDiamond';
@@ -38,14 +39,14 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
       let diamond: Diamond;
       let signers: SignerWithAddress[];
       let signer0: string;
-      let signer1: string;
-      let signer2: string;
+      // let signer1: string;
+      // let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
       let geniusDiamond: GeniusDiamond;
-      let signer0Diamond: GeniusDiamond;
-      let signer1Diamond: GeniusDiamond;
-      let signer2Diamond: GeniusDiamond;
+      // let signer0Diamond: GeniusDiamond;
+      // let signer1Diamond: GeniusDiamond;
+      // let signer2Diamond: GeniusDiamond;
       let ownerDiamond: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
@@ -67,7 +68,10 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 
         const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
         const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as GeniusDiamond;
+        geniusDiamond = (await ethers.getContractAt(
+          diamondArtifactName,
+          deployedDiamondData.DiamondAddress!,
+        )) as GeniusDiamond;
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider;
@@ -75,11 +79,11 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         // Retrieve the signers for the chain
         signers = await ethersMultichain.getSigners();
         signer0 = signers[0].address;
-        signer1 = signers[1].address;
-        signer2 = signers[2].address;
-        signer0Diamond = geniusDiamond.connect(signers[0]);
-        signer1Diamond = geniusDiamond.connect(signers[1]);
-        signer2Diamond = geniusDiamond.connect(signers[2]);
+        // signer1 = signers[1].address;
+        // signer2 = signers[2].address;
+        // signer0Diamond = geniusDiamond.connect(signers[0]);
+        // signer1Diamond = geniusDiamond.connect(signers[1]);
+        // signer2Diamond = geniusDiamond.connect(signers[2]);
 
         // get the signer for the owner
 
@@ -87,7 +91,7 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         if (!owner) {
           diamond.setSigner(signers[0]);
           owner = signer0;
-          ownerSigner
+          ownerSigner;
         }
         ownerSigner = await ethersMultichain.getSigner(owner);
 
@@ -103,7 +107,6 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
       });
 
       it(`should ensure that ${networkName} chain object can be retrieved and reused`, async function () {
-
         expect(provider).to.not.be.undefined;
         // expect(diamond).to.not.be.null;
 
@@ -112,7 +115,6 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
       });
 
       it(`should verify that ${networkName} diamond is deployed and we can get hardhat signers on ${networkName}`, async function () {
-
         expect(signers).to.be.an('array');
         expect(signers).to.have.lengthOf(20);
         expect(signers[0]).to.be.instanceOf(SignerWithAddress);
@@ -135,7 +137,8 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         if (networkName !== 'hardhat') {
           expect(blockNumber).to.be.greaterThan(0);
         }
-        const configBlockNumber = hre.config.chainManager?.chains?.[networkName]?.blockNumber ?? 0;
+        const configBlockNumber =
+          hre.config.chainManager?.chains?.[networkName]?.blockNumber ?? 0;
         expect(blockNumber).to.be.gte(configBlockNumber);
 
         expect(blockNumber).to.be.lte(configBlockNumber + 500);
@@ -182,7 +185,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         // Generate the IDiamondCut interface ID by XORing with the base interface ID.
         const iDiamondCutInterfaceID = getInterfaceID(iDiamondCutInterface);
         // const supportsIDiamondCut = await proxyDiamond.supportsInterface('0x1f931c1c');
-        const supportsERC165 = await ownerDiamond.supportsInterface(iDiamondCutInterfaceID._hex);
+        const supportsERC165 = await ownerDiamond.supportsInterface(
+          iDiamondCutInterfaceID._hex,
+        );
         expect(supportsERC165).to.be.true;
 
         log(`DiamondCut Facet interface support validated on ${networkName}`);
@@ -194,7 +199,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         // Generate the IDiamondLoupe interface ID by XORing with the base interface ID.
         const iDiamondLoupeInterfaceID = getInterfaceID(iDiamondLoupeInterface);
         // const supportsIDiamondLoupe = await proxyDiamond.supportsInterface('0x48e3885f');
-        const supportsERC165 = await ownerDiamond.supportsInterface(iDiamondLoupeInterfaceID._hex);
+        const supportsERC165 = await ownerDiamond.supportsInterface(
+          iDiamondLoupeInterfaceID._hex,
+        );
         expect(supportsERC165).to.be.true;
         log(`DiamondLoupe Facet interface support validated on ${networkName}`);
       });
@@ -223,4 +230,3 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
     });
   }
 });
-

@@ -1,4 +1,4 @@
-import { ContractTransaction } from "ethers";
+import { ContractTransaction } from 'ethers';
 
 export async function logEvents(tx: ContractTransaction) {
   const receipt = await tx.wait();

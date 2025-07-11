@@ -1,5 +1,5 @@
-import { ethers } from "hardhat";
-import { utils, BigNumber } from "ethers";
+import { ethers } from 'hardhat';
+import { utils, BigNumber } from 'ethers';
 
 export function getInterfaceID(contractInterface: utils.Interface) {
   let interfaceID: BigNumber = ethers.constants.Zero;

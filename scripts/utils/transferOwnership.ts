@@ -1,12 +1,12 @@
-import { ethers, network } from "hardhat";
-import { GeniusOwnershipFacet } from "../../typechain-types"; // Update the path to your typechain types
-import { INetworkDeployInfo } from "../../notes/archive/common"; // Update the path to your common types
+import { ethers, network } from 'hardhat';
+import { GeniusOwnershipFacet } from '../../typechain-types'; // Update the path to your typechain types
+import { INetworkDeployInfo } from '../../notes/archive/common'; // Update the path to your common types
 
 async function main(networkDeployInfo: INetworkDeployInfo) {
   const { DiamondAddress, DeployerAddress } = networkDeployInfo;
 
   if (!DiamondAddress || !DeployerAddress) {
-    throw new Error("DiamondAddress or DeployerAddress is missing in networkDeployInfo");
+    throw new Error('DiamondAddress or DeployerAddress is missing in networkDeployInfo');
   }
 
   console.log(`Network: ${network.name}`);
@@ -16,7 +16,7 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
   // Impersonate the deployer account
   console.log(`Impersonating deployer account: ${DeployerAddress}`);
   await network.provider.request({
-    method: "hardhat_impersonateAccount",
+    method: 'hardhat_impersonateAccount',
     params: [DeployerAddress],
   });
 
@@ -24,7 +24,7 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
   const deployerSigner = await ethers.getSigner(DeployerAddress);
 
   // Fund the impersonated deployer account
-  const fundAmount = ethers.utils.parseEther("10"); // Adjust as needed
+  const fundAmount = ethers.utils.parseEther('10'); // Adjust as needed
   const [funder] = await ethers.getSigners();
   console.log(`Funding deployer account with ${ethers.utils.formatEther(fundAmount)} ETH`);
   await funder.sendTransaction({
@@ -34,16 +34,16 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
 
   // Connect to the GeniusOwnershipFacet
   console.log(`Connecting to GeniusOwnershipFacet at: ${DiamondAddress}`);
-  const ownershipFacet = await ethers.getContractAt(
-    "GeniusOwnershipFacet",
+  const ownershipFacet = (await ethers.getContractAt(
+    'GeniusOwnershipFacet',
     DiamondAddress,
-    deployerSigner
-  ) as GeniusOwnershipFacet;
+    deployerSigner,
+  )) as GeniusOwnershipFacet;
 
   // Transfer ownership to the deployer address
   console.log(`Transferring contract ownership to: ${DeployerAddress}`);
   const tx = await ownershipFacet.transferOwnership(DeployerAddress);
-  console.log("Transaction sent. Waiting for confirmation...");
+  console.log('Transaction sent. Waiting for confirmation...');
   await tx.wait();
 
   // Verify the ownership transfer
@@ -57,20 +57,20 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
   // Stop impersonating the deployer
   console.log(`Stopping impersonation of deployer account: ${DeployerAddress}`);
   await network.provider.request({
-    method: "hardhat_stopImpersonatingAccount",
+    method: 'hardhat_stopImpersonatingAccount',
     params: [DeployerAddress],
   });
 }
 
 // Replace `networkDeployInfo` with actual data when calling the script
 const networkDeployInfo: INetworkDeployInfo = {
-  DiamondAddress: "0xYourDiamondProxyAddress", // Replace with the actual diamond address
-  DeployerAddress: "", // Replace with the actual deployer address
+  DiamondAddress: '0xYourDiamondProxyAddress', // Replace with the actual diamond address
+  DeployerAddress: '', // Replace with the actual deployer address
 };
 
 main(networkDeployInfo)
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error("Error:", error);
+    console.error('Error:', error);
     process.exit(1);
   });

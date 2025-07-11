@@ -1,34 +1,38 @@
-import { ethers } from "ethers";
-import { deployments } from "../../notes/archive/deployments"; // Adjust the path to your `deployments.ts`
-import * as dotenv from "dotenv";
+import { ethers } from 'ethers';
+import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 // Function ABI for supportsInterface and totalSupply
 const ABI = [
-  "function supportsInterface(bytes4 interfaceId) external view returns (bool)",
-  "function totalSupply() external view returns (uint256)"
+  'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+  'function totalSupply() external view returns (uint256)',
 ];
 
 // Interface ID for ERC20
-const ERC20_INTERFACE_ID = "0x36372b07";
+const ERC20_INTERFACE_ID = '0x36372b07';
 
 // Load RPC URLs from environment or define them here
 const RPC_URLS: { [key: string]: string } = {
-  mainnet: process.env.MAINNET_RPC || "",
-  polygon: process.env.POLYGON_RPC || "",
-  polygon_amoy: process.env.POLYGON_AMOY_RPC || "",
-  sepolia: process.env.SEPOLIA_RPC || "",
-  base: process.env.BASE_RPC || "",
-  base_sepolia: process.env.BASE_SEPOLIA_RPC || "",
-  bsc: process.env.BSC_RPC || "",
-  bsc_testnet: process.env.BSC_TESTNET_RPC || "",
+  mainnet: process.env.MAINNET_RPC || '',
+  polygon: process.env.POLYGON_RPC || '',
+  polygon_amoy: process.env.POLYGON_AMOY_RPC || '',
+  sepolia: process.env.SEPOLIA_RPC || '',
+  base: process.env.BASE_RPC || '',
+  base_sepolia: process.env.BASE_SEPOLIA_RPC || '',
+  bsc: process.env.BSC_RPC || '',
+  bsc_testnet: process.env.BSC_TESTNET_RPC || '',
 };
 
 // Load Infura API Key from environment
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
 
-async function checkTotalSupply(network: string, diamondAddress: string, provider: ethers.providers.Provider) {
+async function checkTotalSupply(
+  network: string,
+  diamondAddress: string,
+  provider: ethers.providers.Provider,
+) {
   const contract = new ethers.Contract(diamondAddress, ABI, provider);
   let totalSupply: string | null = null;
 
@@ -44,7 +48,9 @@ async function checkTotalSupply(network: string, diamondAddress: string, provide
     const supply = await contract.totalSupply();
     totalSupply = ethers.utils.formatUnits(supply, 18); // Format based on 18 decimals
   } catch (error) {
-    console.error(`Error querying totalSupply for ${diamondAddress} on ${network}: ${(error as any).message}`);
+    console.error(
+      `Error querying totalSupply for ${diamondAddress} on ${network}: ${(error as any).message}`,
+    );
   }
 
   return totalSupply;
@@ -66,13 +72,13 @@ async function main() {
 
     console.log(`Network: ${network}`);
     console.log(`  DiamondAddress: ${DiamondAddress}`);
-    console.log(`  Total Supply: ${totalSupply ? totalSupply : "N/A"}`);
+    console.log(`  Total Supply: ${totalSupply ? totalSupply : 'N/A'}`);
   }
 }
 
 main()
-  .then(() => console.log("Done"))
+  .then(() => console.log('Done'))
   .catch((error) => {
-    console.error("Script failed:", error);
+    console.error('Script failed:', error);
     process.exit(1);
   });

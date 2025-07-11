@@ -3,7 +3,7 @@ import hre from 'hardhat';
 import { INetworkDeployInfo, writeDeployedInfo } from '../notes/archive/common';
 import { deployments } from '../notes/archive/deployments';
 import { BaseContract } from 'ethers';
-import { LoadFacetDeployments } from '../scripts/facets';
+// import { LoadFacetDeployments } from '../scripts/facets';
 
 /**
  * Logger for debugging contract verification process
@@ -13,9 +13,9 @@ const ethers = hre.ethers;
 
 /**
  * Verifies the deployed smart contracts on the current Ethereum network.
- * 
+ *
  * This function iterates over the deployed contract facets, verifying them if they haven't been verified already.
- * 
+ *
  * @param {INetworkDeployInfo} networkDeployInfo - Object containing network-specific deployment details, including contract addresses and verification status.
  */
 export async function VerifyContracts(networkDeployInfo: INetworkDeployInfo) {
@@ -54,7 +54,7 @@ export async function VerifyContracts(networkDeployInfo: INetworkDeployInfo) {
 
 /**
  * Main function to trigger contract verification based on network conditions.
- * 
+ *
  * This function ensures that contracts are compiled before verification and handles deployment verification
  * only on non-local networks.
  */
@@ -76,7 +76,7 @@ async function main() {
       if (networkName !== 'hardhat') {
         writeDeployedInfo(deployments);
         log(
-          `Finished verifying GNUS Contracts/Facets at ${networkDeployInfo.DiamondAddress}`
+          `Finished verifying GNUS Contracts/Facets at ${networkDeployInfo.DiamondAddress}`,
         );
       }
     }

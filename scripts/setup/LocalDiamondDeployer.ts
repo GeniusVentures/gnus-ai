@@ -11,7 +11,7 @@ import {
   DiamondPathsConfig,
   cutKey,
   impersonateAndFundSigner
-} from '@gnus.ai/diamonds';
+} from 'diamonds';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers } from 'hardhat';
 import { Signer } from 'ethers';

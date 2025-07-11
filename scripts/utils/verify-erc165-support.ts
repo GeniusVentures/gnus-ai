@@ -1,34 +1,36 @@
-import { ethers } from "ethers";
-import { deployments } from "../../notes/archive/deployments"; // Adjust the path to your `deployments.ts`
-import * as dotenv from "dotenv";
+import { ethers } from 'ethers';
+import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 // Interface IDs for ERC20 and ERC1155
-const ERC20_INTERFACE_ID = "0x36372b07";
-const ERC1155_INTERFACE_ID = "0xd9b67a26";
+const ERC20_INTERFACE_ID = '0x36372b07';
+const ERC1155_INTERFACE_ID = '0xd9b67a26';
 
 // Function ABI for supportsInterface
-const ABI = [
-  "function supportsInterface(bytes4 interfaceId) external view returns (bool)",
-];
+const ABI = ['function supportsInterface(bytes4 interfaceId) external view returns (bool)'];
 
 // Load RPC URLs from environment or define them here
 const RPC_URLS: { [key: string]: string } = {
-  mainnet: process.env.MAINNET_RPC || "",
-  polygon: process.env.POLYGON_RPC || "",
-  polygon_amoy: process.env.POLYGON_AMOY_RPC || "",
-  sepolia: process.env.SEPOLIA_RPC || "",
-  base: process.env.BASE_RPC || "",
-  base_sepolia: process.env.BASE_SEPOLIA_RPC || "",
-  bsc: process.env.BSC_RPC || "",
-  bsc_testnet: process.env.BSC_TESTNET_RPC || "",
+  mainnet: process.env.MAINNET_RPC || '',
+  polygon: process.env.POLYGON_RPC || '',
+  polygon_amoy: process.env.POLYGON_AMOY_RPC || '',
+  sepolia: process.env.SEPOLIA_RPC || '',
+  base: process.env.BASE_RPC || '',
+  base_sepolia: process.env.BASE_SEPOLIA_RPC || '',
+  bsc: process.env.BSC_RPC || '',
+  bsc_testnet: process.env.BSC_TESTNET_RPC || '',
 };
 
 // Load Infura API Key from environment
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
 
-async function checkERC165Support(network: string, diamondAddress: string, provider: ethers.providers.Provider) {
+async function checkERC165Support(
+  network: string,
+  diamondAddress: string,
+  provider: ethers.providers.Provider,
+) {
   const contract = new ethers.Contract(diamondAddress, ABI, provider);
 
   const results: { [key: string]: boolean } = {};
@@ -36,7 +38,9 @@ async function checkERC165Support(network: string, diamondAddress: string, provi
     results.ERC20 = await contract.supportsInterface(ERC20_INTERFACE_ID);
     results.ERC1155 = await contract.supportsInterface(ERC1155_INTERFACE_ID);
   } catch (error) {
-    console.error(`Error querying ${network} (${diamondAddress}): ${(error as any).message}`);
+    console.error(
+      `Error querying ${network} (${diamondAddress}): ${(error as any).message}`,
+    );
     results.ERC20 = false;
     results.ERC1155 = false;
   }
@@ -65,8 +69,8 @@ async function main() {
 }
 
 main()
-  .then(() => console.log("Done"))
+  .then(() => console.log('Done'))
   .catch((error) => {
-    console.error("Script failed:", error);
+    console.error('Script failed:', error);
     process.exit(1);
   });
