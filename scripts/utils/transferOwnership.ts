@@ -1,6 +1,6 @@
 import { ethers, network } from 'hardhat';
 import { GeniusOwnershipFacet } from '../../typechain-types'; // Update the path to your typechain types
-import { INetworkDeployInfo } from '../../notes/archive/common'; // Update the path to your common types
+import { INetworkDeployInfo } from '../common'; // Update the path to your common types
 
 async function main(networkDeployInfo: INetworkDeployInfo) {
   const { DiamondAddress, DeployerAddress } = networkDeployInfo;

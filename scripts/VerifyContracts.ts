@@ -1,6 +1,6 @@
 import debug from 'debug';
 import hre from 'hardhat';
-import { INetworkDeployInfo, writeDeployedInfo } from '../notes/archive/common';
+import { INetworkDeployInfo, writeDeployedInfo } from './common';
 import { deployments } from '../notes/archive/deployments';
 import { BaseContract } from 'ethers';
 // import { LoadFacetDeployments } from '../scripts/facets';

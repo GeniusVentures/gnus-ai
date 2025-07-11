@@ -2,202 +2,216 @@ import { debug } from 'debug';
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
 import { utils } from 'ethers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
-import { debuglog, GNUS_TOKEN_ID, toWei, } from '../../notes/archive/common';
+import { debuglog, GNUS_TOKEN_ID, toWei } from '../../scripts/common';
 import MultiChainTestDeployer from '../setup/multichainTestDeployer';
 import { deployments } from '../../notes/archive/deployments';
 import { GeniusDiamond } from '../../typechain-types/GeniusDiamond';
 
 describe('ERC20 Batch Transfer Tests', async function () {
-  this.timeout(0); // Extend timeout for deployments and testing
-  const log: debug.Debugger = debug('GNUSDeploy:log');
+	this.timeout(0); // Extend timeout for deployments and testing
+	const log: debug.Debugger = debug('GNUSDeploy:log');
 
-  let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
-  // Check the process.argv for the Hardhat network name
-  if (process.argv.includes('test-multichain')) {
-    const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
-    if (chainNames.includes('hardhat')) {
-      chains = chains.set('hardhat', ethers.provider);
+	let chains = multichain.getProviders() ?? new Map<string, JsonRpcProvider>();
+	// Check the process.argv for the Hardhat network name
+	if (process.argv.includes('test-multichain')) {
+		const chainNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+		if (chainNames.includes('hardhat')) {
+			chains = chains.set('hardhat', ethers.provider);
+		}
+	} else if (process.argv.includes('test') || process.argv.includes('coverage')) {
+		chains = chains.set('hardhat', ethers.provider);
+	}
 
-    }
-  } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    chains = chains.set('hardhat', ethers.provider);
-  }
+	for (const [chainName, provider] of chains.entries()) {
+		describe(`${chainName} ERC20 Batch Transfers`, async function () {
+			let deployer: MultiChainTestDeployer;
+			let deployment: boolean | void;
+			let upgrade: boolean | void;
+			let signers: SignerWithAddress[];
+			let signer0: string;
+			let signer1: string;
+			let signer2: string;
+			let signer0Diamond: GeniusDiamond;
+			let signer1Diamond: GeniusDiamond;
+			let signer2Diamond: GeniusDiamond;
+			// get the signer for the owner
+			let owner: string;
+			let ownerSigner: SignerWithAddress;
+			let ownerDiamond: GeniusDiamond;
+			let gnusDiamond: GeniusDiamond;
 
-  for (const [chainName, provider] of chains.entries()) {
+			let ethersMultichain: typeof ethers;
+			let snapshotId: string;
 
-    describe(`${chainName} ERC20 Batch Transfers`, async function () {
-      let deployer: MultiChainTestDeployer;
-      let deployment: boolean | void;
-      let upgrade: boolean | void;
-      let signers: SignerWithAddress[];
-      let signer0: string;
-      let signer1: string;
-      let signer2: string;
-      let signer0Diamond: GeniusDiamond;
-      let signer1Diamond: GeniusDiamond;
-      let signer2Diamond: GeniusDiamond;
-      // get the signer for the owner
-      let owner: string;
-      let ownerSigner: SignerWithAddress;
-      let ownerDiamond: GeniusDiamond;
-      let gnusDiamond: GeniusDiamond;
+			before(async function () {
+				const deployConfig = {
+					chainName: chainName,
+					provider: provider,
+				};
+				deployer = await MultiChainTestDeployer.getInstance(deployConfig);
+				deployment = await deployer.deploy();
+				expect(deployment).to.be.true;
+				upgrade = await deployer.upgrade();
+				expect(upgrade).to.be.true;
+				// Retrieve the deployed GNUS Diamond contract
+				gnusDiamond = await deployer.getDiamond();
+				if (!gnusDiamond) {
+					throw new Error(`gnusDiamond is null for chain ${chainName}`);
+				}
 
-      let ethersMultichain: typeof ethers;
-      let snapshotId: string;
+				ethersMultichain = ethers;
+				ethersMultichain.provider = provider;
 
-      before(async function () {
-        const deployConfig = {
-          chainName: chainName,
-          provider: provider,
-        };
-        deployer = await MultiChainTestDeployer.getInstance(deployConfig);
-        deployment = await deployer.deploy();
-        expect(deployment).to.be.true;
-        upgrade = await deployer.upgrade();
-        expect(upgrade).to.be.true;
-        // Retrieve the deployed GNUS Diamond contract
-        gnusDiamond = await deployer.getDiamond();
-        if (!gnusDiamond) {
-          throw new Error(`gnusDiamond is null for chain ${chainName}`);
-        }
+				// Retrieve the signers for the chain
+				signers = await ethersMultichain.getSigners();
+				signer0 = signers[0].address;
+				signer1 = signers[1].address;
+				signer2 = signers[2].address;
+				signer0Diamond = gnusDiamond.connect(signers[0]);
+				signer1Diamond = gnusDiamond.connect(signers[1]);
+				signer2Diamond = gnusDiamond.connect(signers[2]);
 
-        ethersMultichain = ethers;
-        ethersMultichain.provider = provider;
+				// get the signer for the owner
+				owner = deployments[chainName]?.DeployerAddress || signer0;
+				ownerSigner = await ethersMultichain.getSigner(owner);
+				ownerDiamond = gnusDiamond.connect(ownerSigner);
+			});
 
-        // Retrieve the signers for the chain
-        signers = await ethersMultichain.getSigners();
-        signer0 = signers[0].address;
-        signer1 = signers[1].address;
-        signer2 = signers[2].address;
-        signer0Diamond = gnusDiamond.connect(signers[0]);
-        signer1Diamond = gnusDiamond.connect(signers[1]);
-        signer2Diamond = gnusDiamond.connect(signers[2]);
+			beforeEach(async function () {
+				snapshotId = await provider.send('evm_snapshot', []);
+			});
 
-        // get the signer for the owner
-        owner = deployments[chainName]?.DeployerAddress || signer0;
-        ownerSigner = await ethersMultichain.getSigner(owner);
-        ownerDiamond = gnusDiamond.connect(ownerSigner);
+			afterEach(async () => {
+				await provider.send('evm_revert', [snapshotId]);
+			});
 
-      });
+			it('Batch Transferring to two addresses', async () => {
+				// Fetch the owner's balance.
+				// This may be non-zero on forked chains so comparisons must take this into account.
+				const initBalance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				const preTransferBalance0 = await gnusDiamond['balanceOf(address,uint256)'](
+					signer2,
+					GNUS_TOKEN_ID,
+				);
+				const preTransferBalance1 = await gnusDiamond['balanceOf(address,uint256)'](
+					signer1,
+					GNUS_TOKEN_ID,
+				);
+				// Test case to verify batch transfers of ERC20 tokens.
+				let balance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance before transfer1: ${balance.toString()}`);
+				// Mint 150 GNUS tokens to the owner’s address and verify the updated balance.
+				await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
+				balance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance after transfer2: ${balance.toString()}`);
+				// Execute a batch transfer to `signer2` and `signer1` with specified token amounts.
+				await ownerDiamond.transferBatch([signer2, signer1], [toWei(2), toWei(1)]);
 
-      beforeEach(async function () {
-        snapshotId = await provider.send('evm_snapshot', []);
-      });
+				balance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance3: ${balance.toString()}`);
+				// Retrieve updated balances for `signer2` and `signer1`.
+				const updatedAmount1 = await gnusDiamond['balanceOf(address,uint256)'](
+					signer2,
+					GNUS_TOKEN_ID,
+				);
+				const updatedAmount2 = await gnusDiamond['balanceOf(address,uint256)'](
+					signer1,
+					GNUS_TOKEN_ID,
+				);
 
-      afterEach(async () => {
-        await provider.send('evm_revert', [snapshotId]);
-      });
+				balance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance4: ${balance.toString()}`);
+				// Assert that the updated balances match the expected values after the transfer.
+				assert(
+					updatedAmount1.eq(toWei(2).add(preTransferBalance1)),
+					`Address 1 should equal ${utils.formatEther(
+						toWei(2).add(preTransferBalance1),
+					)}, but equals ${utils.formatEther(updatedAmount1)}`,
+				);
 
-      it('Batch Transferring to two addresses', async () => {
-        // Fetch the owner's balance.
-        // This may be non-zero on forked chains so comparisons must take this into account.
-        let initBalance = await (await gnusDiamond['balanceOf(address,uint256)']
-          (owner, GNUS_TOKEN_ID)).toBigInt();
-        const preTransferBalance0 = await gnusDiamond['balanceOf(address,uint256)'](
-          signer2,
-          GNUS_TOKEN_ID,
-        );
-        const preTransferBalance1 = await gnusDiamond['balanceOf(address,uint256)'](
-          signer1,
-          GNUS_TOKEN_ID,
-        );
-        // Test case to verify batch transfers of ERC20 tokens.
-        let balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance before transfer1: ${balance.toString()}`);
-        // Mint 150 GNUS tokens to the owner’s address and verify the updated balance.
-        await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
-        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance after transfer2: ${balance.toString()}`);
-        // Execute a batch transfer to `signer2` and `signer1` with specified token amounts.
-        await ownerDiamond.transferBatch(
-          [signer2, signer1],
-          [toWei(2), toWei(1)],
-        );
+				balance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance5: ${balance.toString()}`);
+				assert(
+					updatedAmount2.eq(toWei(1).add(preTransferBalance1)),
+					`Address 2 should equal ${utils.formatEther(
+						toWei(1).add(preTransferBalance1),
+					)}, but equals ${utils.formatEther(updatedAmount2)}`,
+				);
 
-        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance3: ${balance.toString()}`);
-        // Retrieve updated balances for `signer2` and `signer1`.
-        const updatedAmount1 = await gnusDiamond['balanceOf(address,uint256)'](
-          signer2,
-          GNUS_TOKEN_ID,
-        );
-        const updatedAmount2 = await gnusDiamond['balanceOf(address,uint256)'](
-          signer1,
-          GNUS_TOKEN_ID,
-        );
+				balance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance6: ${balance.toString()}`);
+			});
 
-        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance4: ${balance.toString()}`);
-        // Assert that the updated balances match the expected values after the transfer.
-        assert(
-          updatedAmount1.eq(toWei(2).add(preTransferBalance1)),
-          `Address 1 should equal ${utils.formatEther(
-            toWei(2).add(preTransferBalance1),
-          )}, but equals ${utils.formatEther(updatedAmount1)}`,
-        );
+			// Test case to verify the blocking and unblocking of transfers.
+			it(`should verify the blocking and unblocking of transfers on ${chainName}`, async () => {
+				// Fetch the owner's balance and mint additional tokens to the owner's account.
+				const initBalance = await (
+					await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)
+				).toBigInt();
+				debuglog(`Owner balance before transfer: ${initBalance.toString()}`);
 
-        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance5: ${balance.toString()}`);
-        assert(
-          updatedAmount2.eq(toWei(1).add(preTransferBalance1)),
-          `Address 2 should equal ${utils.formatEther(
-            toWei(1).add(preTransferBalance1),
-          )}, but equals ${utils.formatEther(updatedAmount2)}`,
-        );
+				await ownerDiamond['mint(address,uint256)'](owner, toWei(100));
+				const balance = await (await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
+				let expectedBalance = initBalance + toWei(100).toBigInt();
+				debuglog(
+					`Owner balance after transfer of ${expectedBalance}: ${balance.toString()}`,
+				);
+				debuglog(`Expected balance: ${expectedBalance.toString()}`);
 
-        balance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance6: ${balance.toString()}`);
-      });
+				// Assert that the owner's balance exceeds 100 after minting.
+				expect(balance).to.be.eq(expectedBalance);
 
-      // Test case to verify the blocking and unblocking of transfers.
-      it(`should verify the blocking and unblocking of transfers on ${chainName}`, async () => {
-        // Fetch the owner's balance and mint additional tokens to the owner's account.
-        let initBalance = await (await gnusDiamond['balanceOf(address,uint256)'](owner, GNUS_TOKEN_ID)).toBigInt();
-        debuglog(`Owner balance before transfer: ${initBalance.toString()}`);
+				// Transfer tokens to `signer2` and verify their balance.
+				let receiverBalance = await (
+					await gnusDiamond['balanceOf(address)'](signer2)
+				).toBigInt();
+				await ownerDiamond.transfer(signer2, toWei(10));
+				receiverBalance = await (
+					await gnusDiamond['balanceOf(address)'](signer2)
+				).toBigInt();
+				expectedBalance = toWei(10).toBigInt();
+				// Expect the receiver's balance to match the transferred amount.
+				expect(receiverBalance).to.be.eq(expectedBalance);
 
-        await ownerDiamond['mint(address,uint256)'](owner, toWei(100));
-        let balance = await (await gnusDiamond['balanceOf(address)'](owner)).toBigInt();
-        let expectedBalance = initBalance + toWei(100).toBigInt();
-        debuglog(`Owner balance after transfer of ${expectedBalance}: ${balance.toString()}`);
-        debuglog(`Expected balance: ${expectedBalance.toString()}`);
+				// Block the owner from transferring tokens and verify the restriction.
+				await ownerDiamond.banTransferorForAll(signer2);
+				await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
+					Error,
+					'Blocked transferor',
+				);
 
-        // Assert that the owner's balance exceeds 100 after minting.
-        expect(balance).to.be.eq(expectedBalance);
+				// Unblock the owner and retry the transfer.
+				await ownerDiamond.allowTransferorForAll(signer2);
+				await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
 
-        // Transfer tokens to `signer2` and verify their balance.
-        let receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer2)).toBigInt();
-        await ownerDiamond.transfer(signer2, toWei(10));
-        receiverBalance = await (await gnusDiamond['balanceOf(address)'](signer2)).toBigInt();
-        expectedBalance = toWei(10).toBigInt();
-        // Expect the receiver's balance to match the transferred amount.
-        expect(receiverBalance).to.be.eq(expectedBalance);
+				// Block the owner using a batch transfer restriction and verify.
+				await ownerDiamond.banTransferorBatch([0], [signer2]);
+				await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
+					Error,
+					'Blocked transferor',
+				);
 
-        // Block the owner from transferring tokens and verify the restriction.
-        await ownerDiamond.banTransferorForAll(signer2);
-        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
-          Error,
-          'Blocked transferor',
-        );
-
-        // Unblock the owner and retry the transfer.
-        await ownerDiamond.allowTransferorForAll(signer2);
-        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
-
-        // Block the owner using a batch transfer restriction and verify.
-        await ownerDiamond.banTransferorBatch([0], [signer2]);
-        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.rejectedWith(
-          Error,
-          'Blocked transferor',
-        );
-
-        // Remove the batch restriction and verify successful transfer.
-        await ownerDiamond.allowTransferorBatch([0], [signer2]);
-        await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
-
-      });
-    });
-  }
+				// Remove the batch restriction and verify successful transfer.
+				await ownerDiamond.allowTransferorBatch([0], [signer2]);
+				await expect(signer2Diamond.transfer(signer1, toWei(1))).to.be.fulfilled;
+			});
+		});
+	}
 });

@@ -3,7 +3,7 @@ import { pathExistsSync } from "fs-extra";
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { SignerWithAddress } from '@omicfoundation/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { multichain } from 'hardhat-multichain';
 import { getInterfaceID } from '../../scripts/utils/helpers';

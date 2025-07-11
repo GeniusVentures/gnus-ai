@@ -16,7 +16,7 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers } from 'hardhat';
 import { Signer } from 'ethers';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { SignerWithAddress } from '@nomicfoundation/hardhat/ethers/signers';
 import { join } from 'path';
 import '@gnus.ai/hardhat-diamonds';
 
