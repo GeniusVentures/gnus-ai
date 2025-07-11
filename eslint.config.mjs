@@ -43,10 +43,5 @@ export default [{
     rules: {
         "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/no-var-requires": "off",
-        quotes: "off",
-        indent: ["warn", 2],
-        semi: "off",
-        "comma-dangle": 0,
-        "space-before-function-paren": 0,
     },
 }];
