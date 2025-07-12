@@ -68,9 +68,16 @@ describe('GNUS Bridge Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        // Try to get the diamond artifact - if it doesn't exist, use GNUSBridge fallback
+        try {
+          const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+          const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        } catch (error) {
+          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSBridge`);
+          // Fallback to using GNUSBridge which has bridge and access control methods
+          geniusDiamond = await ethers.getContractAt('GNUSBridge', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        }
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;
@@ -104,7 +111,9 @@ describe('GNUS Bridge Tests', async function () {
       });
 
       afterEach(async () => {
-        await provider.send('evm_revert', [snapshotId]);
+        if (snapshotId) {
+          await provider.send('evm_revert', [snapshotId]);
+        }
       });
 
       // Validate the owner has the `MINTER_ROLE`

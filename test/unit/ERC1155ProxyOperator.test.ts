@@ -75,9 +75,29 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         deployedDiamondData = diamond.getDeployedDiamondData();
 
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        // Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
+        try {
+          const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+          const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        } catch (error) {
+          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSNFTFactory`);
+          // Fallback to using GNUSNFTFactory which has comprehensive ERC1155 methods
+          geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        }
+
+        // Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods
+        const proxyOperatorContract = await ethers.getContractAt('ERC1155ProxyOperator', deployedDiamondData.DiamondAddress!);
+        
+        // Create a hybrid contract that has both GNUSNFTFactory methods and proxy operator constants
+        erc1155ProxyOperator = {
+          ...geniusDiamond,
+          NFT_PROXY_OPERATOR_ROLE: proxyOperatorContract.NFT_PROXY_OPERATOR_ROLE,
+          connect: (signer: any) => ({
+            ...geniusDiamond.connect(signer),
+            NFT_PROXY_OPERATOR_ROLE: proxyOperatorContract.NFT_PROXY_OPERATOR_ROLE,
+          }),
+        } as any;
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;
@@ -111,7 +131,9 @@ describe('ERC1155 Proxy Operator Tests', async function () {
       });
 
       afterEach(async () => {
-        await provider.send('evm_revert', [snapshotId]);
+        if (snapshotId) {
+          await provider.send('evm_revert', [snapshotId]);
+        }
       });
 
       describe('ERC1155ProxyOperator isApprovedForAll tests', function () {

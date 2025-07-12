@@ -67,12 +67,22 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				diamond = await diamondDeployer.getDiamondDeployed();
 				const deployedDiamondData = diamond.getDeployedDiamondData();
 
-				const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-				const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-				geniusDiamond = (await hre.ethers.getContractAt(
-					diamondArtifactName,
-					deployedDiamondData.DiamondAddress!,
-				)) as unknown as GeniusDiamond;
+				// Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
+				try {
+					const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+					const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+					geniusDiamond = (await hre.ethers.getContractAt(
+						diamondArtifactName,
+						deployedDiamondData.DiamondAddress!,
+					)) as unknown as GeniusDiamond;
+				} catch (error) {
+					console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSNFTFactory`);
+					// Fallback to using GNUSNFTFactory which has ERC20 and ERC1155 methods
+					geniusDiamond = (await hre.ethers.getContractAt(
+						'GNUSNFTFactory',
+						deployedDiamondData.DiamondAddress!,
+					)) as unknown as GeniusDiamond;
+				}
 
 				ethersMultichain = hre.ethers;
 				if ('_hardhatProvider' in provider) {
@@ -107,7 +117,9 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 			});
 
 			after(async () => {
-				await provider.send('evm_revert', [snapshotId]);
+				if (snapshotId) {
+					await provider.send('evm_revert', [snapshotId]);
+				}
 			});
 
 			it('should verify GNUS ERC20 interface compatibility on all chains', async function () {

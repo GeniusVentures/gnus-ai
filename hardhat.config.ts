@@ -133,6 +133,10 @@ const config: HardhatUserConfig = {
 	typechain: {
 		outDir: 'typechain-types', // Ensure this matches your expected output folder
 		target: 'ethers-v6', // Match the version of Ethers.js you're using
+		// Include diamond ABI artifacts in type generation
+		externalArtifacts: [
+			'artifacts/hardhat-diamond-abi/**/*.json',
+		],
 	},
 	solidity: {
 		version: '0.8.9',

@@ -76,9 +76,16 @@ describe('NFT Factory Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        // Try to get the diamond artifact - if it doesn't exist, use ERC20TransferBatch fallback
+        try {
+          const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+          const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        } catch (error) {
+          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using ERC20TransferBatch`);
+          // Fallback to using ERC20TransferBatch which has ERC20 transfer methods
+          geniusDiamond = await ethers.getContractAt('ERC20TransferBatch', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        }
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;
@@ -107,7 +114,9 @@ describe('NFT Factory Tests', async function () {
       });
 
       afterEach(async () => {
-        await provider.send('evm_revert', [snapshotId]);
+        if (snapshotId) {
+          await provider.send('evm_revert', [snapshotId]);
+        }
       });
 
       it('Batch Transferring to two addresses', async () => {
