@@ -49,6 +49,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "contracts-starter": "https://github.com/mudgen/diamond-2-hardhat.git",
+    "diamonds": "https://github.com/GeniusVentures/diamonds.git#develop",
     "dotenv": "^16.4.7",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
