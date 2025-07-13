@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
-import 'hardhat-diamond-abi';
+// import 'hardhat-diamond-abi'; // Disabled - using custom diamond ABI generator
 import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
@@ -133,10 +133,6 @@ const config: HardhatUserConfig = {
 	typechain: {
 		outDir: 'typechain-types', // Ensure this matches your expected output folder
 		target: 'ethers-v6', // Match the version of Ethers.js you're using
-		// Include diamond ABI artifacts in type generation
-		externalArtifacts: [
-			'artifacts/hardhat-diamond-abi/**/*.json',
-		],
 	},
 	solidity: {
 		version: '0.8.9',
@@ -375,22 +371,6 @@ const config: HardhatUserConfig = {
 				contractsPath: 'contracts/gnus-ai',
 			},
 		},
-	},
-	diamondAbi: {
-		name: 'GeniusDiamond',
-		strict: false,
-		include: ['gnus-ai/*'],
-		exclude: [
-			'hardhat-diamond-abi/.*',
-			'Zether',
-			'BurnVerifier',
-			'InnerVerifier',
-			'ZetherVerifier',
-			'Migrations',
-			'libEncryption',
-			'contracts/mocks/.*',
-		],
-		filter: filterDuplicateFunctions,
 	},
 };
 

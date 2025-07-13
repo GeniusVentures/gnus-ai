@@ -339,7 +339,7 @@ describe('NFT Factory Tests', async function () {
 
         // Assert that the burned supply matches the expected value based on the exchange rate
         assert(
-          burntSupply === toWei(5.0 * 2.0), // Exchange rate: 2.0 GNUS burned per minted token
+          BigInt(burntSupply) === toWei(5.0 * 2.0), // Exchange rate: 2.0 GNUS burned per minted token
           `Burnt Supply should equal minted * exchange rate (5.0*2.0), but equals ${burntSupply.toString()}`,
         );
 

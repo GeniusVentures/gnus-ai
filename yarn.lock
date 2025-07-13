@@ -1415,7 +1415,6 @@ __metadata:
     globals: "npm:^15.14.0"
     hardhat: "npm:^2.22.17"
     hardhat-abi-exporter: "npm:^2.8.0"
-    hardhat-diamond-abi: "https://github.com/Am0rfu5/hardhat-diamond-abi.git"
     hardhat-diamonds: "https://github.com/GeniusVentures/hardhat-diamonds.git#develop"
     hardhat-gas-reporter: "npm:^1.0.8"
     hardhat-multichain: "https://github.com/GeniusVentures/hardhat-multichain.git#main"
@@ -4698,7 +4697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.4.1":
+"debug@npm:4, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.4.1":
   version: 4.4.1
   resolution: "debug@npm:4.4.1"
   dependencies:
@@ -5484,7 +5483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.14.0, ethers@npm:^6.15.0, ethers@npm:^6.4.0, ethers@npm:^6.9.0":
+"ethers@npm:^6.14.0, ethers@npm:^6.4.0, ethers@npm:^6.9.0":
   version: 6.15.0
   resolution: "ethers@npm:6.15.0"
   dependencies:
@@ -6194,18 +6193,6 @@ __metadata:
   peerDependencies:
     hardhat: ^2.0.0
   checksum: 10c0/737e283c709d7f43827340a965f75866384d47f9cc5f9618b86e741a8f54d831d89f04ff681bc229984175b51763735a66b20b89f0949833d9d484e64cc90d90
-  languageName: node
-  linkType: hard
-
-"hardhat-diamond-abi@https://github.com/Am0rfu5/hardhat-diamond-abi.git":
-  version: 3.0.1
-  resolution: "hardhat-diamond-abi@https://github.com/Am0rfu5/hardhat-diamond-abi.git#commit=9ddea562b31ddae8189762e39e086742ee99e5cd"
-  dependencies:
-    debug: "npm:^4.3.3"
-    ethers: "npm:^6.15.0"
-  peerDependencies:
-    hardhat: ^2.22.0
-  checksum: 10c0/3a13206c76f61872d6f7beb373754f59c48404acbbd55ebde8a5723b5bfc06d45a06175807a670ab413a66d61c762bdeaca4315227900d0e61cca7cebac6d96d
   languageName: node
   linkType: hard
 

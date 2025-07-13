@@ -15,12 +15,11 @@ import {
 } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond, deleteDeployInfo } from 'diamonds';
 import {
-	GeniusDiamond,
 	IERC20Upgradeable__factory,
 	IDiamondCut__factory,
 	IDiamondLoupe__factory,
 } from '../../typechain-types';
-
+import { GeniusDiamond } from '../../typechain-types/diamond-abi';
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
 	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');

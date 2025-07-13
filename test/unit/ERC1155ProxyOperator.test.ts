@@ -76,15 +76,9 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         deployedDiamondData = diamond.getDeployedDiamondData();
 
         // Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
-        try {
-          const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-          const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        } catch (error) {
-          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSNFTFactory`);
-          // Fallback to using GNUSNFTFactory which has comprehensive ERC1155 methods
-          geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        }
+        const diamondAbiPath = 'diamond-abi';
+        const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
+        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
 
         // Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods
         const proxyOperatorContract = await ethers.getContractAt('ERC1155ProxyOperator', deployedDiamondData.DiamondAddress!);
