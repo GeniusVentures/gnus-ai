@@ -4819,7 +4819,7 @@ __metadata:
 
 "diamonds@https://github.com/GeniusVentures/diamonds.git#develop":
   version: 1.0.0
-  resolution: "diamonds@https://github.com/GeniusVentures/diamonds.git#commit=b9458e4e9a65e7181ab0a7a0afec9f63f0595965"
+  resolution: "diamonds@https://github.com/GeniusVentures/diamonds.git#commit=c09ab14ae1dea28b5f7ed4309cb5a990e38d418c"
   dependencies:
     "@ethersproject/abstract-signer": "npm:^5.8.0"
     axios: "npm:^1.10.0"
@@ -4833,7 +4833,7 @@ __metadata:
     typescript: ^5.0.0
   bin:
     diamond-abi: dist/scripts/diamond-abi-cli.js
-  checksum: 10c0/069b47995d7c22a594383ecb098ea082c3514341a88427701b59eda6d25c6f57d20d0be7a831bd75c096d34a963d6f0f3ca2b10b03e336d36fc3393d7dbd83b9
+  checksum: 10c0/5be7fc43b2059dd2ff1047e5d8d0e599c564eeed8fb136102fdcaadae38e554a606ffa7fd40b2d3b3520913a32e0c6d9ff6c17296975c9bb2a888d70c8b296c7
   languageName: node
   linkType: hard
 

@@ -23,8 +23,8 @@ import { toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond } from 'diamonds';
 import {
-  GeniusDiamond,
-} from '../../typechain-types';
+  GeniusDiamondABI,
+} from '../../typechain-types/diamond-abi';
 
 chai.use(chaiAsPromised);
 
@@ -53,11 +53,11 @@ describe('NFT Factory Tests', async function () {
       let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamond;
-      let signer0Diamond: GeniusDiamond;
-      let signer1Diamond: GeniusDiamond;
-      let signer2Diamond: GeniusDiamond;
-      let ownerDiamond: GeniusDiamond;
+      let geniusDiamond: GeniusDiamondABI;
+      let signer0Diamond: GeniusDiamondABI;
+      let signer1Diamond: GeniusDiamondABI;
+      let signer2Diamond: GeniusDiamondABI;
+      let ownerDiamond: GeniusDiamondABI;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
@@ -80,13 +80,13 @@ describe('NFT Factory Tests', async function () {
 
         // Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
         try {
-          const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-          const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+          const diamondAbiPath = 'diamond-abi';
+          const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
+          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
         } catch (error) {
           console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSNFTFactory`);
           // Fallback to using GNUSNFTFactory which has NFT creation methods
-          geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+          geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
         }
 
         ethersMultichain = ethers;

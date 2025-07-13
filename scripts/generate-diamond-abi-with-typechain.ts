@@ -1,4 +1,4 @@
-import { ProjectDiamondAbiGenerator } from './diamond-abi-generator';
+import { generateDiamondAbi, DiamondAbiGenerationOptions } from './diamond-abi-generator';
 import { spawn } from 'child_process';
 import { join } from 'path';
 import chalk from 'chalk';
@@ -10,27 +10,26 @@ async function generateDiamondAbiWithTypechain(diamondName: string, verbose: boo
   try {
     console.log(chalk.blue(`🚀 Generating Diamond ABI for ${diamondName}...`));
     
-    // Generate the diamond ABI
+    // Generate the diamond ABI using the refactored generator
     const outputDir = join(process.cwd(), 'artifacts/diamond-abi');
-    const generator = new ProjectDiamondAbiGenerator({
+    const options: DiamondAbiGenerationOptions = {
       diamondName,
       verbose,
       outputDir,
       validateSelectors: true,
       includeSourceInfo: true
-    });
+    };
 
-    const result = await generator.generateAbi();
+    const result = await generateDiamondAbi(options);
 
     console.log(chalk.green(`✅ Diamond ABI generated: ${result.outputPath}`));
     console.log(chalk.blue(`   Functions: ${result.stats.totalFunctions}`));
     console.log(chalk.blue(`   Events: ${result.stats.totalEvents}`));
     console.log(chalk.blue(`   Facets: ${result.stats.facetCount}`));
 
-    // Update Hardhat config to include the diamond ABI in TypeChain external artifacts
+    // Generate TypeScript types directly using TypeChain
     console.log(chalk.blue('🔧 Regenerating TypeChain types for Diamond...'));
     
-    // Generate TypeScript types directly using TypeChain
     await runCommand('npx', [
       'typechain',
       '--target', 'ethers-v6',

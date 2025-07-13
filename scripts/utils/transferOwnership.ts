@@ -1,6 +1,6 @@
 import { ethers, network } from 'hardhat';
 import { parseEther, formatEther } from 'ethers';
-import { GeniusDiamond } from '../../typechain-types'; // Update the path to your typechain types
+import { GeniusDiamondABI } from '../../typechain-types'; // Update the path to your typechain types
 import { INetworkDeployInfo } from '../common'; // Update the path to your common types
 
 async function main(networkDeployInfo: INetworkDeployInfo) {

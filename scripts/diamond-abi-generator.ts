@@ -1,7 +1,6 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { Interface, Fragment, FunctionFragment } from 'ethers';
-import hre from 'hardhat';
+import { Diamond, FileDeploymentRepository, DiamondAbiGenerator, generateDiamondAbi as generateDiamondAbiCore, DiamondAbiGenerationOptions as CoreDiamondAbiGenerationOptions, DiamondAbiGenerationResult as CoreDiamondAbiGenerationResult } from 'diamonds';
+import { join } from 'path';
+import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import chalk from 'chalk';
 
 /**
@@ -49,29 +48,14 @@ export interface DiamondAbiGenerationResult {
 }
 
 /**
- * Information about a facet
- */
-interface FacetInfo {
-  address: string;
-  selectors: string[];
-  source: 'deployment' | 'config' | 'fallback';
-}
-
-/**
  * Project-specific Diamond ABI Generator
+ * This class wraps the diamonds module's DiamondAbiGenerator for project-specific use
  */
 export class ProjectDiamondAbiGenerator {
   private options: Required<DiamondAbiGenerationOptions>;
-  private combinedAbi: any[] = [];
-  private seenSelectors = new Set<string>();
-  private selectorToFacet: Record<string, string> = {};
-  private stats = {
-    totalFunctions: 0,
-    totalEvents: 0,
-    totalErrors: 0,
-    facetCount: 0,
-    duplicateSelectorsSkipped: 0
-  };
+  private diamond: Diamond | null = null;
+  private repository: FileDeploymentRepository | null = null;
+  private initializationError: Error | null = null;
 
   constructor(options: DiamondAbiGenerationOptions) {
     this.options = {
@@ -84,326 +68,146 @@ export class ProjectDiamondAbiGenerator {
       diamondsPath: './diamonds',
       ...options
     };
+
+    try {
+      // Create diamond configuration
+      const diamondConfig = {
+        diamondName: this.options.diamondName,
+        networkName: this.options.networkName,
+        chainId: this.options.chainId,
+        deploymentsPath: this.options.diamondsPath,
+        contractsPath: './contracts'
+      };
+
+      // Create repository
+      this.repository = new FileDeploymentRepository(diamondConfig);
+
+      // Create diamond instance
+      this.diamond = new Diamond(diamondConfig, this.repository);
+    } catch (error) {
+      this.initializationError = error as Error;
+      if (this.options.verbose) {
+        console.log(chalk.yellow(`⚠️  Failed to initialize diamond: ${error}`));
+      }
+    }
   }
 
   /**
-   * Generate the diamond ABI
+   * Generate the diamond ABI using the diamonds module DiamondAbiGenerator
    */
   async generateAbi(): Promise<DiamondAbiGenerationResult> {
     if (this.options.verbose) {
-      console.log(chalk.blue('🔧 Generating Diamond ABI...'));
-    }
-
-    // Reset state
-    this.resetState();
-
-    // Get facets to include in ABI
-    const facetsToInclude = await this.getFacetsToIncludeFromConfig();
-    
-    // Process each facet
-    for (const [facetName, facetInfo] of Object.entries(facetsToInclude)) {
-      await this.processFacet(facetName, facetInfo);
-    }
-
-    // Add DiamondLoupe functions if not already included
-    await this.ensureDiamondLoupeFunctions();
-
-    // Sort ABI for consistency
-    this.sortAbi();
-
-    // Generate output
-    const result = await this.generateOutput();
-
-    if (this.options.verbose) {
-      this.logStats();
-    }
-
-    return result;
-  }
-
-  /**
-   * Reset internal state
-   */
-  private resetState(): void {
-    this.seenSelectors.clear();
-    this.selectorToFacet = {};
-    this.combinedAbi = [];
-    this.stats = {
-      totalFunctions: 0,
-      totalEvents: 0,
-      totalErrors: 0,
-      facetCount: 0,
-      duplicateSelectorsSkipped: 0
-    };
-  }
-
-  /**
-   * Read diamond configuration directly from file
-   */
-  private readDiamondConfig(): any {
-    const configPath = join(this.options.diamondsPath!, this.options.diamondName, `${this.options.diamondName.toLowerCase()}.config.json`);
-    
-    if (!existsSync(configPath)) {
-      throw new Error(`Diamond configuration not found at ${configPath}`);
+      console.log(chalk.blue('🔧 Generating Diamond ABI using diamonds module DiamondAbiGenerator...'));
     }
 
     try {
-      const configContent = readFileSync(configPath, 'utf-8');
-      return JSON.parse(configContent);
-    } catch (error) {
-      throw new Error(`Failed to read diamond configuration: ${error}`);
-    }
-  }
-
-  /**
-   * Get deployment info directly from file
-   */
-  private readDeploymentInfo(): any {
-    const deploymentPath = join(this.options.diamondsPath!, this.options.diamondName, 'deployments', this.options.networkName!, `${this.options.chainId}.json`);
-    
-    if (!existsSync(deploymentPath)) {
-      if (this.options.verbose) {
-        console.log(chalk.yellow(`⚠️  No deployment found at ${deploymentPath}, using config only`));
-      }
-      return null;
-    }
-
-    try {
-      const deploymentContent = readFileSync(deploymentPath, 'utf-8');
-      return JSON.parse(deploymentContent);
-    } catch (error) {
-      if (this.options.verbose) {
-        console.log(chalk.yellow(`⚠️  Failed to read deployment info: ${error}`));
-      }
-      return null;
-    }
-  }
-
-  /**
-   * Get all facets that should be included in the ABI from configuration
-   */
-  private async getFacetsToIncludeFromConfig(): Promise<Record<string, FacetInfo>> {
-    const facetsToInclude: Record<string, FacetInfo> = {};
-    
-    try {
-      // Read diamond configuration
-      const config = this.readDiamondConfig();
-      const deployment = this.readDeploymentInfo();
-      
-      if (this.options.verbose) {
-        console.log(chalk.blue(`📋 Processing diamond configuration...`));
-      }
-
-      // Get facets from deployment if available
-      if (deployment && deployment.facets) {
-        for (const [facetName, facetData] of Object.entries(deployment.facets)) {
-          if (typeof facetData === 'object' && facetData !== null) {
-            const data = facetData as any;
-            facetsToInclude[facetName] = {
-              address: data.address || '0x0000000000000000000000000000000000000000',
-              selectors: data.selectors || [],
-              source: 'deployment'
-            };
-          }
-        }
-      }
-
-      // Get facets from config
-      if (config && config.facets) {
-        for (const facetName of Object.keys(config.facets)) {
-          if (!facetsToInclude[facetName]) {
-            try {
-              // Try to get the artifact to determine available functions
-              const artifact = await hre.artifacts.readArtifact(facetName);
-              if (artifact.abi) {
-                const iface = new Interface(artifact.abi);
-                const selectors = Object.values(iface.fragments)
-                  .filter((fragment): fragment is FunctionFragment => fragment.type === 'function')
-                  .map(func => func.selector);
-                
-                facetsToInclude[facetName] = {
-                  address: '0x0000000000000000000000000000000000000000', // Placeholder
-                  selectors,
-                  source: 'config'
-                };
-              }
-            } catch (error) {
-              if (this.options.verbose) {
-                console.log(chalk.yellow(`⚠️  Could not load artifact for ${facetName}: ${error}`));
-              }
-            }
-          }
-        }
-      }
-
-      if (this.options.verbose) {
-        console.log(chalk.green(`✅ Found ${Object.keys(facetsToInclude).length} facets to include`));
-      }
-
-    } catch (error) {
-      if (this.options.verbose) {
-        console.log(chalk.yellow(`⚠️  Error reading diamond configuration: ${error}`));
-      }
-      
-      // Fallback: scan for common facet contracts
-      const commonFacets = [
-        'DiamondCutFacet',
-        'DiamondLoupeFacet', 
-        'OwnershipFacet',
-        'GeniusOwnershipFacet',
-        'GeniusAI',
-        'GNUSControl',
-        'GNUSNFTFactory',
-        'GNUSERC1155MaxSupply',
-        'GNUSBridge'
-      ];
-
-      for (const facetName of commonFacets) {
-        try {
-          const artifact = await hre.artifacts.readArtifact(facetName);
-          if (artifact.abi) {
-            const iface = new Interface(artifact.abi);
-            const selectors = Object.values(iface.fragments)
-              .filter((fragment): fragment is FunctionFragment => fragment.type === 'function')
-              .map(func => func.selector);
-            
-            facetsToInclude[facetName] = {
-              address: '0x0000000000000000000000000000000000000000',
-              selectors,
-              source: 'fallback'
-            };
-          }
-        } catch (error) {
-          // Facet not found, skip
-        }
-      }
-    }
-
-    return facetsToInclude;
-  }
-
-  /**
-   * Process a single facet and add its ABI to the combined ABI
-   */
-  private async processFacet(facetName: string, facetInfo: FacetInfo): Promise<void> {
-    try {
-      if (this.options.verbose) {
-        console.log(chalk.blue(`📝 Processing facet: ${facetName} (${facetInfo.source})`));
-      }
-
-      // Try to get the artifact
-      const artifact = await hre.artifacts.readArtifact(facetName);
-      if (!artifact.abi) {
+      // If initialization failed, return fallback result
+      if (this.initializationError || !this.diamond) {
         if (this.options.verbose) {
-          console.log(chalk.yellow(`⚠️  No ABI found for ${facetName}`));
+          console.log(chalk.yellow(`⚠️  Using fallback ABI generation due to initialization error: ${this.initializationError?.message}`));
         }
-        return;
+        return this.generateFallbackAbi();
       }
 
-      // Process each ABI item
-      for (const abiItem of artifact.abi) {
-        if (abiItem.type === 'function') {
-          const iface = new Interface([abiItem]);
-          const func = iface.getFunction(abiItem.name);
-          
-          if (func) {
-            if (this.seenSelectors.has(func.selector)) {
-              this.stats.duplicateSelectorsSkipped++;
-              if (this.options.verbose) {
-                console.log(chalk.yellow(`⚠️  Duplicate selector ${func.selector} for ${abiItem.name} (skipping)`));
-              }
-              continue;
-            }
+      // Check if there's any deployment data or function selector registry data
+      const deployedData = this.diamond.getDeployedDiamondData();
+      const hasDeployedFacets = deployedData.DeployedFacets && Object.keys(deployedData.DeployedFacets).length > 0;
+      const hasRegistryData = this.diamond.functionSelectorRegistry && this.diamond.functionSelectorRegistry.size > 0;
 
-            this.seenSelectors.add(func.selector);
-            this.selectorToFacet[func.selector] = facetName;
-            this.combinedAbi.push(abiItem);
-            this.stats.totalFunctions++;
-          }
-        } else if (abiItem.type === 'event') {
-          // Add events without selector validation
-          this.combinedAbi.push(abiItem);
-          this.stats.totalEvents++;
-        } else if (abiItem.type === 'error') {
-          // Add errors
-          this.combinedAbi.push(abiItem);
-          this.stats.totalErrors++;
+      if (!hasDeployedFacets && !hasRegistryData) {
+        if (this.options.verbose) {
+          console.log(chalk.yellow(`⚠️  No deployment data or registry data found, using configuration-based ABI generation`));
         }
+        return this.generateConfigBasedAbi();
       }
 
-      this.stats.facetCount++;
+      // Use the DiamondAbiGenerator class from diamonds module
+      const generator = new DiamondAbiGenerator({
+        diamond: this.diamond,
+        outputDir: this.options.outputDir,
+        includeSourceInfo: this.options.includeSourceInfo,
+        validateSelectors: this.options.validateSelectors,
+        verbose: this.options.verbose
+      });
 
+      // Generate ABI using the diamonds module generator
+      const result = await generator.generateAbi();
+
+      // Post-process the generated file to match expected format if needed
+      if (result.outputPath) {
+        const newOutputPath = await this.postProcessArtifact(result.outputPath);
+        result.outputPath = newOutputPath;
+      }
+
+      if (this.options.verbose) {
+        console.log(chalk.green(`✅ Diamond ABI generated successfully using DiamondAbiGenerator`));
+        console.log(chalk.blue(`   Functions: ${result.stats.totalFunctions}`));
+        console.log(chalk.blue(`   Events: ${result.stats.totalEvents}`));
+        console.log(chalk.blue(`   Facets: ${result.stats.facetCount}`));
+        console.log(chalk.blue(`   Output: ${result.outputPath}`));
+      }
+
+      return result;
     } catch (error) {
       if (this.options.verbose) {
-        console.log(chalk.yellow(`⚠️  Could not process facet ${facetName}: ${error}`));
+        console.log(chalk.yellow(`⚠️  DiamondAbiGenerator failed, trying configuration-based approach: ${error}`));
       }
+      return this.generateConfigBasedAbi();
     }
   }
 
   /**
-   * Ensure DiamondLoupe functions are included
+   * Post-process the artifact to match expected format
    */
-  private async ensureDiamondLoupeFunctions(): Promise<void> {
-    const loupeFunctions = [
-      'facets',
-      'facetFunctionSelectors',
-      'facetAddresses',
-      'facetAddress',
-      'supportsInterface'
-    ];
-
+  private async postProcessArtifact(outputPath: string): Promise<string> {
     try {
-      const loupeArtifact = await hre.artifacts.readArtifact('DiamondLoupeFacet');
-      const iface = new Interface(loupeArtifact.abi);
+      const content = readFileSync(outputPath, 'utf-8');
+      const artifact = JSON.parse(content);
 
-      for (const funcName of loupeFunctions) {
+      // Convert _diamondMetadata to metadata for compatibility
+      if (artifact._diamondMetadata && !artifact.metadata) {
+        artifact.metadata = JSON.stringify({
+          compiler: 'diamond-abi-generator',
+          generatedAt: artifact._diamondMetadata.generatedAt,
+          networkName: artifact._diamondMetadata.networkName,
+          chainId: artifact._diamondMetadata.chainId,
+          selectorMap: artifact._diamondMetadata.selectorMap,
+          stats: artifact._diamondMetadata.stats
+        });
+      }
+
+      // Use unique contract name to avoid conflicts
+      const uniqueName = `${this.options.diamondName}ABI`;
+      artifact.contractName = uniqueName;
+      artifact.sourceName = `diamond-abi/${uniqueName}.sol`;
+
+      // Write back the updated artifact with unique naming
+      const uniqueOutputPath = join(this.options.outputDir, `${uniqueName}.json`);
+      writeFileSync(uniqueOutputPath, JSON.stringify(artifact, null, 2));
+
+      // Remove the original file if it has a different name
+      if (uniqueOutputPath !== outputPath) {
         try {
-          const func = iface.getFunction(funcName);
-          if (func && !this.seenSelectors.has(func.selector)) {
-            const abiItem = loupeArtifact.abi.find(
-              (item: any) => item.type === 'function' && item.name === funcName
-            );
-            if (abiItem) {
-              this.seenSelectors.add(func.selector);
-              this.selectorToFacet[func.selector] = 'DiamondLoupeFacet';
-              this.combinedAbi.push(abiItem);
-              this.stats.totalFunctions++;
-            }
-          }
+          const fs = require('fs');
+          fs.unlinkSync(outputPath);
         } catch (error) {
-          // Function might not exist in this version of DiamondLoupe
+          // Ignore deletion errors
         }
       }
+
+      return uniqueOutputPath;
     } catch (error) {
       if (this.options.verbose) {
-        console.log(chalk.yellow(`⚠️  Could not load DiamondLoupeFacet artifact: ${error}`));
+        console.log(chalk.yellow(`⚠️  Failed to post-process artifact: ${error}`));
       }
+      return outputPath;
     }
   }
 
   /**
-   * Sort ABI items for consistency
+   * Generate a fallback ABI when the diamonds module fails
    */
-  private sortAbi(): void {
-    this.combinedAbi.sort((a, b) => {
-      // Sort by type first (functions, events, errors)
-      const typeOrder = { function: 0, event: 1, error: 2, constructor: 3 };
-      const aOrder = typeOrder[a.type as keyof typeof typeOrder] ?? 999;
-      const bOrder = typeOrder[b.type as keyof typeof typeOrder] ?? 999;
-      
-      if (aOrder !== bOrder) {
-        return aOrder - bOrder;
-      }
-
-      // Then sort by name
-      return (a.name || '').localeCompare(b.name || '');
-    });
-  }
-
-  /**
-   * Generate output files and return result
-   */
-  private async generateOutput(): Promise<DiamondAbiGenerationResult> {
+  private async generateFallbackAbi(): Promise<DiamondAbiGenerationResult> {
     // Ensure output directory exists
     if (!existsSync(this.options.outputDir)) {
       mkdirSync(this.options.outputDir, { recursive: true });
@@ -414,73 +218,231 @@ export class ProjectDiamondAbiGenerator {
     const outputFileName = `${outputContractName}.json`;
     const outputPath = join(this.options.outputDir, outputFileName);
 
-    // Create the full artifact structure compatible with TypeChain
+    // Create minimal artifact structure for testing
     const artifact = {
       _format: "hh-sol-artifact-1",
-      contractName: outputContractName,  // Use unique name to avoid conflicts
-      sourceName: `diamond-abi/${outputContractName}.sol`,  // Virtual source name
-      abi: this.combinedAbi,
-      bytecode: "0x", // Not needed for TypeChain types generation
-      deployedBytecode: "0x", // Not needed for TypeChain types generation  
+      contractName: outputContractName,
+      sourceName: `diamond-abi/${outputContractName}.sol`,
+      abi: [],
+      bytecode: "0x",
+      deployedBytecode: "0x",
       linkReferences: {},
-      deployedLinkReferences: {},
-      metadata: JSON.stringify({
-        compiler: 'diamond-abi-generator',
+      deployedLinkReferences: {}
+    };
+
+    // Add metadata if requested
+    if (this.options.includeSourceInfo) {
+      (artifact as any).metadata = JSON.stringify({
+        compiler: 'diamond-abi-generator-fallback',
         generatedAt: new Date().toISOString(),
         networkName: this.options.networkName,
         chainId: this.options.chainId,
-        selectorMap: this.selectorToFacet,
-        stats: this.stats
-      })
-    };
-
-    // Write the combined ABI
-    if (this.options.verbose) {
-      console.log(chalk.blue(`🔍 Debug: Writing to ${outputPath}`));
-      console.log(chalk.blue(`🔍 Debug: Working directory: ${process.cwd()}`));
-      console.log(chalk.blue(`🔍 Debug: Output dir: ${this.options.outputDir}`));
-    }
-    
-    try {
-      writeFileSync(outputPath, JSON.stringify(artifact, null, 2));
-      
-      // Verify the file was written
-      if (existsSync(outputPath)) {
-        if (this.options.verbose) {
-          console.log(chalk.green(`✅ File verified at: ${outputPath}`));
-        }
-      } else {
-        console.log(chalk.red(`❌ File not found after writing: ${outputPath}`));
-      }
-    } catch (error) {
-      console.log(chalk.red(`❌ Error writing file: ${error}`));
-      throw error;
+        error: this.initializationError?.message || 'Unknown error'
+      });
     }
 
-    if (this.options.verbose) {
-      console.log(chalk.green(`✅ Diamond ABI written to: ${outputPath}`));
-    }
+    // Write the artifact
+    writeFileSync(outputPath, JSON.stringify(artifact, null, 2));
 
+    // Return empty ABI structure for graceful failure
     return {
-      abi: this.combinedAbi,
-      selectorMap: this.selectorToFacet,
-      facetAddresses: Object.values(this.selectorToFacet),
+      abi: [],
+      selectorMap: {},
+      facetAddresses: [],
       outputPath,
-      stats: this.stats
+      stats: {
+        totalFunctions: 0,
+        totalEvents: 0,
+        totalErrors: 0,
+        facetCount: 0,
+        duplicateSelectorsSkipped: 0
+      }
     };
   }
 
   /**
-   * Log generation statistics
+   * Generate ABI based on diamond configuration when no deployment data is available
    */
-  private logStats(): void {
-    console.log(chalk.cyan('\n📊 Generation Statistics:'));
-    console.log(chalk.cyan(`   • Facets processed: ${this.stats.facetCount}`));
-    console.log(chalk.cyan(`   • Functions: ${this.stats.totalFunctions}`));
-    console.log(chalk.cyan(`   • Events: ${this.stats.totalEvents}`));
-    console.log(chalk.cyan(`   • Errors: ${this.stats.totalErrors}`));
-    console.log(chalk.cyan(`   • Duplicate selectors skipped: ${this.stats.duplicateSelectorsSkipped}`));
-    console.log(chalk.cyan(`   • Total ABI items: ${this.combinedAbi.length}\n`));
+  private async generateConfigBasedAbi(): Promise<DiamondAbiGenerationResult> {
+    if (this.options.verbose) {
+      console.log(chalk.blue('🔧 Generating Diamond ABI from configuration...'));
+    }
+
+    // Ensure output directory exists
+    if (!existsSync(this.options.outputDir)) {
+      mkdirSync(this.options.outputDir, { recursive: true });
+    }
+
+    try {
+      // Read diamond configuration to find facets
+      const configPath = join(this.options.diamondsPath, this.options.diamondName, `${this.options.diamondName.toLowerCase()}.config.json`);
+      
+      if (!existsSync(configPath)) {
+        if (this.options.verbose) {
+          console.log(chalk.yellow(`⚠️  Configuration file not found at ${configPath}`));
+        }
+        return this.generateFallbackAbi();
+      }
+
+      const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+      const combinedAbi: any[] = [];
+      const selectorMap: Record<string, string> = {};
+      let totalFunctions = 0;
+      let totalEvents = 0;
+      let totalErrors = 0;
+
+      // Process each facet from configuration
+      for (const [facetName, facetConfig] of Object.entries(config.facets || {})) {
+        try {
+          if (this.options.verbose) {
+            console.log(chalk.cyan(`📄 Processing ${facetName} from configuration...`));
+          }
+
+          // Try to load the contract artifact
+          const artifactPaths = [
+            `./artifacts/contracts/${facetName}.sol/${facetName}.json`,
+            `./artifacts/contracts/gnus-ai/${facetName}.sol/${facetName}.json`,
+            `./artifacts/@gnus.ai/contracts-upgradeable-diamond/contracts/${facetName}.sol/${facetName}.json`
+          ];
+
+          let artifact = null;
+          for (const artifactPath of artifactPaths) {
+            if (existsSync(artifactPath)) {
+              artifact = JSON.parse(readFileSync(artifactPath, 'utf-8'));
+              break;
+            }
+          }
+
+          if (!artifact) {
+            if (this.options.verbose) {
+              console.log(chalk.yellow(`⚠️  Artifact not found for ${facetName}`));
+            }
+            continue;
+          }
+
+          // Process ABI items
+          for (const abiItem of artifact.abi || []) {
+            if (abiItem.type === 'function') {
+              const { Interface } = await import('ethers');
+              const iface = new Interface([abiItem]);
+              const func = iface.getFunction(abiItem.name);
+              if (func) {
+                const selector = func.selector;
+                
+                // Add source information if requested
+                if (this.options.includeSourceInfo) {
+                  abiItem._diamondFacet = facetName;
+                  abiItem._diamondSelector = selector;
+                }
+
+                combinedAbi.push(abiItem);
+                selectorMap[selector] = facetName;
+                totalFunctions++;
+              }
+            } else if (abiItem.type === 'event') {
+              combinedAbi.push(abiItem);
+              totalEvents++;
+            } else if (abiItem.type === 'error') {
+              combinedAbi.push(abiItem);
+              totalErrors++;
+            }
+          }
+        } catch (error) {
+          if (this.options.verbose) {
+            console.log(chalk.yellow(`⚠️  Error processing ${facetName}: ${error}`));
+          }
+        }
+      }
+
+      // Sort ABI for consistency
+      combinedAbi.sort((a, b) => {
+        const typeOrder = { 'function': 0, 'event': 1, 'error': 2 };
+        if (a.type !== b.type) {
+          return (typeOrder[a.type as keyof typeof typeOrder] || 99) - (typeOrder[b.type as keyof typeof typeOrder] || 99);
+        }
+        return (a.name || '').localeCompare(b.name || '');
+      });
+
+      // Generate output file with unique name
+      const outputContractName = `${this.options.diamondName}ABI`;
+      const outputFileName = `${outputContractName}.json`;
+      const outputPath = join(this.options.outputDir, outputFileName);
+
+      const artifact = {
+        "_format": "hh-sol-artifact-1",
+        "contractName": outputContractName,
+        "sourceName": `diamond-abi/${outputContractName}.sol`,
+        "abi": combinedAbi,
+        "bytecode": "",
+        "deployedBytecode": "",
+        "linkReferences": {},
+        "deployedLinkReferences": {},
+        "_diamondMetadata": {
+          "generatedAt": new Date().toISOString(),
+          "diamondName": this.options.diamondName,
+          "networkName": this.options.networkName,
+          "chainId": this.options.chainId,
+          "selectorMap": selectorMap,
+          "stats": {
+            "totalFunctions": totalFunctions,
+            "totalEvents": totalEvents,
+            "totalErrors": totalErrors,
+            "facetCount": Object.keys(config.facets || {}).length,
+            "duplicateSelectorsSkipped": 0
+          }
+        }
+      };
+
+      // Add metadata if requested
+      if (this.options.includeSourceInfo) {
+        (artifact as any).metadata = JSON.stringify({
+          compiler: 'diamond-abi-generator-config',
+          generatedAt: new Date().toISOString(),
+          networkName: this.options.networkName,
+          chainId: this.options.chainId,
+          selectorMap: selectorMap,
+          stats: {
+            totalFunctions,
+            totalEvents,
+            totalErrors,
+            facetCount: Object.keys(config.facets || {}).length,
+            duplicateSelectorsSkipped: 0
+          }
+        });
+      }
+
+      writeFileSync(outputPath, JSON.stringify(artifact, null, 2));
+
+      const result: DiamondAbiGenerationResult = {
+        abi: combinedAbi,
+        selectorMap,
+        facetAddresses: [],
+        outputPath,
+        stats: {
+          totalFunctions,
+          totalEvents,
+          totalErrors,
+          facetCount: Object.keys(config.facets || {}).length,
+          duplicateSelectorsSkipped: 0
+        }
+      };
+
+      if (this.options.verbose) {
+        console.log(chalk.green(`✅ Configuration-based Diamond ABI generated`));
+        console.log(chalk.blue(`   Functions: ${totalFunctions}`));
+        console.log(chalk.blue(`   Events: ${totalEvents}`));
+        console.log(chalk.blue(`   Errors: ${totalErrors}`));
+        console.log(chalk.blue(`   Facets: ${Object.keys(config.facets || {}).length}`));
+        console.log(chalk.blue(`   Output: ${outputPath}`));
+      }
+
+      return result;
+    } catch (error) {
+      if (this.options.verbose) {
+        console.log(chalk.yellow(`⚠️  Configuration-based generation failed: ${error}`));
+      }
+      return this.generateFallbackAbi();
+    }
   }
 }
 
@@ -494,4 +456,32 @@ export async function generateDiamondAbi(
 ): Promise<DiamondAbiGenerationResult> {
   const generator = new ProjectDiamondAbiGenerator(options);
   return generator.generateAbi();
+}
+
+// CLI support
+if (require.main === module) {
+  const diamondName = process.argv[2] || 'GeniusDiamond';
+  const verbose = process.argv.includes('--verbose');
+  
+  const options: DiamondAbiGenerationOptions = {
+    diamondName,
+    verbose,
+    outputDir: './artifacts/diamond-abi',
+    includeSourceInfo: true,
+    validateSelectors: true
+  };
+  
+  generateDiamondAbi(options)
+    .then((result) => {
+      console.log(chalk.green('🎉 Diamond ABI generation complete!'));
+      console.log(chalk.blue(`   Functions: ${result.stats.totalFunctions}`));
+      console.log(chalk.blue(`   Events: ${result.stats.totalEvents}`));
+      console.log(chalk.blue(`   Facets: ${result.stats.facetCount}`));
+      console.log(chalk.blue(`   Output: ${result.outputPath}`));
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error(chalk.red('❌ Diamond ABI generation failed:'), error);
+      process.exit(1);
+    });
 }

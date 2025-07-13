@@ -14,7 +14,7 @@ import {
 import { Diamond } from 'diamonds';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { GeniusDiamond } from '../../typechain-types/diamond-abi';
+import { GeniusDiamondABI } from '../../typechain-types/diamond-abi';
 import { IERC20Upgradeable__factory } from '../../typechain-types';
 
 chai.use(chaiAsPromised);
@@ -44,17 +44,17 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 			let signer2: string;
 			let owner: string;
 			let ownerSigner: SignerWithAddress;
-			let geniusDiamond: GeniusDiamond;
-			let signer0Diamond: GeniusDiamond;
-			let signer1Diamond: GeniusDiamond;
-			let signer2Diamond: GeniusDiamond;
-			let ownerDiamond: GeniusDiamond;
-			let erc1155ProxyOperator: GeniusDiamond;
+			let geniusDiamond: GeniusDiamondABI;
+			let signer0Diamond: GeniusDiamondABI;
+			let signer1Diamond: GeniusDiamondABI;
+			let signer2Diamond: GeniusDiamondABI;
+			let ownerDiamond: GeniusDiamondABI;
+			let erc1155ProxyOperator: GeniusDiamondABI;
 
 			let ethersMultichain: typeof hre.ethers;
 			let snapshotId: string;
 
-			// let erc1155ProxyOperator: GeniusDiamond;
+			// let erc1155ProxyOperator: GeniusDiamondABI;
 
 			before(async function () {
 				console.log('Starting GNUSERC20 test setup...');
@@ -105,7 +105,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 							deployedDiamondData.DiamondAddress!,
 							diamondAbiArtifact.abi,
 							hre.ethers.provider
-						) as unknown as GeniusDiamond;
+						) as unknown as GeniusDiamondABI;
 						console.log('✅ Diamond contract instance created with generated ABI');
 					} else {
 						throw new Error('Diamond artifact file does not exist');
@@ -117,16 +117,16 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 						geniusDiamond = (await hre.ethers.getContractAt(
 							'diamond-abi/GeniusDiamondABI',
 							deployedDiamondData.DiamondAddress!,
-						)) as unknown as GeniusDiamond;
+						)) as unknown as GeniusDiamondABI;
 						console.log('✅ Loaded diamond using TypeChain generated types');
 					} catch (secondError) {
 						try {
-							const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-							const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+							const diamondAbiPath = 'diamond-abi';
+							const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
 							geniusDiamond = (await hre.ethers.getContractAt(
 								diamondArtifactName,
 								deployedDiamondData.DiamondAddress!,
-							)) as unknown as GeniusDiamond;
+							)) as unknown as GeniusDiamondABI;
 							console.log('✅ Loaded diamond using hardhat-diamond-abi');
 						} catch (thirdError) {
 							console.warn(`Warning: Could not find diamond artifact for ${diamond.diamondName}, using GNUSNFTFactory`);
@@ -134,7 +134,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 							geniusDiamond = (await hre.ethers.getContractAt(
 								'GNUSNFTFactory',
 								deployedDiamondData.DiamondAddress!,
-							)) as unknown as GeniusDiamond;
+							)) as unknown as GeniusDiamondABI;
 						}
 					}
 				}

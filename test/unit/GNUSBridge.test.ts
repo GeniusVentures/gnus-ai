@@ -12,8 +12,8 @@ import { toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond, } from 'diamonds';
 import {
-  GeniusDiamond,
-} from '../../typechain-types';
+  GeniusDiamondABI,
+} from '../../typechain-types/diamond-abi';
 
 chai.use(chaiAsPromised);
 
@@ -43,16 +43,16 @@ describe('GNUS Bridge Tests', async function () {
       let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamond;
-      let signer0Diamond: GeniusDiamond;
-      let signer1Diamond: GeniusDiamond;
-      let signer2Diamond: GeniusDiamond;
-      let ownerDiamond: GeniusDiamond;
+      let geniusDiamond: GeniusDiamondABI;
+      let signer0Diamond: GeniusDiamondABI;
+      let signer1Diamond: GeniusDiamondABI;
+      let signer2Diamond: GeniusDiamondABI;
+      let ownerDiamond: GeniusDiamondABI;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamond;
+      let erc1155ProxyOperator: GeniusDiamondABI;
 
       before(async function () {
         const config = {
@@ -68,16 +68,10 @@ describe('GNUS Bridge Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-        // Try to get the diamond artifact - if it doesn't exist, use GNUSBridge fallback
-        try {
-          const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-          const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        } catch (error) {
-          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSBridge`);
-          // Fallback to using GNUSBridge which has bridge and access control methods
-          geniusDiamond = await ethers.getContractAt('GNUSBridge', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        }
+
+        const diamondAbiPath = 'diamond-abi';
+        const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
+        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;
@@ -118,15 +112,15 @@ describe('GNUS Bridge Tests', async function () {
 
       // Validate the owner has the `MINTER_ROLE`
       it('should return true if owner has MINTER_ROLE', async () => {
-        const minterRole = await ownerDiamond.MINTER_ROLE();
-        const hasRole = await ownerDiamond.hasRole(minterRole, owner);
+        const minterRole = await ownerDiamond['MINTER_ROLE()'];
+        const hasRole = await ownerDiamond['hasRole(bytes32,address)'](minterRole, owner);
         expect(hasRole).to.be.true;
       });
 
       // Test case to validate the minting and burning functionality
       it('Testing Mint/Burn', async () => {
         // Retrieve the minter role
-        const minterRole = await ownerDiamond.MINTER_ROLE();
+        const minterRole = await ownerDiamond['MINTER_ROLE()'];
 
         // Ensure a signer without the `MINTER_ROLE` cannot mint tokens
         await expect(

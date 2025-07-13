@@ -19,8 +19,8 @@ import {
   logTx
 } from 'diamonds';
 import {
-  GeniusDiamond,
-} from '../../typechain-types';
+  GeniusDiamondABI,
+} from '../../typechain-types/diamond-abi';
 
 chai.use(chaiAsPromised);
 
@@ -49,16 +49,16 @@ describe('ERC1155 Proxy Operator Tests', async function () {
       let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamond;
-      let signer0Diamond: GeniusDiamond;
-      let signer1Diamond: GeniusDiamond;
-      let signer2Diamond: GeniusDiamond;
-      let ownerDiamond: GeniusDiamond;
+      let geniusDiamond: GeniusDiamondABI;
+      let signer0Diamond: GeniusDiamondABI;
+      let signer1Diamond: GeniusDiamondABI;
+      let signer2Diamond: GeniusDiamondABI;
+      let ownerDiamond: GeniusDiamondABI;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamond;
+      let erc1155ProxyOperator: GeniusDiamondABI;
       let deployedDiamondData: DeployedDiamondData;
 
       before(async function () {
@@ -78,7 +78,7 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         // Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
         const diamondAbiPath = 'diamond-abi';
         const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
 
         // Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods
         const proxyOperatorContract = await ethers.getContractAt('ERC1155ProxyOperator', deployedDiamondData.DiamondAddress!);
