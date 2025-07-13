@@ -329,6 +329,14 @@ export class ProjectDiamondAbiGenerator {
               if (func) {
                 const selector = func.selector;
                 
+                // Check for duplicate selectors and skip if already added
+                if (selectorMap[selector]) {
+                  if (this.options.verbose) {
+                    console.log(chalk.yellow(`⚠️  Skipping duplicate function ${abiItem.name} with selector ${selector} from ${facetName} (already added from ${selectorMap[selector]})`));
+                  }
+                  continue;
+                }
+                
                 // Add source information if requested
                 if (this.options.includeSourceInfo) {
                   abiItem._diamondFacet = facetName;
@@ -396,7 +404,7 @@ export class ProjectDiamondAbiGenerator {
       // Add metadata if requested
       if (this.options.includeSourceInfo) {
         (artifact as any).metadata = JSON.stringify({
-          compiler: 'diamond-abi-generator-config',
+          compiler: 'diamond-abi-generator',
           generatedAt: new Date().toISOString(),
           networkName: this.options.networkName,
           chainId: this.options.chainId,
