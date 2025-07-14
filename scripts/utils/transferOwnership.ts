@@ -1,6 +1,6 @@
 import { ethers, network } from 'hardhat';
 import { parseEther, formatEther } from 'ethers';
-import { GeniusDiamondABI } from '../../typechain-types'; // Update the path to your typechain types
+import { GeniusDiamond } from '../../diamond-typechain-types'; // Update the path to your typechain types
 import { INetworkDeployInfo } from '../common'; // Update the path to your common types
 
 async function main(networkDeployInfo: INetworkDeployInfo) {
@@ -39,7 +39,7 @@ async function main(networkDeployInfo: INetworkDeployInfo) {
     'GeniusOwnershipFacet',
     DiamondAddress,
     deployerSigner,
-  )) as GeniusDiamond;
+  )) as unknown as GeniusDiamond;
 
   // Transfer ownership to the deployer address
   console.log(`Transferring contract ownership to: ${DeployerAddress}`);

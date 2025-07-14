@@ -18,7 +18,7 @@ import {
 } from 'diamonds';
 import {
   GeniusDiamond
-} from '../../../typechain-types';
+} from '../../../diamond-typechain-types';
 import { DeployedDiamondData } from 'diamonds';
 
 describe('🧪 Diamond Pre-Deployment Comparison Tests', async function () {

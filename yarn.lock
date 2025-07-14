@@ -1965,22 +1965,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-account-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-account-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-account-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-account-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/2817a1c80d97518f4cb1ff93e587cf43baa57c6a727b4aecfc9bfa8c7ea465d9c0152ce13c1bc865b73a5d75e26f71110310904c8a02e265e4b8bede26dfcb76
+  checksum: 10c0/9cc6c6e973aca6302854ec59c617e45e35c5db3383ad6ac4ec4930ca647747542180374597c9eaba6e3ad12aafc8c01ea0c38aed7ef2e0e7b235f8bb82201362
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-action-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-action-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-action-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-action-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     dotenv: "npm:^16.3.1"
     glob: "npm:^11.0.0"
@@ -1988,137 +1988,137 @@ __metadata:
     lodash: "npm:^4.17.21"
   bin:
     defender-action: lib/bin.js
-  checksum: 10c0/dd632f54ad4ca9a4ebe592e84dfb35a520c68b507f944896cd943c1c897f4e2c7abd04b76090a64bfa68fccedb7c30a2ea95867e865b2b9e8e25552be32f48c8
+  checksum: 10c0/33e4dd751152406d9989693be1b965abd0371eaddc05554a9b4cac2e6619d77209e8f91216d94b26faee9f17c1425ee0f25b4b4ae22256efe5f457d93c011704
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-address-book-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-address-book-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-address-book-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-address-book-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     dotenv: "npm:^16.3.1"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/65976fa554520fe84561a60a74e7026afc9d226f681368710b69bd2b6353b6b7776ddfb9899e116c1dc7f256f6c11d743902fe1a8191b6dbe2208eef0e2ee6b8
+  checksum: 10c0/dc6a204f573b12263630fb889dafc0667b8e0c310308c4b778d1859354184dfbfa700915be15e63276724ff56e0b3db0b03522cfb5fc75bbff83ad78650d9f3f
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-approval-process-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-approval-process-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-approval-process-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-approval-process-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/a0d678913117aad0c05122164574c23315d9ce41ffbf4cf778cb9d8eb2f65aa58dd3695e8bcc5e32c9be765b9a316848faa47b928bfb32b18168350c755876e9
+  checksum: 10c0/6dc8ba1f94943c8deb73142c5a87decb68198ae97f04e20d553cb21ea1cc290e9f9a73f7f74fe9983e7e824b39e4bb7fabdecdfe5101ba863322d25777170d64
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-base-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-base-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-base-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-base-client@npm:2.7.0"
   dependencies:
     "@aws-sdk/client-lambda": "npm:^3.563.0"
     amazon-cognito-identity-js: "npm:^6.3.6"
     async-retry: "npm:^1.3.3"
-  checksum: 10c0/5d9e74c7941fef4e2a9895fdab4463f93e6f81ee6534a465e9ef9b324db32de97fb4f54d3f1ea09667f64f8b974ef7c79589369a1cd0938c77377bfc7ca94e7b
+  checksum: 10c0/4186ef9852997d88993554788ae19be4fe456a100fd1465604d26fec116171ee39dda9bf3b0580902bbd972468296a257f795c572736d5a193bc02fdfdd55c44
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-deploy-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-deploy-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-deploy-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-deploy-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/204387abe67835c2d7aae231b8cc007e37e8951182eefe406a63bddb583e2fd6db6c8372d25cc43afe42047480b5667d158223f02a7b9e3ed3e6e0012972e791
+  checksum: 10c0/5bb3121d50859b8add196ecda08616b36ac1043e712b2b1f6c24e26e7977f85f59587ee49de76a8fa35111b80cc8f0d5122e157dcee9bad6c369fd143d421bf1
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-key-value-store-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-key-value-store-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-key-value-store-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-key-value-store-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     fs-extra: "npm:^11.2.0"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/6800fdd5f502c3eaa7ed7979f904bab405aac2bffaed1a048f91d7b93e1be1aa0eb9d9414d17c15b3f87c60cf7ab0b7fbf995e0d114a6e857490715f3601cee8
+  checksum: 10c0/de10de11283769c188e834ed8398c8bd915ea639a85bd96984cd3b87d65bf4443efb22494db583f7a2b72fb1ec62700a212c7915dbebef9994d0c66aa52c9ea7
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-monitor-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-monitor-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-monitor-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-monitor-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     ethers: "npm:^6.9.0"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/3e6e1ec1183ec30e2856b4449b6b39c220cb74c9092c189edf434d50489d7f9266b8efe9b022f034b0fe2459f918e196432cc55971eec6bf81be10bd6b2f71bc
+  checksum: 10c0/334ae1efdb0c910948dc3ab6a9cc5e0b2c6692010451fe03ab00b9c79b5bce10f07854fba9b2db708b6f2e985bfc659cdb5a30cce4336c584ef45552f2fa302e
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-network-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-network-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-network-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-network-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/d8867c33b5d7e57c4a540a6e87c1cf0bb2cf9f26533949d7b858b489169d54ed918a20b3078d24ee2a786e761a23060e25164e6b3bf004666d3623e9e1c2fe52
+  checksum: 10c0/07cea4f8ce48ef1d5b24647744d3279744f258cefbe1e79c8e4857e1da2724db9fbbab579ae22d778a6b42587349226031c8c837e67dbffcf58e5ccf02c22deb
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-notification-channel-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-notification-channel-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-notification-channel-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-notification-channel-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/38687f2b003c57fa972d27abe479cd321d826c421794cd38b9982040878e0e35408b92a07f6662e078c6e984cbed01f9a050eccb7d88be31d2aa31230aaf9833
+  checksum: 10c0/855baccdb4febef27268776c1db89d5d50f13aec2e5123a513cbd134e88dfdc93010684d773764e617705cc75eda18f17f8aa83acc9d760bbe66b08d22143d09
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-proposal-client@npm:^2.0.0, @openzeppelin/defender-sdk-proposal-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-proposal-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-proposal-client@npm:^2.0.0, @openzeppelin/defender-sdk-proposal-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-proposal-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     ethers: "npm:^6.9.0"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/f49b39f3318816782e403df1caf69e08ade1f033f08c102ec55e7cc6f59f8888ccf1c56f4d3b40e77ad98a51e084a82749791384942bf25b462cc97a91f4e88f
+  checksum: 10c0/f2be22bcef27b70ca916c56b5bc76659859c8521dab10ef834da9dfefcaa7609eaecd99cec0637d9edc545eadd281da4a2a5377dfdf391299fc514af0242f990
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-relay-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-relay-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-relay-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-relay-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/292ebc2c4c1737ade185ce63de188d31974c28f0c3df5bfe1962d72cc53b4c0e0f0f256a4915c14ac461ce1b2142614a63941d906caafae1874d8bc6a018d989
+  checksum: 10c0/c613b4ea65a0bcfa716f7467ff1f2513249fb9fcdbbadad38e07081c04a6546b35ac9af77debe543408d47d53a6070f9781d3444b268e4f4fbf4c657179181b9
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-relay-group-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-relay-group-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-relay-group-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-relay-group-client@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     axios: "npm:^1.7.4"
     lodash: "npm:^4.17.21"
-  checksum: 10c0/ec27611405c7a771112c7501d37a5acaf58652b729c46ddb842c0f5143351c0a0a976b765767fd54d88cb9425fdaf31c5b6f91cee385e155e77e0b9638a78393
+  checksum: 10c0/cdbeb66ce65ea35938255f066eeb124760a6df8d2aa82d33bc1322c70a48a890a48aca404af961e8a6c73eaa082d12b1172a6c039fa6a928c1da98d121a44258
   languageName: node
   linkType: hard
 
-"@openzeppelin/defender-sdk-relay-signer-client@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk-relay-signer-client@npm:2.6.0"
+"@openzeppelin/defender-sdk-relay-signer-client@npm:^2.7.0":
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk-relay-signer-client@npm:2.7.0"
   dependencies:
     "@ethersproject/bignumber": "npm:^5.7.0"
     "@ethersproject/bytes": "npm:^5.7.0"
@@ -2127,7 +2127,7 @@ __metadata:
     "@ethersproject/properties": "npm:^5.7.0"
     "@ethersproject/providers": "npm:^5.7.2"
     "@ethersproject/strings": "npm:^5.7.0"
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
     amazon-cognito-identity-js: "npm:^6.3.6"
     axios: "npm:^1.7.4"
     ethers: "npm:^6.9.0"
@@ -2136,29 +2136,29 @@ __metadata:
     web3: ^4.14.0
     web3-core: ^4.7.0
     web3-utils: ^4.3.2
-  checksum: 10c0/43c320d91cf1eb486328f1f0caad45a50852cb4d390d5d2491a937ce26b0bed0d0c0818808bdde71566b9e6c7bf2fd7658a130017ac67a8b44a8673016e834c8
+  checksum: 10c0/6703df01c4b0d663a74b967513d5b1ccc0f2728e4225758b4c860109e0c677a855c2a0a46576b38cb366a4a6fffe3d3e868919cac875a86e422391a1e07e418c
   languageName: node
   linkType: hard
 
 "@openzeppelin/defender-sdk@npm:^2.0.0":
-  version: 2.6.0
-  resolution: "@openzeppelin/defender-sdk@npm:2.6.0"
+  version: 2.7.0
+  resolution: "@openzeppelin/defender-sdk@npm:2.7.0"
   dependencies:
-    "@openzeppelin/defender-sdk-account-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-action-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-address-book-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-approval-process-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-base-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-deploy-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-key-value-store-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-monitor-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-network-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-notification-channel-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-proposal-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-relay-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-relay-group-client": "npm:^2.6.0"
-    "@openzeppelin/defender-sdk-relay-signer-client": "npm:^2.6.0"
-  checksum: 10c0/ef81af9893360a6be35d3234e0ecd79a7fe6563843ac2ff70469070ded8ad7cb87ddec7fd1195a40a0126978b7e3f3a62279da17d97e17296cbb9b21d97bc807
+    "@openzeppelin/defender-sdk-account-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-action-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-address-book-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-approval-process-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-base-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-deploy-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-key-value-store-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-monitor-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-network-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-notification-channel-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-proposal-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-relay-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-relay-group-client": "npm:^2.7.0"
+    "@openzeppelin/defender-sdk-relay-signer-client": "npm:^2.7.0"
+  checksum: 10c0/f06882dd69242fc36615eedb4487311fda4c65eda6c82f6105287bb36c31ef9de3580bc11099e0ca0ebaa17a7ce299635c312c86ad21f01b6acee4011c31094c
   languageName: node
   linkType: hard
 
@@ -3347,104 +3347,105 @@ __metadata:
   linkType: hard
 
 "@typescript-eslint/eslint-plugin@npm:^8.18.1":
-  version: 8.36.0
-  resolution: "@typescript-eslint/eslint-plugin@npm:8.36.0"
+  version: 8.37.0
+  resolution: "@typescript-eslint/eslint-plugin@npm:8.37.0"
   dependencies:
     "@eslint-community/regexpp": "npm:^4.10.0"
-    "@typescript-eslint/scope-manager": "npm:8.36.0"
-    "@typescript-eslint/type-utils": "npm:8.36.0"
-    "@typescript-eslint/utils": "npm:8.36.0"
-    "@typescript-eslint/visitor-keys": "npm:8.36.0"
+    "@typescript-eslint/scope-manager": "npm:8.37.0"
+    "@typescript-eslint/type-utils": "npm:8.37.0"
+    "@typescript-eslint/utils": "npm:8.37.0"
+    "@typescript-eslint/visitor-keys": "npm:8.37.0"
     graphemer: "npm:^1.4.0"
     ignore: "npm:^7.0.0"
     natural-compare: "npm:^1.4.0"
     ts-api-utils: "npm:^2.1.0"
   peerDependencies:
-    "@typescript-eslint/parser": ^8.36.0
+    "@typescript-eslint/parser": ^8.37.0
     eslint: ^8.57.0 || ^9.0.0
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/a9bb55b896717bea630f969d1c7ca15ddaf0d0f72df1d8a05696a7ca75e8b40dc9abdc8ad447a0a0130f1d81a4bb5befd66c7f5e10950c4b1a389542ac3e0298
+  checksum: 10c0/71b5be797911d4057b083e767cbed3d9a43d8d6d81097e0b13b3b724c3dd8ff5cd6072e81125922fd646db9f19275952d4fc6c83966a125a013ecd7a079714d5
   languageName: node
   linkType: hard
 
 "@typescript-eslint/parser@npm:^8.18.1":
-  version: 8.36.0
-  resolution: "@typescript-eslint/parser@npm:8.36.0"
+  version: 8.37.0
+  resolution: "@typescript-eslint/parser@npm:8.37.0"
   dependencies:
-    "@typescript-eslint/scope-manager": "npm:8.36.0"
-    "@typescript-eslint/types": "npm:8.36.0"
-    "@typescript-eslint/typescript-estree": "npm:8.36.0"
-    "@typescript-eslint/visitor-keys": "npm:8.36.0"
+    "@typescript-eslint/scope-manager": "npm:8.37.0"
+    "@typescript-eslint/types": "npm:8.37.0"
+    "@typescript-eslint/typescript-estree": "npm:8.37.0"
+    "@typescript-eslint/visitor-keys": "npm:8.37.0"
     debug: "npm:^4.3.4"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/4cba651b9fb6a3662775dcb9391d7c65c0674442674fb46e19bc612cc284057e638b4c3410ba5985f78d4a6bf55f522d875e428bc334e26e91a58d3b0f55904f
+  checksum: 10c0/1f72625fca4799c94c62955308545ca9291f1cccfbb714a783dea605640e57cfe480a3cc31798fa08444e81fe536ddd658e2fed08f5bf791c1da8b465c970319
   languageName: node
   linkType: hard
 
-"@typescript-eslint/project-service@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/project-service@npm:8.36.0"
+"@typescript-eslint/project-service@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/project-service@npm:8.37.0"
   dependencies:
-    "@typescript-eslint/tsconfig-utils": "npm:^8.36.0"
-    "@typescript-eslint/types": "npm:^8.36.0"
+    "@typescript-eslint/tsconfig-utils": "npm:^8.37.0"
+    "@typescript-eslint/types": "npm:^8.37.0"
     debug: "npm:^4.3.4"
   peerDependencies:
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/4199bb52118fa530f24709707e0ab7677ffbe2885412aea294a24befe6ffe2af19b05512913752ab08b8177b00784da23285a6b091066e28fe4449cddcf0ef7a
+  checksum: 10c0/bbb42d4720500bcaf125c98b128dc12c4b63e0c8d640451cadc2f10c0862cd36306b48007ace2a2f3e2b60548a335e462500945a3a42c5ce251ffee08ccc721a
   languageName: node
   linkType: hard
 
-"@typescript-eslint/scope-manager@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/scope-manager@npm:8.36.0"
+"@typescript-eslint/scope-manager@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/scope-manager@npm:8.37.0"
   dependencies:
-    "@typescript-eslint/types": "npm:8.36.0"
-    "@typescript-eslint/visitor-keys": "npm:8.36.0"
-  checksum: 10c0/ee40ac6ac130c8656530eac5705f386b9e33ee6aa4bb285794b62023bc42e1004c871260b0accdff57275cf8c939981dc72c5a64043310375e9117734827e9bb
+    "@typescript-eslint/types": "npm:8.37.0"
+    "@typescript-eslint/visitor-keys": "npm:8.37.0"
+  checksum: 10c0/f6b36276abadb39a5b0951edb429286cfe40d656c17f8f6604827d89b1f7dea7ac0210d9c7ae08823d3de4ddd5f2e81e44178d1802164765ce55d0e714df25e6
   languageName: node
   linkType: hard
 
-"@typescript-eslint/tsconfig-utils@npm:8.36.0, @typescript-eslint/tsconfig-utils@npm:^8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/tsconfig-utils@npm:8.36.0"
+"@typescript-eslint/tsconfig-utils@npm:8.37.0, @typescript-eslint/tsconfig-utils@npm:^8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/tsconfig-utils@npm:8.37.0"
   peerDependencies:
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/e0e1bacd3f5bfddb90a90362dbedf793d98ee1ada203fc2d83531a61617d246b9e0d0bfac493680f635afb3cfd749da2008e06e4404660334a5f804392064006
+  checksum: 10c0/ab9f78031bff9b180c59e8dc4c7748d7d3c5c787ac7379ed86a642a425093974cdb0fc2252730ecb298ef9165761caa4bd35bcec3f0bc8444f615a0b9ffbba3f
   languageName: node
   linkType: hard
 
-"@typescript-eslint/type-utils@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/type-utils@npm:8.36.0"
+"@typescript-eslint/type-utils@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/type-utils@npm:8.37.0"
   dependencies:
-    "@typescript-eslint/typescript-estree": "npm:8.36.0"
-    "@typescript-eslint/utils": "npm:8.36.0"
+    "@typescript-eslint/types": "npm:8.37.0"
+    "@typescript-eslint/typescript-estree": "npm:8.37.0"
+    "@typescript-eslint/utils": "npm:8.37.0"
     debug: "npm:^4.3.4"
     ts-api-utils: "npm:^2.1.0"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/9743b99d1ab5c98b96e9b43472c1c0c787256285fe4c5fe3e54bbf331cd3c9a3bfac1188a490f6e0de8eacea0940731478feef6b3e0266d701bb0686815532c6
+  checksum: 10c0/20679b86c22eb5da4858bdd7b729e74852fe972c1e16e1819a24242246dd429e49a8f457c8a30d87f4d07b3c440edfeabcbb990272fb9c2cfbcb0c4e13f787a8
   languageName: node
   linkType: hard
 
-"@typescript-eslint/types@npm:8.36.0, @typescript-eslint/types@npm:^8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/types@npm:8.36.0"
-  checksum: 10c0/cacb941a0caad6ab556c416051b97ec33b364b7c8e0703e2729ae43f12daf02b42eef12011705329107752e3f1685ca82cfffe181d637f85907293cb634bee31
+"@typescript-eslint/types@npm:8.37.0, @typescript-eslint/types@npm:^8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/types@npm:8.37.0"
+  checksum: 10c0/0caa649ba242d384e935eef9badbb352a3e640c3842104a6a562af69e0f680ec8e6c0c55c069d4d714f05208f6d07811417ca6179745128a60c45fa92794e6dd
   languageName: node
   linkType: hard
 
-"@typescript-eslint/typescript-estree@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/typescript-estree@npm:8.36.0"
+"@typescript-eslint/typescript-estree@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/typescript-estree@npm:8.37.0"
   dependencies:
-    "@typescript-eslint/project-service": "npm:8.36.0"
-    "@typescript-eslint/tsconfig-utils": "npm:8.36.0"
-    "@typescript-eslint/types": "npm:8.36.0"
-    "@typescript-eslint/visitor-keys": "npm:8.36.0"
+    "@typescript-eslint/project-service": "npm:8.37.0"
+    "@typescript-eslint/tsconfig-utils": "npm:8.37.0"
+    "@typescript-eslint/types": "npm:8.37.0"
+    "@typescript-eslint/visitor-keys": "npm:8.37.0"
     debug: "npm:^4.3.4"
     fast-glob: "npm:^3.3.2"
     is-glob: "npm:^4.0.3"
@@ -3453,32 +3454,32 @@ __metadata:
     ts-api-utils: "npm:^2.1.0"
   peerDependencies:
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/3581401620de27fbeb4ce5052211432eff839961b4430324b505429637e3d19270be1ab1575e29da0115817d32fb5b1fa5e774667b91d92da7f6b95fff5dbf74
+  checksum: 10c0/a51a00053ddcfb44f30598d033f061699c89eb2017be6f3a70e0e9b4151322d1dbda6980fe5630461669bb4bc3aca9617ab1348539ba0de8d8ceea41755d9f05
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/utils@npm:8.36.0"
+"@typescript-eslint/utils@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/utils@npm:8.37.0"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.7.0"
-    "@typescript-eslint/scope-manager": "npm:8.36.0"
-    "@typescript-eslint/types": "npm:8.36.0"
-    "@typescript-eslint/typescript-estree": "npm:8.36.0"
+    "@typescript-eslint/scope-manager": "npm:8.37.0"
+    "@typescript-eslint/types": "npm:8.37.0"
+    "@typescript-eslint/typescript-estree": "npm:8.37.0"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
     typescript: ">=4.8.4 <5.9.0"
-  checksum: 10c0/b107018ae0ba1cca954c3e8c3280cf1844c81c1c8494f9967014eadf41fdc44a88d13accc935c5371c61df02a13decd4846f12e63d9b2b2c789e5007abce1050
+  checksum: 10c0/9d6c2d9907ea67018c6d97ece15f9ba091be08dc11d719fbc260cc8afb916f4ce98f9630f46ca1e97451ee63d3f1d6244fa67833707dfeee798725b92d016c46
   languageName: node
   linkType: hard
 
-"@typescript-eslint/visitor-keys@npm:8.36.0":
-  version: 8.36.0
-  resolution: "@typescript-eslint/visitor-keys@npm:8.36.0"
+"@typescript-eslint/visitor-keys@npm:8.37.0":
+  version: 8.37.0
+  resolution: "@typescript-eslint/visitor-keys@npm:8.37.0"
   dependencies:
-    "@typescript-eslint/types": "npm:8.36.0"
+    "@typescript-eslint/types": "npm:8.37.0"
     eslint-visitor-keys: "npm:^4.2.1"
-  checksum: 10c0/cc5cc3ab8cf0a84c73c6aa025556e8c6ed04c1a114f6d03c4c4a05c0b197f2de4f02764d053760f2ba81b256234bb14be391a8601f294e3ac31baaa1dce44a63
+  checksum: 10c0/ee6eb963bdf83e42d64b5fc4d9ba23abdca0e172ebb3a56a823a20cf44b8dad7cea0e3be61f1d83a1c4b94fc0693b75e89bf3e1ffc52553a347be2af8a927db7
   languageName: node
   linkType: hard
 
@@ -4819,7 +4820,7 @@ __metadata:
 
 "diamonds@https://github.com/GeniusVentures/diamonds.git#develop":
   version: 1.0.0
-  resolution: "diamonds@https://github.com/GeniusVentures/diamonds.git#commit=c09ab14ae1dea28b5f7ed4309cb5a990e38d418c"
+  resolution: "diamonds@https://github.com/GeniusVentures/diamonds.git#commit=cdc4a946b1610c2e40cfb381bb36bb304e2579ce"
   dependencies:
     "@ethersproject/abstract-signer": "npm:^5.8.0"
     axios: "npm:^1.10.0"
@@ -4833,7 +4834,7 @@ __metadata:
     typescript: ^5.0.0
   bin:
     diamond-abi: dist/scripts/diamond-abi-cli.js
-  checksum: 10c0/5be7fc43b2059dd2ff1047e5d8d0e599c564eeed8fb136102fdcaadae38e554a606ffa7fd40b2d3b3520913a32e0c6d9ff6c17296975c9bb2a888d70c8b296c7
+  checksum: 10c0/95f028d2fdeaa9a1b912e4f4bb773d8c2dbea91bfd9be7c5558eacea4a824899fa2d467efea6dc20a0ba858f74ed5baee13a8a4aa74b65d1cb54d60544f65b75
   languageName: node
   linkType: hard
 

@@ -91,9 +91,9 @@ describe('Diamond ABI Integration Tests', () => {
 
       // Check if TypeChain generated the diamond types
       const expectedTypeFiles = [
-        'typechain-types/diamond-abi/GeniusDiamond.ts',
-        'typechain-types/diamond-abi/index.ts',
-        'typechain-types/diamond-abi/common.ts'
+        'diamond-typechain-types/GeniusDiamond.ts',
+        'diamond-typechain-types/index.ts',
+        'diamond-typechain-types/common.ts'
       ];
 
       for (const typeFile of expectedTypeFiles) {
@@ -101,7 +101,7 @@ describe('Diamond ABI Integration Tests', () => {
       }
 
       // Verify the main diamond type file contains expected content
-      const mainTypeFile = 'typechain-types/diamond-abi/GeniusDiamond.ts';
+      const mainTypeFile = 'diamond-typechain-types/GeniusDiamond.ts';
       if (existsSync(mainTypeFile)) {
         const content = readFileSync(mainTypeFile, 'utf8');
         

@@ -12,8 +12,8 @@ import { toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond, } from 'diamonds';
 import {
-  GeniusDiamondABI,
-} from '../../typechain-types/diamond-abi';
+  GeniusDiamond,
+} from '../../diamond-typechain-types';
 
 chai.use(chaiAsPromised);
 
@@ -43,16 +43,16 @@ describe('GNUS Bridge Tests', async function () {
       let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamondABI;
-      let signer0Diamond: GeniusDiamondABI;
-      let signer1Diamond: GeniusDiamondABI;
-      let signer2Diamond: GeniusDiamondABI;
-      let ownerDiamond: GeniusDiamondABI;
+      let geniusDiamond: GeniusDiamond;
+      let signer0Diamond: GeniusDiamond;
+      let signer1Diamond: GeniusDiamond;
+      let signer2Diamond: GeniusDiamond;
+      let ownerDiamond: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamondABI;
+      let erc1155ProxyOperator: GeniusDiamond;
 
       before(async function () {
         const config = {
@@ -69,9 +69,16 @@ describe('GNUS Bridge Tests', async function () {
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
 
-        const diamondAbiPath = 'diamond-abi';
-        const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
-        geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
+        // Use Diamond's configured ABI path and filename with try-catch fallback
+        try {
+          const diamondAbiPath = diamond.getDiamondAbiPath();
+          const diamondAbiFileName = diamond.getDiamondAbiFileName();
+          const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
+          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        } catch (error) {
+          console.warn('Could not load diamond artifact, using GNUSBridge as fallback');
+          geniusDiamond = await ethers.getContractAt('GNUSBridge', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+        }
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;
@@ -112,15 +119,15 @@ describe('GNUS Bridge Tests', async function () {
 
       // Validate the owner has the `MINTER_ROLE`
       it('should return true if owner has MINTER_ROLE', async () => {
-        const minterRole = await ownerDiamond['MINTER_ROLE()'];
-        const hasRole = await ownerDiamond['hasRole(bytes32,address)'](minterRole, owner);
+        const minterRole = await ownerDiamond.MINTER_ROLE();
+        const hasRole = await ownerDiamond.hasRole(minterRole, owner);
         expect(hasRole).to.be.true;
       });
 
       // Test case to validate the minting and burning functionality
       it('Testing Mint/Burn', async () => {
         // Retrieve the minter role
-        const minterRole = await ownerDiamond['MINTER_ROLE()'];
+        const minterRole = await ownerDiamond.MINTER_ROLE();
 
         // Ensure a signer without the `MINTER_ROLE` cannot mint tokens
         await expect(

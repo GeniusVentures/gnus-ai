@@ -1,5 +1,6 @@
 import hre, { ethers } from 'hardhat';
 import { toWei } from '../common';
+import { GeniusOwnershipFacet } from '../../typechain-types';
 
 /**
  * Impersonates a signer account. This is primarily used in Hardhat's testing environment
@@ -42,7 +43,7 @@ export const updateOwnerForTest = async (rootAddress: string) => {
   const curOwner = (await ethers.getSigners())[0];
 
   // Get a reference to the GeniusOwnershipFacet contract at the specified root address
-  const ownership = await ethers.getContractAt('GeniusOwnershipFacet', rootAddress);
+  const ownership = await ethers.getContractAt('GeniusOwnershipFacet', rootAddress) as GeniusOwnershipFacet;
 
   // Retrieve the current owner of the contract
   const oldOwnerAddress = await ownership.owner();

@@ -20,6 +20,7 @@ import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/inte
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { join } from 'path';
 import 'hardhat-diamonds';
+import { generateDiamondAbiWithTypechain } from '../generate-diamond-abi-with-typechain';
 
 export interface LocalDiamondDeployerConfig extends DiamondConfig {
   provider?: JsonRpcProvider | HardhatEthersProvider;
@@ -38,10 +39,10 @@ export class LocalDiamondDeployer {
   private signer: SignerWithAddress;
   private diamondName: string;
   private networkName: string = 'hardhat';
-  private chainId: number = 31337;
+  private chainId: bigint | number = 31337n;
   private repository: DeploymentRepository;
 
-  constructor(config: LocalDiamondDeployerConfig, repository: DeploymentRepository) {
+  private constructor(config: LocalDiamondDeployerConfig, repository: DeploymentRepository) {
     this.config = config as DiamondConfig;
     this.diamondName = config.diamondName;
     this.provider = config.provider || ethers.provider;
@@ -72,6 +73,12 @@ export class LocalDiamondDeployer {
     this.diamond = new Diamond(this.config, repository);
     this.diamond.setProvider(this.provider as any);
     this.diamond.setSigner(this.signer);
+  }
+
+  private static async create(config: LocalDiamondDeployerConfig, repository: DeploymentRepository): Promise<LocalDiamondDeployer> {
+    const instance = new LocalDiamondDeployer(config, repository);
+    await generateDiamondAbiWithTypechain(instance.diamondName, true);
+    return instance;
   }
 
   public static async getInstance(config: LocalDiamondDeployerConfig): Promise<LocalDiamondDeployer> {
@@ -116,6 +123,10 @@ export class LocalDiamondDeployer {
       config.configFilePath = config.configFilePath
         || hardhatDiamonds?.configFilePath
         || defaultConfigFilePath;
+      
+      // Configure Diamond ABI path and filename to avoid hardhat conflicts
+      config.diamondAbiPath = config.diamondAbiPath || (hardhatDiamonds as any)?.diamondAbiPath || 'diamond-abi';
+      config.diamondAbiFileName = config.diamondAbiFileName || (hardhatDiamonds as any)?.diamondAbiFileName || config.diamondName;
 
       const repository = new FileDeploymentRepository(config);
       repository.setWriteDeployedDiamondData(config.writeDeployedDiamondData || hardhatDiamonds?.writeDeployedDiamondData || false);
@@ -125,12 +136,13 @@ export class LocalDiamondDeployer {
       if (!deployedDiamondData.DeployerAddress) {
         config.signer = signer0;
       } else {
-        config.signer = await ethers.getSigner(deployedDiamondData.DeployerAddress);
-        await impersonateAndFundSigner(deployedDiamondData.DeployerAddress, config.provider as any);
+      const instance = await LocalDiamondDeployer.create(config, repository);
+      this.instances.set(key, instance);
       }
 
       const instance = new LocalDiamondDeployer(config, repository);
       this.instances.set(key, instance);
+      await generateDiamondAbiWithTypechain(instance.diamondName, true);
     }
     return this.instances.get(key)!;
   }

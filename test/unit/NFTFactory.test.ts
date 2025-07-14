@@ -23,8 +23,8 @@ import { toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond } from 'diamonds';
 import {
-  GeniusDiamondABI,
-} from '../../typechain-types/diamond-abi';
+  GeniusDiamond,
+} from '../../diamond-typechain-types';
 
 chai.use(chaiAsPromised);
 
@@ -53,11 +53,11 @@ describe('NFT Factory Tests', async function () {
       let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamondABI;
-      let signer0Diamond: GeniusDiamondABI;
-      let signer1Diamond: GeniusDiamondABI;
-      let signer2Diamond: GeniusDiamondABI;
-      let ownerDiamond: GeniusDiamondABI;
+      let geniusDiamond: GeniusDiamond;
+      let signer0Diamond: GeniusDiamond;
+      let signer1Diamond: GeniusDiamond;
+      let signer2Diamond: GeniusDiamond;
+      let ownerDiamond: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
@@ -78,16 +78,37 @@ describe('NFT Factory Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-        // Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
-        try {
-          const diamondAbiPath = 'diamond-abi';
-          const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
-        } catch (error) {
-          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using GNUSNFTFactory`);
-          // Fallback to using GNUSNFTFactory which has NFT creation methods
-          geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
-        }
+//        // Try to get the diamond artifact - if it doesn't exist, create multiple facet instances
+        // try {
+          // Use Diamond's configured ABI path and filename with try-catch fallback  
+          try {
+            const diamondAbiPath = diamond.getDiamondAbiPath();
+            const diamondAbiFileName = diamond.getDiamondAbiFileName();
+            const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
+            geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+          } catch (error) {
+            console.warn('Could not load diamond artifact, using GNUSNFTFactory as fallback');
+            geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+          }
+        // } catch (error) {
+        //   console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using combined facet approach`);
+        //   // Create combined interface using multiple facet contracts
+        //   const bridgeContract = await ethers.getContractAt('GNUSBridge', deployedDiamondData.DiamondAddress!);
+        //   const factoryContract = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!);
+          
+        //   // Create a combined contract interface
+        //   geniusDiamond = new Proxy(bridgeContract, {
+        //     get: function(target, prop) {
+        //       // Check if the property exists on the bridge contract first
+        //       if (prop in target) {
+        //         return target[prop];
+        //       }
+        //       // Fall back to the factory contract
+        //       return factoryContract[prop];
+        //     }
+        //   }) as unknown as GeniusDiamond;
+        // }
+
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;

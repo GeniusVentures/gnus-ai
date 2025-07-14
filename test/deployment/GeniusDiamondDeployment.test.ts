@@ -15,12 +15,11 @@ import {
 } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond, deleteDeployInfo } from 'diamonds';
 import {
-  GeniusDiamond,
 	IERC20Upgradeable__factory,
 	IDiamondCut__factory,
 	IDiamondLoupe__factory,
 } from '../../typechain-types';
-import { GeniusDiamondABI } from '../../typechain-types/diamond-abi';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
 	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
@@ -46,11 +45,11 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 			// let signer2: string;
 			let owner: string;
 			let ownerSigner: SignerWithAddress;
-			let geniusDiamond: GeniusDiamondABI;
-			// let signer0Diamond: GeniusDiamondABI;
-			// let signer1Diamond: GeniusDiamondABI;
-			// let signer2Diamond: GeniusDiamondABI;
-			let ownerDiamond: GeniusDiamondABI;
+			let geniusDiamond: GeniusDiamond;
+			// let signer0Diamond: GeniusDiamond;
+			// let signer1Diamond: GeniusDiamond;
+			// let signer2Diamond: GeniusDiamond;
+			let ownerDiamond: GeniusDiamond;
 
 			let ethersMultichain: typeof ethers;
 			let snapshotId: string;
@@ -72,21 +71,23 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         let geniusDiamondPlain: GeniusDiamond;
         
         
-				let geniusDiamondContract: GeniusDiamondABI;
+				let geniusDiamondContract: GeniusDiamond;
 				try {
-					const diamondAbiPath = 'diamond-abi/';
-					const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
+					// Use the Diamond's configured ABI path and filename
+					const diamondAbiPath = diamond.getDiamondAbiPath();
+					const diamondAbiFileName = diamond.getDiamondAbiFileName();
+					const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
 					geniusDiamondContract = (await hre.ethers.getContractAt(
 						diamondArtifactName,
 						deployedDiamondData.DiamondAddress!,
-					)) as unknown as GeniusDiamondABI;
+					)) as unknown as GeniusDiamond;
 				} catch (error) {
-					console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using DiamondLoupeFacet`);
+					console.warn(`Warning: Could not find diamond ABI artifact for ${diamond.diamondName}, using DiamondLoupeFacet`);
 					// Fallback to using DiamondLoupeFacet which has supportsInterface method
 					geniusDiamondContract = (await hre.ethers.getContractAt(
 						'DiamondLoupeFacet',
 						deployedDiamondData.DiamondAddress!,
-					)) as unknown as GeniusDiamondABI;
+					)) as unknown as GeniusDiamond;
 				}
 				geniusDiamond = geniusDiamondContract;
 

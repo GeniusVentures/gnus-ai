@@ -17,8 +17,8 @@ import { toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond } from 'diamonds';
 import {
-  GeniusDiamondABI,
-} from '../../typechain-types/diamond-abi';
+  GeniusDiamond,
+} from '../../diamond-typechain-types';
 import { config } from 'dotenv';
 
 // Create utils object for compatibility
@@ -51,16 +51,16 @@ describe('NFT Factory Tests', async function () {
       let signer2: string;
       let owner: string;
       let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamondABI;
-      let signer0Diamond: GeniusDiamondABI;
-      let signer1Diamond: GeniusDiamondABI;
-      let signer2Diamond: GeniusDiamondABI;
-      let ownerDiamond: GeniusDiamondABI;
+      let geniusDiamond: GeniusDiamond;
+      let signer0Diamond: GeniusDiamond;
+      let signer1Diamond: GeniusDiamond;
+      let signer2Diamond: GeniusDiamond;
+      let ownerDiamond: GeniusDiamond;
 
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamondABI;
+      let erc1155ProxyOperator: GeniusDiamond;
 
       before(async function () {
         const config = {
@@ -76,16 +76,16 @@ describe('NFT Factory Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-        // Try to get the diamond artifact - if it doesn't exist, use ERC20TransferBatch fallback
-        try {
-          const diamondAbiPath = 'diamond-abi';
-          const diamondArtifactName = `${diamondAbiPath}/${diamond.diamondName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
-        } catch (error) {
-          console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using ERC20TransferBatch`);
-          // Fallback to using ERC20TransferBatch which has ERC20 transfer methods
-          geniusDiamond = await ethers.getContractAt('ERC20TransferBatch', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamondABI;
-        }
+          // Use Diamond's configured ABI path and filename with try-catch fallback
+          try {
+            const diamondAbiPath = diamond.getDiamondAbiPath();
+            const diamondAbiFileName = diamond.getDiamondAbiFileName();
+            const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
+            geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+          } catch (error) {
+            console.warn('Could not load diamond artifact, using GNUSNFTFactory as fallback');
+            geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
+          }
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;

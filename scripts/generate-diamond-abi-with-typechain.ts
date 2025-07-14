@@ -11,7 +11,8 @@ async function generateDiamondAbiWithTypechain(diamondName: string, verbose: boo
     console.log(chalk.blue(`🚀 Generating Diamond ABI for ${diamondName}...`));
     
     // Generate the diamond ABI using the refactored generator
-    const outputDir = join(process.cwd(), 'artifacts/diamond-abi');
+    // Use diamond-abi directory instead of artifacts/diamond-abi to avoid hardhat conflicts
+    const outputDir = join(process.cwd(), 'diamond-abi');
     const options: DiamondAbiGenerationOptions = {
       diamondName,
       verbose,
@@ -33,7 +34,7 @@ async function generateDiamondAbiWithTypechain(diamondName: string, verbose: boo
     await runCommand('npx', [
       'typechain',
       '--target', 'ethers-v6',
-      '--out-dir', 'typechain-types/diamond-abi',
+      '--out-dir', 'diamond-typechain-types',
       result.outputPath!
     ], {
       stdio: verbose ? 'inherit' : 'pipe'

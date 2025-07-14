@@ -1,0 +1,11 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "NonExistentDiamondABI",
+  "sourceName": "diamond-abi/NonExistentDiamondABI.sol",
+  "abi": [],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-14T21:36:55.693Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/NonExistentDiamond/nonexistentdiamond.config.json: ENOENT: no such file or directory, open '/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/NonExistentDiamond/nonexistentdiamond.config.json'\"}"
+}

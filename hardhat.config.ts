@@ -7,7 +7,7 @@ import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
 import 'solidity-coverage';
-import '@nomicfoundation/hardhat-ethers';
+import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-web3-v4';
 import 'hardhat-multichain';
 import 'hardhat-diamonds';

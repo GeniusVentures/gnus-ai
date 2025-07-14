@@ -61,7 +61,7 @@ export class ProjectDiamondAbiGenerator {
     this.options = {
       networkName: 'hardhat',
       chainId: 31337,
-      outputDir: './artifacts/diamond-abi',
+      outputDir: './diamond-abi',
       includeSourceInfo: true,
       validateSelectors: true,
       verbose: false,
@@ -70,13 +70,16 @@ export class ProjectDiamondAbiGenerator {
     };
 
     try {
-      // Create diamond configuration
+      // Create diamond configuration with ABI path settings
       const diamondConfig = {
         diamondName: this.options.diamondName,
         networkName: this.options.networkName,
         chainId: this.options.chainId,
         deploymentsPath: this.options.diamondsPath,
-        contractsPath: './contracts'
+        contractsPath: './contracts',
+        // Configure diamond ABI path and filename using new Diamond configuration
+        diamondAbiPath: this.options.outputDir,
+        diamondAbiFileName: this.options.diamondName
       };
 
       // Create repository
@@ -122,9 +125,11 @@ export class ProjectDiamondAbiGenerator {
       }
 
       // Use the DiamondAbiGenerator class from diamonds module
+      // Use Diamond's configured ABI path instead of options.outputDir
+      const outputDir = this.diamond.getDiamondAbiPath();
       const generator = new DiamondAbiGenerator({
         diamond: this.diamond,
-        outputDir: this.options.outputDir,
+        outputDir: outputDir,
         includeSourceInfo: this.options.includeSourceInfo,
         validateSelectors: this.options.validateSelectors,
         verbose: this.options.verbose
@@ -176,17 +181,17 @@ export class ProjectDiamondAbiGenerator {
         });
       }
 
-      // Use unique contract name to avoid conflicts
-      const uniqueName = `${this.options.diamondName}ABI`;
-      artifact.contractName = uniqueName;
-      artifact.sourceName = `diamond-abi/${uniqueName}.sol`;
+      // Use standard contract name for Hardhat compatibility
+      const contractName = this.options.diamondName;
+      artifact.contractName = contractName;
+      artifact.sourceName = `diamond-abi/${contractName}.sol`;
 
-      // Write back the updated artifact with unique naming
-      const uniqueOutputPath = join(this.options.outputDir, `${uniqueName}.json`);
-      writeFileSync(uniqueOutputPath, JSON.stringify(artifact, null, 2));
+      // Write back the updated artifact with standard naming
+      const finalOutputPath = join(this.options.outputDir, `${contractName}.json`);
+      writeFileSync(finalOutputPath, JSON.stringify(artifact, null, 2));
 
       // Remove the original file if it has a different name
-      if (uniqueOutputPath !== outputPath) {
+      if (finalOutputPath !== outputPath) {
         try {
           const fs = require('fs');
           fs.unlinkSync(outputPath);
@@ -195,7 +200,7 @@ export class ProjectDiamondAbiGenerator {
         }
       }
 
-      return uniqueOutputPath;
+      return finalOutputPath;
     } catch (error) {
       if (this.options.verbose) {
         console.log(chalk.yellow(`⚠️  Failed to post-process artifact: ${error}`));
@@ -287,6 +292,8 @@ export class ProjectDiamondAbiGenerator {
       const config = JSON.parse(readFileSync(configPath, 'utf-8'));
       const combinedAbi: any[] = [];
       const selectorMap: Record<string, string> = {};
+      const eventSignatures = new Set<string>();
+      const errorSignatures = new Set<string>();
       let totalFunctions = 0;
       let totalEvents = 0;
       let totalErrors = 0;
@@ -348,10 +355,42 @@ export class ProjectDiamondAbiGenerator {
                 totalFunctions++;
               }
             } else if (abiItem.type === 'event') {
+              // Create a signature for the event to deduplicate
+              const eventSignature = `${abiItem.name}(${(abiItem.inputs || []).map((input: any) => input.type).join(',')})`;
+              
+              if (eventSignatures.has(eventSignature)) {
+                if (this.options.verbose) {
+                  console.log(chalk.yellow(`⚠️  Skipping duplicate event ${eventSignature} from ${facetName}`));
+                }
+                continue;
+              }
+              
+              // Add source information if requested
+              if (this.options.includeSourceInfo) {
+                abiItem._diamondFacet = facetName;
+              }
+              
               combinedAbi.push(abiItem);
+              eventSignatures.add(eventSignature);
               totalEvents++;
             } else if (abiItem.type === 'error') {
+              // Create a signature for the error to deduplicate
+              const errorSignature = `${abiItem.name}(${(abiItem.inputs || []).map((input: any) => input.type).join(',')})`;
+              
+              if (errorSignatures.has(errorSignature)) {
+                if (this.options.verbose) {
+                  console.log(chalk.yellow(`⚠️  Skipping duplicate error ${errorSignature} from ${facetName}`));
+                }
+                continue;
+              }
+              
+              // Add source information if requested
+              if (this.options.includeSourceInfo) {
+                abiItem._diamondFacet = facetName;
+              }
+              
               combinedAbi.push(abiItem);
+              errorSignatures.add(errorSignature);
               totalErrors++;
             }
           }
@@ -372,7 +411,7 @@ export class ProjectDiamondAbiGenerator {
       });
 
       // Generate output file with unique name
-      const outputContractName = `${this.options.diamondName}ABI`;
+      const outputContractName = `${this.options.diamondName}`;
       const outputFileName = `${outputContractName}.json`;
       const outputPath = join(this.options.outputDir, outputFileName);
 
@@ -474,7 +513,7 @@ if (require.main === module) {
   const options: DiamondAbiGenerationOptions = {
     diamondName,
     verbose,
-    outputDir: './artifacts/diamond-abi',
+    outputDir: './diamond-abi',
     includeSourceInfo: true,
     validateSelectors: true
   };
