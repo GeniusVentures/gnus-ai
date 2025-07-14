@@ -73,8 +73,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         diamond = await diamondDeployer.getDiamond();
         deployedDiamondData = diamond.getDeployedDiamondData();
 
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-        const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+        const diamondAbiPath = diamond.getDiamondAbiPath();
+        const diamondAbiFileName = diamond.getDiamondAbiFileName();
+        const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
         geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
 
         ethersMultichain = ethers;

@@ -2,6 +2,8 @@ import { expect } from 'chai';
 import { rmSync, existsSync, readFileSync } from 'fs';
 import { generateDiamondAbiWithTypechain } from '../../scripts/generate-diamond-abi-with-typechain';
 import { Interface } from 'ethers';
+import { DiamondAbiGenerationOptions } from '../../scripts/diamond-abi-generator';
+import { join } from 'path';
 
 describe('Diamond ABI Integration Tests', () => {
   const testOutputDir = './test-output/diamond-abi';
@@ -24,9 +26,15 @@ describe('Diamond ABI Integration Tests', () => {
   describe('End-to-End Diamond ABI Generation', () => {
     it('should generate complete diamond ABI and TypeChain types', async function() {
       this.timeout(60000); // Increase timeout for full compilation
+
+      const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: true,
+        diamondsPath: './test-diamonds'
+      };
       
       try {
-        const result = await generateDiamondAbiWithTypechain(diamondName, true);
+        const result = await generateDiamondAbiWithTypechain(options);
 
         // Verify the basic result structure
         expect(result).to.have.property('abi');
@@ -49,8 +57,14 @@ describe('Diamond ABI Integration Tests', () => {
     it('should generate valid Ethereum ABI that can be parsed by ethers', async function() {
       this.timeout(60000);
       
-      const result = await generateDiamondAbiWithTypechain(diamondName, false);
-      
+      const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: true,
+        diamondsPath: './test-diamonds'
+      };
+
+      const result = await generateDiamondAbiWithTypechain(options);
+
       // Try to create an Interface from the generated ABI
       expect(() => {
         const iface = new Interface(result.abi);
@@ -60,8 +74,13 @@ describe('Diamond ABI Integration Tests', () => {
 
     it('should include key diamond functionality in generated ABI', async function() {
       this.timeout(60000);
+      const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: true,
+        diamondsPath: './test-diamonds'
+      };
       
-      const result = await generateDiamondAbiWithTypechain(diamondName, false);
+      const result = await generateDiamondAbiWithTypechain(options);
 
       // Create interface to check for functions
       const iface = new Interface(result.abi);
@@ -87,7 +106,13 @@ describe('Diamond ABI Integration Tests', () => {
     it('should generate TypeChain types that can be imported', async function() {
       this.timeout(60000);
       
-      await generateDiamondAbiWithTypechain(diamondName, false);
+      const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: true,
+        diamondsPath: './test-diamonds'
+      };
+      
+      const result = await generateDiamondAbiWithTypechain(options);
 
       // Check if TypeChain generated the diamond types
       const expectedTypeFiles = [
@@ -117,7 +142,13 @@ describe('Diamond ABI Integration Tests', () => {
       
       const startTime = Date.now();
       
-      const result = await generateDiamondAbiWithTypechain(diamondName, true);
+const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: true,
+        diamondsPath: './test-diamonds'
+      };
+      
+      const result = await generateDiamondAbiWithTypechain(options);
       
       const endTime = Date.now();
       const duration = endTime - startTime;
@@ -133,11 +164,16 @@ describe('Diamond ABI Integration Tests', () => {
 
     it('should generate consistent output on multiple runs', async function() {
       this.timeout(90000);
+      const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: false,
+        diamondsPath: './test-diamonds'
+      };
       
       // Generate ABI twice
-      const result1 = await generateDiamondAbiWithTypechain(diamondName, false);
-      const result2 = await generateDiamondAbiWithTypechain(diamondName, false);
-      
+      const result1 = await generateDiamondAbiWithTypechain(options);
+      const result2 = await generateDiamondAbiWithTypechain(options);
+
       // Results should be identical
       expect(result1.stats.totalFunctions).to.equal(result2.stats.totalFunctions);
       expect(result1.stats.totalEvents).to.equal(result2.stats.totalEvents);
@@ -151,9 +187,20 @@ describe('Diamond ABI Integration Tests', () => {
   describe('Error Recovery and Edge Cases', () => {
     it('should handle missing diamond configuration gracefully', async function() {
       this.timeout(30000);
+      // Generate the diamond ABI using the refactored generator
+      // Use diamond-abi directory instead of artifacts/diamond-abi to avoid hardhat conflicts
+      const outputDir = join(process.cwd(), 'diamond-abi');
+      const options: DiamondAbiGenerationOptions = {
+        diamondName: 'NonExistentDiamond',
+        verbose: true,
+        outputDir,
+        validateSelectors: true,
+        includeSourceInfo: true,
+        diamondsPath: './test-diamonds'
+      };
       
       // Should not crash even with invalid diamond name
-      const result = await generateDiamondAbiWithTypechain('NonExistentDiamond', true);
+      const result = await generateDiamondAbiWithTypechain(options);
       
       expect(result).to.have.property('abi');
       expect(result.abi).to.be.an('array');
@@ -162,7 +209,14 @@ describe('Diamond ABI Integration Tests', () => {
     it('should validate generated ABI structure', async function() {
       this.timeout(60000);
       
-      const result = await generateDiamondAbiWithTypechain(diamondName, false);
+const options: DiamondAbiGenerationOptions = {
+        diamondName: diamondName,
+        verbose: false,
+        diamondsPath: '.test-diamonds'
+      };
+      
+
+      const result = await generateDiamondAbiWithTypechain(options);
       
       // Validate ABI structure
       for (const abiItem of result.abi) {

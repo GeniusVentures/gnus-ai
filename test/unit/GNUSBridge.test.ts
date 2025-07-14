@@ -14,6 +14,7 @@ import { Diamond, } from 'diamonds';
 import {
   GeniusDiamond,
 } from '../../diamond-typechain-types';
+import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 chai.use(chaiAsPromised);
 
@@ -68,17 +69,8 @@ describe('GNUS Bridge Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-
-        // Use Diamond's configured ABI path and filename with try-catch fallback
-        try {
-          const diamondAbiPath = diamond.getDiamondAbiPath();
-          const diamondAbiFileName = diamond.getDiamondAbiFileName();
-          const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        } catch (error) {
-          console.warn('Could not load diamond artifact, using GNUSBridge as fallback');
-          geniusDiamond = await ethers.getContractAt('GNUSBridge', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        }
+        // Load the Diamond contract using the utility function
+        geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, deployedDiamondData.DiamondAddress!);
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;

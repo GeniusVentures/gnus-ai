@@ -21,6 +21,7 @@ import {
 import {
   GeniusDiamond,
 } from '../../diamond-typechain-types';
+import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 chai.use(chaiAsPromised);
 
@@ -75,16 +76,9 @@ describe('ERC1155 Proxy Operator Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         deployedDiamondData = diamond.getDeployedDiamondData();
 
-        // Try to get the diamond artifact - if it doesn't exist, use GNUSNFTFactory fallback
-        try {
-          const diamondAbiPath = diamond.getDiamondAbiPath();
-          const diamondAbiFileName = diamond.getDiamondAbiFileName();
-          const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
-          geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        } catch (error) {
-          console.warn('Could not load diamond artifact, using GNUSNFTFactory as fallback');
-          geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-        }
+        // Load the Diamond contract using the utility function
+        geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, deployedDiamondData.DiamondAddress!);
+
 
         // Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods
         const proxyOperatorContract = await ethers.getContractAt('ERC1155ProxyOperator', deployedDiamondData.DiamondAddress!);

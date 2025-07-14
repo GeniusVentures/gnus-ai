@@ -7,5 +7,5 @@
   "deployedBytecode": "0x",
   "linkReferences": {},
   "deployedLinkReferences": {},
-  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-14T20:24:15.857Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"⨯ Unable to compile TypeScript:\\n\\u001b[96mdiamonds/GeniusDiamond/callbacks/ERC1155ProxyOperator.ts\\u001b[0m:\\u001b[93m1\\u001b[0m:\\u001b[93m31\\u001b[0m - \\u001b[91merror\\u001b[0m\\u001b[90m TS2307: \\u001b[0mCannot find module '../../../diamond-typechain-types' or its corresponding type declarations.\\n\\n\\u001b[7m1\\u001b[0m import { GeniusDiamond } from \\\"../../../diamond-typechain-types\\\";\\n\\u001b[7m \\u001b[0m \\u001b[91m                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\u001b[0m\\n\"}"
+  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-14T23:48:57.448Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/.test-diamonds/GeniusDiamond/geniusdiamond.config.json: ENOENT: no such file or directory, open '/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/.test-diamonds/GeniusDiamond/geniusdiamond.config.json'\"}"
 }

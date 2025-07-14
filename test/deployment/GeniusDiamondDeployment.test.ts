@@ -20,6 +20,7 @@ import {
 	IDiamondLoupe__factory,
 } from '../../typechain-types';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
 	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
@@ -72,23 +73,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
         
         
 				let geniusDiamondContract: GeniusDiamond;
-				try {
-					// Use the Diamond's configured ABI path and filename
-					const diamondAbiPath = diamond.getDiamondAbiPath();
-					const diamondAbiFileName = diamond.getDiamondAbiFileName();
-					const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
-					geniusDiamondContract = (await hre.ethers.getContractAt(
-						diamondArtifactName,
-						deployedDiamondData.DiamondAddress!,
-					)) as unknown as GeniusDiamond;
-				} catch (error) {
-					console.warn(`Warning: Could not find diamond ABI artifact for ${diamond.diamondName}, using DiamondLoupeFacet`);
-					// Fallback to using DiamondLoupeFacet which has supportsInterface method
-					geniusDiamondContract = (await hre.ethers.getContractAt(
-						'DiamondLoupeFacet',
-						deployedDiamondData.DiamondAddress!,
-					)) as unknown as GeniusDiamond;
-				}
+				
+				// Load the Diamond contract using the utility function
+				geniusDiamondContract = await loadDiamondContract<GeniusDiamond>(diamond, deployedDiamondData.DiamondAddress!);
 				geniusDiamond = geniusDiamondContract;
 
 				ethersMultichain = ethers;

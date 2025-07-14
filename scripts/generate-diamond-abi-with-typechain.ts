@@ -6,21 +6,10 @@ import chalk from 'chalk';
 /**
  * Generate diamond ABI and regenerate TypeChain types
  */
-async function generateDiamondAbiWithTypechain(diamondName: string, verbose: boolean = false) {
+async function generateDiamondAbiWithTypechain(options: DiamondAbiGenerationOptions) {
   try {
-    console.log(chalk.blue(`🚀 Generating Diamond ABI for ${diamondName}...`));
+    console.log(chalk.blue(`🚀 Generating Diamond ABI for ${options.diamondName}...`));
     
-    // Generate the diamond ABI using the refactored generator
-    // Use diamond-abi directory instead of artifacts/diamond-abi to avoid hardhat conflicts
-    const outputDir = join(process.cwd(), 'diamond-abi');
-    const options: DiamondAbiGenerationOptions = {
-      diamondName,
-      verbose,
-      outputDir,
-      validateSelectors: true,
-      includeSourceInfo: true
-    };
-
     const result = await generateDiamondAbi(options);
 
     console.log(chalk.green(`✅ Diamond ABI generated: ${result.outputPath}`));
@@ -37,7 +26,7 @@ async function generateDiamondAbiWithTypechain(diamondName: string, verbose: boo
       '--out-dir', 'diamond-typechain-types',
       result.outputPath!
     ], {
-      stdio: verbose ? 'inherit' : 'pipe'
+      stdio: options.verbose ? 'inherit' : 'pipe'
     });
 
     console.log(chalk.green('✅ TypeChain types regenerated successfully!'));
@@ -93,7 +82,13 @@ if (require.main === module) {
   const diamondName = process.argv[2] || 'GeniusDiamond';
   const verbose = process.argv.includes('--verbose');
   
-  generateDiamondAbiWithTypechain(diamondName, verbose)
+  const options: DiamondAbiGenerationOptions = {
+          diamondName: diamondName,
+          verbose: verbose,
+          diamondsPath: '.test-diamonds'
+        };
+        
+  generateDiamondAbiWithTypechain(options)
     .then(() => {
       console.log(chalk.green('🎉 Complete! Diamond ABI and TypeChain types are ready.'));
       process.exit(0);

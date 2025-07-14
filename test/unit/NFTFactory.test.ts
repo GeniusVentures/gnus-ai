@@ -25,6 +25,8 @@ import { Diamond } from 'diamonds';
 import {
   GeniusDiamond,
 } from '../../diamond-typechain-types';
+import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
+import { Artifact } from 'hardhat/types';
 
 chai.use(chaiAsPromised);
 
@@ -78,37 +80,8 @@ describe('NFT Factory Tests', async function () {
         diamond = await diamondDeployer.getDiamondDeployed();
         let deployedDiamondData = diamond.getDeployedDiamondData();
 
-//        // Try to get the diamond artifact - if it doesn't exist, create multiple facet instances
-        // try {
-          // Use Diamond's configured ABI path and filename with try-catch fallback  
-          try {
-            const diamondAbiPath = diamond.getDiamondAbiPath();
-            const diamondAbiFileName = diamond.getDiamondAbiFileName();
-            const diamondArtifactName = `${diamondAbiPath}/${diamondAbiFileName}`;
-            geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-          } catch (error) {
-            console.warn('Could not load diamond artifact, using GNUSNFTFactory as fallback');
-            geniusDiamond = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
-          }
-        // } catch (error) {
-        //   console.warn(`Warning: Could not find hardhat-diamond-abi artifact for ${diamond.diamondName}, using combined facet approach`);
-        //   // Create combined interface using multiple facet contracts
-        //   const bridgeContract = await ethers.getContractAt('GNUSBridge', deployedDiamondData.DiamondAddress!);
-        //   const factoryContract = await ethers.getContractAt('GNUSNFTFactory', deployedDiamondData.DiamondAddress!);
-          
-        //   // Create a combined contract interface
-        //   geniusDiamond = new Proxy(bridgeContract, {
-        //     get: function(target, prop) {
-        //       // Check if the property exists on the bridge contract first
-        //       if (prop in target) {
-        //         return target[prop];
-        //       }
-        //       // Fall back to the factory contract
-        //       return factoryContract[prop];
-        //     }
-        //   }) as unknown as GeniusDiamond;
-        // }
-
+        // Load the Diamond contract using the utility function
+        geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, deployedDiamondData.DiamondAddress!);
 
         ethersMultichain = ethers;
         ethersMultichain.provider = provider as any;
