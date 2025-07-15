@@ -64,7 +64,8 @@ describe('NFT Factory Tests', async function () {
       let ethersMultichain: typeof ethers;
       let snapshotId: string;
 
-      const ParentNFTID: bigint = toBN(1); // Reference to the parent NFT
+      // This will hold the actual created NFT ID for tests that need it
+      let createdParentNFTID: bigint;
 
       before(async function () {
         const config = {
@@ -100,9 +101,10 @@ describe('NFT Factory Tests', async function () {
         if (!owner) {
           diamond.setSigner(signers[0]);
           owner = signer0;
-          ownerSigner
+          ownerSigner = signers[0];
+        } else {
+          ownerSigner = await ethersMultichain.getSigner(owner);
         }
-        ownerSigner = await ethersMultichain.getSigner(owner);
 
         ownerDiamond = geniusDiamond.connect(ownerSigner);
 
@@ -262,6 +264,10 @@ describe('NFT Factory Tests', async function () {
       it('should mint child tokens of GNUS with address 2', async () => {
         await ownerDiamond.grantRole(utils.id('CREATOR_ROLE'), signer1);
 
+        // Get the GNUS NFT info to determine the next NFT ID
+        const GNUSNFTInfo = await signer1Diamond.getNFTInfo(GNUS_TOKEN_ID);
+        const newParentNFTID = GNUSNFTInfo.childCurIndex;
+
         // Create a new NFT with a specified exchange rate
         await signer1Diamond.createNFT(
           GNUS_TOKEN_ID,
@@ -276,7 +282,7 @@ describe('NFT Factory Tests', async function () {
         try {
           await signer2Diamond['mint(address,uint256,uint256,bytes)'](
             signer2, // Recipient address
-            ParentNFTID, // Parent NFT ID
+            newParentNFTID, // Parent NFT ID
             toWei(5), // Amount to mint
             "0x", // Additional data
           );
@@ -294,12 +300,16 @@ describe('NFT Factory Tests', async function () {
 
         await ownerDiamond.grantRole(utils.id('CREATOR_ROLE'), signer1);
 
+        // Get the GNUS NFT info to determine the next NFT ID
+        const GNUSNFTInfo = await signer1Diamond.getNFTInfo(GNUS_TOKEN_ID);
+        const newParentNFTID = GNUSNFTInfo.childCurIndex;
+
         // Create a new NFT with a specified exchange rate
         const nft = await signer1Diamond.createNFT(
           GNUS_TOKEN_ID,
           'TEST GAME',
           'TESTGAME',
-          toBN(2.0), // Exchange rate: 2.0 tokens for 1 GNUS token
+          2.0, // Exchange rate: 2.0 tokens for 1 GNUS token
           toWei(50000000 * 2),
           '',
         );
@@ -308,13 +318,27 @@ describe('NFT Factory Tests', async function () {
 
         // Give permission to signer1 to mint child NFTs
         await ownerDiamond.grantRole(utils.id('MINTER_ROLE'), signer1);
+        
+        // Mint GNUS tokens to signer1 so they have enough tokens to burn for child NFT creation
+        // (The mint function burns tokens from the sender, not the recipient)
+        // await ownerDiamond['mint(address,uint256)'](signer1, toWei(100));
+        
         // Retrieve the starting supply of GNUS tokens
         debuglog(`Starting GNUS Supply: ${utils.formatEther(startingSupply)}`);
+
+        // Check signer1's GNUS balance before minting
+        const signer1Balance = await geniusDiamond['balanceOf(address,uint256)'](signer1, GNUS_TOKEN_ID);
+        console.log(`Signer1 GNUS balance before mint: ${utils.formatEther(signer1Balance)}`);
+
+        // Check the NFT info to see the exchange rate
+        const createdNFTInfo = await signer1Diamond.getNFTInfo(newParentNFTID);
+        console.log(`NFT exchange rate: ${createdNFTInfo.exchangeRate}`);
+        console.log(`Required GNUS to burn for 5 tokens: ${createdNFTInfo.exchangeRate * 5n}`);
 
         // Mint child NFTs using an authorized user
         const tx = await signer1Diamond['mint(address,uint256,uint256,bytes)'](
           signer2, // Recipient address
-          ParentNFTID, // Parent NFT ID
+          newParentNFTID, // Parent NFT ID
           toWei(5), // Amount to mint
           "0x", // Additional data
         );
@@ -348,12 +372,16 @@ describe('NFT Factory Tests', async function () {
         await ownerDiamond['mint(address,uint256)'](signer1, toWei(1000));
         await ownerDiamond.grantRole(utils.id('CREATOR_ROLE'), signer1);
 
+        // Get the GNUS NFT info to determine the next NFT ID
+        const GNUSNFTInfo = await signer1Diamond.getNFTInfo(GNUS_TOKEN_ID);
+        const newParentNFTID = GNUSNFTInfo.childCurIndex;
+
         // Create a new NFT with a specified exchange rate
         await signer1Diamond.createNFT(
           GNUS_TOKEN_ID,
           'TEST GAME',
           'TESTGAME',
-          toBN(2.0), // Exchange rate: 2.0 tokens for 1 GNUS token
+          2.0, // Exchange rate: 2.0 tokens for 1 GNUS token
           toWei(50000000 * 2),
           '',
         );
@@ -368,7 +396,7 @@ describe('NFT Factory Tests', async function () {
         await expect(
           signer2Diamond['mint(address,uint256,uint256,bytes)'](
             signer2, // Recipient address
-            ParentNFTID, // Child NFT ID
+            newParentNFTID, // Child NFT ID
             toWei(5), // Amount to mint
             "0x", // Additional data
           ),
@@ -384,6 +412,10 @@ describe('NFT Factory Tests', async function () {
         await ownerDiamond.grantRole(utils.id('CREATOR_ROLE'), signer1);
         await ownerDiamond.grantRole(utils.id('MINTER_ROLE'), signer1);
 
+        // Get the GNUS NFT info to determine the next NFT ID
+        const GNUSNFTInfo = await signer1Diamond.getNFTInfo(GNUS_TOKEN_ID);
+        const newParentNFTID = GNUSNFTInfo.childCurIndex;
+
         // Create a parent NFT first
         await signer1Diamond.createNFT(
           GNUS_TOKEN_ID,
@@ -395,13 +427,13 @@ describe('NFT Factory Tests', async function () {
         );
 
         // Calculate IDs for three child NFTs based on the parent NFT ID
-        const addr1childNFT1 = (ParentNFTID << 128n) | 0n;
-        const addr1childNFT2 = (ParentNFTID << 128n) | 1n;
-        const addr1childNFT3 = (ParentNFTID << 128n) | 2n;
+        const addr1childNFT1 = (newParentNFTID << 128n) | 0n;
+        const addr1childNFT2 = (newParentNFTID << 128n) | 1n;
+        const addr1childNFT3 = (newParentNFTID << 128n) | 2n;
 
         // Create the child NFTs
         await signer1Diamond.createNFTs(
-          ParentNFTID,
+          newParentNFTID,
           ['TESTGAME:NFT1', 'TESTGAME:NFT2', 'TESTGAME:NFT3'],
           ['', '', ''], // Metadata URIs
           [2, 1, 1], // Exchange rates
@@ -449,7 +481,7 @@ describe('NFT Factory Tests', async function () {
         const expectedBurn = toWei((50 + 1 + 1) * 2.0); // Total minted tokens * exchange rate (2.0)
         // Debug logging
         // Log NFT info after creation
-        const parentNFTInfo = await signer1Diamond.getNFTInfo(ParentNFTID);
+        const parentNFTInfo = await signer1Diamond.getNFTInfo(newParentNFTID);
         console.log("Parent NFT exchange rate:", parentNFTInfo.exchangeRate.toString());
         console.log("Starting supply:", utils.formatEther(startingSupply));
         console.log("Ending supply:", utils.formatEther(endingSupply));

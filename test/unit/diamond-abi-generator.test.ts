@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
-import { generateDiamondAbi, ProjectDiamondAbiGenerator } from '../../scripts/diamond-abi-generator';
+import { DiamondAbiGenerationOptions, generateDiamondAbi, ProjectDiamondAbiGenerator } from '../../scripts/diamond-abi-generator';
 
 describe('Diamond ABI Generator', () => {
   const testOutputDir = './test-output/diamond-abi';
@@ -30,13 +30,14 @@ describe('Diamond ABI Generator', () => {
       expect(generator).to.be.an('object');
     });
 
+    // TODO fix or remove.  This likely 
     it('should create generator instance with custom options', () => {
       const generator = new ProjectDiamondAbiGenerator({
-        diamondName: 'TestDiamond',
+        diamondName: 'GeniusDiamond',
         networkName: 'localhost',
         chainId: 31337,
         outputDir: testOutputDir,
-        verbose: true
+        verbose: true,
       });
       
       expect(generator).to.be.an('object');
@@ -131,7 +132,8 @@ describe('Diamond ABI Generator', () => {
       const result = await generateDiamondAbi({
         diamondName: 'NonExistentDiamond',
         outputDir: testOutputDir,
-        verbose: true
+        verbose: true,
+        diamondsPath: './test-diamonds'
       });
 
       expect(result).to.have.property('abi');
@@ -198,12 +200,13 @@ describe('Diamond ABI Generator', () => {
   describe('Error handling', () => {
     it('should handle invalid diamond name gracefully', async function() {
       this.timeout(30000);
-      
+
       // Should not throw, but might produce empty ABI
       const result = await generateDiamondAbi({
         diamondName: 'CompletelyInvalidDiamond',
         outputDir: testOutputDir,
-        verbose: true
+        verbose: true,
+        diamondsPath: './test-diamonds'
       });
 
       expect(result).to.have.property('abi');

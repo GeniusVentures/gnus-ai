@@ -7,5 +7,5 @@
   "deployedBytecode": "0x",
   "linkReferences": {},
   "deployedLinkReferences": {},
-  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-14T23:48:37.306Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"Cannot read properties of undefined (reading 'toLowerCase')\"}"
+  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-15T14:49:32.388Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"Cannot read properties of undefined (reading 'toLowerCase')\"}"
 }
