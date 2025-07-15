@@ -30,7 +30,7 @@ describe('Diamond ABI Integration Tests', () => {
       const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
       
       try {
@@ -60,7 +60,7 @@ describe('Diamond ABI Integration Tests', () => {
       const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
 
       const result = await generateDiamondAbiWithTypechain(options);
@@ -77,7 +77,7 @@ describe('Diamond ABI Integration Tests', () => {
       const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
       
       const result = await generateDiamondAbiWithTypechain(options);
@@ -109,7 +109,7 @@ describe('Diamond ABI Integration Tests', () => {
       const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
       
       const result = await generateDiamondAbiWithTypechain(options);
@@ -145,7 +145,7 @@ describe('Diamond ABI Integration Tests', () => {
 const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
       
       const result = await generateDiamondAbiWithTypechain(options);
@@ -167,7 +167,7 @@ const options: DiamondAbiGenerationOptions = {
       const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: false,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
       
       // Generate ABI twice
@@ -196,7 +196,7 @@ const options: DiamondAbiGenerationOptions = {
         outputDir,
         validateSelectors: true,
         includeSourceInfo: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './diamonds'
       };
       
       // Should not crash even with invalid diamond name
@@ -212,7 +212,7 @@ const options: DiamondAbiGenerationOptions = {
 const options: DiamondAbiGenerationOptions = {
         diamondName: diamondName,
         verbose: false,
-        diamondsPath: '.test-diamonds'
+        diamondsPath: './diamonds'
       };
       
 
