@@ -7,5 +7,5 @@
   "deployedBytecode": "0x",
   "linkReferences": {},
   "deployedLinkReferences": {},
-  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-15T01:25:38.121Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/NonExistentDiamond/nonexistentdiamond.config.json: ENOENT: no such file or directory, open '/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/NonExistentDiamond/nonexistentdiamond.config.json'\"}"
+  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-15T15:06:06.986Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/NonExistentDiamond/nonexistentdiamond.config.json: ENOENT: no such file or directory, open '/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/NonExistentDiamond/nonexistentdiamond.config.json'\"}"
 }
