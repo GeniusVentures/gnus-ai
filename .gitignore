@@ -12,3 +12,9 @@ artifacts
 
 typechain-types
 fast.test.ts
+logs
+dist
+.vscode/settings.json
+
+tmp
+

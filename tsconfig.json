@@ -9,6 +9,6 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["./scripts", "./test", "./typechain"],
+  "include": ["./scripts", "./test", "./typechain-types", "scripts/setup/DiamondsMultichainTestDeployer.ts", "test-suites/deployment/GeniusDiamondPostDeploymentComparison.test.ts", "test-suites/deployment/GeniusDiamondPreDeploymentComparison.test.ts", "test-suites/deployment/GeniusDiamondDeploymentSuite.test.ts", "test-suites/deployment/GeniusDiamondDeploymentSuite.test.ts", "test-suites/deployment/sepolia"],
   "files": ["./hardhat.config.ts"]
 }

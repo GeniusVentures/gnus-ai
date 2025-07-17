@@ -120,6 +120,11 @@ export function getInterfaceID(contractInterface: utils.Interface) {
 }
 
 export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeployInfo): Promise<FacetSelectorsDeployed> {
+  let ethersMultichain: typeof ethers = ethers;
+  if (networkDeployInfo.provider?.connection?.url?.startsWith('http')) {
+    ethersMultichain.provider = networkDeployInfo.provider;  
+    // contractOwner = await provider.getSigner(networkDeployInfo.DeployerAddress);
+  } 
 
   // map funcSelectors to contract address
   const deployedFuncSelectors: Record<string, string> = {};
@@ -129,7 +134,7 @@ export async function getDeployedFuncSelectors(networkDeployInfo: INetworkDeploy
   if (networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"]?.address &&
       networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"].funcSelectors &&
           networkDeployInfo.FacetDeployedInfo["DiamondLoupeFacet"].funcSelectors.length > 0) {
-    const factory = await ethers.getContractFactory("DiamondLoupeFacet")
+    const factory = await ethersMultichain.getContractFactory("DiamondLoupeFacet")
     diamondLoupe = factory.attach(networkDeployInfo.DiamondAddress) as DiamondLoupeFacet;
     const deployedFacets = await diamondLoupe.facets({ gasLimit: 2000000});
     for (const facetDeployedInfo of deployedFacets) {

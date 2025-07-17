@@ -18,8 +18,11 @@ const afterDeploy: AfterDeployInit = async (networkDeployInfo: INetworkDeployInf
     const gnusDiamond = dc.GeniusDiamond as GeniusDiamond;
     await gnusDiamond.setChainID(chainID);
 
-    const info = await gnusDiamond.protocolInfo();
 
+    const protocolVersion = networkDeployInfo.protocolVersion || 0.0;
+    await gnusDiamond.setProtocolVersion(Math.round(protocolVersion * 100));
+
+    const info = await gnusDiamond.protocolInfo();
     debuglog(`protocol info: \n${util.inspect(info)}`)
 
     // simulate orevious bad deployments
@@ -36,6 +39,9 @@ Facets.GNUSControl = {
         },
         2.3: {
              deployInit: "GNUSControl_Initialize230()",
-        }
+        },
+        2.4: {
+            callback: afterDeploy, fromVersions: [0.0, 2.3]
+        },
     }
 };
