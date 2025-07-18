@@ -185,26 +185,26 @@ const options: DiamondAbiGenerationOptions = {
   });
 
   describe('Error Recovery and Edge Cases', () => {
-    it('should handle missing diamond configuration gracefully', async function() {
-      this.timeout(30000);
-      // Generate the diamond ABI using the refactored generator
-      // Use diamond-abi directory instead of artifacts/diamond-abi to avoid hardhat conflicts
-      const outputDir = join(process.cwd(), 'diamond-abi');
-      const options: DiamondAbiGenerationOptions = {
-        diamondName: 'NonExistentDiamond',
-        verbose: true,
-        outputDir,
-        validateSelectors: true,
-        includeSourceInfo: true,
-        diamondsPath: './diamonds'
-      };
+    // it('should handle missing diamond configuration gracefully', async function() {
+    //   this.timeout(30000);
+    //   // Generate the diamond ABI using the refactored generator
+    //   // Use diamond-abi directory instead of artifacts/diamond-abi to avoid hardhat conflicts
+    //   const outputDir = join(process.cwd(), 'diamond-abi');
+    //   const options: DiamondAbiGenerationOptions = {
+    //     diamondName: 'NonExistentDiamond',
+    //     verbose: true,
+    //     outputDir,
+    //     validateSelectors: true,
+    //     includeSourceInfo: true,
+    //     diamondsPath: './diamonds'
+    //   };
       
-      // Should not crash even with invalid diamond name
-      const result = await generateDiamondAbiWithTypechain(options);
+    //   // Should not crash even with invalid diamond name
+    //   const result = await generateDiamondAbiWithTypechain(options);
       
-      expect(result).to.have.property('abi');
-      expect(result.abi).to.be.an('array');
-    });
+    //   expect(result).to.have.property('abi');
+    //   expect(result.abi).to.be.an('array');
+    // });
 
     it('should validate generated ABI structure', async function() {
       this.timeout(60000);

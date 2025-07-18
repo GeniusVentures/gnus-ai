@@ -13,7 +13,7 @@ export async function loadDiamondContract<T>(
   contractAddress: string
 ): Promise<T> {
   const diamondAbiFilePath = diamond.getDiamondAbiFilePath();
-  
+
   if (!fs.existsSync(diamondAbiFilePath)) {
     throw new Error(`Diamond ABI artifact not found at ${diamondAbiFilePath}`);
   }
