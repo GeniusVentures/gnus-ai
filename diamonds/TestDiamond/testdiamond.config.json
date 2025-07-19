@@ -1,0 +1,22 @@
+{
+  "diamondName": "TestDiamond",
+  "facets": [
+    {
+      "name": "DiamondCutFacet",
+      "contract": "DiamondCutFacet"
+    },
+    {
+      "name": "DiamondLoupeFacet", 
+      "contract": "DiamondLoupeFacet"
+    },
+    {
+      "name": "OwnershipFacet",
+      "contract": "OwnershipFacet"
+    }
+  ],
+  "init": {
+    "contract": "DiamondInit",
+    "function": "init",
+    "args": []
+  }
+}

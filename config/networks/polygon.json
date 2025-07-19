@@ -1,0 +1,13 @@
+{
+  "name": "polygon",
+  "chainId": 137,
+  "rpcUrl": "https://polygon-rpc.com",
+  "blockExplorer": "https://polygonscan.com",
+  "nativeCurrency": {
+    "name": "Polygon",
+    "symbol": "MATIC",
+    "decimals": 18
+  },
+  "defaultGasLimit": 5000000,
+  "defaultMaxGasPrice": "50000000000"
+}
