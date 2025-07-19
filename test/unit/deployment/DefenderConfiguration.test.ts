@@ -79,7 +79,7 @@ describe('DefenderConfiguration Unit Tests', function () {
       expect(() => validateConfig(config)).to.throw();
     });
 
-    it('should require safeAddress when viaType is Safe', function () {
+    it('should require via address when viaType is Safe', function () {
       const config = { ...baseConfig };
       config.viaType = 'Safe';
       config.via = "";
@@ -87,27 +87,24 @@ describe('DefenderConfiguration Unit Tests', function () {
       expect(() => validateConfig(config)).to.throw();
     });
 
-    it('should validate safeAddress is a valid Ethereum address when provided', function () {
+    it('should validate via is a valid Ethereum address when provided', function () {
       const config = { ...baseConfig };
       config.viaType = 'Safe';
-      config.safeAddress = 'invalid_address';
+      config.via = 'invalid_address';
 
       expect(() => validateConfig(config)).to.throw();
     });
 
-    it('should validate gasLimit is within reasonable bounds', function () {
+    it('should validate autoApprove is a boolean', function () {
       const config = { ...baseConfig };
-      config.gasLimit = 20000; // Below minimum
+      (config as any).autoApprove = 'invalid_boolean';
 
-      expect(() => validateConfig(config)).to.throw();
-
-      config.gasLimit = 50000000; // Above reasonable maximum
       expect(() => validateConfig(config)).to.throw();
     });
 
-    it('should validate maxGasPrice is a valid number string', function () {
+    it('should validate verbose is a boolean when provided', function () {
       const config = { ...baseConfig };
-      config.maxGasPrice = 'invalid_number';
+      (config as any).verbose = 'invalid_boolean';
 
       expect(() => validateConfig(config)).to.throw();
     });
@@ -116,10 +113,10 @@ describe('DefenderConfiguration Unit Tests', function () {
       expect(() => validateConfig(baseConfig)).to.not.throw();
     });
 
-    it('should accept Safe configuration with valid safeAddress', function () {
+    it('should accept Safe configuration with valid via address', function () {
       const config = { ...baseConfig };
       config.viaType = 'Safe';
-      config.safeAddress = signer.address;
+      config.via = signer.address;
 
       expect(() => validateConfig(config)).to.not.throw();
     });
@@ -192,13 +189,14 @@ describe('DefenderConfiguration Unit Tests', function () {
         relayerAddress: signer.address,
         autoApprove: false,
         viaType: 'EOA' as const,
+        via: signer.address,
       };
 
       const configWithDefaults = applyConfigDefaults(minimalConfig);
 
-      expect(configWithDefaults).to.have.property('gasLimit');
-      expect(configWithDefaults).to.have.property('maxGasPrice');
-      expect(configWithDefaults.gasLimit).to.be.greaterThan(21000);
+      expect(configWithDefaults).to.have.property('autoApprove');
+      expect(configWithDefaults).to.have.property('verbose');
+      expect(configWithDefaults.autoApprove).to.be.a('boolean');
     });
   });
 });
@@ -234,29 +232,20 @@ function validateConfig(config: DefenderDiamondDeployerConfig): void {
   }
   
   if (config.viaType === 'Safe') {
-    if (!config.safeAddress) {
-      throw new Error('safeAddress is required when viaType is Safe');
+    if (!config.via) {
+      throw new Error('via address is required when viaType is Safe');
     }
-    if (!ethers.isAddress(config.safeAddress)) {
-      throw new Error('safeAddress must be a valid Ethereum address');
-    }
-  }
-  
-  if (config.gasLimit !== undefined) {
-    if (config.gasLimit < 21000 || config.gasLimit > 30000000) {
-      throw new Error('gasLimit must be between 21000 and 30000000');
+    if (!ethers.isAddress(config.via)) {
+      throw new Error('via address must be a valid Ethereum address');
     }
   }
   
-  if (config.maxGasPrice !== undefined) {
-    try {
-      const parsed = BigInt(config.maxGasPrice);
-      if (parsed <= 0) {
-        throw new Error('maxGasPrice must be positive');
-      }
-    } catch {
-      throw new Error('maxGasPrice must be a valid number string');
-    }
+  if (config.autoApprove !== undefined && typeof config.autoApprove !== 'boolean') {
+    throw new Error('autoApprove must be a boolean');
+  }
+  
+  if (config.verbose !== undefined && typeof config.verbose !== 'boolean') {
+    throw new Error('verbose must be a boolean');
   }
 }
 
@@ -276,8 +265,9 @@ function validateNetworkConfig(config: NetworkConfig): void {
 
 function applyConfigDefaults(config: Partial<DefenderDiamondDeployerConfig>): DefenderDiamondDeployerConfig {
   return {
-    gasLimit: 5000000,
-    maxGasPrice: '50000000000',
+    autoApprove: false,
+    verbose: false,
+    via: config.relayerAddress || '',
     ...config,
   } as DefenderDiamondDeployerConfig;
 }

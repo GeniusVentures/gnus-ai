@@ -9,6 +9,7 @@
 **Error**: `Missing required environment variables: DEFENDER_API_KEY, DEFENDER_API_SECRET, DEFENDER_RELAYER_ADDRESS`
 
 **Solution**:
+
 1. Ensure your `.env` file exists and contains all required variables
 2. Check that variable names are exactly as specified
 3. Verify no extra spaces or quotes around values
@@ -25,6 +26,7 @@ DEFENDER_RELAYER_ADDRESS=0x1234567890123456789012345678901234567890
 **Error**: `relayerAddress must be a valid Ethereum address`
 
 **Solution**:
+
 1. Verify the address is a valid Ethereum address (42 characters, starts with 0x)
 2. Check for typos or missing characters
 3. Ensure the address has sufficient balance for deployment
@@ -34,6 +36,7 @@ DEFENDER_RELAYER_ADDRESS=0x1234567890123456789012345678901234567890
 **Error**: `safeAddress is required when viaType is "Safe"`
 
 **Solution**:
+
 1. When using `DEFENDER_VIA_TYPE=Safe`, also set `DEFENDER_SAFE_ADDRESS`
 2. Ensure the Safe address is valid and accessible in Defender
 3. Verify the Safe has the required signers and threshold
@@ -45,6 +48,7 @@ DEFENDER_RELAYER_ADDRESS=0x1234567890123456789012345678901234567890
 **Error**: `Network configuration not found: config/networks/mynetwork.json`
 
 **Solution**:
+
 1. Create the missing network configuration file
 2. Use existing network files as templates
 3. Ensure the file is properly formatted JSON
@@ -70,6 +74,7 @@ DEFENDER_RELAYER_ADDRESS=0x1234567890123456789012345678901234567890
 **Error**: `Failed to connect to network RPC`
 
 **Solution**:
+
 1. Verify RPC URL is correct and accessible
 2. Check if RPC service is operational
 3. Test RPC connection manually:
@@ -87,6 +92,7 @@ curl -X POST -H "Content-Type: application/json" \
 **Error**: `Transaction failed due to insufficient gas`
 
 **Solution**:
+
 1. Increase `DEFENDER_GAS_LIMIT` in your environment
 2. Check current network gas requirements
 3. Consider network-specific gas optimizations
@@ -101,6 +107,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Gas price exceeds maximum allowed`
 
 **Solution**:
+
 1. Check current network gas prices
 2. Adjust `DEFENDER_MAX_GAS_PRICE` accordingly
 3. Consider deploying during lower traffic periods
@@ -110,6 +117,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Insufficient funds for deployment`
 
 **Solution**:
+
 1. Verify relayer has sufficient balance
 2. Check both native token and any required ERC-20 tokens
 3. Transfer funds to relayer address
@@ -121,6 +129,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Unauthorized: Invalid API credentials`
 
 **Solution**:
+
 1. Verify API key and secret are correct
 2. Check if credentials have expired
 3. Ensure proper permissions in Defender dashboard
@@ -131,6 +140,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Rate limit exceeded`
 
 **Solution**:
+
 1. Wait before retrying the request
 2. Implement exponential backoff in custom scripts
 3. Check Defender rate limits for your plan
@@ -140,6 +150,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Failed to create deployment proposal`
 
 **Solution**:
+
 1. Check proposal parameters
 2. Verify contract bytecode is valid
 3. Ensure relayer/Safe is properly configured
@@ -152,6 +163,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Missing API key for block explorer verification`
 
 **Solution**:
+
 1. Set appropriate API key environment variable:
    - `ETHERSCAN_API_KEY` for Ethereum networks
    - `POLYGONSCAN_API_KEY` for Polygon
@@ -163,6 +175,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Contract verification failed`
 
 **Solution**:
+
 1. Wait for more block confirmations
 2. Check if contract is already verified
 3. Verify constructor arguments are correct
@@ -175,6 +188,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Failed to deploy facet contracts`
 
 **Solution**:
+
 1. Check individual facet compilation
 2. Verify facet configurations in diamond config
 3. Ensure proper facet priorities and versions
@@ -185,6 +199,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Diamond cut transaction failed`
 
 **Solution**:
+
 1. Verify facet addresses are correct
 2. Check function selectors for conflicts
 3. Ensure proper initialization data
@@ -197,6 +212,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: Status remains "IN_PROGRESS" indefinitely
 
 **Solution**:
+
 1. Check Defender dashboard for proposal status
 2. Verify network connectivity
 3. Check for stuck transactions
@@ -207,6 +223,7 @@ DEFENDER_GAS_LIMIT=8000000
 **Error**: `Deployment timeout after 300000ms`
 
 **Solution**:
+
 1. Check network congestion
 2. Increase gas price if needed
 3. Verify proposal status in Defender
@@ -280,6 +297,7 @@ async function testNetwork() {
 ### Monitor Resource Usage
 
 1. **Track Gas Consumption**
+
    ```bash
    # Monitor gas usage during deployment
    REPORT_GAS=true npx ts-node scripts/deploy/deploy-defender.ts
@@ -299,12 +317,14 @@ async function testNetwork() {
    - Check for manual approval requirements
 
 2. **Cancel Stuck Proposal**
+
    ```bash
    # Use Defender dashboard to cancel proposals
    # Or implement programmatic cancellation
    ```
 
 3. **Restart Deployment**
+
    ```bash
    # Clear deployment state if needed
    # Restart with fresh configuration
@@ -334,6 +354,7 @@ async function testNetwork() {
 When seeking support, collect the following information:
 
 1. **Environment Details**
+
    ```bash
    node --version
    npm --version
@@ -341,6 +362,7 @@ When seeking support, collect the following information:
    ```
 
 2. **Configuration (sanitized)**
+
    ```bash
    # Remove sensitive data before sharing
    cat .env | grep -v "API_KEY\|API_SECRET\|PRIVATE_KEY"

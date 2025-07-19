@@ -18,17 +18,20 @@ This guide covers the deployment of GNUS.AI Diamond contracts using OpenZeppelin
 ## Prerequisites
 
 ### Required Software
+
 - Node.js (v18+ recommended)
 - npm or yarn
 - Git
 
 ### Required Accounts
+
 - OpenZeppelin Defender account with API access
 - Deployed relayer or Safe multi-signature wallet
 - Network provider (Infura, Alchemy, etc.)
 - Block explorer API keys for contract verification
 
 ### Environment Setup
+
 1. Clone the GNUS.AI repository
 2. Install dependencies: `npm install`
 3. Configure environment variables (see [Configuration](#configuration))
@@ -53,6 +56,7 @@ This guide covers the deployment of GNUS.AI Diamond contracts using OpenZeppelin
 ### 2. Project Configuration
 
 1. **Copy Environment Template**
+
    ```bash
    cp .env.example .env
    ```
@@ -368,21 +372,25 @@ jobs:
 ### 5. Network-Specific Considerations
 
 #### Ethereum Mainnet
+
 - Higher gas costs - monitor gas prices
 - Longer confirmation times
 - Use conservative gas limits
 
 #### Polygon
+
 - Lower gas costs
 - Faster confirmations
 - Watch for network congestion
 
 #### Arbitrum
+
 - Very low gas costs
 - Fast finality
 - Different gas calculation model
 
 #### Base
+
 - Low gas costs
 - Fast confirmations
 - Newer network - verify explorer support

@@ -53,7 +53,10 @@ async function main(): Promise<void> {
 
   try {
     // Create configuration from environment
-    const config = DefenderDiamondDeployer.createConfigFromEnv(diamondName, networkName);
+    const config = DefenderDiamondDeployer.createConfigFromEnv({ 
+      diamondName, 
+      networkName 
+    });
 
     // Get deployer instance
     console.log('🔧 Initializing DefenderDiamondDeployer...');
