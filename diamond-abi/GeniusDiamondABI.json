@@ -7,5 +7,5 @@
   "deployedBytecode": "0x",
   "linkReferences": {},
   "deployedLinkReferences": {},
-  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-18T21:55:32.847Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/.test-diamonds/GeniusDiamond/geniusdiamond.config.json: ENOENT: no such file or directory, open '/home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/.test-diamonds/GeniusDiamond/geniusdiamond.config.json'\"}"
+  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-19T16:32:25.413Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"/home/jamatulli/decentralization/gnus.ai/gnus-ai-ozdef/.test-diamonds/GeniusDiamond/geniusdiamond.config.json: ENOENT: no such file or directory, open '/home/jamatulli/decentralization/gnus.ai/gnus-ai-ozdef/.test-diamonds/GeniusDiamond/geniusdiamond.config.json'\"}"
 }

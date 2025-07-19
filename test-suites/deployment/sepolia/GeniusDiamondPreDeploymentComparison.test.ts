@@ -72,7 +72,7 @@ describe('🧪 Diamond Pre-Deployment Comparison Tests', async function () {
         diamond = await diamondDeployer.getDiamond();
         deployedDiamondData = diamond.getDeployedDiamondData();
 
-        const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+        const hardhatDiamondAbiPath = 'diamond-abi/';
         const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
         geniusDiamond = await ethers.getContractAt(diamondArtifactName, deployedDiamondData.DiamondAddress!) as unknown as GeniusDiamond;
 

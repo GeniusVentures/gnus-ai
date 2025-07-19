@@ -14,7 +14,6 @@ import {
 } from 'diamonds';
 import type { JsonRpcProvider } from '@ethersproject/providers';
 import { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 import hre from 'hardhat';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
@@ -73,7 +72,7 @@ export class LocalDiamondDeployer {
 
     // TODO make provider signer and repository optional (this may be handled in diamond constructor already)
     this.diamond = new Diamond(this.config, repository);
-    this.diamond.setProvider(this.provider as any as HardhatEthersProvider);
+    this.diamond.setProvider(this.provider as any);
     this.diamond.setSigner(this.signer);
   }
 
