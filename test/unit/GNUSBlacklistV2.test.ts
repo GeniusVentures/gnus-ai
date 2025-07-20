@@ -373,8 +373,9 @@ describe('GNUS Blacklist V2 Tests', async function () {
 
       describe('Balance Validation', function () {
         it('should validate maximum balance constraints', async () => {
-          // Test with maximum allowed balance (2^255 - 1)
-          const maxBalance = (BigInt(1) << BigInt(255)) - BigInt(1);
+          // Test with maximum allowed balance (2^254 - 1)
+          // This is the actual maximum since bits 255 and 254 are reserved for blacklist/whitelist
+          const maxBalance = (BigInt(1) << BigInt(254)) - BigInt(1);
           
           // This should work
           await ownerDiamond.emergencyFixBalance(signer1, maxBalance, false);
@@ -441,7 +442,8 @@ describe('GNUS Blacklist V2 Tests', async function () {
         });
 
         it('should handle account with maximum balance', async () => {
-          const maxBalance = (BigInt(1) << BigInt(255)) - BigInt(1);
+          // Use correct maximum balance (2^254 - 1)
+          const maxBalance = (BigInt(1) << BigInt(254)) - BigInt(1);
           
           // Set maximum balance
           await ownerDiamond.emergencyFixBalance(signer1, maxBalance, false);

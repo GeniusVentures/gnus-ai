@@ -21,6 +21,7 @@ import {
 } from '../../typechain-types';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
+
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
 	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
