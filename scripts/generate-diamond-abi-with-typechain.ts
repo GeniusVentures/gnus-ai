@@ -85,7 +85,7 @@ if (require.main === module) {
   const options: DiamondAbiGenerationOptions = {
           diamondName: diamondName,
           verbose: verbose,
-          diamondsPath: '.test-diamonds'
+          diamondsPath: 'diamonds'
         };
         
   generateDiamondAbiWithTypechain(options)

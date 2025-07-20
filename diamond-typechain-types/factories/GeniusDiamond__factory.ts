@@ -38,6 +38,34 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "AccountUnwhitelisted",
+    type: "event",
+    _diamondFacet: "GNUSWhitelistFacet",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "AccountWhitelisted",
+    type: "event",
+    _diamondFacet: "GNUSWhitelistFacet",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "uint256[]",
         name: "tokenIds",
@@ -533,6 +561,34 @@ const _abi = [
     name: "URI",
     type: "event",
     _diamondFacet: "GNUSNFTFactory",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "enabled",
+        type: "bool",
+      },
+    ],
+    name: "WhitelistEnabledChanged",
+    type: "event",
+    _diamondFacet: "GNUSWhitelistFacet",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "version",
+        type: "uint256",
+      },
+    ],
+    name: "WhitelistInitialized",
+    type: "event",
+    _diamondFacet: "GNUSWhitelistFacet",
   },
   {
     anonymous: false,
@@ -1110,6 +1166,31 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "newBalance",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "maintainWhitelist",
+        type: "bool",
+      },
+    ],
+    name: "emergencyFixBalanceWithWhitelist",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x50d62a03",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "id",
         type: "uint256",
@@ -1136,6 +1217,42 @@ const _abi = [
     type: "function",
     _diamondFacet: "GeniusAI",
     _diamondSelector: "0x6ea9fd36",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "getAccountStatus",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "whitelisted",
+        type: "bool",
+      },
+      {
+        internalType: "bool",
+        name: "blacklisted",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "actualBalance",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "whitelistEnabled",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0xfd4fa05a",
   },
   {
     inputs: [
@@ -1316,6 +1433,31 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getWhitelistInfo",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "enabled",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "version",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "activationBlock",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x0a8244d2",
+  },
+  {
+    inputs: [],
     name: "GNUSBridge_Initialize",
     outputs: [],
     stateMutability: "nonpayable",
@@ -1432,6 +1574,15 @@ const _abi = [
     _diamondSelector: "0xccbb9021",
   },
   {
+    inputs: [],
+    name: "initializeWhitelist",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x2927bacd",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -1498,6 +1649,42 @@ const _abi = [
     type: "function",
     _diamondFacet: "GNUSBlacklistV2Facet",
     _diamondSelector: "0x386679e2",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "isWhitelisted",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x3af32abf",
+  },
+  {
+    inputs: [],
+    name: "isWhitelistEnabled",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x184d69ab",
   },
   {
     inputs: [
@@ -1786,6 +1973,21 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "requireWhitelisted",
+    outputs: [],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0xed653ef4",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes32",
         name: "role",
         type: "bytes32",
@@ -1957,6 +2159,21 @@ const _abi = [
     type: "function",
     _diamondFacet: "GNUSNFTFactory",
     _diamondSelector: "0x862440e2",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bool",
+        name: "enabled",
+        type: "bool",
+      },
+    ],
+    name: "setWhitelistEnabled",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x052d9e7e",
   },
   {
     inputs: [
@@ -2184,6 +2401,36 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "unwhitelistAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0xae3e3e5e",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "accounts",
+        type: "address[]",
+      },
+    ],
+    name: "unwhitelistAccountsBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x170ae053",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "newFee",
         type: "uint256",
@@ -2231,6 +2478,36 @@ const _abi = [
     type: "function",
     _diamondFacet: "GNUSNFTFactory",
     _diamondSelector: "0x0e89341c",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "whitelistAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x63e0c2f8",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "accounts",
+        type: "address[]",
+      },
+    ],
+    name: "whitelistAccountsBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSWhitelistFacet",
+    _diamondSelector: "0x33984a97",
   },
   {
     inputs: [
