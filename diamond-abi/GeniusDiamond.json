@@ -7,6 +7,34 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "AccountBlacklisted",
+      "type": "event",
+      "_diamondFacet": "GNUSBlacklistV2Facet"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "AccountUnblacklisted",
+      "type": "event",
+      "_diamondFacet": "GNUSBlacklistV2Facet"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "uint256[]",
           "name": "tokenIds",
@@ -88,6 +116,34 @@
       "name": "ApprovalForAll",
       "type": "event",
       "_diamondFacet": "GNUSNFTFactory"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "migratedAccounts",
+          "type": "uint256"
+        }
+      ],
+      "name": "BlacklistMigrationCompleted",
+      "type": "event",
+      "_diamondFacet": "GNUSBlacklistV2Facet"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "version",
+          "type": "uint256"
+        }
+      ],
+      "name": "BlacklistV2Initialized",
+      "type": "event",
+      "_diamondFacet": "GNUSBlacklistV2Facet"
     },
     {
       "anonymous": false,
@@ -711,6 +767,36 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "blacklistAccount",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0xd37b34d7"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "blacklistAccountsBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0xc707703e"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
@@ -802,6 +888,15 @@
       "type": "function",
       "_diamondFacet": "GNUSNFTFactory",
       "_diamondSelector": "0x6b20c454"
+    },
+    {
+      "inputs": [],
+      "name": "completeMigration",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x4886f62c"
     },
     {
       "inputs": [
@@ -987,6 +1082,31 @@
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "correctAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "shouldBeBlacklisted",
+          "type": "bool"
+        }
+      ],
+      "name": "emergencyFixBalance",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x442df1e3"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "id",
           "type": "uint256"
@@ -1013,6 +1133,52 @@
       "type": "function",
       "_diamondFacet": "GeniusAI",
       "_diamondSelector": "0x6ea9fd36"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getActualBalance",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x3dec790e"
+    },
+    {
+      "inputs": [],
+      "name": "getMigrationStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "migrationComplete",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "migrationBlock",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "version",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0xa415c02c"
     },
     {
       "inputs": [
@@ -1254,6 +1420,15 @@
       "_diamondSelector": "0x39509351"
     },
     {
+      "inputs": [],
+      "name": "initializeBlacklistV2",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0xccbb9021"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1278,6 +1453,63 @@
       "type": "function",
       "_diamondFacet": "GNUSNFTFactory",
       "_diamondSelector": "0xe985e9c5"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "isBlacklisted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0xfe575a87"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "isTransferBlocked",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x386679e2"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "migrateBlacklistedAccounts",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x4c2a11de"
     },
     {
       "inputs": [
@@ -1908,6 +2140,36 @@
       "_diamondSelector": "0xf2fde38b"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "unblacklistAccount",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x6d7331ed"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "accounts",
+          "type": "address[]"
+        }
+      ],
+      "name": "unblacklistAccountsBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "_diamondFacet": "GNUSBlacklistV2Facet",
+      "_diamondSelector": "0x897f057a"
+    },
+    {
       "inputs": [],
       "name": "unpause",
       "outputs": [],
@@ -2018,7 +2280,7 @@
   "linkReferences": {},
   "deployedLinkReferences": {},
   "_diamondMetadata": {
-    "generatedAt": "2025-07-18T21:55:24.226Z",
+    "generatedAt": "2025-07-19T18:06:25.846Z",
     "diamondName": "GeniusDiamond",
     "networkName": "hardhat",
     "chainId": 31337,
@@ -2094,15 +2356,27 @@
       "0xa9059cbb": "GNUSBridge",
       "0x23b872dd": "GNUSBridge",
       "0x441a3e70": "GNUSBridge",
+      "0xd37b34d7": "GNUSBlacklistV2Facet",
+      "0xc707703e": "GNUSBlacklistV2Facet",
+      "0x4886f62c": "GNUSBlacklistV2Facet",
+      "0x442df1e3": "GNUSBlacklistV2Facet",
+      "0x3dec790e": "GNUSBlacklistV2Facet",
+      "0xa415c02c": "GNUSBlacklistV2Facet",
+      "0xccbb9021": "GNUSBlacklistV2Facet",
+      "0xfe575a87": "GNUSBlacklistV2Facet",
+      "0x386679e2": "GNUSBlacklistV2Facet",
+      "0x4c2a11de": "GNUSBlacklistV2Facet",
+      "0x6d7331ed": "GNUSBlacklistV2Facet",
+      "0x897f057a": "GNUSBlacklistV2Facet",
       "0xeae960b1": "DiamondInitFacet"
     },
     "stats": {
-      "totalFunctions": 72,
-      "totalEvents": 21,
+      "totalFunctions": 84,
+      "totalEvents": 25,
       "totalErrors": 2,
-      "facetCount": 12,
+      "facetCount": 13,
       "duplicateSelectorsSkipped": 0
     }
   },
-  "metadata": "{\"compiler\":\"diamond-abi-generator\",\"generatedAt\":\"2025-07-18T21:55:24.226Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"selectorMap\":{\"0xa217fddf\":\"GeniusOwnershipFacet\",\"0xf72c0d8b\":\"GeniusOwnershipFacet\",\"0x248a9ca3\":\"GeniusOwnershipFacet\",\"0x9010d07c\":\"GeniusOwnershipFacet\",\"0xca15c873\":\"GeniusOwnershipFacet\",\"0x2f2ff15d\":\"GeniusOwnershipFacet\",\"0x91d14854\":\"GeniusOwnershipFacet\",\"0x8da5cb5b\":\"GeniusOwnershipFacet\",\"0x36568abe\":\"GeniusOwnershipFacet\",\"0xd547741f\":\"GeniusOwnershipFacet\",\"0x01ffc9a7\":\"GeniusOwnershipFacet\",\"0xf2fde38b\":\"GeniusOwnershipFacet\",\"0x8aeda25a\":\"GNUSNFTFactory\",\"0x101521f8\":\"GNUSNFTFactory\",\"0x52dbff7a\":\"GNUSNFTFactory\",\"0x00fdd58e\":\"GNUSNFTFactory\",\"0x4e1273f4\":\"GNUSNFTFactory\",\"0xf5298aca\":\"GNUSNFTFactory\",\"0x6b20c454\":\"GNUSNFTFactory\",\"0xf667ab7c\":\"GNUSNFTFactory\",\"0x1a9d2360\":\"GNUSNFTFactory\",\"0x4f558e79\":\"GNUSNFTFactory\",\"0xd188929f\":\"GNUSNFTFactory\",\"0xe985e9c5\":\"GNUSNFTFactory\",\"0x731133e9\":\"GNUSNFTFactory\",\"0x1f7fdffa\":\"GNUSNFTFactory\",\"0x8456cb59\":\"GNUSNFTFactory\",\"0x5c975abb\":\"GNUSNFTFactory\",\"0x2eb2c2d6\":\"GNUSNFTFactory\",\"0xf242432a\":\"GNUSNFTFactory\",\"0xa22cb465\":\"GNUSNFTFactory\",\"0x02fe5305\":\"GNUSNFTFactory\",\"0x862440e2\":\"GNUSNFTFactory\",\"0xbd85b039\":\"GNUSNFTFactory\",\"0x3f4ba83a\":\"GNUSNFTFactory\",\"0x0e89341c\":\"GNUSNFTFactory\",\"0xa2dd2453\":\"ERC1155ProxyOperator\",\"0xcd53d08e\":\"ERC1155ProxyOperator\",\"0x6ea9fd36\":\"GeniusAI\",\"0x31d6388d\":\"GeniusAI\",\"0x7c88e3d9\":\"ERC20TransferBatch\",\"0x3b3e672f\":\"ERC20TransferBatch\",\"0x1bdc02ba\":\"ERC20TransferBatch\",\"0x06fdde03\":\"GNUSNFTCollectionName\",\"0x01e33667\":\"GNUSContractAssets\",\"0x72f6ac43\":\"GNUSControl\",\"0x9e8e7134\":\"GNUSControl\",\"0x9ceb1593\":\"GNUSControl\",\"0x19a8b28a\":\"GNUSControl\",\"0x1307a4be\":\"GNUSControl\",\"0x93420cf4\":\"GNUSControl\",\"0xed8d47e6\":\"GNUSControl\",\"0xceba5598\":\"GNUSControl\",\"0x5a1c0366\":\"GNUSControl\",\"0x5e3e0c59\":\"GNUSBridge\",\"0xd5391393\":\"GNUSBridge\",\"0xdd62ed3e\":\"GNUSBridge\",\"0x095ea7b3\":\"GNUSBridge\",\"0x70a08231\":\"GNUSBridge\",\"0xe26d65a6\":\"GNUSBridge\",\"0x9dc29fac\":\"GNUSBridge\",\"0x313ce567\":\"GNUSBridge\",\"0xa457c2d7\":\"GNUSBridge\",\"0x39509351\":\"GNUSBridge\",\"0x156e29f6\":\"GNUSBridge\",\"0x40c10f19\":\"GNUSBridge\",\"0x95d89b41\":\"GNUSBridge\",\"0x18160ddd\":\"GNUSBridge\",\"0xa9059cbb\":\"GNUSBridge\",\"0x23b872dd\":\"GNUSBridge\",\"0x441a3e70\":\"GNUSBridge\",\"0xeae960b1\":\"DiamondInitFacet\"},\"stats\":{\"totalFunctions\":72,\"totalEvents\":21,\"totalErrors\":2,\"facetCount\":12,\"duplicateSelectorsSkipped\":0}}"
+  "metadata": "{\"compiler\":\"diamond-abi-generator\",\"generatedAt\":\"2025-07-19T18:06:25.846Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"selectorMap\":{\"0xa217fddf\":\"GeniusOwnershipFacet\",\"0xf72c0d8b\":\"GeniusOwnershipFacet\",\"0x248a9ca3\":\"GeniusOwnershipFacet\",\"0x9010d07c\":\"GeniusOwnershipFacet\",\"0xca15c873\":\"GeniusOwnershipFacet\",\"0x2f2ff15d\":\"GeniusOwnershipFacet\",\"0x91d14854\":\"GeniusOwnershipFacet\",\"0x8da5cb5b\":\"GeniusOwnershipFacet\",\"0x36568abe\":\"GeniusOwnershipFacet\",\"0xd547741f\":\"GeniusOwnershipFacet\",\"0x01ffc9a7\":\"GeniusOwnershipFacet\",\"0xf2fde38b\":\"GeniusOwnershipFacet\",\"0x8aeda25a\":\"GNUSNFTFactory\",\"0x101521f8\":\"GNUSNFTFactory\",\"0x52dbff7a\":\"GNUSNFTFactory\",\"0x00fdd58e\":\"GNUSNFTFactory\",\"0x4e1273f4\":\"GNUSNFTFactory\",\"0xf5298aca\":\"GNUSNFTFactory\",\"0x6b20c454\":\"GNUSNFTFactory\",\"0xf667ab7c\":\"GNUSNFTFactory\",\"0x1a9d2360\":\"GNUSNFTFactory\",\"0x4f558e79\":\"GNUSNFTFactory\",\"0xd188929f\":\"GNUSNFTFactory\",\"0xe985e9c5\":\"GNUSNFTFactory\",\"0x731133e9\":\"GNUSNFTFactory\",\"0x1f7fdffa\":\"GNUSNFTFactory\",\"0x8456cb59\":\"GNUSNFTFactory\",\"0x5c975abb\":\"GNUSNFTFactory\",\"0x2eb2c2d6\":\"GNUSNFTFactory\",\"0xf242432a\":\"GNUSNFTFactory\",\"0xa22cb465\":\"GNUSNFTFactory\",\"0x02fe5305\":\"GNUSNFTFactory\",\"0x862440e2\":\"GNUSNFTFactory\",\"0xbd85b039\":\"GNUSNFTFactory\",\"0x3f4ba83a\":\"GNUSNFTFactory\",\"0x0e89341c\":\"GNUSNFTFactory\",\"0xa2dd2453\":\"ERC1155ProxyOperator\",\"0xcd53d08e\":\"ERC1155ProxyOperator\",\"0x6ea9fd36\":\"GeniusAI\",\"0x31d6388d\":\"GeniusAI\",\"0x7c88e3d9\":\"ERC20TransferBatch\",\"0x3b3e672f\":\"ERC20TransferBatch\",\"0x1bdc02ba\":\"ERC20TransferBatch\",\"0x06fdde03\":\"GNUSNFTCollectionName\",\"0x01e33667\":\"GNUSContractAssets\",\"0x72f6ac43\":\"GNUSControl\",\"0x9e8e7134\":\"GNUSControl\",\"0x9ceb1593\":\"GNUSControl\",\"0x19a8b28a\":\"GNUSControl\",\"0x1307a4be\":\"GNUSControl\",\"0x93420cf4\":\"GNUSControl\",\"0xed8d47e6\":\"GNUSControl\",\"0xceba5598\":\"GNUSControl\",\"0x5a1c0366\":\"GNUSControl\",\"0x5e3e0c59\":\"GNUSBridge\",\"0xd5391393\":\"GNUSBridge\",\"0xdd62ed3e\":\"GNUSBridge\",\"0x095ea7b3\":\"GNUSBridge\",\"0x70a08231\":\"GNUSBridge\",\"0xe26d65a6\":\"GNUSBridge\",\"0x9dc29fac\":\"GNUSBridge\",\"0x313ce567\":\"GNUSBridge\",\"0xa457c2d7\":\"GNUSBridge\",\"0x39509351\":\"GNUSBridge\",\"0x156e29f6\":\"GNUSBridge\",\"0x40c10f19\":\"GNUSBridge\",\"0x95d89b41\":\"GNUSBridge\",\"0x18160ddd\":\"GNUSBridge\",\"0xa9059cbb\":\"GNUSBridge\",\"0x23b872dd\":\"GNUSBridge\",\"0x441a3e70\":\"GNUSBridge\",\"0xd37b34d7\":\"GNUSBlacklistV2Facet\",\"0xc707703e\":\"GNUSBlacklistV2Facet\",\"0x4886f62c\":\"GNUSBlacklistV2Facet\",\"0x442df1e3\":\"GNUSBlacklistV2Facet\",\"0x3dec790e\":\"GNUSBlacklistV2Facet\",\"0xa415c02c\":\"GNUSBlacklistV2Facet\",\"0xccbb9021\":\"GNUSBlacklistV2Facet\",\"0xfe575a87\":\"GNUSBlacklistV2Facet\",\"0x386679e2\":\"GNUSBlacklistV2Facet\",\"0x4c2a11de\":\"GNUSBlacklistV2Facet\",\"0x6d7331ed\":\"GNUSBlacklistV2Facet\",\"0x897f057a\":\"GNUSBlacklistV2Facet\",\"0xeae960b1\":\"DiamondInitFacet\"},\"stats\":{\"totalFunctions\":84,\"totalEvents\":25,\"totalErrors\":2,\"facetCount\":13,\"duplicateSelectorsSkipped\":0}}"
 }

@@ -66,10 +66,13 @@ export interface GeniusDiamondInterface extends Interface {
       | "balanceOfBatch"
       | "banTransferorBatch"
       | "banTransferorForAll"
+      | "blacklistAccount"
+      | "blacklistAccountsBatch"
       | "bridgeOut"
       | "burn(address,uint256,uint256)"
       | "burn(address,uint256)"
       | "burnBatch"
+      | "completeMigration"
       | "createNFT"
       | "createNFTs"
       | "CREATOR_ROLE"
@@ -78,8 +81,11 @@ export interface GeniusDiamondInterface extends Interface {
       | "decreaseAllowance"
       | "DEFAULT_ADMIN_ROLE"
       | "diamondInitialize250"
+      | "emergencyFixBalance"
       | "exists"
       | "GeniusAI_Initialize"
+      | "getActualBalance"
+      | "getMigrationStatus"
       | "getNFTInfo"
       | "getRoleAdmin"
       | "getRoleMember"
@@ -91,7 +97,11 @@ export interface GeniusDiamondInterface extends Interface {
       | "grantRole"
       | "hasRole"
       | "increaseAllowance"
+      | "initializeBlacklistV2"
       | "isApprovedForAll"
+      | "isBlacklisted"
+      | "isTransferBlocked"
+      | "migrateBlacklistedAccounts"
       | "mint(address,uint256,uint256,bytes)"
       | "mint(address,uint256,uint256)"
       | "mint(address,uint256)"
@@ -123,6 +133,8 @@ export interface GeniusDiamondInterface extends Interface {
       | "transferFrom"
       | "transferOrBurnBatch"
       | "transferOwnership"
+      | "unblacklistAccount"
+      | "unblacklistAccountsBatch"
       | "unpause"
       | "updateBridgeFee"
       | "UPGRADER_ROLE"
@@ -133,10 +145,14 @@ export interface GeniusDiamondInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "AccountBlacklisted"
+      | "AccountUnblacklisted"
       | "AddToBlackList"
       | "AddToGlobalBlackList"
       | "Approval"
       | "ApprovalForAll"
+      | "BlacklistMigrationCompleted"
+      | "BlacklistV2Initialized"
       | "BridgeSourceBurned"
       | "InitLog"
       | "OwnershipTransferred"
@@ -193,6 +209,14 @@ export interface GeniusDiamondInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "blacklistAccount",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "blacklistAccountsBatch",
+    values: [AddressLike[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "bridgeOut",
     values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
@@ -207,6 +231,10 @@ export interface GeniusDiamondInterface extends Interface {
   encodeFunctionData(
     functionFragment: "burnBatch",
     values: [AddressLike, BigNumberish[], BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "completeMigration",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "createNFT",
@@ -245,11 +273,23 @@ export interface GeniusDiamondInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "emergencyFixBalance",
+    values: [AddressLike, BigNumberish, boolean]
+  ): string;
+  encodeFunctionData(
     functionFragment: "exists",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "GeniusAI_Initialize",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getActualBalance",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMigrationStatus",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -297,8 +337,24 @@ export interface GeniusDiamondInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "initializeBlacklistV2",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isBlacklisted",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isTransferBlocked",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "migrateBlacklistedAccounts",
+    values: [AddressLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "mint(address,uint256,uint256,bytes)",
@@ -415,6 +471,14 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "unblacklistAccount",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "unblacklistAccountsBatch",
+    values: [AddressLike[]]
+  ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "updateBridgeFee",
@@ -464,6 +528,14 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "banTransferorForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "blacklistAccount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "blacklistAccountsBatch",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "bridgeOut", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "burn(address,uint256,uint256)",
@@ -474,6 +546,10 @@ export interface GeniusDiamondInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "burnBatch", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "completeMigration",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "createNFT", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "createNFTs", data: BytesLike): Result;
   decodeFunctionResult(
@@ -494,9 +570,21 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "diamondInitialize250",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "emergencyFixBalance",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "GeniusAI_Initialize",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getActualBalance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMigrationStatus",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getNFTInfo", data: BytesLike): Result;
@@ -535,7 +623,23 @@ export interface GeniusDiamondInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "initializeBlacklistV2",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isBlacklisted",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isTransferBlocked",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "migrateBlacklistedAccounts",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -635,6 +739,14 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "unblacklistAccount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "unblacklistAccountsBatch",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "updateBridgeFee",
@@ -650,6 +762,30 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "withdrawToken",
     data: BytesLike
   ): Result;
+}
+
+export namespace AccountBlacklistedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace AccountUnblacklistedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace AddToBlackListEvent {
@@ -710,6 +846,30 @@ export namespace ApprovalForAllEvent {
     account: string;
     operator: string;
     approved: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace BlacklistMigrationCompletedEvent {
+  export type InputTuple = [migratedAccounts: BigNumberish];
+  export type OutputTuple = [migratedAccounts: bigint];
+  export interface OutputObject {
+    migratedAccounts: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace BlacklistV2InitializedEvent {
+  export type InputTuple = [version: BigNumberish];
+  export type OutputTuple = [version: bigint];
+  export interface OutputObject {
+    version: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1117,6 +1277,18 @@ export interface GeniusDiamond extends BaseContract {
     "nonpayable"
   >;
 
+  blacklistAccount: TypedContractMethod<
+    [account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  blacklistAccountsBatch: TypedContractMethod<
+    [accounts: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+
   bridgeOut: TypedContractMethod<
     [amount: BigNumberish, id: BigNumberish, destChainID: BigNumberish],
     [void],
@@ -1140,6 +1312,8 @@ export interface GeniusDiamond extends BaseContract {
     [void],
     "nonpayable"
   >;
+
+  completeMigration: TypedContractMethod<[], [void], "nonpayable">;
 
   createNFT: TypedContractMethod<
     [
@@ -1183,9 +1357,37 @@ export interface GeniusDiamond extends BaseContract {
 
   diamondInitialize250: TypedContractMethod<[], [void], "nonpayable">;
 
+  emergencyFixBalance: TypedContractMethod<
+    [
+      account: AddressLike,
+      correctAmount: BigNumberish,
+      shouldBeBlacklisted: boolean
+    ],
+    [void],
+    "nonpayable"
+  >;
+
   exists: TypedContractMethod<[id: BigNumberish], [boolean], "view">;
 
   GeniusAI_Initialize: TypedContractMethod<[], [void], "nonpayable">;
+
+  getActualBalance: TypedContractMethod<
+    [account: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  getMigrationStatus: TypedContractMethod<
+    [],
+    [
+      [boolean, bigint, bigint] & {
+        migrationComplete: boolean;
+        migrationBlock: bigint;
+        version: bigint;
+      }
+    ],
+    "view"
+  >;
 
   getNFTInfo: TypedContractMethod<
     [id: BigNumberish],
@@ -1229,10 +1431,26 @@ export interface GeniusDiamond extends BaseContract {
     "nonpayable"
   >;
 
+  initializeBlacklistV2: TypedContractMethod<[], [void], "nonpayable">;
+
   isApprovedForAll: TypedContractMethod<
     [account: AddressLike, operator: AddressLike],
     [boolean],
     "view"
+  >;
+
+  isBlacklisted: TypedContractMethod<[account: AddressLike], [boolean], "view">;
+
+  isTransferBlocked: TypedContractMethod<
+    [account: AddressLike],
+    [boolean],
+    "view"
+  >;
+
+  migrateBlacklistedAccounts: TypedContractMethod<
+    [accounts: AddressLike[]],
+    [void],
+    "nonpayable"
   >;
 
   "mint(address,uint256,uint256,bytes)": TypedContractMethod<
@@ -1404,6 +1622,18 @@ export interface GeniusDiamond extends BaseContract {
     "nonpayable"
   >;
 
+  unblacklistAccount: TypedContractMethod<
+    [account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  unblacklistAccountsBatch: TypedContractMethod<
+    [accounts: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+
   unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   updateBridgeFee: TypedContractMethod<
@@ -1484,6 +1714,12 @@ export interface GeniusDiamond extends BaseContract {
     nameOrSignature: "banTransferorForAll"
   ): TypedContractMethod<[bannedAddress: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "blacklistAccount"
+  ): TypedContractMethod<[account: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "blacklistAccountsBatch"
+  ): TypedContractMethod<[accounts: AddressLike[]], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "bridgeOut"
   ): TypedContractMethod<
     [amount: BigNumberish, id: BigNumberish, destChainID: BigNumberish],
@@ -1511,6 +1747,9 @@ export interface GeniusDiamond extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "completeMigration"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "createNFT"
   ): TypedContractMethod<
@@ -1562,11 +1801,38 @@ export interface GeniusDiamond extends BaseContract {
     nameOrSignature: "diamondInitialize250"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "emergencyFixBalance"
+  ): TypedContractMethod<
+    [
+      account: AddressLike,
+      correctAmount: BigNumberish,
+      shouldBeBlacklisted: boolean
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "exists"
   ): TypedContractMethod<[id: BigNumberish], [boolean], "view">;
   getFunction(
     nameOrSignature: "GeniusAI_Initialize"
   ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "getActualBalance"
+  ): TypedContractMethod<[account: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getMigrationStatus"
+  ): TypedContractMethod<
+    [],
+    [
+      [boolean, bigint, bigint] & {
+        migrationComplete: boolean;
+        migrationBlock: bigint;
+        version: bigint;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getNFTInfo"
   ): TypedContractMethod<[id: BigNumberish], [NFTStructOutput], "view">;
@@ -1617,12 +1883,24 @@ export interface GeniusDiamond extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "initializeBlacklistV2"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "isApprovedForAll"
   ): TypedContractMethod<
     [account: AddressLike, operator: AddressLike],
     [boolean],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "isBlacklisted"
+  ): TypedContractMethod<[account: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "isTransferBlocked"
+  ): TypedContractMethod<[account: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "migrateBlacklistedAccounts"
+  ): TypedContractMethod<[accounts: AddressLike[]], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "mint(address,uint256,uint256,bytes)"
   ): TypedContractMethod<
@@ -1804,6 +2082,12 @@ export interface GeniusDiamond extends BaseContract {
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[_newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "unblacklistAccount"
+  ): TypedContractMethod<[account: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "unblacklistAccountsBatch"
+  ): TypedContractMethod<[accounts: AddressLike[]], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "unpause"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
@@ -1831,6 +2115,20 @@ export interface GeniusDiamond extends BaseContract {
   >;
 
   getEvent(
+    key: "AccountBlacklisted"
+  ): TypedContractEvent<
+    AccountBlacklistedEvent.InputTuple,
+    AccountBlacklistedEvent.OutputTuple,
+    AccountBlacklistedEvent.OutputObject
+  >;
+  getEvent(
+    key: "AccountUnblacklisted"
+  ): TypedContractEvent<
+    AccountUnblacklistedEvent.InputTuple,
+    AccountUnblacklistedEvent.OutputTuple,
+    AccountUnblacklistedEvent.OutputObject
+  >;
+  getEvent(
     key: "AddToBlackList"
   ): TypedContractEvent<
     AddToBlackListEvent.InputTuple,
@@ -1857,6 +2155,20 @@ export interface GeniusDiamond extends BaseContract {
     ApprovalForAllEvent.InputTuple,
     ApprovalForAllEvent.OutputTuple,
     ApprovalForAllEvent.OutputObject
+  >;
+  getEvent(
+    key: "BlacklistMigrationCompleted"
+  ): TypedContractEvent<
+    BlacklistMigrationCompletedEvent.InputTuple,
+    BlacklistMigrationCompletedEvent.OutputTuple,
+    BlacklistMigrationCompletedEvent.OutputObject
+  >;
+  getEvent(
+    key: "BlacklistV2Initialized"
+  ): TypedContractEvent<
+    BlacklistV2InitializedEvent.InputTuple,
+    BlacklistV2InitializedEvent.OutputTuple,
+    BlacklistV2InitializedEvent.OutputObject
   >;
   getEvent(
     key: "BridgeSourceBurned"
@@ -1979,6 +2291,28 @@ export interface GeniusDiamond extends BaseContract {
   >;
 
   filters: {
+    "AccountBlacklisted(address)": TypedContractEvent<
+      AccountBlacklistedEvent.InputTuple,
+      AccountBlacklistedEvent.OutputTuple,
+      AccountBlacklistedEvent.OutputObject
+    >;
+    AccountBlacklisted: TypedContractEvent<
+      AccountBlacklistedEvent.InputTuple,
+      AccountBlacklistedEvent.OutputTuple,
+      AccountBlacklistedEvent.OutputObject
+    >;
+
+    "AccountUnblacklisted(address)": TypedContractEvent<
+      AccountUnblacklistedEvent.InputTuple,
+      AccountUnblacklistedEvent.OutputTuple,
+      AccountUnblacklistedEvent.OutputObject
+    >;
+    AccountUnblacklisted: TypedContractEvent<
+      AccountUnblacklistedEvent.InputTuple,
+      AccountUnblacklistedEvent.OutputTuple,
+      AccountUnblacklistedEvent.OutputObject
+    >;
+
     "AddToBlackList(uint256[],address[])": TypedContractEvent<
       AddToBlackListEvent.InputTuple,
       AddToBlackListEvent.OutputTuple,
@@ -2021,6 +2355,28 @@ export interface GeniusDiamond extends BaseContract {
       ApprovalForAllEvent.InputTuple,
       ApprovalForAllEvent.OutputTuple,
       ApprovalForAllEvent.OutputObject
+    >;
+
+    "BlacklistMigrationCompleted(uint256)": TypedContractEvent<
+      BlacklistMigrationCompletedEvent.InputTuple,
+      BlacklistMigrationCompletedEvent.OutputTuple,
+      BlacklistMigrationCompletedEvent.OutputObject
+    >;
+    BlacklistMigrationCompleted: TypedContractEvent<
+      BlacklistMigrationCompletedEvent.InputTuple,
+      BlacklistMigrationCompletedEvent.OutputTuple,
+      BlacklistMigrationCompletedEvent.OutputObject
+    >;
+
+    "BlacklistV2Initialized(uint256)": TypedContractEvent<
+      BlacklistV2InitializedEvent.InputTuple,
+      BlacklistV2InitializedEvent.OutputTuple,
+      BlacklistV2InitializedEvent.OutputObject
+    >;
+    BlacklistV2Initialized: TypedContractEvent<
+      BlacklistV2InitializedEvent.InputTuple,
+      BlacklistV2InitializedEvent.OutputTuple,
+      BlacklistV2InitializedEvent.OutputObject
     >;
 
     "BridgeSourceBurned(address,uint256,uint256,uint256,uint256)": TypedContractEvent<

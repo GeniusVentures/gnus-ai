@@ -10,6 +10,34 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "AccountBlacklisted",
+    type: "event",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "AccountUnblacklisted",
+    type: "event",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "uint256[]",
         name: "tokenIds",
@@ -91,6 +119,34 @@ const _abi = [
     name: "ApprovalForAll",
     type: "event",
     _diamondFacet: "GNUSNFTFactory",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "migratedAccounts",
+        type: "uint256",
+      },
+    ],
+    name: "BlacklistMigrationCompleted",
+    type: "event",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "version",
+        type: "uint256",
+      },
+    ],
+    name: "BlacklistV2Initialized",
+    type: "event",
+    _diamondFacet: "GNUSBlacklistV2Facet",
   },
   {
     anonymous: false,
@@ -714,6 +770,36 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "blacklistAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0xd37b34d7",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "accounts",
+        type: "address[]",
+      },
+    ],
+    name: "blacklistAccountsBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0xc707703e",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "amount",
         type: "uint256",
@@ -805,6 +891,15 @@ const _abi = [
     type: "function",
     _diamondFacet: "GNUSNFTFactory",
     _diamondSelector: "0x6b20c454",
+  },
+  {
+    inputs: [],
+    name: "completeMigration",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x4886f62c",
   },
   {
     inputs: [
@@ -990,6 +1085,31 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "correctAmount",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "shouldBeBlacklisted",
+        type: "bool",
+      },
+    ],
+    name: "emergencyFixBalance",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x442df1e3",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "id",
         type: "uint256",
@@ -1016,6 +1136,52 @@ const _abi = [
     type: "function",
     _diamondFacet: "GeniusAI",
     _diamondSelector: "0x6ea9fd36",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "getActualBalance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x3dec790e",
+  },
+  {
+    inputs: [],
+    name: "getMigrationStatus",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "migrationComplete",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "migrationBlock",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "version",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0xa415c02c",
   },
   {
     inputs: [
@@ -1257,6 +1423,15 @@ const _abi = [
     _diamondSelector: "0x39509351",
   },
   {
+    inputs: [],
+    name: "initializeBlacklistV2",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0xccbb9021",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -1281,6 +1456,63 @@ const _abi = [
     type: "function",
     _diamondFacet: "GNUSNFTFactory",
     _diamondSelector: "0xe985e9c5",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "isBlacklisted",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0xfe575a87",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "isTransferBlocked",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x386679e2",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "accounts",
+        type: "address[]",
+      },
+    ],
+    name: "migrateBlacklistedAccounts",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x4c2a11de",
   },
   {
     inputs: [
@@ -1909,6 +2141,36 @@ const _abi = [
     type: "function",
     _diamondFacet: "GeniusOwnershipFacet",
     _diamondSelector: "0xf2fde38b",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "unblacklistAccount",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x6d7331ed",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "accounts",
+        type: "address[]",
+      },
+    ],
+    name: "unblacklistAccountsBatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondSelector: "0x897f057a",
   },
   {
     inputs: [],
