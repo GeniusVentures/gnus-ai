@@ -10,8 +10,8 @@ The GNUS Bridge Whitelist is a security feature that restricts bridge operations
 
 The GNUS system uses the two most significant bits of the 256-bit balance storage for control flags:
 
-```
-Bit 255 (MSB):     Blacklist flag (existing BlacklistV2 implementation)
+```bash
+Bit 255 (MSB):     Blacklist flag (existing Blacklist implementation)
 Bit 254 (2nd MSB): Whitelist flag (new Bridge Whitelist implementation)
 Bits 0-253:       Actual token balance (2^254 - 1 maximum)
 ```
@@ -33,9 +33,9 @@ Bits 0-253:       Actual token balance (2^254 - 1 maximum)
 - **Bridge Enforcement**: Restrict mint/burn/bridge operations to whitelisted accounts
 - **Backward Compatibility**: Whitelist starts disabled to maintain existing functionality
 
-### Integration with BlacklistV2
+### Integration with Blacklist
 
-The whitelist system is designed to work alongside the existing BlacklistV2 implementation:
+The whitelist system is designed to work alongside the existing Blacklist implementation:
 
 - Both systems use separate bits (255 and 254) in the same storage slot
 - An account can be both blacklisted AND whitelisted
@@ -101,13 +101,16 @@ function getWhitelistInfo() external view returns (
 When whitelist is **enabled**, the following operations require the account to be whitelisted:
 
 ### Minting Operations
+
 - `mint(address user, uint256 amount)` - Recipient must be whitelisted
 - `mint(address user, uint256 tokenID, uint256 amount)` - Recipient must be whitelisted
 
 ### Burning Operations
+
 - `burn(address user, uint256 amount)` - User must be whitelisted
 
 ### Cross-Chain Bridging
+
 - `bridgeOut(uint256 amount, uint256 id, uint256 destChainID)` - Sender must be whitelisted
 
 When whitelist is **disabled**, all bridge operations work without restriction (backward compatibility).
@@ -115,16 +118,19 @@ When whitelist is **disabled**, all bridge operations work without restriction (
 ## Security Considerations
 
 ### Access Control
+
 - Only accounts with `DEFAULT_ADMIN_ROLE` can manage whitelist
 - Whitelist operations are restricted to authorized administrators
 - Emergency functions are available for critical situations
 
 ### Precedence Rules
+
 1. **Blacklist Override**: Blacklisted accounts cannot perform regular transfers regardless of whitelist status
 2. **Whitelist Enforcement**: When enabled, only whitelisted accounts can perform bridge operations
 3. **Admin Bypass**: Administrators can always manage the system regardless of their whitelist status
 
 ### Gas Optimization
+
 - Bit manipulation operations are extremely gas-efficient
 - Single storage slot update for whitelist status changes
 - Batch operations reduce transaction costs for multiple accounts
@@ -200,11 +206,13 @@ await diamond.emergencyFixBalanceWithWhitelist(
 ## Migration and Backward Compatibility
 
 ### Seamless Integration
+
 - Existing contracts continue to work without modification
 - Whitelist starts disabled by default
 - No breaking changes to existing functionality
 
 ### Balance Compatibility
+
 - All existing balance operations work correctly
 - `balanceOf()` returns clean balance without control bits
 - Total supply calculations remain accurate
@@ -212,6 +220,7 @@ await diamond.emergencyFixBalanceWithWhitelist(
 ## Testing
 
 Comprehensive test suite covers:
+
 - Basic whitelist/unwhitelist operations
 - Batch operations
 - Bridge operation enforcement
@@ -223,11 +232,13 @@ Comprehensive test suite covers:
 ## Future Considerations
 
 ### Extensibility
+
 - System designed to accommodate additional control bits if needed
 - Clean separation between whitelist and other systems
 - Modular architecture supports future enhancements
 
 ### Monitoring
+
 - Events emitted for all whitelist changes
 - Status query functions for external monitoring
 - Gas usage tracking for optimization
@@ -235,16 +246,19 @@ Comprehensive test suite covers:
 ## Technical Specifications
 
 ### Storage Efficiency
+
 - **Storage Slots**: 0 additional slots (uses existing balance storage)
 - **Gas Cost**: ~2,300 gas for whitelist status change
 - **Maximum Balance**: 2^254 - 1 tokens (extremely large)
 
 ### Bit Manipulation
+
 - Uses bitwise operations for maximum efficiency
 - Atomic operations ensure consistency
 - No risk of bit collision between blacklist and whitelist
 
 ### Error Handling
+
 - Clear, descriptive error messages
 - Graceful handling of edge cases
 - Comprehensive input validation

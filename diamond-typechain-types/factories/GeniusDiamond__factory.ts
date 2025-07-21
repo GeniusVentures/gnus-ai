@@ -18,7 +18,7 @@ const _abi = [
     ],
     name: "AccountBlacklisted",
     type: "event",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -32,7 +32,7 @@ const _abi = [
     ],
     name: "AccountUnblacklisted",
     type: "event",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -154,13 +154,13 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "migratedAccounts",
+        name: "version",
         type: "uint256",
       },
     ],
-    name: "BlacklistMigrationCompleted",
+    name: "BlacklistInitialized",
     type: "event",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -168,13 +168,13 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "version",
+        name: "migratedAccounts",
         type: "uint256",
       },
     ],
-    name: "BlacklistV2Initialized",
+    name: "BlacklistMigrationCompleted",
     type: "event",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -835,7 +835,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0xd37b34d7",
   },
   {
@@ -850,7 +850,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0xc707703e",
   },
   {
@@ -954,7 +954,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x4886f62c",
   },
   {
@@ -1160,7 +1160,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x442df1e3",
   },
   {
@@ -1272,7 +1272,7 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x3dec790e",
   },
   {
@@ -1297,7 +1297,7 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0xa415c02c",
   },
   {
@@ -1566,12 +1566,12 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "initializeBlacklistV2",
+    name: "initializeBlacklist",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
-    _diamondSelector: "0xccbb9021",
+    _diamondFacet: "GNUSBlacklistFacet",
+    _diamondSelector: "0xa9d1fd08",
   },
   {
     inputs: [],
@@ -1626,7 +1626,7 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0xfe575a87",
   },
   {
@@ -1647,7 +1647,7 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x386679e2",
   },
   {
@@ -1698,7 +1698,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x4c2a11de",
   },
   {
@@ -2371,7 +2371,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x6d7331ed",
   },
   {
@@ -2386,7 +2386,7 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistV2Facet",
+    _diamondFacet: "GNUSBlacklistFacet",
     _diamondSelector: "0x897f057a",
   },
   {

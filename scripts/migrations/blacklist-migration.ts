@@ -17,7 +17,7 @@ interface MigrationConfig {
   networkName?: string;
 }
 
-export class BlacklistV2Migration {
+export class BlacklistMigration {
   private diamond: GeniusDiamond;
   private config: MigrationConfig;
   private migrationLog: Array<{
@@ -279,7 +279,7 @@ async function main() {
     console.log('   npx ts-node scripts/generate-diamond-abi-with-typechain.ts GeniusDiamond');
     console.log('2. Add known blacklisted addresses to the knownBlacklistedAddresses array above');
     console.log('3. Uncomment and configure the diamond contract loading code below');
-    console.log('4. Run with: npx ts-node scripts/migrations/blacklist-v2-migration.ts [--dry-run]');
+    console.log('4. Run with: npx ts-node scripts/migrations/blacklist-migration.ts [--dry-run]');
     
     if (knownBlacklistedAddresses.length === 0) {
       console.log('\nNo blacklisted addresses provided. Please add addresses to migrate.');
@@ -294,7 +294,7 @@ async function main() {
     /*
     console.log('Loading diamond contract...');
     const diamond = await loadDiamondContract<GeniusDiamond>(...); // Add proper contract loading
-    const migration = new BlacklistV2Migration(diamond, config);
+    const migration = new BlacklistMigration(diamond, config);
     
     await migration.runMigration(knownBlacklistedAddresses);
     migration.printSummary();
@@ -328,4 +328,4 @@ if (require.main === module) {
     });
 }
 
-export { main as runBlacklistV2Migration };
+export { main as runBlacklistMigration };

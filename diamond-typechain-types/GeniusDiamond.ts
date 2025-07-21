@@ -100,7 +100,7 @@ export interface GeniusDiamondInterface extends Interface {
       | "grantRole"
       | "hasRole"
       | "increaseAllowance"
-      | "initializeBlacklistV2"
+      | "initializeBlacklist"
       | "initializeWhitelist"
       | "isApprovedForAll"
       | "isBlacklisted"
@@ -165,8 +165,8 @@ export interface GeniusDiamondInterface extends Interface {
       | "AddToGlobalBlackList"
       | "Approval"
       | "ApprovalForAll"
+      | "BlacklistInitialized"
       | "BlacklistMigrationCompleted"
-      | "BlacklistV2Initialized"
       | "BridgeSourceBurned"
       | "InitLog"
       | "OwnershipTransferred"
@@ -365,7 +365,7 @@ export interface GeniusDiamondInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "initializeBlacklistV2",
+    functionFragment: "initializeBlacklist",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -699,7 +699,7 @@ export interface GeniusDiamondInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "initializeBlacklistV2",
+    functionFragment: "initializeBlacklist",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -989,11 +989,11 @@ export namespace ApprovalForAllEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace BlacklistMigrationCompletedEvent {
-  export type InputTuple = [migratedAccounts: BigNumberish];
-  export type OutputTuple = [migratedAccounts: bigint];
+export namespace BlacklistInitializedEvent {
+  export type InputTuple = [version: BigNumberish];
+  export type OutputTuple = [version: bigint];
   export interface OutputObject {
-    migratedAccounts: bigint;
+    version: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1001,11 +1001,11 @@ export namespace BlacklistMigrationCompletedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace BlacklistV2InitializedEvent {
-  export type InputTuple = [version: BigNumberish];
-  export type OutputTuple = [version: bigint];
+export namespace BlacklistMigrationCompletedEvent {
+  export type InputTuple = [migratedAccounts: BigNumberish];
+  export type OutputTuple = [migratedAccounts: bigint];
   export interface OutputObject {
-    version: bigint;
+    migratedAccounts: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1626,7 +1626,7 @@ export interface GeniusDiamond extends BaseContract {
     "nonpayable"
   >;
 
-  initializeBlacklistV2: TypedContractMethod<[], [void], "nonpayable">;
+  initializeBlacklist: TypedContractMethod<[], [void], "nonpayable">;
 
   initializeWhitelist: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -2158,7 +2158,7 @@ export interface GeniusDiamond extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "initializeBlacklistV2"
+    nameOrSignature: "initializeBlacklist"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "initializeWhitelist"
@@ -2473,18 +2473,18 @@ export interface GeniusDiamond extends BaseContract {
     ApprovalForAllEvent.OutputObject
   >;
   getEvent(
+    key: "BlacklistInitialized"
+  ): TypedContractEvent<
+    BlacklistInitializedEvent.InputTuple,
+    BlacklistInitializedEvent.OutputTuple,
+    BlacklistInitializedEvent.OutputObject
+  >;
+  getEvent(
     key: "BlacklistMigrationCompleted"
   ): TypedContractEvent<
     BlacklistMigrationCompletedEvent.InputTuple,
     BlacklistMigrationCompletedEvent.OutputTuple,
     BlacklistMigrationCompletedEvent.OutputObject
-  >;
-  getEvent(
-    key: "BlacklistV2Initialized"
-  ): TypedContractEvent<
-    BlacklistV2InitializedEvent.InputTuple,
-    BlacklistV2InitializedEvent.OutputTuple,
-    BlacklistV2InitializedEvent.OutputObject
   >;
   getEvent(
     key: "BridgeSourceBurned"
@@ -2709,6 +2709,17 @@ export interface GeniusDiamond extends BaseContract {
       ApprovalForAllEvent.OutputObject
     >;
 
+    "BlacklistInitialized(uint256)": TypedContractEvent<
+      BlacklistInitializedEvent.InputTuple,
+      BlacklistInitializedEvent.OutputTuple,
+      BlacklistInitializedEvent.OutputObject
+    >;
+    BlacklistInitialized: TypedContractEvent<
+      BlacklistInitializedEvent.InputTuple,
+      BlacklistInitializedEvent.OutputTuple,
+      BlacklistInitializedEvent.OutputObject
+    >;
+
     "BlacklistMigrationCompleted(uint256)": TypedContractEvent<
       BlacklistMigrationCompletedEvent.InputTuple,
       BlacklistMigrationCompletedEvent.OutputTuple,
@@ -2718,17 +2729,6 @@ export interface GeniusDiamond extends BaseContract {
       BlacklistMigrationCompletedEvent.InputTuple,
       BlacklistMigrationCompletedEvent.OutputTuple,
       BlacklistMigrationCompletedEvent.OutputObject
-    >;
-
-    "BlacklistV2Initialized(uint256)": TypedContractEvent<
-      BlacklistV2InitializedEvent.InputTuple,
-      BlacklistV2InitializedEvent.OutputTuple,
-      BlacklistV2InitializedEvent.OutputObject
-    >;
-    BlacklistV2Initialized: TypedContractEvent<
-      BlacklistV2InitializedEvent.InputTuple,
-      BlacklistV2InitializedEvent.OutputTuple,
-      BlacklistV2InitializedEvent.OutputObject
     >;
 
     "BridgeSourceBurned(address,uint256,uint256,uint256,uint256)": TypedContractEvent<

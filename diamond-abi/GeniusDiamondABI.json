@@ -1,0 +1,11 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "GeniusDiamondABI",
+  "sourceName": "diamond-abi/GeniusDiamondABI.sol",
+  "abi": [],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {},
+  "metadata": "{\"compiler\":\"diamond-abi-generator-fallback\",\"generatedAt\":\"2025-07-21T15:37:24.167Z\",\"networkName\":\"hardhat\",\"chainId\":31337,\"error\":\"Cannot find module '@nomiclabs/hardhat-ethers'\\nRequire stack:\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/diamonds/GeniusDiamond/callbacks/GNUSControl.ts\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/node_modules/diamonds/dist/core/CallbackManager.js\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/node_modules/diamonds/dist/core/Diamond.js\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/node_modules/diamonds/dist/core/index.js\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/node_modules/diamonds/dist/index.js\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/scripts/diamond-abi-generator.ts\\n- /home/jamatulli/decentralization/gnus.ai/gnus-ai-repo/scripts/generate-diamond-abi-with-typechain.ts\"}"
+}

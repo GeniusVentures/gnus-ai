@@ -22,9 +22,9 @@ import { multichain } from 'hardhat-multichain';
 import { toWei } from '../../scripts/utils/helpers';
 import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import { Diamond } from 'diamonds';
-// import {
-//   GeniusDiamond,
-// } from '../../diamond-typechain-types';
+import {
+  GeniusDiamond,
+} from '../../diamond-typechain-types';
 import { Contract, BaseContract } from 'ethers';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 import { Artifact } from 'hardhat/types';
@@ -309,7 +309,7 @@ describe('GNUS Blacklist V2 Tests', async function () {
 
         it('should provide migration status', async () => {
           // KNOWN ISSUE: The diamond deployment system is not executing the deployInit 
-          // function for GNUSBlacklistV2Facet despite it being configured. This is a 
+          // function for GNUSBlacklistFacet despite it being configured. This is a 
           // deployment system limitation, not a contract issue. All blacklist functionality 
           // works correctly as demonstrated by the other 21 tests.
           
@@ -326,7 +326,7 @@ describe('GNUS Blacklist V2 Tests', async function () {
           // the blacklist V2 initialization never actually ran during deployment.
           // This is expected behavior given the deployment system limitation.
           if (Number(status.version) === 0) {
-            console.log('Deployment system did not call initializeBlacklistV2() as expected');
+            console.log('Deployment system did not call initializeBlacklist() as expected');
             console.log('This is a known deployment system limitation, not a contract bug');
             
             // For testing purposes, we verify the contract would work correctly if initialized

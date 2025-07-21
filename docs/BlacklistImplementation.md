@@ -8,11 +8,11 @@ This document describes the complete implementation of USDC-style blacklisting i
 
 ### ✅ Core Components Implemented
 
-1. **GNUSBlacklistV2Storage.sol** - Storage library with MSB manipulation
-2. **GNUSBlacklistV2Facet.sol** - Main facet with blacklist management functions
+1. **GNUSBlacklistStorage.sol** - Storage library with MSB manipulation
+2. **GNUSBlacklistFacet.sol** - Main facet with blacklist management functions
 3. **Modified existing facets** - Updated to respect V2 blacklist
 4. **Diamond configuration** - Added new facet to diamond
-5. **Migration script** - BlacklistV2Migration class
+5. **Migration script** - BlacklistMigration class
 6. **Test structure** - Comprehensive test framework
 
 ### ✅ Key Features
@@ -43,19 +43,19 @@ This document describes the complete implementation of USDC-style blacklisting i
 
 ## File Structure
 
-```
+```bash
 contracts/gnus-ai/
-├── GNUSBlacklistV2Storage.sol      ✅ Storage library
-├── GNUSBlacklistV2Facet.sol        ✅ Main facet
+├── GNUSBlacklistStorage.sol      ✅ Storage library
+├── GNUSBlacklistFacet.sol        ✅ Main facet
 ├── GNUSBridge.sol                  ✅ Modified for V2 integration
 ├── GNUSERC1155MaxSupply.sol        ✅ Modified transfer hooks
 └── GNUSControl.sol                 ✅ Legacy system (unchanged)
 
 scripts/migrations/
-└── blacklist-v2-migration.ts       ✅ Migration script
+└── blacklist-migration.ts       ✅ Migration script
 
 test/unit/
-└── GNUSBlacklistV2.test.ts         ✅ Test structure
+└── GNUSBlacklist.test.ts         ✅ Test structure
 
 diamonds/GeniusDiamond/
 └── geniusdiamond.config.json       ✅ Updated with new facet
@@ -63,7 +63,7 @@ diamonds/GeniusDiamond/
 
 ## Function Interface
 
-### GNUSBlacklistV2Facet Functions
+### GNUSBlacklistFacet Functions
 
 ```solidity
 // Core blacklist management
@@ -110,7 +110,7 @@ function layout() internal pure returns (Layout storage)
 
 ### 3. Diamond Configuration
 
-- **Added**: GNUSBlacklistV2Facet to diamond config
+- **Added**: GNUSBlacklistFacet to diamond config
 - **Priority**: Set to 46 (after ERC1155ProxyOperator)
 - **Version**: 0.0 with proper initialization
 
@@ -127,7 +127,7 @@ function layout() internal pure returns (Layout storage)
 ### Usage Example
 
 ```typescript
-const migration = new BlacklistV2Migration(diamond, config);
+const migration = new BlacklistMigration(diamond, config);
 
 // Option 1: Provide known blacklisted addresses
 const knownBlacklistedAddresses = ['0x123...', '0x456...'];
@@ -236,10 +236,10 @@ npx hardhat compile
 
 ```bash
 # Run blacklist tests
-npx hardhat test test/unit/GNUSBlacklistV2.test.ts
+npx hardhat test test/unit/GNUSBlacklist.test.ts
 
 # Run with coverage
-npx hardhat coverage --testfiles test/unit/GNUSBlacklistV2.test.ts
+npx hardhat coverage --testfiles test/unit/GNUSBlacklist.test.ts
 ```
 
 ### 4. Migration Preparation
@@ -271,12 +271,12 @@ BLACKLIST_MIGRATION_DRY_RUN=true
 
 ```json
 {
-  "GNUSBlacklistV2Facet": {
+  "GNUSBlacklistFacet": {
     "priority": 46,
     "versions": {
       "0.0": {
-        "deployInit": "initializeBlacklistV2()",
-        "upgradeInit": "migrateToBlacklistV2()"
+        "deployInit": "initializeBlacklist()",
+        "upgradeInit": "migrateToBlacklist()"
       }
     }
   }
