@@ -18,6 +18,7 @@ import * as dotenv from 'dotenv';
 
 import { generateDiamondAbiWithTypechain } from '../generate-diamond-abi-with-typechain';
 import { DiamondAbiGenerationOptions } from '../diamond-abi-generator';
+import { deployments } from '../../notes/archive/deployments';
 
 dotenv.config();
 
@@ -381,7 +382,7 @@ export class DefenderDiamondDeployer {
       autoApprove: config.autoApprove ?? false,
       verbose: config.verbose ?? false,
       deploymentsPath: config.deploymentsPath || join(process.cwd(), 'deployments'),
-      configFilePath: config.configFilePath || `diamonds/${config.diamondName}/${config.diamondName.toLowerCase()}.config.json`
+      configFilePath: config.configFilePath || `diamonds/${config.diamondName}`
     };
 
     return normalizedConfig;
@@ -429,6 +430,29 @@ export class DefenderDiamondDeployer {
       };
     }
 
+    const viaType = (process.env.DEFENDER_VIA_TYPE as 'Safe' | 'EOA') || 'Safe';
+    
+    // Determine the 'via' address based on viaType
+    let viaAddress: string;
+    if (viaType === 'EOA') {
+      viaAddress = process.env.DEFENDER_EOA_ADDRESS || process.env.DEFENDER_RELAYER_ADDRESS || '';
+    } else {
+      viaAddress = process.env.DEFENDER_SAFE_ADDRESS || '';
+    }
+    
+    let hardhatDiamondConfig: any;
+    try {
+      hardhatDiamondConfig = hre.diamonds.getDiamondConfig(diamondName);
+    } catch (error) {
+      // Fallback when diamond config doesn't exist
+      hardhatDiamondConfig = {
+        deploymentsPath: 'diamonds',
+        contractsPath: 'contracts'
+      };
+    }
+    const deploymentsPath: string = hardhatDiamondConfig.deploymentsPath || 'diamonds';
+    const configFilePath: string = `${deploymentsPath}/${diamondName}/${diamondName.toLowerCase()}.config.json`;
+
     const config: DefenderDiamondDeployerConfig = {
       diamondName,
       networkName,
@@ -436,12 +460,13 @@ export class DefenderDiamondDeployer {
       apiKey: process.env.DEFENDER_API_KEY || '',
       apiSecret: process.env.DEFENDER_API_SECRET || '',
       relayerAddress: process.env.DEFENDER_RELAYER_ADDRESS || '',
-      via: process.env.DEFENDER_SAFE_ADDRESS || process.env.DEFENDER_RELAYER_ADDRESS || '',
-      viaType: (process.env.DEFENDER_VIA_TYPE as 'Safe' | 'EOA') || 'Safe',
+      via: viaAddress,
+      viaType: viaType,
       autoApprove: process.env.AUTO_APPROVE_DEFENDER_PROPOSALS === 'true',
       verbose: process.env.VERBOSE_DEPLOYMENT === 'true',
-      deploymentsPath: join(process.cwd(), 'deployments'),
-      configFilePath: `diamonds/${diamondName}/${diamondName.toLowerCase()}.config.json`,
+      deploymentsPath: deploymentsPath,
+      configFilePath: configFilePath,
+      contractsPath: hardhatDiamondConfig.contractsPath || 'contracts',
       ...overrides
     };
 

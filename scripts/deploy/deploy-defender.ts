@@ -59,6 +59,7 @@ async function main(): Promise<void> {
       autoApprove: options.autoApprove,
       verbose: options.verbose,
       viaType: options.viaType,
+      signer: await ethers.provider.getSigner(process.env.DEFENDER_EOA_ADDRESS),
     });
 
     // Get network info
@@ -70,8 +71,26 @@ async function main(): Promise<void> {
     console.log(`Verbose: ${config.verbose ? 'Yes' : 'No'}`);
     console.log('');
 
-    // Provide next steps
+    // Initialize the DefenderDiamondDeployer
+    console.log('🔧 Initializing DefenderDiamondDeployer...');
+    const deployer = await DefenderDiamondDeployer.getInstance(config);
+    
+    // Execute the deployment
+    console.log('💎 Starting diamond deployment...');
+    const diamond = await deployer.deployDiamond();
+    
+    // Get deployment information
+    const deployedData = diamond.getDeployedDiamondData();
     console.log('');
+    console.log('✅ Deployment completed successfully!');
+    console.log('=====================================');
+    console.log(`💎 Diamond Address: ${deployedData.DiamondAddress}`);
+    console.log(`👤 Deployer: ${deployedData.DeployerAddress}`);
+    console.log(`🎯 Facets Deployed: ${Object.keys(deployedData.DeployedFacets || {}).length}`);
+    console.log(`⛓️ Network: ${networkName} (${Number(network.chainId)})`);
+    console.log('');
+
+    // Provide next steps
     console.log('📋 Next Steps:');
     console.log('==============');
     console.log('1. Verify contracts on block explorer');

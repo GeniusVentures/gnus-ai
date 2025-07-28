@@ -66,6 +66,13 @@ describe('DefenderDeployment Integration Tests', function () {
       viaType: 'EOA',
       provider: ethers.provider,
       signer: signer,
+      // Add required DiamondConfig fields
+      deploymentsPath: 'test-diamonds',
+      contractsPath: 'contracts',
+      configFilePath: 'test-diamonds/GeniusDiamond/geniusdiamond.config.json',
+      callbacksPath: 'test-diamonds/GeniusDiamond/callbacks',
+      diamondAbiPath: 'test-diamonds/GeniusDiamond/abi',
+      writeDeployedDiamondData: true
     };
   });  describe('End-to-End Deployment Workflow', function () {
     it('should complete full deployment workflow with mocked Defender', async function () {

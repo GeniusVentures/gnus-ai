@@ -210,6 +210,70 @@
           "sourceMaps": true,
           "smartStep": true,
           "console": "integratedTerminal",
-        },  
+        },
+        {
+          "name": "OZDef Sepolia Deployment",
+          "type": "node",
+          "request": "launch",
+          "preLaunchTask": "tsc: build - tsconfig.json",
+          "env": {
+            "VERBOSE_DEPLOYMENT": "true"
+          },
+          "runtimeArgs": [
+            "-r", "ts-node/register/transpile-only",
+            "--preserve-symlinks"
+          ],
+          // point to the .ts script instead of dist .js
+          "program": "${workspaceFolder}/scripts/deploy/deploy-defender.ts",
+          "args": [
+            "GeniusDiamond",
+            "sepolia"
+          ],
+          "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v20.15.0/bin/node",
+          // let VS Code map directly into your .ts files
+          "outFiles": ["${workspaceFolder}/**/*.ts"],
+          "skipFiles": [
+            "<node_internals>/**",
+            "${workspaceFolder}/node_modules/**/*.js"
+          ],
+          "resolveSourceMapLocations": [
+            "${workspaceFolder}/**/*.ts"
+          ],
+          "sourceMaps": true,
+          "smartStep": true,
+          "console": "integratedTerminal"
+        },
+              {
+          "name": "OZDef Manual Sepolia Deployment",
+          "type": "node",
+          "request": "launch",
+          "preLaunchTask": "tsc: build - tsconfig.json",
+          "env": {
+            "VERBOSE_DEPLOYMENT": "true"
+          },
+          "runtimeArgs": [
+            "-r", "ts-node/register/transpile-only",
+            "--preserve-symlinks"
+          ],
+          // point to the .ts script instead of dist .js
+          "program": "${workspaceFolder}/scripts/deploy/deploy-defender-manual.ts",
+          "args": [
+            "GeniusDiamond",
+            "sepolia"
+          ],
+          "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v20.15.0/bin/node",
+          // let VS Code map directly into your .ts files
+          "outFiles": ["${workspaceFolder}/**/*.ts"],
+          "skipFiles": [
+            "<node_internals>/**",
+            "${workspaceFolder}/node_modules/**/*.js"
+          ],
+          "resolveSourceMapLocations": [
+            "${workspaceFolder}/**/*.ts"
+          ],
+          "sourceMaps": true,
+          "smartStep": true,
+          "console": "integratedTerminal"
+        }
     ]
 }

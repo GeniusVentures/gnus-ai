@@ -49,13 +49,13 @@ const {
 
 // default blank RPC URLs will return an error. Must be configured in the .env file.
 export const mainnetUrl: string = MAINNET_RPC || ''; // Ethereum RPC URL
-export const polyUrl: string = POLYGON_RPC || ''; // Polygon RPC URL
-export const amoyUrl: string = POLYGON_AMOY_RPC || ''; // Amoy RPC URL
+export const polygonUrl: string = POLYGON_RPC || ''; // Polygon RPC URL
+export const polygonAmoyUrl: string = POLYGON_AMOY_RPC || ''; // Amoy RPC URL
 export const sepoliaUrl: string = SEPOLIA_RPC || ''; // Sepolia RPC URL
 export const baseUrl: string = BASE_RPC || ''; // Base RPC URL
 // These set default values as well so missing environment variables set default to latest block.
 export const mainnetBlock: number = parseInt(MAINNET_BLOCK || '0'); // Ethereum block number
-export const polyBlock: number = parseInt(POLYGON_BLOCK || '0'); // Polygon block number
+export const polygonBlock: number = parseInt(POLYGON_BLOCK || '0'); // Polygon block number
 export const amoyBlock: number = parseInt(POLYGON_AMOY_BLOCK || '0'); // Amoy block number
 export const sepoliaBlock: number = parseInt(SEPOLIA_BLOCK || '0'); // Sepolia block number
 export const baseBlock: number = parseInt(BASE_BLOCK || '0'); // Base block number
@@ -126,7 +126,7 @@ function filterDuplicateFunctions(
 }
 
 const MOCK_CHAIN_ID = HH_CHAIN_ID ? parseInt(HH_CHAIN_ID) : 31337;
-console.log(`Using chain ID: ${MOCK_CHAIN_ID}`);
+// console.log(`Using chain ID: ${MOCK_CHAIN_ID}`);
 
 const config: HardhatUserConfig = {
 	typechain: {
@@ -149,16 +149,16 @@ const config: HardhatUserConfig = {
 				blockNumber: mainnetBlock,
 			},
 			polygon: {
-				rpcUrl: polyUrl,
-				blockNumber: polyBlock,
+				rpcUrl: polygonUrl,
+				blockNumber: polygonBlock,
 			},
 			sepolia: {
 				rpcUrl: sepoliaUrl,
-				blockNumber: sepoliaBlock,
+				// blockNumber: sepoliaBlock,
 				chainId: 11155111,
 			},
 			polygon_amoy: {
-				rpcUrl: amoyUrl,
+				rpcUrl: polygonAmoyUrl,
 				blockNumber: amoyBlock,
 				chainId: 80002,
 			},
@@ -193,9 +193,10 @@ const config: HardhatUserConfig = {
 							: undefined,
 					}
 				: undefined,
-			chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
-			// Chains without Hardhat built in definitions
-			chains: {
+        /* hardhat-multichain config  */
+        chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
+        // Chains without Hardhat built in definitions
+        chains: {     
 				80002: {
 					hardforkHistory: {
 						london: 10000000,
@@ -232,59 +233,60 @@ const config: HardhatUserConfig = {
 				},
 			},
 		},
-		polygon: {
-			url: `https://lb.drpc.org/ogrpc?network=polygon&dkey=${process.env.DRPC_API_KEY}`,
-			chainId: 137,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		sepolia: {
-			url: `https://eth-sepolia.g.alchemy.com/v2/Am1o01UUQ8B9zEjiPRg6iro-TfV6Os_m`,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-			timeout: 100000,
-		},
+		// polygon: {
+		// 	url: polygonUrl,
+		// 	chainId: 137,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// sepolia: {
+		// 	url: sepoliaUrl,
+		// 	chainId: 11155111,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+			// timeout: 100000,
+		// },
 		// arbitrum_sepolia: {
-		//   url: `https://lb.drpc.org/ogrpc?network=arbitrum-sepolia&dkey=${process.env.DRPC_API_KEY}`,
+		//   url: arbitrumSepoliaUrl,
 		//   chainId: 421614,
 		//   accounts: [process.env.PRIVATE_KEY || ''],
 		// },
-		arbitrum: {
-			url: `https://lb.drpc.org/ogrpc?network=arbitrum&dkey=${process.env.DRPC_API_KEY}`,
-			chainId: 42161,
-			accounts: [process.env.PRIVATE_KEY || ''],
-		},
-		base_sepolia: {
-			url: `https://base-sepolia.core.chainstack.com/${process.env.CHAINSTACK_BASE_TEST_API_KEY}`,
-			chainId: 84532,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		bsc_testnet: {
-			url: `https://bsc-testnet.core.chainstack.com/${process.env.CHAINSTACK_BSC_TEST_API_KEY}`,
-			chainId: 97,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		polygon_amoy: {
-			url: `https://lb.drpc.org/ogrpc?network=polygon-amoy&dkey=${process.env.DRPC_API_KEY}`,
-			chainId: 80002,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		local: {
-			url: `http://127.0.0.1:8545`,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		mainnet: {
-			url: `https://lb.drpc.org/ogrpc?network=ethereum=${process.env.DRPC_API_KEY}`,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		bsc: {
-			url: `https://lb.drpc.org/ogrpc?network=bsc&dkey=${process.env.DRPC_API_KEY}`,
-			chainId: 56,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
-		base: {
-			url: `https://lb.drpc.org/ogrpc?network=base&dkey=${process.env.DRPC_API_KEY}`,
-			chainId: 8453,
-			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		},
+		// arbitrum: {
+		// 	url: arbitrumUrl,
+		// 	chainId: 42161,
+		// 	accounts: [process.env.PRIVATE_KEY || ''],
+		// },
+		// base_sepolia: {
+		// 	url: baseSepoliaUrl,
+		// 	chainId: 84532,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// bsc_testnet: {
+		// 	url: bscTestnetUrl,
+		// 	chainId: 97,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// polygon_amoy: {
+		// 	url: polygonAmoyUrl,
+		// 	chainId: 80002,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// local: {
+		// 	url: `http://127.0.0.1:8545`,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// mainnet: {
+		// 	url: mainnetUrl,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// bsc: {
+		// 	url: bscUrl,
+		// 	chainId: 56,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
+		// base: {
+		// 	url: baseUrl,
+		// 	chainId: 8453,
+		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		// },
 	},
 	gasReporter: {
 		enabled: process.env.REPORT_GAS !== undefined,
