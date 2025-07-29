@@ -5,7 +5,7 @@
  * Checks deployment status and validates configuration
  */
 
-import { RPCDiamondDeployer, RPCDiamondDeployerConfig, DeploymentStatus } from './scripts/setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer, RPCDiamondDeployerConfig, DeploymentStatus } from '../setup/rpc/RPCDiamondDeployer';
 import { ethers } from 'ethers';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';

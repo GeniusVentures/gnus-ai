@@ -5,7 +5,7 @@
  * Deploys GNUS.AI Diamond contracts using RPCDiamondDeployer
  */
 
-import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from './scripts/setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../setup/rpc/RPCDiamondDeployer';
 import { ethers } from 'ethers';
 import hre from 'hardhat';
 import * as dotenv from 'dotenv';
