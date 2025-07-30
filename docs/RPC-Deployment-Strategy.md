@@ -75,6 +75,7 @@ npx ts-node upgrade-rpc.ts quick
 ### Core Deployment Scripts
 
 #### `deploy-rpc.ts`
+
 Primary deployment script for initial diamond deployment.
 
 ```bash
@@ -93,6 +94,7 @@ npx ts-node deploy-rpc.ts quick [options]
 ```
 
 #### `upgrade-rpc.ts`
+
 Upgrade script for diamond contract upgrades.
 
 ```bash
@@ -107,6 +109,7 @@ npx ts-node upgrade-rpc.ts quick [options]
 ```
 
 #### `status-rpc.ts`
+
 Status checking and validation script.
 
 ```bash
@@ -122,6 +125,7 @@ npx ts-node status-rpc.ts quick [options]
 ```
 
 #### `verify-rpc.ts`
+
 Contract verification and integrity validation.
 
 ```bash
@@ -139,6 +143,7 @@ npx ts-node verify-rpc.ts quick [options]
 ```
 
 #### `deploy-rpc-manual.ts`
+
 Interactive manual deployment with step-by-step confirmations.
 
 ```bash
@@ -172,6 +177,7 @@ npx ts-node deploy-rpc-manual.ts interactive
 ### Network Examples
 
 #### Ethereum Sepolia
+
 ```bash
 NETWORK_NAME=sepolia
 RPC_URL=https://sepolia.infura.io/v3/your-project-id
@@ -179,6 +185,7 @@ CHAIN_ID=11155111
 ```
 
 #### Polygon Amoy
+
 ```bash
 NETWORK_NAME=polygon-amoy
 RPC_URL=https://rpc-amoy.polygon.technology
@@ -186,6 +193,7 @@ CHAIN_ID=80002
 ```
 
 #### Base Sepolia
+
 ```bash
 NETWORK_NAME=base-sepolia
 RPC_URL=https://sepolia.base.org
