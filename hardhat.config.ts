@@ -238,12 +238,12 @@ const config: HardhatUserConfig = {
 		// 	chainId: 137,
 		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
 		// },
-		// sepolia: {
-		// 	url: sepoliaUrl,
-		// 	chainId: 11155111,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-			// timeout: 100000,
-		// },
+		sepolia: {
+			url: sepoliaUrl,
+			chainId: 11155111,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+			timeout: 100000,
+		},
 		// arbitrum_sepolia: {
 		//   url: arbitrumSepoliaUrl,
 		//   chainId: 421614,

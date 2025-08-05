@@ -1,7 +1,7 @@
 {
   "name": "sepolia",
   "chainId": 11155111,
-  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/Am1o01UUQ8B9zEjiPRg6iro-TfV6Os_m",
+  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_PROJECT_ID",
   "blockExplorer": "https://sepolia.etherscan.io",
   "nativeCurrency": {
     "name": "Ether",

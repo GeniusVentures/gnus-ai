@@ -24,7 +24,7 @@ import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
-	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
+	const log: debug.Debugger = debug(`GNUSDeploy:log:${diamondName}`);
 	this.timeout(0);
 
 	const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();

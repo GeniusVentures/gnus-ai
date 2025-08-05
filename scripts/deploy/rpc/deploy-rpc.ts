@@ -5,7 +5,7 @@
  * Deploys GNUS.AI Diamond contracts using RPCDiamondDeployer
  */
 
-import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/rpc/RPCDiamondDeployer';
 import { ethers } from 'ethers';
 import hre from 'hardhat';
 import * as dotenv from 'dotenv';
@@ -27,15 +27,17 @@ program
  */
 interface DeploymentOptions {
   diamondName: string;
-  networkName?: string;
-  rpcUrl?: string;
+  networkName: string;
   privateKey?: string;
   gasLimitMultiplier?: number;
   maxRetries?: number;
   retryDelayMs?: number;
+  verbose?: boolean;
+  useHardhatConfig?: boolean;
+  // Legacy options for backward compatibility
+  rpcUrl?: string;
   configPath?: string;
   deploymentsPath?: string;
-  verbose?: boolean;
 }
 
 /**
@@ -45,15 +47,22 @@ function validateOptions(options: DeploymentOptions): void {
   const errors: string[] = [];
 
   if (!options.diamondName) {
-    errors.push('Diamond name is required (--diamond-name or DIAMOND_NAME)');
+    errors.push('Diamond name is required (--diamond-name or first argument)');
   }
 
-  if (!options.rpcUrl) {
-    errors.push('RPC URL is required (--rpc-url or RPC_URL)');
+  if (!options.networkName) {
+    errors.push('Network name is required (--network-name or second argument)');
   }
 
-  if (!options.privateKey) {
-    errors.push('Private key is required (--private-key or PRIVATE_KEY)');
+  if (!options.privateKey && !process.env.PRIVATE_KEY && !process.env.TEST_PRIVATE_KEY) {
+    errors.push('Private key is required (--private-key, PRIVATE_KEY, or TEST_PRIVATE_KEY environment variable)');
+  }
+
+  // Additional validation for legacy mode
+  if (options.useHardhatConfig === false) {
+    if (!options.rpcUrl && !process.env.RPC_URL) {
+      errors.push('RPC URL is required when hardhat config is disabled (--rpc-url or RPC_URL environment variable)');
+    }
   }
 
   if (errors.length > 0) {
@@ -64,14 +73,39 @@ function validateOptions(options: DeploymentOptions): void {
 }
 
 /**
- * Creates configuration from options
+ * Creates configuration from options using hardhat configurations
  */
 function createConfig(options: DeploymentOptions): RPCDiamondDeployerConfig {
+  const privateKey = options.privateKey || process.env.PRIVATE_KEY || process.env.TEST_PRIVATE_KEY!;
+  
+  // Use hardhat configuration if requested (default) or if no legacy options provided
+  if (options.useHardhatConfig !== false && !options.rpcUrl) {
+    console.log(chalk.blue('📋 Using hardhat configuration for diamond and network settings'));
+    
+    try {
+      return RPCDiamondDeployer.createConfigFromHardhat(
+        options.diamondName,
+        options.networkName,
+        privateKey,
+        {
+          verbose: options.verbose,
+          gasLimitMultiplier: options.gasLimitMultiplier,
+          maxRetries: options.maxRetries,
+          retryDelayMs: options.retryDelayMs,
+        }
+      );
+    } catch (error) {
+      console.error(chalk.red(`❌ Failed to load hardhat configuration: ${(error as Error).message}`));
+      console.log(chalk.yellow('ℹ️  Falling back to manual configuration...'));
+    }
+  }
+  
+  // Legacy configuration method
   const config: RPCDiamondDeployerConfig = {
     diamondName: options.diamondName,
-    rpcUrl: options.rpcUrl!,
-    privateKey: options.privateKey!,
-    networkName: options.networkName || 'unknown',
+    rpcUrl: options.rpcUrl || process.env.RPC_URL!,
+    privateKey,
+    networkName: options.networkName,
     chainId: 0, // Will be auto-detected
     verbose: options.verbose || false,
     gasLimitMultiplier: options.gasLimitMultiplier,
@@ -211,8 +245,38 @@ async function deployDiamond(options: DeploymentOptions): Promise<void> {
 
 // CLI command setup
 program
-  .command('deploy')
-  .description('Deploy a diamond using RPC')
+  .command('deploy [diamondName] [networkName]')
+  .description('Deploy a diamond using hardhat configuration')
+  .option('-k, --private-key <key>', 'Private key for deployment', process.env.PRIVATE_KEY)
+  .option('-r, --rpc-url <url>', 'RPC endpoint URL (required when hardhat config disabled)', process.env.RPC_URL)
+  .option('-g, --gas-limit-multiplier <multiplier>', 'Gas limit multiplier (1.0-2.0)', 
+    val => parseFloat(val), parseFloat(process.env.GAS_LIMIT_MULTIPLIER || '1.2'))
+  .option('-m, --max-retries <retries>', 'Maximum number of retries (1-10)', 
+    val => parseInt(val), parseInt(process.env.MAX_RETRIES || '3'))
+  .option('-t, --retry-delay-ms <delay>', 'Retry delay in milliseconds (100-30000)', 
+    val => parseInt(val), parseInt(process.env.RETRY_DELAY_MS || '2000'))
+  .option('--no-hardhat-config', 'Disable hardhat configuration integration')
+  .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
+  .action(async (diamondName: string, networkName: string, options: any) => {
+    const deployOptions: DeploymentOptions = {
+      diamondName: diamondName || process.env.DIAMOND_NAME || '',
+      networkName: networkName || process.env.NETWORK_NAME || '',
+      privateKey: options.privateKey,
+      rpcUrl: options.rpcUrl,
+      gasLimitMultiplier: options.gasLimitMultiplier,
+      maxRetries: options.maxRetries,
+      retryDelayMs: options.retryDelayMs,
+      useHardhatConfig: options.hardhatConfig,
+      verbose: options.verbose,
+    };
+    
+    await deployDiamond(deployOptions);
+  });
+
+// Legacy deploy command for backward compatibility
+program
+  .command('deploy-legacy')
+  .description('Deploy a diamond using legacy configuration (manual RPC setup)')
   .option('-d, --diamond-name <name>', 'Name of the diamond to deploy', process.env.DIAMOND_NAME)
   .option('-r, --rpc-url <url>', 'RPC endpoint URL', process.env.RPC_URL)
   .option('-k, --private-key <key>', 'Private key for deployment', process.env.PRIVATE_KEY)
@@ -227,39 +291,34 @@ program
     val => parseInt(val), parseInt(process.env.RETRY_DELAY_MS || '2000'))
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
   .action(async (options: DeploymentOptions) => {
+    // Force legacy mode
+    options.useHardhatConfig = false;
     await deployDiamond(options);
   });
 
-// Quick deploy command that uses environment variables
+// Quick deploy command using environment variables with hardhat integration
 program
   .command('quick')
-  .description('Quick deployment using environment variables')
+  .description('Quick deployment using environment variables and hardhat configuration')
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
   .action(async (options: { verbose?: boolean }) => {
-    try {
-      const config = RPCDiamondDeployer.createConfigFromEnv({ verbose: options.verbose });
-      
-      await deployDiamond({
-        diamondName: config.diamondName,
-        rpcUrl: config.rpcUrl,
-        privateKey: config.privateKey,
-        networkName: config.networkName,
-        gasLimitMultiplier: config.gasLimitMultiplier,
-        maxRetries: config.maxRetries,
-        retryDelayMs: config.retryDelayMs,
-        configPath: config.configFilePath,
-        deploymentsPath: config.deploymentsPath,
-        verbose: config.verbose,
-      });
-    } catch (error) {
-      console.error(chalk.red('❌ Failed to create configuration from environment:'));
-      console.error(chalk.red(`   ${(error as Error).message}`));
-      console.error(chalk.yellow('\n💡 Make sure you have set the required environment variables:'));
-      console.error(chalk.yellow('   - DIAMOND_NAME'));
-      console.error(chalk.yellow('   - RPC_URL'));
-      console.error(chalk.yellow('   - PRIVATE_KEY'));
+    const diamondName = process.env.DIAMOND_NAME;
+    const networkName = process.env.NETWORK_NAME;
+    
+    if (!diamondName || !networkName) {
+      console.error(chalk.red('❌ Required environment variables missing:'));
+      if (!diamondName) console.error(chalk.red('   - DIAMOND_NAME'));
+      if (!networkName) console.error(chalk.red('   - NETWORK_NAME'));
+      console.error(chalk.yellow('\n💡 Example: DIAMOND_NAME=GeniusDiamond NETWORK_NAME=sepolia npx ts-node deploy-rpc.ts quick'));
       process.exit(1);
     }
+    
+    await deployDiamond({
+      diamondName,
+      networkName,
+      verbose: options.verbose,
+      useHardhatConfig: true,
+    });
   });
 
 // Parse command line arguments

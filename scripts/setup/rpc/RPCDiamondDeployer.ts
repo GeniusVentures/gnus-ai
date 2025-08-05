@@ -16,6 +16,8 @@ import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { join } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import 'hardhat-diamonds';
+import 'hardhat-multichain';
+import type { HardhatUserConfig } from 'hardhat/types';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 
@@ -23,6 +25,23 @@ import { generateDiamondAbiWithTypechain } from '../../generate-diamond-abi-with
 import { DiamondAbiGenerationOptions } from '../../diamond-abi-generator';
 
 dotenv.config();
+
+/**
+ * Network configuration interface matching hardhat.config.ts chainManager
+ */
+export interface HardhatNetworkConfig {
+  name: string;
+  chainId: number;
+  rpcUrl: string;
+  blockNumber?: number;
+  nativeCurrency?: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  defaultGasLimit?: number;
+  defaultMaxGasPrice?: string;
+}
 
 /**
  * Deployment status enumeration
@@ -178,6 +197,92 @@ export class RPCDiamondDeployer {
    */
   private static async create(config: RPCDiamondDeployerConfig, repository: DeploymentRepository): Promise<RPCDiamondDeployer> {
     return new RPCDiamondDeployer(config, repository);
+  }
+
+  /**
+   * Load diamond configuration from hardhat-diamonds
+   * 
+   * @param diamondName - Name of the diamond
+   * @returns DiamondPathsConfig from hardhat configuration
+   */
+  public static getDiamondConfigFromHardhat(diamondName: string): DiamondPathsConfig {
+    try {
+      return hre.diamonds.getDiamondConfig(diamondName);
+    } catch (error) {
+      throw new Error(`Failed to load diamond configuration for "${diamondName}": ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Load network configuration from hardhat chainManager
+   * 
+   * @param networkName - Name of the network
+   * @returns Network configuration from hardhat
+   */
+  public static getNetworkConfigFromHardhat(networkName: string): HardhatNetworkConfig {
+    try {
+      const chainManager = (hre.config as any).chainManager;
+      if (!chainManager || !chainManager.chains || !chainManager.chains[networkName]) {
+        throw new Error(`Network "${networkName}" not found in hardhat chainManager configuration`);
+      }
+      
+      const networkConfig = chainManager.chains[networkName];
+      return {
+        name: networkName,
+        chainId: networkConfig.chainId || 0,
+        rpcUrl: networkConfig.rpcUrl || '',
+        blockNumber: networkConfig.blockNumber,
+        nativeCurrency: networkConfig.nativeCurrency,
+        defaultGasLimit: networkConfig.defaultGasLimit,
+        defaultMaxGasPrice: networkConfig.defaultMaxGasPrice,
+      };
+    } catch (error) {
+      throw new Error(`Failed to load network configuration for "${networkName}": ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Create configuration using hardhat configurations
+   * 
+   * @param diamondName - Name of the diamond
+   * @param networkName - Name of the network
+   * @param privateKey - Private key for deployment
+   * @param overrides - Additional configuration overrides
+   * @returns Complete RPCDiamondDeployerConfig
+   */
+  public static createConfigFromHardhat(
+    diamondName: string,
+    networkName: string,
+    privateKey: string,
+    overrides: Partial<RPCDiamondDeployerConfig> = {}
+  ): RPCDiamondDeployerConfig {
+    // Get diamond configuration from hardhat-diamonds
+    const diamondConfig = this.getDiamondConfigFromHardhat(diamondName);
+    
+    // Get network configuration from hardhat chainManager
+    const networkConfig = this.getNetworkConfigFromHardhat(networkName);
+    
+    // Create base configuration
+    const config: RPCDiamondDeployerConfig = {
+      diamondName,
+      networkName,
+      chainId: networkConfig.chainId,
+      rpcUrl: networkConfig.rpcUrl,
+      privateKey,
+      verbose: false,
+      gasLimitMultiplier: 1.2,
+      maxRetries: 3,
+      retryDelayMs: 2000,
+      writeDeployedDiamondData: true,
+      // Use paths from hardhat diamond configuration
+      deploymentsPath: diamondConfig.deploymentsPath,
+      contractsPath: diamondConfig.contractsPath,
+      configFilePath: join(diamondConfig.deploymentsPath || 'diamonds', diamondName, `${diamondName.toLowerCase()}.config.json`),
+      // Apply overrides
+      ...overrides
+    };
+
+    return config;
   }
 
   /**
