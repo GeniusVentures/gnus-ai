@@ -1413,7 +1413,7 @@ __metadata:
     eslint-plugin-promise: "npm:^7.2.1"
     ethers: "npm:^6.4.0"
     globals: "npm:^15.14.0"
-    hardhat: "npm:^2.22.17"
+    hardhat: "npm:^2.26.2"
     hardhat-abi-exporter: "npm:^2.8.0"
     hardhat-diamonds: "https://github.com/GeniusVentures/hardhat-diamonds.git#develop"
     hardhat-gas-reporter: "npm:^1.0.8"
@@ -1565,12 +1565,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:~1.9.2":
-  version: 1.9.4
-  resolution: "@noble/curves@npm:1.9.4"
+"@noble/curves@npm:~1.8.1":
+  version: 1.8.2
+  resolution: "@noble/curves@npm:1.8.2"
   dependencies:
-    "@noble/hashes": "npm:1.8.0"
-  checksum: 10c0/c5ac42bf0c4ac822ee7c107f7b5647140a4209bce6929cdf21a38bc575be8aa91c130c4d4bea5a8a3100c53728fc0c6757382f005779cd14b10ea9a00f1a4592
+    "@noble/hashes": "npm:1.7.2"
+  checksum: 10c0/e7ef119b114681d6b7530b29a21f9bbea6fa6973bc369167da2158d05054cc6e6dbfb636ba89fad7707abacc150de30188b33192f94513911b24bdb87af50bbd
   languageName: node
   linkType: hard
 
@@ -1595,17 +1595,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.8.0, @noble/hashes@npm:^1, @noble/hashes@npm:^1.0.0, @noble/hashes@npm:^1.4.0":
-  version: 1.8.0
-  resolution: "@noble/hashes@npm:1.8.0"
-  checksum: 10c0/06a0b52c81a6fa7f04d67762e08b2c476a00285858150caeaaff4037356dd5e119f45b2a530f638b77a5eeca013168ec1b655db41bae3236cb2e9d511484fc77
+"@noble/hashes@npm:1.7.2, @noble/hashes@npm:~1.7.1":
+  version: 1.7.2
+  resolution: "@noble/hashes@npm:1.7.2"
+  checksum: 10c0/b1411eab3c0b6691d847e9394fe7f1fcd45eeb037547c8f97e7d03c5068a499b4aef188e8e717eee67389dca4fee17d69d7e0f58af6c092567b0b76359b114b2
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:2.0.0-beta.1":
-  version: 2.0.0-beta.1
-  resolution: "@noble/hashes@npm:2.0.0-beta.1"
-  checksum: 10c0/dde464e841efb008e40ec2bc8431fec4de11c4778b0491c03247aa05c4e900a8b5212c9c90043b836f47d3d9ff48c22419513ed8219fed380cdaa17e1fc4fddc
+"@noble/hashes@npm:^1, @noble/hashes@npm:^1.0.0, @noble/hashes@npm:^1.4.0":
+  version: 1.8.0
+  resolution: "@noble/hashes@npm:1.8.0"
+  checksum: 10c0/06a0b52c81a6fa7f04d67762e08b2c476a00285858150caeaaff4037356dd5e119f45b2a530f638b77a5eeca013168ec1b655db41bae3236cb2e9d511484fc77
   languageName: node
   linkType: hard
 
@@ -6263,9 +6263,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hardhat@npm:^2.22.17":
-  version: 2.26.0
-  resolution: "hardhat@npm:2.26.0"
+"hardhat@npm:^2.26.2":
+  version: 2.26.2
+  resolution: "hardhat@npm:2.26.2"
   dependencies:
     "@ethereumjs/util": "npm:^9.1.0"
     "@ethersproject/abi": "npm:^5.1.2"
@@ -6290,7 +6290,7 @@ __metadata:
     json-stream-stringify: "npm:^3.1.4"
     keccak: "npm:^3.0.2"
     lodash: "npm:^4.17.11"
-    micro-eth-signer: "npm:^0.16.0"
+    micro-eth-signer: "npm:^0.14.0"
     mnemonist: "npm:^0.38.0"
     mocha: "npm:^10.0.0"
     p-map: "npm:^4.0.0"
@@ -6316,7 +6316,7 @@ __metadata:
       optional: true
   bin:
     hardhat: internal/cli/bootstrap.js
-  checksum: 10c0/8f94dc8ecc73a590723a3b5d45e29e5fdd16ece0164ef705d571e8bd895944b14d7d294d17fd231b811438f69bd79465ec16252404cf00d39cfcb43f5a84ae35
+  checksum: 10c0/5a822dcefea6c3776ac16ad998fa0a5214442a8d9535c4485f5ea6ff2139e473a337fcf1f08ee161a05f1339ab1f79c6a5e21e9bef001b91ecca42634c0df88f
   languageName: node
   linkType: hard
 
@@ -7356,14 +7356,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micro-eth-signer@npm:^0.16.0":
-  version: 0.16.0
-  resolution: "micro-eth-signer@npm:0.16.0"
+"micro-eth-signer@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "micro-eth-signer@npm:0.14.0"
   dependencies:
-    "@noble/curves": "npm:~1.9.2"
-    "@noble/hashes": "npm:2.0.0-beta.1"
-    micro-packed: "npm:~0.7.3"
-  checksum: 10c0/daac43e339c3bcb4c1598bfb0cfa83878a25f3464bdbecbf1135dd8ffbe1fa687eec6e5fc82fb5a8d007b5fafcae682f66cddee24724c75c95019625d735a36f
+    "@noble/curves": "npm:~1.8.1"
+    "@noble/hashes": "npm:~1.7.1"
+    micro-packed: "npm:~0.7.2"
+  checksum: 10c0/62c90d54d2b97cb4eaf713c69bc4ceb5903012d0237c26f0966076cfb89c4527de68b395e1bc29e6f237152ce08f7b551fb57b332003518a1331c2c0890fb164
   languageName: node
   linkType: hard
 
@@ -7374,7 +7374,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micro-packed@npm:~0.7.3":
+"micro-packed@npm:~0.7.2":
   version: 0.7.3
   resolution: "micro-packed@npm:0.7.3"
   dependencies:

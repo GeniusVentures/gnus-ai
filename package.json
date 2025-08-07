@@ -61,7 +61,7 @@
     "eslint-plugin-promise": "^7.2.1",
     "ethers": "^6.4.0",
     "globals": "^15.14.0",
-    "hardhat": "^2.22.17",
+    "hardhat": "^2.26.2",
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-diamonds": "https://github.com/GeniusVentures/hardhat-diamonds.git#develop",
     "hardhat-gas-reporter": "^1.0.8",
