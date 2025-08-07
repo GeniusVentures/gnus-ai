@@ -7,6 +7,7 @@
 
 import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/rpc/RPCDiamondDeployer';
 import { ethers } from 'ethers';
+import hre from 'hardhat';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 import { Command } from 'commander';
@@ -38,6 +39,7 @@ interface VerifyOptions {
   validateAbi?: boolean;
   validateSelectors?: boolean;
   compareOnChain?: boolean;
+  useHardhatConfig?: boolean;
 }
 
 /**
@@ -50,12 +52,19 @@ function validateOptions(options: VerifyOptions): void {
     errors.push('Diamond name is required (--diamond-name or DIAMOND_NAME)');
   }
 
-  if (!options.rpcUrl) {
-    errors.push('RPC URL is required (--rpc-url or RPC_URL)');
+  if (!options.networkName) {
+    errors.push('Network name is required (--network-name or NETWORK_NAME)');
   }
 
-  if (!options.privateKey) {
-    errors.push('Private key is required (--private-key or PRIVATE_KEY)');
+  if (!options.privateKey && !process.env.PRIVATE_KEY && !process.env.TEST_PRIVATE_KEY) {
+    errors.push('Private key is required (--private-key, PRIVATE_KEY, or TEST_PRIVATE_KEY environment variable)');
+  }
+
+  // Additional validation for legacy mode
+  if (options.useHardhatConfig === false) {
+    if (!options.rpcUrl && !process.env.RPC_URL) {
+      errors.push('RPC URL is required when hardhat config is disabled (--rpc-url or RPC_URL environment variable)');
+    }
   }
 
   if (errors.length > 0) {
@@ -66,13 +75,35 @@ function validateOptions(options: VerifyOptions): void {
 }
 
 /**
- * Creates configuration from options
+ * Creates configuration from options using hardhat configurations
  */
 function createConfig(options: VerifyOptions): RPCDiamondDeployerConfig {
+  const privateKey = options.privateKey || process.env.PRIVATE_KEY || process.env.TEST_PRIVATE_KEY!;
+  
+  // Use hardhat configuration if requested (default) or if no legacy options provided
+  if (options.useHardhatConfig !== false && !options.rpcUrl) {
+    console.log(chalk.blue('📋 Using hardhat configuration for diamond and network settings'));
+    
+    try {
+      return RPCDiamondDeployer.createConfigFromHardhat(
+        options.diamondName,
+        options.networkName || 'unknown',
+        privateKey,
+        {
+          verbose: options.verbose,
+        }
+      );
+    } catch (error) {
+      console.error(chalk.red(`❌ Failed to load hardhat configuration: ${(error as Error).message}`));
+      console.log(chalk.yellow('ℹ️  Falling back to manual configuration...'));
+    }
+  }
+  
+  // Legacy configuration method
   const config: RPCDiamondDeployerConfig = {
     diamondName: options.diamondName,
-    rpcUrl: options.rpcUrl!,
-    privateKey: options.privateKey!,
+    rpcUrl: options.rpcUrl || process.env.RPC_URL!,
+    privateKey,
     networkName: options.networkName || 'unknown',
     chainId: 0, // Will be auto-detected
     verbose: options.verbose || false,
@@ -386,14 +417,11 @@ async function verifyDeployment(options: VerifyOptions): Promise<void> {
 
 // CLI command setup
 program
-  .command('verify')
-  .description('Verify diamond deployment')
-  .option('-d, --diamond-name <name>', 'Name of the diamond to verify', process.env.DIAMOND_NAME)
-  .option('-r, --rpc-url <url>', 'RPC endpoint URL', process.env.RPC_URL)
-  .option('-k, --private-key <key>', 'Private key', process.env.PRIVATE_KEY)
-  .option('-n, --network-name <name>', 'Network name', process.env.NETWORK_NAME)
-  .option('-c, --config-path <path>', 'Path to diamond configuration file', process.env.DIAMOND_CONFIG_PATH)
-  .option('-p, --deployments-path <path>', 'Path to deployments directory', process.env.DEPLOYMENTS_PATH)
+  .command('verify [diamondName] [networkName]')
+  .description('Verify diamond deployment using hardhat configuration')
+  .option('-k, --private-key <key>', 'Private key for verification', process.env.PRIVATE_KEY)
+  .option('-r, --rpc-url <url>', 'RPC endpoint URL (required when hardhat config disabled)', process.env.RPC_URL)
+  .option('--no-hardhat-config', 'Disable hardhat configuration integration')
   .option('--etherscan-api-key <key>', 'Etherscan API key for contract verification', process.env.ETHERSCAN_API_KEY)
   .option('--block-explorer-url <url>', 'Block explorer URL', process.env.BLOCK_EXPLORER_URL)
   .option('--verify-contracts', 'Show contract verification information')
@@ -401,68 +429,84 @@ program
   .option('--validate-selectors', 'Validate function selectors')
   .option('--compare-on-chain', 'Compare with on-chain state')
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
-  .action(async (options: VerifyOptions) => {
-    await verifyDeployment(options);
+  .action(async (diamondName: string, networkName: string, options: any) => {
+    const verifyOptions: VerifyOptions = {
+      diamondName: diamondName || process.env.DIAMOND_NAME || '',
+      networkName: networkName || process.env.NETWORK_NAME || '',
+      privateKey: options.privateKey,
+      rpcUrl: options.rpcUrl,
+      useHardhatConfig: options.hardhatConfig,
+      verbose: options.verbose,
+      etherscanApiKey: options.etherscanApiKey,
+      blockExplorerUrl: options.blockExplorerUrl,
+      verifyContracts: options.verifyContracts,
+      validateAbi: options.validateAbi,
+      validateSelectors: options.validateSelectors,
+      compareOnChain: options.compareOnChain,
+    };
+    
+    await verifyDeployment(verifyOptions);
   });
 
 // Full verification command
 program
-  .command('full')
-  .description('Perform full verification (all checks)')
-  .option('-d, --diamond-name <name>', 'Name of the diamond to verify', process.env.DIAMOND_NAME)
-  .option('-r, --rpc-url <url>', 'RPC endpoint URL', process.env.RPC_URL)
-  .option('-k, --private-key <key>', 'Private key', process.env.PRIVATE_KEY)
-  .option('-n, --network-name <name>', 'Network name', process.env.NETWORK_NAME)
-  .option('-c, --config-path <path>', 'Path to diamond configuration file', process.env.DIAMOND_CONFIG_PATH)
-  .option('-p, --deployments-path <path>', 'Path to deployments directory', process.env.DEPLOYMENTS_PATH)
+  .command('full [diamondName] [networkName]')
+  .description('Perform full verification (all checks) using hardhat configuration')
+  .option('-k, --private-key <key>', 'Private key for verification', process.env.PRIVATE_KEY)
+  .option('-r, --rpc-url <url>', 'RPC endpoint URL (required when hardhat config disabled)', process.env.RPC_URL)
+  .option('--no-hardhat-config', 'Disable hardhat configuration integration')
   .option('--etherscan-api-key <key>', 'Etherscan API key for contract verification', process.env.ETHERSCAN_API_KEY)
   .option('--block-explorer-url <url>', 'Block explorer URL', process.env.BLOCK_EXPLORER_URL)
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
-  .action(async (options: VerifyOptions) => {
-    // Enable all verification options
-    options.verifyContracts = true;
-    options.validateAbi = true;
-    options.validateSelectors = true;
-    options.compareOnChain = true;
+  .action(async (diamondName: string, networkName: string, options: any) => {
+    const verifyOptions: VerifyOptions = {
+      diamondName: diamondName || process.env.DIAMOND_NAME || '',
+      networkName: networkName || process.env.NETWORK_NAME || '',
+      privateKey: options.privateKey,
+      rpcUrl: options.rpcUrl,
+      useHardhatConfig: options.hardhatConfig,
+      verbose: options.verbose,
+      etherscanApiKey: options.etherscanApiKey,
+      blockExplorerUrl: options.blockExplorerUrl,
+      // Enable all verification options
+      verifyContracts: true,
+      validateAbi: true,
+      validateSelectors: true,
+      compareOnChain: true,
+    };
     
-    await verifyDeployment(options);
+    await verifyDeployment(verifyOptions);
   });
 
 // Quick verification using environment variables
 program
   .command('quick')
-  .description('Quick verification using environment variables')
+  .description('Quick verification using environment variables and hardhat configuration')
   .option('--validate-abi', 'Validate contract ABIs')
   .option('--validate-selectors', 'Validate function selectors')
   .option('--compare-on-chain', 'Compare with on-chain state')
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
-  .action(async (options: Partial<VerifyOptions>) => {
-    try {
-      const config = RPCDiamondDeployer.createConfigFromEnv({ verbose: options.verbose });
-      
-      await verifyDeployment({
-        diamondName: config.diamondName,
-        rpcUrl: config.rpcUrl,
-        privateKey: config.privateKey,
-        networkName: config.networkName,
-        configPath: config.configFilePath,
-        deploymentsPath: config.deploymentsPath,
-        verbose: config.verbose,
-        etherscanApiKey: process.env.ETHERSCAN_API_KEY,
-        blockExplorerUrl: process.env.BLOCK_EXPLORER_URL,
-        validateAbi: options.validateAbi,
-        validateSelectors: options.validateSelectors,
-        compareOnChain: options.compareOnChain,
-      });
-    } catch (error) {
-      console.error(chalk.red('❌ Failed to create configuration from environment:'));
-      console.error(chalk.red(`   ${(error as Error).message}`));
-      console.error(chalk.yellow('\n💡 Make sure you have set the required environment variables:'));
-      console.error(chalk.yellow('   - DIAMOND_NAME'));
-      console.error(chalk.yellow('   - RPC_URL'));
-      console.error(chalk.yellow('   - PRIVATE_KEY'));
+  .action(async (options: { validateAbi?: boolean; validateSelectors?: boolean; compareOnChain?: boolean; verbose?: boolean }) => {
+    const diamondName = process.env.DIAMOND_NAME;
+    const networkName = process.env.NETWORK_NAME;
+    
+    if (!diamondName || !networkName) {
+      console.error(chalk.red('❌ Required environment variables missing:'));
+      if (!diamondName) console.error(chalk.red('   - DIAMOND_NAME'));
+      if (!networkName) console.error(chalk.red('   - NETWORK_NAME'));
+      console.error(chalk.yellow('\n💡 Example: DIAMOND_NAME=GeniusDiamond NETWORK_NAME=sepolia npx ts-node verify-rpc.ts quick'));
       process.exit(1);
     }
+    
+    await verifyDeployment({
+      diamondName,
+      networkName,
+      verbose: options.verbose,
+      useHardhatConfig: true,
+      validateAbi: options.validateAbi,
+      validateSelectors: options.validateSelectors,
+      compareOnChain: options.compareOnChain,
+    });
   });
 
 // Parse command line arguments

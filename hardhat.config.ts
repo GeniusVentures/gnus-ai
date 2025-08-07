@@ -45,6 +45,7 @@ const {
 	BSC_BLOCK,
 	BSC_TESTNET_RPC,
 	BSC_TESTNET_BLOCK,
+  TEST_PRIVATE_KEY,
 } = process.env;
 
 // default blank RPC URLs will return an error. Must be configured in the .env file.

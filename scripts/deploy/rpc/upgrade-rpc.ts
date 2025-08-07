@@ -6,7 +6,8 @@
  */
 
 import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/rpc/RPCDiamondDeployer';
-import { ethers } from 'hardhat';
+import { ethers } from 'ethers';
+import hre from 'hardhat';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 import { Command } from 'commander';
@@ -38,6 +39,7 @@ interface UpgradeOptions {
   targetVersion?: number;
   force?: boolean;
   dryRun?: boolean;
+  useHardhatConfig?: boolean;
 }
 
 /**
@@ -50,12 +52,19 @@ function validateOptions(options: UpgradeOptions): void {
     errors.push('Diamond name is required (--diamond-name or DIAMOND_NAME)');
   }
 
-  if (!options.rpcUrl) {
-    errors.push('RPC URL is required (--rpc-url or RPC_URL)');
+  if (!options.networkName) {
+    errors.push('Network name is required (--network-name or NETWORK_NAME)');
   }
 
-  if (!options.privateKey) {
-    errors.push('Private key is required (--private-key or PRIVATE_KEY)');
+  if (!options.privateKey && !process.env.PRIVATE_KEY && !process.env.TEST_PRIVATE_KEY) {
+    errors.push('Private key is required (--private-key, PRIVATE_KEY, or TEST_PRIVATE_KEY environment variable)');
+  }
+
+  // Additional validation for legacy mode
+  if (options.useHardhatConfig === false) {
+    if (!options.rpcUrl && !process.env.RPC_URL) {
+      errors.push('RPC URL is required when hardhat config is disabled (--rpc-url or RPC_URL environment variable)');
+    }
   }
 
   if (errors.length > 0) {
@@ -66,13 +75,38 @@ function validateOptions(options: UpgradeOptions): void {
 }
 
 /**
- * Creates configuration from options
+ * Creates configuration from options using hardhat configurations
  */
 function createConfig(options: UpgradeOptions): RPCDiamondDeployerConfig {
+  const privateKey = options.privateKey || process.env.PRIVATE_KEY || process.env.TEST_PRIVATE_KEY!;
+  
+  // Use hardhat configuration if requested (default) or if no legacy options provided
+  if (options.useHardhatConfig !== false && !options.rpcUrl) {
+    console.log(chalk.blue('📋 Using hardhat configuration for diamond and network settings'));
+    
+    try {
+      return RPCDiamondDeployer.createConfigFromHardhat(
+        options.diamondName,
+        options.networkName || 'unknown',
+        privateKey,
+        {
+          verbose: options.verbose,
+          gasLimitMultiplier: options.gasLimitMultiplier,
+          maxRetries: options.maxRetries,
+          retryDelayMs: options.retryDelayMs,
+        }
+      );
+    } catch (error) {
+      console.error(chalk.red(`❌ Failed to load hardhat configuration: ${(error as Error).message}`));
+      console.log(chalk.yellow('ℹ️  Falling back to manual configuration...'));
+    }
+  }
+  
+  // Legacy configuration method
   const config: RPCDiamondDeployerConfig = {
     diamondName: options.diamondName,
-    rpcUrl: options.rpcUrl!,
-    privateKey: options.privateKey!,
+    rpcUrl: options.rpcUrl || process.env.RPC_URL!,
+    privateKey,
     networkName: options.networkName || 'unknown',
     chainId: 0, // Will be auto-detected
     verbose: options.verbose || false,
@@ -85,6 +119,49 @@ function createConfig(options: UpgradeOptions): RPCDiamondDeployerConfig {
   };
 
   return config;
+}
+
+/**
+ * Prints pre-upgrade information
+ */
+async function printPreUpgradeInfo(config: RPCDiamondDeployerConfig): Promise<void> {
+  console.log(chalk.blueBright('\n🔄 RPC Diamond Upgrade'));
+  console.log(chalk.blue('='.repeat(50)));
+  
+  try {
+    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    const signer = new ethers.Wallet(config.privateKey, provider);
+    const network = await provider.getNetwork();
+    const balance = await provider.getBalance(signer.address);
+    const gasPrice = (await provider.getFeeData()).gasPrice || 0n;
+
+    console.log(chalk.blue(`💎 Diamond Name: ${config.diamondName}`));
+    console.log(chalk.blue(`🌐 Network: ${network.name || 'unknown'} (Chain ID: ${Number(network.chainId)})`));
+    console.log(chalk.blue(`🔗 RPC URL: ${config.rpcUrl}`));
+    console.log(chalk.blue(`👤 Deployer: ${signer.address}`));
+    console.log(chalk.blue(`💰 Balance: ${Number(balance) / 1e18} ETH`));
+    console.log(chalk.blue(`⛽ Gas Price: ${Number(gasPrice) / 1e9} gwei`));
+    
+    if (config.gasLimitMultiplier) {
+      console.log(chalk.blue(`🔧 Gas Limit Multiplier: ${config.gasLimitMultiplier}`));
+    }
+    
+    if (config.maxRetries) {
+      console.log(chalk.blue(`🔄 Max Retries: ${config.maxRetries}`));
+    }
+    
+    console.log(chalk.blue('='.repeat(50)));
+
+    // Check balance is sufficient
+    const minBalance = ethers.parseEther('0.01'); // Minimum 0.01 ETH
+    if (balance < minBalance) {
+      console.log(chalk.yellow(`⚠️  Warning: Low balance detected. Minimum recommended: 0.01 ETH`));
+    }
+
+  } catch (error) {
+    console.error(chalk.red(`❌ Failed to get network information: ${(error as Error).message}`));
+    process.exit(1);
+  }
 }
 
 /**
@@ -183,16 +260,12 @@ async function upgradeDiamond(options: UpgradeOptions): Promise<void> {
     // Create configuration
     const config = createConfig(options);
 
-    console.log(chalk.blueBright('\n🔄 RPC Diamond Upgrade'));
-    console.log(chalk.blue('='.repeat(50)));
-    console.log(chalk.blue(`💎 Diamond Name: ${config.diamondName}`));
-    console.log(chalk.blue(`🔗 RPC URL: ${config.rpcUrl}`));
+    // Print pre-upgrade information
+    await printPreUpgradeInfo(config);
     
     if (options.dryRun) {
       console.log(chalk.yellow(`🧪 DRY RUN MODE - No changes will be made`));
     }
-    
-    console.log(chalk.blue('='.repeat(50)));
 
     // Initialize the RPCDiamondDeployer
     console.log(chalk.blue('🔧 Initializing RPCDiamondDeployer...'));
@@ -241,7 +314,7 @@ async function upgradeDiamond(options: UpgradeOptions): Promise<void> {
     console.log(chalk.blue('\n🚀 Starting diamond upgrade...'));
     const startTime = Date.now();
     
-    await deployer.deployDiamond(); // This will perform upgrade if needed
+    const upgradedDiamond = await deployer.deployDiamond(); // This will perform upgrade if needed
     
     const endTime = Date.now();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -266,8 +339,42 @@ async function upgradeDiamond(options: UpgradeOptions): Promise<void> {
 
 // CLI command setup
 program
-  .command('upgrade')
-  .description('Upgrade a diamond using RPC')
+  .command('upgrade [diamondName] [networkName]')
+  .description('Upgrade a diamond using hardhat configuration')
+  .option('-k, --private-key <key>', 'Private key for deployment', process.env.PRIVATE_KEY)
+  .option('-r, --rpc-url <url>', 'RPC endpoint URL (required when hardhat config disabled)', process.env.RPC_URL)
+  .option('-g, --gas-limit-multiplier <multiplier>', 'Gas limit multiplier (1.0-2.0)', 
+    val => parseFloat(val), parseFloat(process.env.GAS_LIMIT_MULTIPLIER || '1.2'))
+  .option('-m, --max-retries <retries>', 'Maximum number of retries (1-10)', 
+    val => parseInt(val), parseInt(process.env.MAX_RETRIES || '3'))
+  .option('-t, --retry-delay-ms <delay>', 'Retry delay in milliseconds (100-30000)', 
+    val => parseInt(val), parseInt(process.env.RETRY_DELAY_MS || '2000'))
+  .option('--no-hardhat-config', 'Disable hardhat configuration integration')
+  .option('--dry-run', 'Preview changes without executing them')
+  .option('--force', 'Force upgrade even if no changes detected')
+  .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
+  .action(async (diamondName: string, networkName: string, options: any) => {
+    const upgradeOptions: UpgradeOptions = {
+      diamondName: diamondName || process.env.DIAMOND_NAME || '',
+      networkName: networkName || process.env.NETWORK_NAME || '',
+      privateKey: options.privateKey,
+      rpcUrl: options.rpcUrl,
+      gasLimitMultiplier: options.gasLimitMultiplier,
+      maxRetries: options.maxRetries,
+      retryDelayMs: options.retryDelayMs,
+      useHardhatConfig: options.hardhatConfig,
+      verbose: options.verbose,
+      dryRun: options.dryRun,
+      force: options.force,
+    };
+    
+    await upgradeDiamond(upgradeOptions);
+  });
+
+// Legacy upgrade command for backward compatibility
+program
+  .command('upgrade-legacy')
+  .description('Upgrade a diamond using legacy configuration (manual RPC setup)')
   .option('-d, --diamond-name <name>', 'Name of the diamond to upgrade', process.env.DIAMOND_NAME)
   .option('-r, --rpc-url <url>', 'RPC endpoint URL', process.env.RPC_URL)
   .option('-k, --private-key <key>', 'Private key for deployment', process.env.PRIVATE_KEY)
@@ -286,43 +393,38 @@ program
   .option('--force', 'Force upgrade even if no changes detected')
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
   .action(async (options: UpgradeOptions) => {
+    // Force legacy mode
+    options.useHardhatConfig = false;
     await upgradeDiamond(options);
   });
 
-// Quick upgrade command that uses environment variables
+// Quick upgrade command using environment variables with hardhat integration
 program
   .command('quick')
-  .description('Quick upgrade using environment variables')
+  .description('Quick upgrade using environment variables and hardhat configuration')
   .option('--dry-run', 'Preview changes without executing them')
   .option('--force', 'Force upgrade even if no changes detected')
   .option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true')
   .action(async (options: { dryRun?: boolean; force?: boolean; verbose?: boolean }) => {
-    try {
-      const config = RPCDiamondDeployer.createConfigFromEnv({ verbose: options.verbose });
-      
-      await upgradeDiamond({
-        diamondName: config.diamondName,
-        rpcUrl: config.rpcUrl,
-        privateKey: config.privateKey,
-        networkName: config.networkName,
-        gasLimitMultiplier: config.gasLimitMultiplier,
-        maxRetries: config.maxRetries,
-        retryDelayMs: config.retryDelayMs,
-        configPath: config.configFilePath,
-        deploymentsPath: config.deploymentsPath,
-        verbose: config.verbose,
-        dryRun: options.dryRun,
-        force: options.force,
-      });
-    } catch (error) {
-      console.error(chalk.red('❌ Failed to create configuration from environment:'));
-      console.error(chalk.red(`   ${(error as Error).message}`));
-      console.error(chalk.yellow('\n💡 Make sure you have set the required environment variables:'));
-      console.error(chalk.yellow('   - DIAMOND_NAME'));
-      console.error(chalk.yellow('   - RPC_URL'));
-      console.error(chalk.yellow('   - PRIVATE_KEY'));
+    const diamondName = process.env.DIAMOND_NAME;
+    const networkName = process.env.NETWORK_NAME;
+    
+    if (!diamondName || !networkName) {
+      console.error(chalk.red('❌ Required environment variables missing:'));
+      if (!diamondName) console.error(chalk.red('   - DIAMOND_NAME'));
+      if (!networkName) console.error(chalk.red('   - NETWORK_NAME'));
+      console.error(chalk.yellow('\n💡 Example: DIAMOND_NAME=GeniusDiamond NETWORK_NAME=sepolia npx ts-node upgrade-rpc.ts quick'));
       process.exit(1);
     }
+    
+    await upgradeDiamond({
+      diamondName,
+      networkName,
+      verbose: options.verbose,
+      useHardhatConfig: true,
+      dryRun: options.dryRun,
+      force: options.force,
+    });
   });
 
 // Rollback information command
