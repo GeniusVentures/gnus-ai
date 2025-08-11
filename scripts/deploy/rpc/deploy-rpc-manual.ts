@@ -11,6 +11,7 @@ import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as readline from 'readline';
+import "./common";
 
 // Load environment variables
 dotenv.config();
