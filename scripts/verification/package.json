@@ -1,0 +1,48 @@
+{
+  "name": "diamonds-verification",
+  "version": "1.0.0",
+  "description": "Comprehensive modular verification system for GNUS.AI ERC-2535 Diamond contracts",
+  "main": "index.ts",
+  "types": "index.ts",
+  "bin": {
+    "verify-diamond": "./cli/verify-diamond.ts"
+  },
+  "scripts": {
+    "verify": "ts-node ./cli/verify-diamond.ts",
+    "build": "tsc --build",
+    "test": "jest",
+    "lint": "eslint . --ext .ts"
+  },
+  "keywords": [
+    "diamond",
+    "erc-2535",
+    "verification",
+    "ethereum",
+    "blockchain",
+    "gnus.ai"
+  ],
+  "author": "am0rfu5",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.0.0",
+    "commander": "^11.0.0",
+    "chalk": "^5.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gnus-ai/gnus-ai-repo.git",
+    "directory": "scripts/verification"
+  }
+}
