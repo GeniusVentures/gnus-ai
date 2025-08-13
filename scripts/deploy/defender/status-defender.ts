@@ -5,7 +5,7 @@
  * Monitors deployment and proposal status
  */
 
-import { DefenderDiamondDeployer, DefenderDiamondDeployerConfig, DeploymentStatus } from '../setup/DefenderDiamondDeployer';
+import { DefenderDiamondDeployer, DefenderDiamondDeployerConfig, DeploymentStatus } from '../../setup/DefenderDiamondDeployer';
 import { ethers } from 'hardhat';
 import hre from 'hardhat';
 import * as dotenv from 'dotenv';
