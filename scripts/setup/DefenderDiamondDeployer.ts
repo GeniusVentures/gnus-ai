@@ -18,7 +18,6 @@ import * as dotenv from 'dotenv';
 
 import { generateDiamondAbiWithTypechain } from '../generate-diamond-abi-with-typechain';
 import { DiamondAbiGenerationOptions } from '../diamond-abi-generator';
-import { deployments } from '../../notes/archive/deployments';
 
 dotenv.config();
 

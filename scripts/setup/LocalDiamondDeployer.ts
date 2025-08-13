@@ -1,12 +1,9 @@
 import {
   Diamond,
   DiamondDeployer,
-  DeploymentManager,
   LocalDeploymentStrategy,
   FileDeploymentRepository,
   DeploymentRepository,
-  impersonateSigner,
-  setEtherBalance,
   DiamondConfig,
   DiamondPathsConfig,
   cutKey,
