@@ -28,7 +28,7 @@ describe("RPC Deployment Integration", function () {
             maxRetries: 3,
             retryDelayMs: 1000,
             verbose: true,
-            deploymentsPath: "./deployments-test",
+            deploymentsPath: "./test-assets/deployments-test",
             configFilePath: "diamonds/GeniusDiamond/geniusdiamond.config.json",
             writeDeployedDiamondData: false, // Don't write to file system during tests
         };

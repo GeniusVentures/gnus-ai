@@ -6,7 +6,7 @@ import { DiamondAbiGenerationOptions } from '../../scripts/diamond-abi-generator
 import { join } from 'path';
 
 describe('Diamond ABI Integration Tests', () => {
-  const testOutputDir = './test-output/diamond-abi';
+  const testOutputDir = './test-assets/test-output/diamond-abi';
   const diamondName = 'GeniusDiamond';
 
   beforeEach(() => {

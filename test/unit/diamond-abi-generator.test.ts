@@ -4,7 +4,7 @@ import { join } from 'path';
 import { DiamondAbiGenerationOptions, generateDiamondAbi, ProjectDiamondAbiGenerator } from '../../scripts/diamond-abi-generator';
 
 describe('Diamond ABI Generator', () => {
-  const testOutputDir = './test-output/diamond-abi';
+  const testOutputDir = './test-assets/test-output/diamond-abi';
   const diamondName = 'GeniusDiamond';
 
   beforeEach(() => {
@@ -134,7 +134,7 @@ describe('Diamond ABI Generator', () => {
         diamondName: 'NonExistentDiamond',
         outputDir: testOutputDir,
         verbose: true,
-        diamondsPath: './test-diamonds'
+        diamondsPath: './test-assets/test-diamonds'
       });
 
       expect(result).to.have.property('abi');

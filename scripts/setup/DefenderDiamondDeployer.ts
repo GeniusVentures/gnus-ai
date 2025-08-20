@@ -380,7 +380,7 @@ export class DefenderDiamondDeployer {
       ...config,
       autoApprove: config.autoApprove ?? false,
       verbose: config.verbose ?? false,
-      deploymentsPath: config.deploymentsPath || join(process.cwd(), 'deployments'),
+      deploymentsPath: config.deploymentsPath || join(process.cwd(), 'diamonds'),
       configFilePath: config.configFilePath || `diamonds/${config.diamondName}`
     };
 

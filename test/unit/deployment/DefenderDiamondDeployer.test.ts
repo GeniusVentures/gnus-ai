@@ -27,7 +27,7 @@ describe("DefenderDiamondDeployer", function () {
             viaType: "Safe",
             autoApprove: false,
             verbose: false,
-            deploymentsPath: "./deployments-test",
+            deploymentsPath: "./test-assets/deployments-test",
             configFilePath: "diamonds/GeniusDiamond/geniusdiamond.config.json"
         };
     });
@@ -57,7 +57,7 @@ describe("DefenderDiamondDeployer", function () {
                 via: "0x9876543210fedcba9876543210fedcba98765432",
                 viaType: "Safe",
                 autoApprove: false,
-                deploymentsPath: "./deployments-test",
+                deploymentsPath: "./test-assets/deployments-test",
                 configFilePath: "diamonds/GeniusDiamond/geniusdiamond.config.json"
             };
 
@@ -80,7 +80,7 @@ describe("DefenderDiamondDeployer", function () {
                 relayerAddress: "0x1234567890abcdef1234567890abcdef12345678",
                 via: "0x9876543210fedcba9876543210fedcba98765432",
                 viaType: "Safe",
-                deploymentsPath: "./deployments-test",
+                deploymentsPath: "./test-assets/deployments-test",
                 configFilePath: "diamonds/GeniusDiamond/geniusdiamond.config.json"
             };
 
@@ -98,7 +98,7 @@ describe("DefenderDiamondDeployer", function () {
                 relayerAddress: "0x1234567890abcdef1234567890abcdef12345678",
                 via: "0x5555555555555555555555555555555555555555",
                 viaType: "EOA",
-                deploymentsPath: "./deployments-test",
+                deploymentsPath: "./test-assets/deployments-test",
                 configFilePath: "diamonds/GeniusDiamond/geniusdiamond.config.json"
             };
 

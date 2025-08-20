@@ -67,11 +67,11 @@ describe('DefenderDeployment Integration Tests', function () {
       provider: ethers.provider,
       signer: signer,
       // Add required DiamondConfig fields
-      deploymentsPath: 'test-diamonds',
+      deploymentsPath: 'test-assets/test-diamonds',
       contractsPath: 'contracts',
-      configFilePath: 'test-diamonds/GeniusDiamond/geniusdiamond.config.json',
-      callbacksPath: 'test-diamonds/GeniusDiamond/callbacks',
-      diamondAbiPath: 'test-diamonds/GeniusDiamond/abi',
+      configFilePath: 'test-assets/test-diamonds/GeniusDiamond/geniusdiamond.config.json',
+      callbacksPath: 'test-assets/test-diamonds/GeniusDiamond/callbacks',
+      diamondAbiPath: 'test-assets/test-diamonds/GeniusDiamond/abi',
       writeDeployedDiamondData: true
     };
   });  describe('End-to-End Deployment Workflow', function () {
