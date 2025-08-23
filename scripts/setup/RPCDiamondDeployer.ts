@@ -21,8 +21,8 @@ import type { HardhatUserConfig } from 'hardhat/types';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 
-import { generateDiamondAbiWithTypechain } from '../../generate-diamond-abi-with-typechain';
-import { DiamondAbiGenerationOptions } from '../../diamond-abi-generator';
+import { generateDiamondAbiWithTypechain } from '../generate-diamond-abi-with-typechain';
+import { DiamondAbiGenerationOptions } from '../diamond-abi-generator';
 
 dotenv.config();
 

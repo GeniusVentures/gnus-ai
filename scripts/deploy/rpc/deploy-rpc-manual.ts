@@ -5,7 +5,7 @@
  * Provides interactive deployment with user confirmations at each step
  */
 
-import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/RPCDiamondDeployer';
 import { ethers } from 'ethers';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';

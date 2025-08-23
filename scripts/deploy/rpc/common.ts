@@ -6,7 +6,7 @@
 import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
-import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer, RPCDiamondDeployerConfig } from '../../setup/RPCDiamondDeployer';
 
 /**
  * Base options interface for all RPC deployment scripts

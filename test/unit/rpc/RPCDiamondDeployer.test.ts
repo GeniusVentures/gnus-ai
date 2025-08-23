@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { RPCDiamondDeployer, RPCDiamondDeployerConfig, DeploymentStatus } from "../../../scripts/setup/rpc/RPCDiamondDeployer";
+import { RPCDiamondDeployer, RPCDiamondDeployerConfig, DeploymentStatus } from "../../../scripts/setup/RPCDiamondDeployer";
 import { ethers } from "hardhat";
 import sinon from "sinon";
 

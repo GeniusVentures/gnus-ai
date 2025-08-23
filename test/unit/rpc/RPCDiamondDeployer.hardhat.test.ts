@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { RPCDiamondDeployer } from "../../../scripts/setup/rpc/RPCDiamondDeployer";
+import { RPCDiamondDeployer } from "../../../scripts/setup/RPCDiamondDeployer";
 import hre from "hardhat";
 import 'hardhat-diamonds';
 

@@ -7,7 +7,7 @@
 
 import chalk from 'chalk';
 import { ethers } from 'ethers';
-import { RPCDiamondDeployer } from '../../setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
   VerifyOptions,
   setupProgram,

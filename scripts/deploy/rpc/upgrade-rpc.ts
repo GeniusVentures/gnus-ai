@@ -6,7 +6,7 @@
  */
 
 import chalk from 'chalk';
-import { RPCDiamondDeployer } from '../../setup/rpc/RPCDiamondDeployer';
+import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
   UpgradeOptions,
   setupProgram,
