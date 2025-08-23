@@ -209,7 +209,7 @@ npx ts-node scripts/deploy/rpc/verify-rpc.ts GeniusDiamond sepolia \
 | `--private-key` | Deployment private key | From .env |
 | `--verbose` | Detailed logging | false |
 | `--config-path` | Custom config file path | Auto-detected |
-| `--deployments-path` | Deployment records path | ./deployments |
+| `--deployments-path` | Deployment records path | ./diamonds |
 | `--gas-multiplier` | Gas limit multiplier | 1.2 |
 | `--max-retries` | Maximum retry attempts | 3 |
 | `--retry-delay` | Retry delay in ms | 2000 |

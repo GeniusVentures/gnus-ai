@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
-// import 'hardhat-diamond-abi'; // Disabled - using custom diamond ABI generator
 import 'hardhat-abi-exporter';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
@@ -10,6 +9,7 @@ import 'solidity-coverage';
 import '@nomicfoundation/hardhat-web3-v4';
 import 'hardhat-multichain';
 import 'hardhat-diamonds';
+import 'hardhat-diamonds-monitor';
 
 dotenv.config();
 
@@ -245,6 +245,40 @@ const config: HardhatUserConfig = {
 			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
 			timeout: 100000,
 		},
+		polygon: {
+			url: polygonUrl,
+			chainId: 137,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
+		mainnet: {
+			url: mainnetUrl,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
+		bsc: {
+			url: bscUrl,
+			chainId: 56,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
+		base: {
+			url: baseUrl,
+			chainId: 8453,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
+		polygon_amoy: {
+			url: polygonAmoyUrl,
+			chainId: 80002,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
+		base_sepolia: {
+			url: baseSepoliaUrl,
+			chainId: 84532,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
+		bsc_testnet: {
+			url: bscTestnetUrl,
+			chainId: 97,
+			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+		},
 		// arbitrum_sepolia: {
 		//   url: arbitrumSepoliaUrl,
 		//   chainId: 421614,
@@ -373,6 +407,28 @@ const config: HardhatUserConfig = {
 				contractsPath: 'contracts/gnus-ai',
 			},
 		},
+	},
+	diamondMonitor: {
+		defaultModules: ['function-selectors', 'diamond-structure'],
+		outputPath: './monitoring-reports',
+		enabledNetworks: ['sepolia', 'mainnet', 'polygon', 'polygon_amoy'],
+		moduleConfig: {
+			'function-selectors': {
+				strictMode: true,
+				ignoreMissingSelectors: false,
+				ignoreExtraSelectors: false,
+				allowAddressChanges: false
+			},
+			'diamond-structure': {
+				requireDiamondLoupe: true,
+				requireDiamondCut: true,
+				requireOwnership: true,
+				allowZeroAddressFacets: false,
+				minFacetCount: 1,
+				maxFacetCount: 50,
+				protocolVersionCheck: true
+			}
+		}
 	},
 };
 

@@ -1,5 +1,5 @@
 import { ethers, Contract, Provider, JsonRpcProvider, formatUnits } from 'ethers';
-import { deployments } from '../../notes/archive/deployments'; // Adjust the path to your `deployments.ts`
+import { deployments } from '../../notes/archive/deployments'; // ToDo this needs to go away since it is no longer valid 
 import * as dotenv from 'dotenv';
 
 dotenv.config();
