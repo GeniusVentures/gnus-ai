@@ -1,0 +1,6 @@
+{
+  "concurrent": true,
+  "chunkSize": 10,
+  "subTaskConcurrency": 2,
+  "renderer": "verbose"
+}

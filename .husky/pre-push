@@ -1,0 +1,72 @@
+#!/usr/bin/env sh
+
+# Check for emergency bypass
+if [ "$HUSKY_SKIP_HOOKS" = "1" ] || [ "$EMERGENCY_BYPASS" = "1" ]; then
+  echo "🚨 SECURITY HOOKS BYPASSED - EMERGENCY MODE"
+  echo "   Reason should be documented in emergency bypass log"
+  exit 0
+fi
+
+# Start performance monitoring
+yarn perf-monitor start pre-push
+
+# Pre-push security validation hook
+echo "🔒 Running comprehensive security validation before push..."
+
+success=true
+
+# Get the remote and branch information
+remote="$1"
+url="$2"
+
+# Run comprehensive security checks
+echo "📋 Running security audit..."
+if ! yarn npm audit --severity moderate > /dev/null 2>&1; then
+    echo "❌ Security audit failed. Please fix vulnerabilities before pushing."
+    success=false
+fi
+
+# Run dependency vulnerability scans (skip if no auth)
+echo "🔍 Running dependency vulnerability scans..."
+yarn snyk:test > /dev/null 2>&1 || echo "⚠️  Snyk scan skipped (authentication required)"
+./bin/osv-scanner --lockfile=yarn.lock --format=json > /dev/null 2>&1 || echo "⚠️  OSV scan completed"
+
+# Run code security scanning
+echo "🔎 Running code security analysis..."
+if ! yarn semgrep:scan > /dev/null 2>&1; then
+    echo "❌ Code security scan found issues. Please fix before pushing."
+    success=false
+fi
+
+# Run Solidity static analysis with Slither
+echo "🐍 Running Solidity static analysis with Slither..."
+if ! yarn slither:scan > /dev/null 2>&1; then
+    echo "❌ Slither analysis found issues. Please fix before pushing."
+    success=false
+fi
+
+# Run secret detection
+echo "🔑 Running secret detection..."
+if ! yarn git-secrets:scan > /dev/null 2>&1; then
+    echo "❌ Secret detection found potential leaks. Please review before pushing."
+    success=false
+fi
+
+# Run tests if pushing to main/develop branches
+current_branch=$(git branch --show-current 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+if [ "$current_branch" = "main" ] || [ "$current_branch" = "develop" ]; then
+    echo "🧪 Running tests for protected branch push..."
+    if ! yarn test > /dev/null 2>&1; then
+        echo "❌ Tests failed. Please fix tests before pushing to protected branch."
+        success=false
+    fi
+fi
+
+if [ "$success" = true ]; then
+    echo "✅ All security validations passed. Push proceeding..."
+    yarn perf-monitor end true
+else
+    echo "❌ Security validations failed. Push blocked."
+    yarn perf-monitor end false
+    exit 1
+fi

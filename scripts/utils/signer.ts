@@ -11,11 +11,11 @@ import { debuglog } from 'util';
  * @returns The impersonated signer object.
  */
 export async function impersonateSigner(signerAddress: string) {
-  await hre.network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [signerAddress], // Address of the account to impersonate
-  });
-  return await ethers.getSigner(signerAddress); // Returns the impersonated signer
+	await hre.network.provider.request({
+		method: 'hardhat_impersonateAccount',
+		params: [signerAddress], // Address of the account to impersonate
+	});
+	return await ethers.getSigner(signerAddress); // Returns the impersonated signer
 }
 
 /**
@@ -26,10 +26,10 @@ export async function impersonateSigner(signerAddress: string) {
  * @param amount - The desired balance as a `BigNumber`.
  */
 export async function setEtherBalance(address: string, amount: bigint) {
-  await hre.network.provider.send('hardhat_setBalance', [
-    address, // Address to modify the balance of
-    '0x' + amount.toString(16), // Amount to set, formatted as a hex string
-  ]);
+	await hre.network.provider.send('hardhat_setBalance', [
+		address, // Address to modify the balance of
+		'0x' + amount.toString(16), // Amount to set, formatted as a hex string
+	]);
 }
 
 /**
@@ -40,29 +40,32 @@ export async function setEtherBalance(address: string, amount: bigint) {
  * @returns The address of the old owner.
  */
 export const updateOwnerForTest = async (rootAddress: string) => {
-  // Retrieve the current signer in the Hardhat environment
-  const curOwner = (await ethers.getSigners())[0];
+	// Retrieve the current signer in the Hardhat environment
+	const curOwner = (await ethers.getSigners())[0];
 
-  // Get a reference to the GeniusOwnershipFacet contract at the specified root address
-  const ownership = await ethers.getContractAt('GeniusOwnershipFacet', rootAddress) as GeniusOwnershipFacet;
+	// Get a reference to the GeniusOwnershipFacet contract at the specified root address
+	const ownership = (await ethers.getContractAt(
+		'GeniusOwnershipFacet',
+		rootAddress,
+	)) as GeniusOwnershipFacet;
 
-  // Retrieve the current owner of the contract
-  const oldOwnerAddress = await ownership.owner();
+	// Retrieve the current owner of the contract
+	const oldOwnerAddress = await ownership.owner();
 
-  // Impersonate the old owner
-  const oldOwner = await impersonateSigner(oldOwnerAddress);
+	// Impersonate the old owner
+	const oldOwner = await impersonateSigner(oldOwnerAddress);
 
-  // If the old owner is not the current signer, transfer ownership to the current signer
-  if (oldOwnerAddress !== curOwner.address) {
-    debuglog(`Transferring ownership from ${oldOwnerAddress}`);
+	// If the old owner is not the current signer, transfer ownership to the current signer
+	if (oldOwnerAddress !== curOwner.address) {
+		debuglog(`Transferring ownership from ${oldOwnerAddress}`);
 
-    // Ensure the old owner has enough Ether to perform the ownership transfer
-    await setEtherBalance(oldOwnerAddress, toWei(10));
+		// Ensure the old owner has enough Ether to perform the ownership transfer
+		await setEtherBalance(oldOwnerAddress, toWei(10));
 
-    // Execute the ownership transfer from the old owner to the current signer
-    await ownership.connect(oldOwner).transferOwnership(curOwner.address);
-  }
+		// Execute the ownership transfer from the old owner to the current signer
+		await ownership.connect(oldOwner).transferOwnership(curOwner.address);
+	}
 
-  // Return the address of the old owner
-  return oldOwnerAddress;
+	// Return the address of the old owner
+	return oldOwnerAddress;
 };

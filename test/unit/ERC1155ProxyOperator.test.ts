@@ -11,183 +11,189 @@ import { multichain } from 'hardhat-multichain';
 
 // Type alias for provider compatibility
 type ProviderType = JsonRpcProvider | any;
-import { LocalDiamondDeployer, LocalDiamondDeployerConfig } from '../../scripts/setup/LocalDiamondDeployer';
 import {
-  DeployedDiamondData,
-  Diamond,
-  getDeployedFacetInterfaces,
-  logTx
-} from 'diamonds';
-import {
-  GeniusDiamond,
-} from '../../diamond-typechain-types';
+	LocalDiamondDeployer,
+	LocalDiamondDeployerConfig,
+} from '../../scripts/setup/LocalDiamondDeployer';
+import { DeployedDiamondData, Diamond, getDeployedFacetInterfaces, logTx } from 'diamonds';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 chai.use(chaiAsPromised);
 
 describe('ERC1155 Proxy Operator Tests', async function () {
-  const diamondName = 'GeniusDiamond';
-  const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
-  this.timeout(0); // Extended indefinitely for diamond deployment time
+	const diamondName = 'GeniusDiamond';
+	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
+	this.timeout(0); // Extended indefinitely for diamond deployment time
 
-  let networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
+	const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
 
-  if (process.argv.includes('test-multichain')) {
-    const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
-    if (networkNames.includes('hardhat')) {
-      networkProviders.set('hardhat', ethers.provider as any);
-    }
-  } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-    networkProviders.set('hardhat', ethers.provider as any);
-  }
+	if (process.argv.includes('test-multichain')) {
+		const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+		if (networkNames.includes('hardhat')) {
+			networkProviders.set('hardhat', ethers.provider as any);
+		}
+	} else if (process.argv.includes('test') || process.argv.includes('coverage')) {
+		networkProviders.set('hardhat', ethers.provider as any);
+	}
 
-  for (const [networkName, provider] of networkProviders.entries()) {
-    describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
-      let diamond: Diamond;
-      let signers: SignerWithAddress[];
-      let signer0: string;
-      let signer1: string;
-      let signer2: string;
-      let owner: string;
-      let ownerSigner: SignerWithAddress;
-      let geniusDiamond: GeniusDiamond;
-      let signer0Diamond: GeniusDiamond;
-      let signer1Diamond: GeniusDiamond;
-      let signer2Diamond: GeniusDiamond;
-      let ownerDiamond: GeniusDiamond;
+	for (const [networkName, provider] of networkProviders.entries()) {
+		describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
+			let diamond: Diamond;
+			let signers: SignerWithAddress[];
+			let signer0: string;
+			let signer1: string;
+			let signer2: string;
+			let owner: string;
+			let ownerSigner: SignerWithAddress;
+			let geniusDiamond: GeniusDiamond;
+			let signer0Diamond: GeniusDiamond;
+			let signer1Diamond: GeniusDiamond;
+			let signer2Diamond: GeniusDiamond;
+			let ownerDiamond: GeniusDiamond;
 
-      let ethersMultichain: typeof ethers;
-      let snapshotId: string;
+			let ethersMultichain: typeof ethers;
+			let snapshotId: string;
 
-      let erc1155ProxyOperator: GeniusDiamond;
-      let deployedDiamondData: DeployedDiamondData;
+			let erc1155ProxyOperator: GeniusDiamond;
+			let deployedDiamondData: DeployedDiamondData;
 
-      before(async function () {
-        const config = {
-          diamondName: diamondName,
-          networkName: networkName,
-          provider: provider,
-          chainId: (await provider.getNetwork()).chainId,
-          writeDeployedDiamondData: false,
-          configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
-        } as LocalDiamondDeployerConfig;
-        const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
-        await diamondDeployer.setVerbose(true);
-        diamond = await diamondDeployer.getDiamondDeployed();
-        deployedDiamondData = diamond.getDeployedDiamondData();
+			before(async function () {
+				const config = {
+					diamondName: diamondName,
+					networkName: networkName,
+					provider: provider,
+					chainId: (await provider.getNetwork()).chainId,
+					writeDeployedDiamondData: false,
+					configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
+				} as LocalDiamondDeployerConfig;
+				const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
+				await diamondDeployer.setVerbose(true);
+				diamond = await diamondDeployer.getDiamondDeployed();
+				deployedDiamondData = diamond.getDeployedDiamondData();
 
-        // Load the Diamond contract using the utility function
-        geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, deployedDiamondData.DiamondAddress!);
+				// Load the Diamond contract using the utility function
+				geniusDiamond = await loadDiamondContract<GeniusDiamond>(
+					diamond,
+					deployedDiamondData.DiamondAddress!,
+				);
 
+				// Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods
+				const proxyOperatorContract = await ethers.getContractAt(
+					'ERC1155ProxyOperator',
+					deployedDiamondData.DiamondAddress!,
+				);
 
-        // Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods
-        const proxyOperatorContract = await ethers.getContractAt('ERC1155ProxyOperator', deployedDiamondData.DiamondAddress!);
-        
-        // Create a hybrid contract that has both GNUSNFTFactory methods and proxy operator constants
-        erc1155ProxyOperator = {
-          ...geniusDiamond,
-          NFT_PROXY_OPERATOR_ROLE: proxyOperatorContract.NFT_PROXY_OPERATOR_ROLE,
-          connect: (signer: any) => ({
-            ...geniusDiamond.connect(signer),
-            NFT_PROXY_OPERATOR_ROLE: proxyOperatorContract.NFT_PROXY_OPERATOR_ROLE,
-          }),
-        } as any;
+				// Create a hybrid contract that has both GNUSNFTFactory methods and proxy operator constants
+				erc1155ProxyOperator = {
+					...geniusDiamond,
+					NFT_PROXY_OPERATOR_ROLE: proxyOperatorContract.NFT_PROXY_OPERATOR_ROLE,
+					connect: (signer: any) => ({
+						...geniusDiamond.connect(signer),
+						NFT_PROXY_OPERATOR_ROLE: proxyOperatorContract.NFT_PROXY_OPERATOR_ROLE,
+					}),
+				} as any;
 
-        ethersMultichain = ethers;
-        ethersMultichain.provider = provider as any;
+				ethersMultichain = ethers;
+				ethersMultichain.provider = provider as any;
 
-        // Retrieve the signers for the chain
-        signers = await ethersMultichain.getSigners();
-        signer0 = signers[0].address;
-        signer1 = signers[1].address;
-        signer2 = signers[2].address;
-        signer0Diamond = geniusDiamond.connect(signers[0]);
-        signer1Diamond = geniusDiamond.connect(signers[1]);
-        signer2Diamond = geniusDiamond.connect(signers[2]);
+				// Retrieve the signers for the chain
+				signers = await ethersMultichain.getSigners();
+				signer0 = signers[0].address;
+				signer1 = signers[1].address;
+				signer2 = signers[2].address;
+				signer0Diamond = geniusDiamond.connect(signers[0]);
+				signer1Diamond = geniusDiamond.connect(signers[1]);
+				signer2Diamond = geniusDiamond.connect(signers[2]);
 
-        // get the signer for the owner
-        owner = deployedDiamondData.DeployerAddress || '';
-        if (!owner) {
-          diamond.setSigner(signers[0]);
-          owner = signer0;
-          ownerSigner
-        }
-        ownerSigner = await ethersMultichain.getSigner(owner);
-        ownerDiamond = geniusDiamond.connect(ownerSigner);
+				// get the signer for the owner
+				owner = deployedDiamondData.DeployerAddress || '';
+				if (!owner) {
+					diamond.setSigner(signers[0]);
+					owner = signer0;
+					ownerSigner;
+				}
+				ownerSigner = await ethersMultichain.getSigner(owner);
+				ownerDiamond = geniusDiamond.connect(ownerSigner);
 
-        const ERC1155ProxyOperatorFactory = await ethers.getContractFactory('ERC1155ProxyOperator');
-        // erc1155ProxyOperator = ERC1155ProxyOperatorFactory.attach(ownerDiamond.address);
-        erc1155ProxyOperator = ownerDiamond;
-      });
+				const ERC1155ProxyOperatorFactory =
+					await ethers.getContractFactory('ERC1155ProxyOperator');
+				// erc1155ProxyOperator = ERC1155ProxyOperatorFactory.attach(ownerDiamond.address);
+				erc1155ProxyOperator = ownerDiamond;
+			});
 
-      beforeEach(async function () {
-        snapshotId = await provider.send('evm_snapshot', []);
-      });
+			beforeEach(async function () {
+				snapshotId = await provider.send('evm_snapshot', []);
+			});
 
-      afterEach(async () => {
-        if (snapshotId) {
-          await provider.send('evm_revert', [snapshotId]);
-        }
-      });
+			afterEach(async () => {
+				if (snapshotId) {
+					await provider.send('evm_revert', [snapshotId]);
+				}
+			});
 
-      describe('ERC1155ProxyOperator isApprovedForAll tests', function () {
+			describe('ERC1155ProxyOperator isApprovedForAll tests', function () {
+				it('should return false if operator does not have NFT_PROXY_OPERATOR_ROLE and is not approved', async function () {
+					expect(await erc1155ProxyOperator.isApprovedForAll(signer2, signer1)).to.be.false;
+				});
 
-        it('should return false if operator does not have NFT_PROXY_OPERATOR_ROLE and is not approved', async function () {
-          expect(await erc1155ProxyOperator.isApprovedForAll(signer2, signer1)).to.be.false;
-        });
+				// TODO: Implement NFT_PROXY_OPERATOR_ROLE test.
+				it('should return true if assigned operator has NFT_PROXY_OPERATOR_ROLE', async function () {
+					const NFT_PROXY_OPERATOR_ROLE =
+						await erc1155ProxyOperator.NFT_PROXY_OPERATOR_ROLE();
+					const txGrantRole = await erc1155ProxyOperator.grantRole(
+						NFT_PROXY_OPERATOR_ROLE,
+						signer1,
+					);
+					// Get the interface for the ERC1155ProxyOperator
+					const ifaceList = getDeployedFacetInterfaces(deployedDiamondData);
+					logTx(txGrantRole, 'grantRole', ifaceList);
+					const isApprovedForAll = await erc1155ProxyOperator.isApprovedForAll(
+						signer2,
+						signer1,
+					);
+					// expect(isApprovedForAll).to.be.true;
+				});
 
-        // TODO: Implement NFT_PROXY_OPERATOR_ROLE test.
-        it('should return true if assigned operator has NFT_PROXY_OPERATOR_ROLE', async function () {
-          const NFT_PROXY_OPERATOR_ROLE = await erc1155ProxyOperator.NFT_PROXY_OPERATOR_ROLE();
-          const txGrantRole = await erc1155ProxyOperator.grantRole(NFT_PROXY_OPERATOR_ROLE, signer1);
-          // Get the interface for the ERC1155ProxyOperator
-          const ifaceList = getDeployedFacetInterfaces(deployedDiamondData);
-          logTx(txGrantRole, 'grantRole', ifaceList);
-          const isApprovedForAll = await erc1155ProxyOperator.isApprovedForAll(signer2, signer1);
-          // expect(isApprovedForAll).to.be.true;
-        });
+				it('should return true if operator is approved', async function () {
+					await erc1155ProxyOperator.setApprovalForAll(signer1, true);
+					expect(await erc1155ProxyOperator.isApprovedForAll(owner, signer1)).to.be.true;
+				});
+			});
 
-        it('should return true if operator is approved', async function () {
-          await erc1155ProxyOperator.setApprovalForAll(signer1, true);
-          expect(await erc1155ProxyOperator.isApprovedForAll(owner, signer1)).to.be.true;
-        });
-      });
+			describe('totalSupply', function () {
+				// TODO: Implement ERC1155ProxyOperator totalSupply test.
+				// it('should return the total supply of a given token ID', async function () {
+				//   const tokenId = 1;
+				//   const amount = 100;
 
-      describe('totalSupply', function () {
-        // TODO: Implement ERC1155ProxyOperator totalSupply test.
-        // it('should return the total supply of a given token ID', async function () {
-        //   const tokenId = 1;
-        //   const amount = 100;
+				//   // Mint tokens to set the total supply
+				//   await erc1155ProxyOperator['mint(address,uint256,uint256,bytes)'](owner, tokenId, amount, '0x');
+				//   expect(await erc1155ProxyOperator['totalSupply(uint256)'](tokenId)).to.equal(amount);
+				// });
 
-        //   // Mint tokens to set the total supply
-        //   await erc1155ProxyOperator['mint(address,uint256,uint256,bytes)'](owner, tokenId, amount, '0x');
-        //   expect(await erc1155ProxyOperator['totalSupply(uint256)'](tokenId)).to.equal(amount);
-        // });
+				it('should return zero if no tokens have been minted for the given token ID', async function () {
+					const tokenId = 1;
+					expect(await erc1155ProxyOperator['totalSupply(uint256)'](tokenId)).to.equal(0);
+				});
+			});
 
-        it('should return zero if no tokens have been minted for the given token ID', async function () {
-          const tokenId = 1;
-          expect(await erc1155ProxyOperator['totalSupply(uint256)'](tokenId)).to.equal(0);
-        });
-      });
+			describe('creators', function () {
+				// TODO: Implement ERC1155ProxyOperator creators test.
+				// it('should return the creator of a given token ID', async function () {
+				// // Assign the creator role to the signer
+				//   const tokenId = 1;
+				//   const creator = signer1;
 
-      describe('creators', function () {
+				//   // Set the creator for the token ID
+				//   expect(await erc1155ProxyOperator.creators(tokenId)).to.equal(creator);
+				// });
 
-
-        // TODO: Implement ERC1155ProxyOperator creators test.
-        // it('should return the creator of a given token ID', async function () {
-        // // Assign the creator role to the signer 
-        //   const tokenId = 1;
-        //   const creator = signer1;
-
-        //   // Set the creator for the token ID
-        //   expect(await erc1155ProxyOperator.creators(tokenId)).to.equal(creator);
-        // });
-
-        it('should return the zero address if no creator has been set for the given token ID', async function () {
-          const tokenId = 1;
-          expect(await erc1155ProxyOperator.creators(tokenId)).to.equal(ZeroAddress);
-        });
-      });
-    });
-  };
+				it('should return the zero address if no creator has been set for the given token ID', async function () {
+					const tokenId = 1;
+					expect(await erc1155ProxyOperator.creators(tokenId)).to.equal(ZeroAddress);
+				});
+			});
+		});
+	}
 });

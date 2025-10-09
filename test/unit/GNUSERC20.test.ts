@@ -25,7 +25,9 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	type ProviderType = JsonRpcProvider | HardhatEthersProvider;
-	const networkProviders = (multichain.getProviders() as unknown as Map<string, ProviderType>) || new Map<string, ProviderType>();
+	const networkProviders =
+		(multichain.getProviders() as unknown as Map<string, ProviderType>) ||
+		new Map<string, ProviderType>();
 
 	if (process.argv.includes('test-multichain')) {
 		const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
@@ -59,15 +61,17 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 
 			before(async function () {
 				console.log('Starting GNUSERC20 test setup...');
-				
+
 				// Ensure diamond ABI is generated before any tests run
 				try {
 					console.log('Generating diamond ABI for test...');
 					const { exec } = await import('child_process');
 					const { promisify } = await import('util');
 					const execPromise = promisify(exec);
-					
-					await execPromise('npx ts-node scripts/generate-diamond-abi-with-typechain.ts GeniusDiamond');
+
+					await execPromise(
+						'npx ts-node scripts/generate-diamond-abi-with-typechain.ts GeniusDiamond',
+					);
 					console.log('Diamond ABI generated successfully for test');
 				} catch (error) {
 					console.log('Warning: Diamond ABI generation error:', error);
@@ -87,7 +91,10 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				const deployedDiamondData = diamond.getDeployedDiamondData();
 
 				// Load the Diamond contract using the utility function
-				geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, deployedDiamondData.DiamondAddress!);
+				geniusDiamond = await loadDiamondContract<GeniusDiamond>(
+					diamond,
+					deployedDiamondData.DiamondAddress!,
+				);
 
 				ethersMultichain = hre.ethers;
 				if ('_hardhatProvider' in provider) {
@@ -135,7 +142,9 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				const IERC20InterfaceID = getInterfaceID(IERC20UpgradeableInterface);
 				// Assert that the `geniusDiamond` contract supports the ERC20 interface.
 				assert(
-					await geniusDiamond?.supportsInterface('0x' + IERC20InterfaceID.toString(16).padStart(8, '0')),
+					await geniusDiamond?.supportsInterface(
+						'0x' + IERC20InterfaceID.toString(16).padStart(8, '0'),
+					),
 					"Doesn't support IERC20Upgradeable",
 				);
 
@@ -151,10 +160,10 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 
 			it('should verify MINTER role is set for the owner on all chains', async function () {
 				console.log(`Verifying MINTER role on chain: ${networkName}`);
-				const ownershipFacet = await ethersMultichain.getContractAt(
+				const ownershipFacet = (await ethersMultichain.getContractAt(
 					'GeniusOwnershipFacet',
-					await geniusDiamond.getAddress(), 
-				) as GeniusOwnershipFacet;
+					await geniusDiamond.getAddress(),
+				)) as GeniusOwnershipFacet;
 				const minterRole = await geniusDiamond.MINTER_ROLE();
 				const owner = await ownershipFacet.connect(ownerSigner).owner();
 				const hasMinterRole = await ownershipFacet.hasRole(minterRole, owner);
@@ -165,9 +174,7 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 				console.log(`Testing mint and transfer on chain: ${networkName}`);
 				// Fetch the owner's balance.
 				// This may be non-zero on forked chains so comparisons must take this into account.
-				const initBalance = await (
-					await geniusDiamond['balanceOf(address)'](owner)
-				);
+				const initBalance = await await geniusDiamond['balanceOf(address)'](owner);
 				// Mint GNUS tokens
 				await ownerDiamond['mint(address,uint256)'](owner, toWei(150));
 				const updatedOwnerBalance = await geniusDiamond['balanceOf(address)'](owner);

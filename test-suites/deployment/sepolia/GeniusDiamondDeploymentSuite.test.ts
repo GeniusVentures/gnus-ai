@@ -13,11 +13,10 @@
  * Copyright (c) 2025 GNUS.ai
  */
 describe('Genius Diamond Deployment Suite', function () {
-  // Run the GeniusDiamondDeploymentComparison tests first
-  describe('Genius Diamond Deployment Comparison Tests', function () {
-    require('./GeniusDiamondPreDeploymentComparison.test');
-    require('./GeniusDiamondDeployment.test');
-    require('./GeniusDiamondPostDeploymentComparison.test');
-
-  });
+	// Run the GeniusDiamondDeploymentComparison tests first
+	describe('Genius Diamond Deployment Comparison Tests', function () {
+		require('./GeniusDiamondPreDeploymentComparison.test');
+		require('./GeniusDiamondDeployment.test');
+		require('./GeniusDiamondPostDeploymentComparison.test');
+	});
 });

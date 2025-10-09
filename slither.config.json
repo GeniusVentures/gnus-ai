@@ -1,0 +1,15 @@
+{
+  "exclude_informational": true,
+  "exclude_optimization": true,
+  "exclude_low": true,
+  "exclude_medium": false,
+  "exclude_high": false,
+  "solc_remaps": [
+    "@openzeppelin/=node_modules/@openzeppelin/",
+    "@gnus.ai/=node_modules/@gnus.ai/"
+  ],
+  "hardhat_artifacts_directory": "artifacts",
+  "hardhat_cache_directory": "cache",
+  "filter_paths": "node_modules,artifacts,cache,diamond-abi,diamond-typechain-types,typechain-types,coverage,flat,test,test-assets,scripts,docs,contracts/gnus-ai/",
+  "disable_color": false
+}

@@ -1,4 +1,3 @@
-import hre from 'hardhat';
 import { JsonRpcProvider } from 'ethers';
 
 /**
@@ -16,7 +15,7 @@ async function waitForNetwork(url: string, timeout: number = 30000): Promise<voi
 			await provider.getBlockNumber(); // Check if the network is responding
 			console.log(`Network at ${url} is ready.`);
 			return;
-		} catch (error) {
+		} catch {
 			console.log(`Waiting for network at ${url}...`);
 			await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retrying
 		}

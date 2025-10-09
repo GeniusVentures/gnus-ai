@@ -1,0 +1,252 @@
+rules:
+
+  - id: diamond-selector-collision
+    patterns:
+      - pattern: diamondCut
+      - pattern-not: selectorExists
+    message: "Diamond facet addition without selector collision check. Ensure selectors don't conflict with existing functions."
+    severity: ERROR
+    languages: [solidity]
+
+  - id: unsafe-external-call
+    patterns:
+      - pattern: ".call{"
+      - pattern: require(success
+    message: "Unsafe external call without proper error handling. Consider using a safe wrapper or checking return data."
+    severity: WARNING
+    languages: [solidity]
+
+  - id: insecure-private-key
+    patterns:
+      - pattern-regex: (0x)?[0-9a-fA-F]{64}
+      - pattern-not-regex: 0x0{64}
+      - pattern-not-inside: |
+          // Test key
+          // Mock key
+          // Example key
+    message: "Potential private key detected in source code. Never commit private keys to version control."
+    severity: ERROR
+    languages: [solidity, typescript, javascript]
+
+  - id: unsafe-math-operation
+    patterns:
+      - pattern: $A * $B / $C
+    message: "Potential integer overflow/underflow in multiplication-division sequence. Consider using SafeMath or Solidity 0.8+ built-in checks."
+    severity: WARNING
+    languages: [solidity]
+
+  - id: missing-access-control
+    patterns:
+      - pattern: function $FUNC(...) public
+      - pattern-not: onlyOwner
+      - pattern-not: onlyAuthorized
+      - pattern-not: require(...)
+    message: "Public function without access control. Ensure proper authorization checks for sensitive operations."
+    severity: WARNING
+    languages: [solidity]
+
+  - id: reentrancy-risk
+    patterns:
+      - pattern: ".call{"
+      - pattern: "$STATE_CHANGE"
+    message: "Potential reentrancy vulnerability. State changes should occur before external calls (Checks-Effects-Interactions pattern)."
+    severity: ERROR
+    languages: [solidity]
+
+  - id: typescript-any-usage
+    patterns:
+      - pattern-regex: :\s*any\b
+      - pattern-not-regex: catch.*:\s*any
+      - pattern-not-regex: hardhatDiamondConfig.*any
+      - pattern-not-regex: iObjToString.*any
+    message: "Usage of 'any' type reduces type safety. Use specific types for better security and maintainability."
+    severity: INFO
+    languages: [typescript]
+
+  - id: insecure-random
+    patterns:
+      - pattern: Math.random()
+    message: "Using Math.random() for cryptographic purposes is insecure. Use cryptographically secure random number generation."
+    severity: ERROR
+    languages: [typescript, javascript]
+
+  - id: hard-coded-secret
+    patterns:
+      - pattern-regex: (api_key|apikey|secret|token|password|credential).*[:=].*['"][^'"]+['"]
+      - pattern-not-inside: |
+          // Example
+          // Test
+          // Mock
+          // Placeholder
+    message: "Hard-coded secret detected. Never commit secrets to version control. Use environment variables or secure vaults."
+    severity: ERROR
+    languages: [typescript, javascript]
+
+  # Diamond Proxy Specific Rules
+  - id: diamond-selector-clash
+    patterns:
+      - pattern: function $FUNC(...)
+      - pattern-inside: |
+          contract $CONTRACT is ... {
+              ...
+          }
+      - pattern-not: bytes4 public constant $SELECTOR = $VALUE;
+    message: "Diamond facet function without explicit selector declaration. Ensure no selector clashes in diamond cuts."
+    severity: WARNING
+    languages: [solidity]
+
+  - id: diamond-storage-violation
+    patterns:
+      - pattern-inside: |
+          contract $CONTRACT {
+              ...
+              $TYPE $STORAGE;
+              ...
+          }
+      - pattern-not-inside: |
+          library $LIB {
+              ...
+          }
+      - pattern-not: bytes32 constant $NAME = $VALUE;
+      - pattern-not: bytes4 constant $NAME = $VALUE;
+      - pattern-not: uint256 constant $NAME = $VALUE;
+      - pattern-not: address constant $NAME = $VALUE;
+      - pattern-not: string constant $NAME = $VALUE;
+    message: "Direct state variable in contract detected. Use diamond storage library pattern to avoid storage collisions in diamond proxies."
+    severity: ERROR
+    languages: [solidity]
+    
+  - id: diamond-storage-violation-2
+    patterns:
+      - pattern-regex: \bcontract\s+\w+\s*\{[\s\S]*?\w+\s+\w+\s*;
+      - pattern-not: LibDiamond
+    message: "Contract uses direct storage variables that may conflict with Diamond storage pattern. Use LibDiamond.diamondStorage() for upgrade-safe storage."
+    severity: ERROR
+    languages: [solidity]  
+
+  - id: unsafe-diamond-cut
+    patterns:
+      - pattern: diamondCut(...)
+      - pattern-not-inside: |
+          modifier onlyOwner() {
+              ...
+              _;
+          }
+    message: "Diamond cut operation without owner validation. Only contract owner should modify diamond facets."
+    severity: ERROR
+    languages: [solidity]
+
+  - id: missing-diamond-loupe
+    patterns:
+      - pattern: contract $CONTRACT is IDiamondLoupe {
+      - pattern-not: function facets() external view
+    message: "Diamond contract missing required IDiamondLoupe interface implementation."
+    severity: ERROR
+    languages: [solidity]
+
+  # Enhanced Access Control
+  - id: missing-access-control-modifier
+    patterns:
+      - pattern: function $FUNC(...)
+      - pattern-inside: |
+          contract $CONTRACT {
+              ...
+              function $FUNC(...) external {
+                  ...
+              }
+              ...
+          }
+      - pattern-not: modifier $MOD
+      - pattern-not: onlyOwner
+      - pattern-not: onlyAuthorized
+      - pattern-not: nonReentrant
+    message: "External function without access control modifier. Critical security risk for state-changing operations."
+    severity: ERROR
+    languages: [solidity]
+
+  # Gas Optimization and DoS Prevention
+  - id: unbounded-loop
+    patterns:
+      - pattern: for (... ; ... ; ...) {
+      - pattern-inside: |
+          function $FUNC(...) {
+              ...
+              for (... ; ... ; ...) {
+                  ...
+              }
+              ...
+          }
+      - pattern-not-inside: |
+          // Bounded by array length
+          // Gas limit checked
+    message: "Unbounded loop detected. Can cause DoS through gas exhaustion. Ensure loops have bounded iterations."
+    severity: WARNING
+    languages: [solidity]
+
+  - id: expensive-operation-in-loop
+    patterns:
+      - pattern-inside: |
+          for (... ; ... ; ...) {
+              $EXPENSIVE_OP
+          }
+      - pattern: |
+          .call{
+          .delegatecall{
+          .staticcall{
+    message: "Expensive external call inside loop. Can cause quadratic gas costs and DoS vulnerabilities."
+    severity: ERROR
+    languages: [solidity]
+
+  # TypeScript Security Enhancements
+  - id: unsafe-type-assertion
+    patterns:
+      - pattern: $EXPR as $TYPE
+      - pattern-not: $EXPR as const
+      - pattern-not-inside: |
+          // Type guard
+          // Known safe conversion
+    message: "Unsafe type assertion detected. Can bypass type safety and introduce runtime errors."
+    severity: WARNING
+    languages: [typescript]
+
+  - id: missing-error-handling
+    patterns:
+      - pattern: await $PROMISE
+      - pattern-not-inside: |
+          try {
+              ...
+          } catch ($ERR) {
+              ...
+          }
+      - pattern-not-inside: |
+          // Error handled elsewhere
+          // Expected to throw
+    message: "Unhandled promise rejection. Always handle errors in async operations."
+    severity: WARNING
+    languages: [typescript]
+
+  # ERC-2535 Specific Security
+  - id: diamond-init-missing-validation
+    patterns:
+      - pattern: function init(...)
+      - pattern-not: require(...)
+    message: "Diamond initialization function without input validation. Ensure proper validation of init parameters."
+    severity: WARNING
+    languages: [solidity]
+
+  - id: facet-address-zero
+    patterns:
+      - pattern: IDiamondCut.FacetCut(...)
+      - pattern-inside: |
+          $FACET.facetAddress = address(0)
+    message: "Facet cut with zero address. Can break diamond functionality. Use valid contract addresses only."
+    severity: ERROR
+    languages: [solidity]
+
+  # Additional Security Rules
+  - id: weak-encryption
+    patterns:
+      - pattern-regex: (md5|sha1|des|rc4)\(
+    message: "Weak cryptographic function detected. Use secure alternatives like SHA-256 or Keccak-256."
+    severity: ERROR
+    languages: [typescript, javascript, solidity]

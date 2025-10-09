@@ -44,7 +44,7 @@ const {
 	BSC_BLOCK,
 	BSC_TESTNET_RPC,
 	BSC_TESTNET_BLOCK,
-  TEST_PRIVATE_KEY,
+	TEST_PRIVATE_KEY,
 } = process.env;
 
 // default blank RPC URLs will return an error. Must be configured in the .env file.
@@ -193,10 +193,10 @@ const config: HardhatUserConfig = {
 							: undefined,
 					}
 				: undefined,
-        /* hardhat-multichain config  */
-        chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
-        // Chains without Hardhat built in definitions
-        chains: {     
+			/* hardhat-multichain config  */
+			chainId: MOCK_CHAIN_ID, // Sets the chain ID for the Hardhat network
+			// Chains without Hardhat built in definitions
+			chains: {
 				80002: {
 					hardforkHistory: {
 						london: 10000000,
@@ -406,7 +406,7 @@ const config: HardhatUserConfig = {
 				contractsPath: 'contracts/gnus-ai',
 			},
 		},
-	}
+	},
 };
 
 export default config;

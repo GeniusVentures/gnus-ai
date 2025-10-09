@@ -1,0 +1,24 @@
+{
+  "provenance": {
+    "project": "gnus-dao",
+    "version": "9069db0e60b1b71519064bfa9f51edc4156d4f63",
+    "timestamp": "2025-09-20T16:49:39.927Z",
+    "build": {
+      "node_version": "v20.15.0",
+      "platform": "linux",
+      "arch": "x64"
+    },
+    "artifacts": {},
+    "dependencies": {
+      "package_count": 0,
+      "yarn_lock_exists": false,
+      "yarn_lock_hash": null
+    }
+  },
+  "signature": {
+    "algorithm": "SHA256",
+    "signature": "42f30f509a7d62a858928542300a179bf372140ae368de75d0a588bed73e84a1",
+    "public_key": "GNUS-DAO-CI-SIGNER",
+    "timestamp": "2025-09-20T16:49:39.927Z"
+  }
+}
