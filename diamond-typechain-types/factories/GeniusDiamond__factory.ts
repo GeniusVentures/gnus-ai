@@ -18,7 +18,6 @@ const _abi = [
     ],
     name: "AccountBlacklisted",
     type: "event",
-    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -32,7 +31,6 @@ const _abi = [
     ],
     name: "AccountUnblacklisted",
     type: "event",
-    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -46,7 +44,6 @@ const _abi = [
     ],
     name: "AccountUnwhitelisted",
     type: "event",
-    _diamondFacet: "GNUSWhitelistFacet",
   },
   {
     anonymous: false,
@@ -60,7 +57,6 @@ const _abi = [
     ],
     name: "AccountWhitelisted",
     type: "event",
-    _diamondFacet: "GNUSWhitelistFacet",
   },
   {
     anonymous: false,
@@ -80,7 +76,6 @@ const _abi = [
     ],
     name: "AddToBlackList",
     type: "event",
-    _diamondFacet: "GNUSControl",
   },
   {
     anonymous: false,
@@ -94,7 +89,6 @@ const _abi = [
     ],
     name: "AddToGlobalBlackList",
     type: "event",
-    _diamondFacet: "GNUSControl",
   },
   {
     anonymous: false,
@@ -120,7 +114,6 @@ const _abi = [
     ],
     name: "Approval",
     type: "event",
-    _diamondFacet: "GNUSBridge",
   },
   {
     anonymous: false,
@@ -146,7 +139,6 @@ const _abi = [
     ],
     name: "ApprovalForAll",
     type: "event",
-    _diamondFacet: "GNUSNFTFactory",
   },
   {
     anonymous: false,
@@ -160,7 +152,6 @@ const _abi = [
     ],
     name: "BlacklistInitialized",
     type: "event",
-    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -174,7 +165,6 @@ const _abi = [
     ],
     name: "BlacklistMigrationCompleted",
     type: "event",
-    _diamondFacet: "GNUSBlacklistFacet",
   },
   {
     anonymous: false,
@@ -212,7 +202,48 @@ const _abi = [
     ],
     name: "BridgeSourceBurned",
     type: "event",
-    _diamondFacet: "GNUSBridge",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "facetAddress",
+            type: "address",
+          },
+          {
+            internalType: "enum IDiamondCut.FacetCutAction",
+            name: "action",
+            type: "uint8",
+          },
+          {
+            internalType: "bytes4[]",
+            name: "functionSelectors",
+            type: "bytes4[]",
+          },
+        ],
+        indexed: false,
+        internalType: "struct IDiamondCut.FacetCut[]",
+        name: "_diamondCut",
+        type: "tuple[]",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "_init",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "_calldata",
+        type: "bytes",
+      },
+    ],
+    name: "DiamondCut",
+    type: "event",
   },
   {
     anonymous: false,
@@ -232,7 +263,6 @@ const _abi = [
     ],
     name: "InitLog",
     type: "event",
-    _diamondFacet: "DiamondInitFacet",
   },
   {
     anonymous: false,
@@ -252,7 +282,6 @@ const _abi = [
     ],
     name: "OwnershipTransferred",
     type: "event",
-    _diamondFacet: "GeniusOwnershipFacet",
   },
   {
     anonymous: false,
@@ -266,7 +295,6 @@ const _abi = [
     ],
     name: "Paused",
     type: "event",
-    _diamondFacet: "GNUSNFTFactory",
   },
   {
     anonymous: false,
@@ -286,7 +314,6 @@ const _abi = [
     ],
     name: "RemoveFromBlackList",
     type: "event",
-    _diamondFacet: "GNUSControl",
   },
   {
     anonymous: false,
@@ -300,7 +327,6 @@ const _abi = [
     ],
     name: "RemoveFromGlobalBlackList",
     type: "event",
-    _diamondFacet: "GNUSControl",
   },
   {
     anonymous: false,
@@ -326,7 +352,6 @@ const _abi = [
     ],
     name: "RoleAdminChanged",
     type: "event",
-    _diamondFacet: "GeniusOwnershipFacet",
   },
   {
     anonymous: false,
@@ -352,7 +377,6 @@ const _abi = [
     ],
     name: "RoleGranted",
     type: "event",
-    _diamondFacet: "GeniusOwnershipFacet",
   },
   {
     anonymous: false,
@@ -378,7 +402,6 @@ const _abi = [
     ],
     name: "RoleRevoked",
     type: "event",
-    _diamondFacet: "GeniusOwnershipFacet",
   },
   {
     anonymous: false,
@@ -404,7 +427,6 @@ const _abi = [
     ],
     name: "Transfer",
     type: "event",
-    _diamondFacet: "GNUSBridge",
   },
   {
     anonymous: false,
@@ -442,7 +464,6 @@ const _abi = [
     ],
     name: "TransferBatch",
     type: "event",
-    _diamondFacet: "GNUSNFTFactory",
   },
   {
     anonymous: false,
@@ -474,7 +495,6 @@ const _abi = [
     ],
     name: "TransferBatch",
     type: "event",
-    _diamondFacet: "ERC20TransferBatch",
   },
   {
     anonymous: false,
@@ -512,7 +532,6 @@ const _abi = [
     ],
     name: "TransferSingle",
     type: "event",
-    _diamondFacet: "GNUSNFTFactory",
   },
   {
     anonymous: false,
@@ -526,7 +545,6 @@ const _abi = [
     ],
     name: "Unpaused",
     type: "event",
-    _diamondFacet: "GNUSNFTFactory",
   },
   {
     anonymous: false,
@@ -540,7 +558,6 @@ const _abi = [
     ],
     name: "UpdateBridgeFee",
     type: "event",
-    _diamondFacet: "GNUSControl",
   },
   {
     anonymous: false,
@@ -560,7 +577,6 @@ const _abi = [
     ],
     name: "URI",
     type: "event",
-    _diamondFacet: "GNUSNFTFactory",
   },
   {
     anonymous: false,
@@ -574,7 +590,6 @@ const _abi = [
     ],
     name: "WhitelistEnabledChanged",
     type: "event",
-    _diamondFacet: "GNUSWhitelistFacet",
   },
   {
     anonymous: false,
@@ -588,7 +603,6 @@ const _abi = [
     ],
     name: "WhitelistInitialized",
     type: "event",
-    _diamondFacet: "GNUSWhitelistFacet",
   },
   {
     anonymous: false,
@@ -614,19 +628,32 @@ const _abi = [
     ],
     name: "WithdrawToken",
     type: "event",
-    _diamondFacet: "GNUSContractAssets",
   },
   {
     inputs: [],
     name: "CannotWithdrawGNUS",
     type: "error",
-    _diamondFacet: "GNUSContractAssets",
   },
   {
     inputs: [],
     name: "ErrorWithdrawingEther",
     type: "error",
-    _diamondFacet: "GNUSContractAssets",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_initializationContractAddress",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "_calldata",
+        type: "bytes",
+      },
+    ],
+    name: "InitializationFunctionReverted",
+    type: "error",
   },
   {
     inputs: [
@@ -651,8 +678,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0xdd62ed3e",
   },
   {
     inputs: [
@@ -671,8 +696,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x9e8e7134",
   },
   {
     inputs: [
@@ -686,8 +709,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x9ceb1593",
   },
   {
     inputs: [
@@ -712,8 +733,6 @@ const _abi = [
     ],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x095ea7b3",
   },
   {
     inputs: [
@@ -738,8 +757,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x00fdd58e",
   },
   {
     inputs: [
@@ -759,8 +776,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x70a08231",
   },
   {
     inputs: [
@@ -785,8 +800,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x4e1273f4",
   },
   {
     inputs: [
@@ -805,8 +818,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x19a8b28a",
   },
   {
     inputs: [
@@ -820,8 +831,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x1307a4be",
   },
   {
     inputs: [
@@ -835,8 +844,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0xd37b34d7",
   },
   {
     inputs: [
@@ -850,8 +857,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0xc707703e",
   },
   {
     inputs: [
@@ -875,8 +880,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0xe26d65a6",
   },
   {
     inputs: [
@@ -900,8 +903,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xf5298aca",
   },
   {
     inputs: [
@@ -920,8 +921,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x9dc29fac",
   },
   {
     inputs: [
@@ -945,8 +944,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x6b20c454",
   },
   {
     inputs: [],
@@ -954,8 +951,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x4886f62c",
   },
   {
     inputs: [
@@ -994,8 +989,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xf667ab7c",
   },
   {
     inputs: [
@@ -1034,8 +1027,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x1a9d2360",
   },
   {
     inputs: [],
@@ -1049,8 +1040,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x8aeda25a",
   },
   {
     inputs: [
@@ -1070,8 +1059,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "ERC1155ProxyOperator",
-    _diamondSelector: "0xcd53d08e",
   },
   {
     inputs: [],
@@ -1085,8 +1072,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x313ce567",
   },
   {
     inputs: [
@@ -1111,8 +1096,6 @@ const _abi = [
     ],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0xa457c2d7",
   },
   {
     inputs: [],
@@ -1126,8 +1109,46 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0xa217fddf",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "facetAddress",
+            type: "address",
+          },
+          {
+            internalType: "enum IDiamondCut.FacetCutAction",
+            name: "action",
+            type: "uint8",
+          },
+          {
+            internalType: "bytes4[]",
+            name: "functionSelectors",
+            type: "bytes4[]",
+          },
+        ],
+        internalType: "struct IDiamondCut.FacetCut[]",
+        name: "_diamondCut",
+        type: "tuple[]",
+      },
+      {
+        internalType: "address",
+        name: "_init",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "_calldata",
+        type: "bytes",
+      },
+    ],
+    name: "diamondCut",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
@@ -1135,8 +1156,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "DiamondInitFacet",
-    _diamondSelector: "0xeae960b1",
   },
   {
     inputs: [
@@ -1160,8 +1179,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x442df1e3",
   },
   {
     inputs: [
@@ -1185,8 +1202,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x50d62a03",
   },
   {
     inputs: [
@@ -1206,8 +1221,82 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x4f558e79",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes4",
+        name: "_functionSelector",
+        type: "bytes4",
+      },
+    ],
+    name: "facetAddress",
+    outputs: [
+      {
+        internalType: "address",
+        name: "facetAddress_",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "facetAddresses",
+    outputs: [
+      {
+        internalType: "address[]",
+        name: "facetAddresses_",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_facet",
+        type: "address",
+      },
+    ],
+    name: "facetFunctionSelectors",
+    outputs: [
+      {
+        internalType: "bytes4[]",
+        name: "_facetFunctionSelectors",
+        type: "bytes4[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "facets",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "facetAddress",
+            type: "address",
+          },
+          {
+            internalType: "bytes4[]",
+            name: "functionSelectors",
+            type: "bytes4[]",
+          },
+        ],
+        internalType: "struct IDiamondLoupe.Facet[]",
+        name: "facets_",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
@@ -1215,8 +1304,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GeniusAI",
-    _diamondSelector: "0x6ea9fd36",
   },
   {
     inputs: [
@@ -1251,8 +1338,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0xfd4fa05a",
   },
   {
     inputs: [
@@ -1272,8 +1357,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x3dec790e",
   },
   {
     inputs: [],
@@ -1297,8 +1380,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0xa415c02c",
   },
   {
     inputs: [
@@ -1360,8 +1441,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xd188929f",
   },
   {
     inputs: [
@@ -1381,8 +1460,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x248a9ca3",
   },
   {
     inputs: [
@@ -1407,8 +1484,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x9010d07c",
   },
   {
     inputs: [
@@ -1428,8 +1503,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0xca15c873",
   },
   {
     inputs: [],
@@ -1453,8 +1526,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x0a8244d2",
   },
   {
     inputs: [],
@@ -1462,8 +1533,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x5e3e0c59",
   },
   {
     inputs: [],
@@ -1471,8 +1540,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x72f6ac43",
   },
   {
     inputs: [],
@@ -1480,8 +1547,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x101521f8",
   },
   {
     inputs: [],
@@ -1489,8 +1554,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x52dbff7a",
   },
   {
     inputs: [
@@ -1509,8 +1572,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x2f2ff15d",
   },
   {
     inputs: [
@@ -1535,8 +1596,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x91d14854",
   },
   {
     inputs: [
@@ -1561,8 +1620,6 @@ const _abi = [
     ],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x39509351",
   },
   {
     inputs: [],
@@ -1570,8 +1627,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0xa9d1fd08",
   },
   {
     inputs: [],
@@ -1579,8 +1634,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x2927bacd",
   },
   {
     inputs: [
@@ -1605,8 +1658,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xe985e9c5",
   },
   {
     inputs: [
@@ -1626,8 +1677,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0xfe575a87",
   },
   {
     inputs: [
@@ -1647,8 +1696,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x386679e2",
   },
   {
     inputs: [
@@ -1668,8 +1715,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x3af32abf",
   },
   {
     inputs: [],
@@ -1683,8 +1728,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x184d69ab",
   },
   {
     inputs: [
@@ -1698,8 +1741,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x4c2a11de",
   },
   {
     inputs: [
@@ -1728,8 +1769,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x731133e9",
   },
   {
     inputs: [
@@ -1753,8 +1792,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x156e29f6",
   },
   {
     inputs: [
@@ -1773,8 +1810,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x40c10f19",
   },
   {
     inputs: [
@@ -1803,8 +1838,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x1f7fdffa",
   },
   {
     inputs: [
@@ -1823,8 +1856,6 @@ const _abi = [
     outputs: [],
     stateMutability: "payable",
     type: "function",
-    _diamondFacet: "ERC20TransferBatch",
-    _diamondSelector: "0x7c88e3d9",
   },
   {
     inputs: [],
@@ -1838,8 +1869,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0xd5391393",
   },
   {
     inputs: [],
@@ -1853,8 +1882,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTCollectionName",
-    _diamondSelector: "0x06fdde03",
   },
   {
     inputs: [],
@@ -1868,8 +1895,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "ERC1155ProxyOperator",
-    _diamondSelector: "0xa2dd2453",
   },
   {
     inputs: [
@@ -1883,8 +1908,6 @@ const _abi = [
     outputs: [],
     stateMutability: "payable",
     type: "function",
-    _diamondFacet: "GeniusAI",
-    _diamondSelector: "0x31d6388d",
   },
   {
     inputs: [],
@@ -1898,8 +1921,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x8da5cb5b",
   },
   {
     inputs: [],
@@ -1907,8 +1928,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x8456cb59",
   },
   {
     inputs: [],
@@ -1922,8 +1941,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x5c975abb",
   },
   {
     inputs: [],
@@ -1947,8 +1964,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x93420cf4",
   },
   {
     inputs: [
@@ -1967,8 +1982,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x36568abe",
   },
   {
     inputs: [
@@ -1982,8 +1995,6 @@ const _abi = [
     outputs: [],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0xed653ef4",
   },
   {
     inputs: [
@@ -2002,8 +2013,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0xd547741f",
   },
   {
     inputs: [
@@ -2037,8 +2046,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x2eb2c2d6",
   },
   {
     inputs: [
@@ -2072,8 +2079,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xf242432a",
   },
   {
     inputs: [
@@ -2092,8 +2097,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xa22cb465",
   },
   {
     inputs: [
@@ -2107,8 +2110,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0xed8d47e6",
   },
   {
     inputs: [
@@ -2122,8 +2123,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0xceba5598",
   },
   {
     inputs: [
@@ -2137,8 +2136,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x02fe5305",
   },
   {
     inputs: [
@@ -2157,8 +2154,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x862440e2",
   },
   {
     inputs: [
@@ -2172,14 +2167,12 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x052d9e7e",
   },
   {
     inputs: [
       {
         internalType: "bytes4",
-        name: "interfaceId",
+        name: "_interfaceId",
         type: "bytes4",
       },
     ],
@@ -2193,8 +2186,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0x01ffc9a7",
   },
   {
     inputs: [],
@@ -2208,8 +2199,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x95d89b41",
   },
   {
     inputs: [
@@ -2229,8 +2218,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0xbd85b039",
   },
   {
     inputs: [],
@@ -2244,8 +2231,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x18160ddd",
   },
   {
     inputs: [
@@ -2270,8 +2255,6 @@ const _abi = [
     ],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0xa9059cbb",
   },
   {
     inputs: [
@@ -2290,8 +2273,6 @@ const _abi = [
     outputs: [],
     stateMutability: "payable",
     type: "function",
-    _diamondFacet: "ERC20TransferBatch",
-    _diamondSelector: "0x3b3e672f",
   },
   {
     inputs: [
@@ -2321,8 +2302,6 @@ const _abi = [
     ],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x23b872dd",
   },
   {
     inputs: [
@@ -2341,8 +2320,6 @@ const _abi = [
     outputs: [],
     stateMutability: "payable",
     type: "function",
-    _diamondFacet: "ERC20TransferBatch",
-    _diamondSelector: "0x1bdc02ba",
   },
   {
     inputs: [
@@ -2356,8 +2333,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0xf2fde38b",
   },
   {
     inputs: [
@@ -2371,8 +2346,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x6d7331ed",
   },
   {
     inputs: [
@@ -2386,8 +2359,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBlacklistFacet",
-    _diamondSelector: "0x897f057a",
   },
   {
     inputs: [],
@@ -2395,8 +2366,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x3f4ba83a",
   },
   {
     inputs: [
@@ -2410,8 +2379,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0xae3e3e5e",
   },
   {
     inputs: [
@@ -2425,8 +2392,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x170ae053",
   },
   {
     inputs: [
@@ -2440,8 +2405,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSControl",
-    _diamondSelector: "0x5a1c0366",
   },
   {
     inputs: [],
@@ -2455,8 +2418,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GeniusOwnershipFacet",
-    _diamondSelector: "0xf72c0d8b",
   },
   {
     inputs: [
@@ -2476,8 +2437,6 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
-    _diamondFacet: "GNUSNFTFactory",
-    _diamondSelector: "0x0e89341c",
   },
   {
     inputs: [
@@ -2491,8 +2450,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x63e0c2f8",
   },
   {
     inputs: [
@@ -2506,8 +2463,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSWhitelistFacet",
-    _diamondSelector: "0x33984a97",
   },
   {
     inputs: [
@@ -2526,8 +2481,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSBridge",
-    _diamondSelector: "0x441a3e70",
   },
   {
     inputs: [
@@ -2551,8 +2504,6 @@ const _abi = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-    _diamondFacet: "GNUSContractAssets",
-    _diamondSelector: "0x01e33667",
   },
 ] as const;
 

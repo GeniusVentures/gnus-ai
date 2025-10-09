@@ -54,6 +54,32 @@ export type NFTStructOutput = [
   nftCreated: boolean;
 };
 
+export declare namespace IDiamondCut {
+  export type FacetCutStruct = {
+    facetAddress: AddressLike;
+    action: BigNumberish;
+    functionSelectors: BytesLike[];
+  };
+
+  export type FacetCutStructOutput = [
+    facetAddress: string,
+    action: bigint,
+    functionSelectors: string[]
+  ] & { facetAddress: string; action: bigint; functionSelectors: string[] };
+}
+
+export declare namespace IDiamondLoupe {
+  export type FacetStruct = {
+    facetAddress: AddressLike;
+    functionSelectors: BytesLike[];
+  };
+
+  export type FacetStructOutput = [
+    facetAddress: string,
+    functionSelectors: string[]
+  ] & { facetAddress: string; functionSelectors: string[] };
+}
+
 export interface GeniusDiamondInterface extends Interface {
   getFunction(
     nameOrSignature:
@@ -80,10 +106,15 @@ export interface GeniusDiamondInterface extends Interface {
       | "decimals"
       | "decreaseAllowance"
       | "DEFAULT_ADMIN_ROLE"
+      | "diamondCut"
       | "diamondInitialize250"
       | "emergencyFixBalance"
       | "emergencyFixBalanceWithWhitelist"
       | "exists"
+      | "facetAddress"
+      | "facetAddresses"
+      | "facetFunctionSelectors"
+      | "facets"
       | "GeniusAI_Initialize"
       | "getAccountStatus"
       | "getActualBalance"
@@ -168,6 +199,7 @@ export interface GeniusDiamondInterface extends Interface {
       | "BlacklistInitialized"
       | "BlacklistMigrationCompleted"
       | "BridgeSourceBurned"
+      | "DiamondCut"
       | "InitLog"
       | "OwnershipTransferred"
       | "Paused"
@@ -285,6 +317,10 @@ export interface GeniusDiamondInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "diamondCut",
+    values: [IDiamondCut.FacetCutStruct[], AddressLike, BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "diamondInitialize250",
     values?: undefined
   ): string;
@@ -300,6 +336,19 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "exists",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "facetAddress",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "facetAddresses",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "facetFunctionSelectors",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "facets", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "GeniusAI_Initialize",
     values?: undefined
@@ -630,6 +679,7 @@ export interface GeniusDiamondInterface extends Interface {
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "diamondCut", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "diamondInitialize250",
     data: BytesLike
@@ -643,6 +693,19 @@ export interface GeniusDiamondInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "facetAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "facetAddresses",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "facetFunctionSelectors",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "facets", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "GeniusAI_Initialize",
     data: BytesLike
@@ -1034,6 +1097,28 @@ export namespace BridgeSourceBurnedEvent {
     amount: bigint;
     srcChainID: bigint;
     destChainID: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace DiamondCutEvent {
+  export type InputTuple = [
+    _diamondCut: IDiamondCut.FacetCutStruct[],
+    _init: AddressLike,
+    _calldata: BytesLike
+  ];
+  export type OutputTuple = [
+    _diamondCut: IDiamondCut.FacetCutStructOutput[],
+    _init: string,
+    _calldata: string
+  ];
+  export interface OutputObject {
+    _diamondCut: IDiamondCut.FacetCutStructOutput[];
+    _init: string;
+    _calldata: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1515,6 +1600,16 @@ export interface GeniusDiamond extends BaseContract {
 
   DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
+  diamondCut: TypedContractMethod<
+    [
+      _diamondCut: IDiamondCut.FacetCutStruct[],
+      _init: AddressLike,
+      _calldata: BytesLike
+    ],
+    [void],
+    "nonpayable"
+  >;
+
   diamondInitialize250: TypedContractMethod<[], [void], "nonpayable">;
 
   emergencyFixBalance: TypedContractMethod<
@@ -1538,6 +1633,22 @@ export interface GeniusDiamond extends BaseContract {
   >;
 
   exists: TypedContractMethod<[id: BigNumberish], [boolean], "view">;
+
+  facetAddress: TypedContractMethod<
+    [_functionSelector: BytesLike],
+    [string],
+    "view"
+  >;
+
+  facetAddresses: TypedContractMethod<[], [string[]], "view">;
+
+  facetFunctionSelectors: TypedContractMethod<
+    [_facet: AddressLike],
+    [string[]],
+    "view"
+  >;
+
+  facets: TypedContractMethod<[], [IDiamondLoupe.FacetStructOutput[]], "view">;
 
   GeniusAI_Initialize: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -1790,7 +1901,7 @@ export interface GeniusDiamond extends BaseContract {
   >;
 
   supportsInterface: TypedContractMethod<
-    [interfaceId: BytesLike],
+    [_interfaceId: BytesLike],
     [boolean],
     "view"
   >;
@@ -2035,6 +2146,17 @@ export interface GeniusDiamond extends BaseContract {
     nameOrSignature: "DEFAULT_ADMIN_ROLE"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "diamondCut"
+  ): TypedContractMethod<
+    [
+      _diamondCut: IDiamondCut.FacetCutStruct[],
+      _init: AddressLike,
+      _calldata: BytesLike
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "diamondInitialize250"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
@@ -2062,6 +2184,18 @@ export interface GeniusDiamond extends BaseContract {
   getFunction(
     nameOrSignature: "exists"
   ): TypedContractMethod<[id: BigNumberish], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "facetAddress"
+  ): TypedContractMethod<[_functionSelector: BytesLike], [string], "view">;
+  getFunction(
+    nameOrSignature: "facetAddresses"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "facetFunctionSelectors"
+  ): TypedContractMethod<[_facet: AddressLike], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "facets"
+  ): TypedContractMethod<[], [IDiamondLoupe.FacetStructOutput[]], "view">;
   getFunction(
     nameOrSignature: "GeniusAI_Initialize"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -2330,7 +2464,7 @@ export interface GeniusDiamond extends BaseContract {
   ): TypedContractMethod<[enabled: boolean], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "supportsInterface"
-  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  ): TypedContractMethod<[_interfaceId: BytesLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "symbol"
   ): TypedContractMethod<[], [string], "view">;
@@ -2492,6 +2626,13 @@ export interface GeniusDiamond extends BaseContract {
     BridgeSourceBurnedEvent.InputTuple,
     BridgeSourceBurnedEvent.OutputTuple,
     BridgeSourceBurnedEvent.OutputObject
+  >;
+  getEvent(
+    key: "DiamondCut"
+  ): TypedContractEvent<
+    DiamondCutEvent.InputTuple,
+    DiamondCutEvent.OutputTuple,
+    DiamondCutEvent.OutputObject
   >;
   getEvent(
     key: "InitLog"
@@ -2740,6 +2881,17 @@ export interface GeniusDiamond extends BaseContract {
       BridgeSourceBurnedEvent.InputTuple,
       BridgeSourceBurnedEvent.OutputTuple,
       BridgeSourceBurnedEvent.OutputObject
+    >;
+
+    "DiamondCut(tuple[],address,bytes)": TypedContractEvent<
+      DiamondCutEvent.InputTuple,
+      DiamondCutEvent.OutputTuple,
+      DiamondCutEvent.OutputObject
+    >;
+    DiamondCut: TypedContractEvent<
+      DiamondCutEvent.InputTuple,
+      DiamondCutEvent.OutputTuple,
+      DiamondCutEvent.OutputObject
     >;
 
     "InitLog(address,string)": TypedContractEvent<

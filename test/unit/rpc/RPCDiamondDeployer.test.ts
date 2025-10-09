@@ -268,9 +268,9 @@ describe("RPCDiamondDeployer", function () {
         });
 
         it("should validate configuration successfully with valid setup", async function () {
-            // Mock strategy validation and diamond config
-            const mockStrategy = {
-                validateConnection: sandbox.stub().resolves()
+            // Mock provider's getNetwork method on the deployer instance
+            const mockProvider = {
+                getNetwork: sandbox.stub().resolves({ name: "localhost", chainId: 31337n })
             };
             
             const mockDiamond = {
@@ -282,7 +282,8 @@ describe("RPCDiamondDeployer", function () {
                 })
             };
 
-            (deployer as any).strategy = mockStrategy;
+            // Replace provider and diamond on the deployer instance
+            (deployer as any).provider = mockProvider;
             (deployer as any).diamond = mockDiamond;
 
             const validation = await deployer.validateConfiguration();
@@ -319,8 +320,9 @@ describe("RPCDiamondDeployer", function () {
         });
 
         it("should report validation errors when network validation fails", async function () {
-            const mockStrategy = {
-                validateConnection: sandbox.stub().rejects(new Error("Network connection failed"))
+            // Mock provider's getNetwork to reject
+            const mockProvider = {
+                getNetwork: sandbox.stub().rejects(new Error("Network connection failed"))
             };
             
             const mockDiamond = {
@@ -329,7 +331,8 @@ describe("RPCDiamondDeployer", function () {
                 })
             };
 
-            (deployer as any).strategy = mockStrategy;
+            // Replace provider and diamond on the deployer instance
+            (deployer as any).provider = mockProvider;
             (deployer as any).diamond = mockDiamond;
 
             const validation = await deployer.validateConfiguration();

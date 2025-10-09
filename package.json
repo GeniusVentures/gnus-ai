@@ -32,6 +32,7 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@nomicfoundation/hardhat-web3-v4": "^1.0.0",
     "@nomicfoundation/ignition-core": "^0.15.9",
     "@openzeppelin/defender-sdk": "^2.0.0",
     "@openzeppelin/defender-sdk-proposal-client": "^2.0.0",
@@ -65,7 +66,6 @@
     "hardhat": "^2.26.2",
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-diamonds": "https://github.com/GeniusVentures/hardhat-diamonds.git#develop",
-    "hardhat-diamonds-monitor": "https://github.com/GeniusVentures/hardhat-diamonds-monitor.git#develop",
     "hardhat-gas-reporter": "^1.0.8",
     "hardhat-multichain": "https://github.com/GeniusVentures/hardhat-multichain#main",
     "prettier": "^3.4.2",
@@ -79,12 +79,9 @@
     "winston": "^3.17.0"
   },
   "dependencies": {
-    "@axelar-network/axelarjs-sdk": "^0.15.0",
-    "@axelar-network/interchain-token-service": "^1.2.4",
-    "@nomicfoundation/hardhat-web3-v4": "^1.0.0",
     "@types/fs-extra": "^11.0.4",
     "ts-node": "^10.9.2",
     "web3": "^4.16.0"
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.10.3"
 }

@@ -21,8 +21,7 @@ import type { HardhatUserConfig } from 'hardhat/types';
 import * as dotenv from 'dotenv';
 import chalk from 'chalk';
 
-import { generateDiamondAbiWithTypechain } from '../generate-diamond-abi-with-typechain';
-import { DiamondAbiGenerationOptions } from '../diamond-abi-generator';
+import 'hardhat-diamonds';
 
 dotenv.config();
 
@@ -354,16 +353,18 @@ export class RPCDiamondDeployer {
       // Create instance
       const instance = new RPCDiamondDeployer(config, repository);
       this.instances.set(key, instance);
-
-      // Generate Diamond ABI with Typechain
-      const options: DiamondAbiGenerationOptions = {
-        diamondName: config.diamondName,
-        networkName: config.networkName,
-        chainId: config.chainId,
-        outputDir: config.diamondAbiPath,
-      };
       
-      await generateDiamondAbiWithTypechain(options);
+      // ToDo there should be a verification step here with configurable version checking
+      // for whatever abi contract release is expected. This is where we are getting 
+      // repeated diamond ABI creation in the tests.      
+      // Generate Diamond ABI with Typechain using hardhat task
+      await hre.run("diamond:generate-abi-typechain", {
+        diamondName: config.diamondName,
+        outputDir: config.diamondAbiPath || "diamond-abi",
+        typechainOutDir: "diamond-typechain-types",
+        enableVerbose: config.verbose,
+        targetNetwork: config.networkName,
+      });
 
       if (config.verbose) {
         console.log(chalk.green(`✅ Created new RPCDiamondDeployer instance with key: ${key}`));
@@ -627,8 +628,21 @@ export class RPCDiamondDeployer {
     const errors: string[] = [];
 
     try {
-      // Validate network connection
-      await this.strategy.validateConnection();
+      // Validate network connection by checking we can get network info
+      try {
+        // Add a timeout to avoid hanging on network calls
+        const networkPromise = this.provider.getNetwork();
+        const timeoutPromise = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Network connection timeout')), 5000)
+        );
+        
+        const network = await Promise.race([networkPromise, timeoutPromise]);
+        if (!network) {
+          errors.push('Unable to connect to network');
+        }
+      } catch (error) {
+        errors.push(`Network validation failed: ${(error as Error).message}`);
+      }
       
       // Validate diamond configuration
       if (!this.diamond) {
@@ -652,7 +666,7 @@ export class RPCDiamondDeployer {
       }
 
     } catch (error) {
-      errors.push(`Network validation failed: ${(error as Error).message}`);
+      errors.push(`Validation failed: ${(error as Error).message}`);
     }
 
     return {
@@ -689,6 +703,11 @@ export class RPCDiamondDeployer {
   private async validateConnection(): Promise<void> {
     try {
       await this.strategy.validateConnection();
+      // // Validate network connection by getting network info
+      // const network = await this.provider.getNetwork();
+      // if (!network) {
+      //   throw new Error('Unable to connect to network');
+      // }
       
       if (this.verbose) {
         const networkInfo = await this.getNetworkInfo();

@@ -9,7 +9,6 @@ import 'solidity-coverage';
 import '@nomicfoundation/hardhat-web3-v4';
 import 'hardhat-multichain';
 import 'hardhat-diamonds';
-import 'hardhat-diamonds-monitor';
 
 dotenv.config();
 
@@ -407,29 +406,7 @@ const config: HardhatUserConfig = {
 				contractsPath: 'contracts/gnus-ai',
 			},
 		},
-	},
-	diamondMonitor: {
-		defaultModules: ['function-selectors', 'diamond-structure'],
-		outputPath: './monitoring-reports',
-		enabledNetworks: ['sepolia', 'mainnet', 'polygon', 'polygon_amoy'],
-		moduleConfig: {
-			'function-selectors': {
-				strictMode: true,
-				ignoreMissingSelectors: false,
-				ignoreExtraSelectors: false,
-				allowAddressChanges: false
-			},
-			'diamond-structure': {
-				requireDiamondLoupe: true,
-				requireDiamondCut: true,
-				requireOwnership: true,
-				allowZeroAddressFacets: false,
-				minFacetCount: 1,
-				maxFacetCount: 50,
-				protocolVersionCheck: true
-			}
-		}
-	},
+	}
 };
 
 export default config;
