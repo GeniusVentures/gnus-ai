@@ -7,6 +7,7 @@
 
 import chalk from 'chalk';
 import { ethers } from 'ethers';
+import { Diamond } from 'diamonds';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
 	VerifyOptions,
@@ -21,17 +22,36 @@ import {
 } from './common';
 
 /**
+ * Interface for facet data
+ */
+interface FacetData {
+	address?: string;
+	tx_hash?: string;
+	version?: number;
+	funcSelectors?: string[];
+	verified?: boolean;
+}
+
+/**
  * Validates contract ABIs against deployed contracts
  */
-async function validateABIs(diamond: any, provider: ethers.JsonRpcProvider): Promise<void> {
+async function validateABIs(
+	diamond: Diamond,
+	provider: ethers.JsonRpcProvider,
+): Promise<void> {
 	console.log(chalk.blue('\n🔍 Validating contract ABIs...'));
 
 	const deployedData = diamond.getDeployedDiamondData();
 	const facets = deployedData.DeployedFacets || {};
 	let validCount = 0;
 
-	for (const [facetName, facetData] of Object.entries(facets) as [string, any][]) {
+	for (const [facetName, facetData] of Object.entries(facets) as [string, FacetData][]) {
 		try {
+			if (!facetData.address) {
+				console.log(chalk.red(`   ❌ ${facetName}: No address found`));
+				continue;
+			}
+
 			const code = await provider.getCode(facetData.address);
 			if (code === '0x') {
 				console.log(chalk.red(`   ❌ ${facetName}: No contract code found`));
@@ -60,7 +80,7 @@ async function validateABIs(diamond: any, provider: ethers.JsonRpcProvider): Pro
  * Validates function selectors against on-chain data
  */
 async function validateSelectors(
-	diamond: any,
+	diamond: Diamond,
 	provider: ethers.JsonRpcProvider,
 ): Promise<void> {
 	console.log(chalk.blue('\n🔍 Validating function selectors...'));
@@ -94,12 +114,12 @@ async function validateSelectors(
 			totalSelectors += onChainFacet.functionSelectors.length;
 
 			const matchingFacet = Object.entries(deployedFacets).find(
-				([, facetData]: [string, any]) =>
-					facetData.address.toLowerCase() === onChainFacet.facetAddress.toLowerCase(),
+				([, facetData]: [string, FacetData]) =>
+					facetData.address?.toLowerCase() === onChainFacet.facetAddress.toLowerCase(),
 			);
 
 			if (matchingFacet) {
-				const [facetName, facetData] = matchingFacet as [string, any];
+				const [facetName, facetData] = matchingFacet as [string, FacetData];
 				const deployedSelectors = facetData.funcSelectors || [];
 
 				if (deployedSelectors.length === onChainFacet.functionSelectors.length) {
@@ -136,7 +156,7 @@ async function validateSelectors(
  * Compares stored deployment data with on-chain state
  */
 async function compareOnChainState(
-	diamond: any,
+	diamond: Diamond,
 	provider: ethers.JsonRpcProvider,
 ): Promise<void> {
 	console.log(chalk.blue('\n🔍 Comparing on-chain state with deployment data...'));

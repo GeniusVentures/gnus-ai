@@ -52,7 +52,7 @@ export interface INetworkDeployInfo {
 	DiamondAddress: string;
 	DeployerAddress: string;
 	FacetDeployedInfo: FacetDeployedInfo;
-	ExternalLibraries?: any;
+	ExternalLibraries?: Record<string, string>;
 	protocolVersion?: number;
 	provider?: JsonRpcProvider | undefined;
 }
@@ -141,8 +141,8 @@ export const diamondCutFuncAbi = {
 };
 
 export interface IDefenderViaInfo {
-	via: any;
-	viaType: any;
+	via: string;
+	viaType: string;
 }
 
 export function createPreviousVersionRecordWithMap(

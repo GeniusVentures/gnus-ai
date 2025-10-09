@@ -2,6 +2,7 @@ import { ethers } from 'hardhat';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Diamond } from 'diamonds';
+import type { Signer, Provider } from 'ethers';
 
 /**
  * Loads a Diamond contract instance using the generated Diamond ABI.
@@ -78,7 +79,7 @@ export async function loadDiamondContract<T>(
 export async function createDiamondContract<T>(
 	diamond: Diamond,
 	contractAddress: string,
-	signerOrProvider?: any,
+	signerOrProvider?: Signer | Provider,
 ): Promise<T> {
 	const diamondAbiFilePath = diamond.getDiamondAbiFilePath();
 

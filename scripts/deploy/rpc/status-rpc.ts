@@ -7,6 +7,7 @@
 
 import chalk from 'chalk';
 import { ethers } from 'ethers';
+import { Diamond } from 'diamonds';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
 	StatusOptions,
@@ -21,9 +22,45 @@ import {
 } from './common';
 
 /**
+ * Interface for RPC deployment configuration
+ */
+interface DeploymentConfig {
+	diamondName?: string;
+	networkName?: string;
+	rpcUrl?: string;
+	gasLimitMultiplier?: number;
+	maxRetries?: number;
+	retryDelayMs?: number;
+	configFilePath?: string;
+	deploymentsPath?: string;
+	protocolVersion?: number;
+	facets?: Record<string, unknown>;
+}
+
+/**
+ * Interface for deployed diamond data
+ */
+interface DeployedDiamondData {
+	DiamondAddress?: string;
+	DeployedFacets?: Record<string, FacetData>;
+	protocolVersion?: number;
+}
+
+/**
+ * Interface for facet data
+ */
+interface FacetData {
+	address?: string;
+	tx_hash?: string;
+	version?: number;
+	funcSelectors?: string[];
+	verified?: boolean;
+}
+
+/**
  * Shows deployment configuration details
  */
-async function showConfigDetails(config: any): Promise<void> {
+async function showConfigDetails(config: DeploymentConfig): Promise<void> {
 	console.log(chalk.blue('\n📋 Configuration Details'));
 	console.log(chalk.blue('========================'));
 
@@ -46,7 +83,7 @@ async function showConfigDetails(config: any): Promise<void> {
 /**
  * Shows detailed facet information
  */
-async function showFacetDetails(diamond: any): Promise<void> {
+async function showFacetDetails(diamond: Diamond): Promise<void> {
 	console.log(chalk.blue('\n🔧 Deployed Facets'));
 	console.log(chalk.blue('=================='));
 
@@ -62,7 +99,7 @@ async function showFacetDetails(diamond: any): Promise<void> {
 	console.log(`📦 Total Facets: ${chalk.white(facetCount)}\n`);
 
 	let facetIndex = 1;
-	for (const [facetName, facetData] of Object.entries(facets) as [string, any][]) {
+	for (const [facetName, facetData] of Object.entries(facets) as [string, FacetData][]) {
 		console.log(`${facetIndex}. ${chalk.green(facetName)}`);
 		console.log(`   📍 Address: ${chalk.white(facetData.address)}`);
 		console.log(`   🔗 TX Hash: ${chalk.white(facetData.tx_hash || 'N/A')}`);
@@ -80,7 +117,7 @@ async function showFacetDetails(diamond: any): Promise<void> {
 /**
  * Shows function selector details
  */
-async function showSelectorDetails(diamond: any): Promise<void> {
+async function showSelectorDetails(diamond: Diamond): Promise<void> {
 	console.log(chalk.blue('\n🎯 Function Selectors'));
 	console.log(chalk.blue('====================='));
 
@@ -88,7 +125,7 @@ async function showSelectorDetails(diamond: any): Promise<void> {
 	const facets = deployedData.DeployedFacets || {};
 	let totalSelectors = 0;
 
-	for (const [facetName, facetData] of Object.entries(facets) as [string, any][]) {
+	for (const [facetName, facetData] of Object.entries(facets) as [string, FacetData][]) {
 		const selectors = facetData.funcSelectors || [];
 		totalSelectors += selectors.length;
 
@@ -107,7 +144,7 @@ async function showSelectorDetails(diamond: any): Promise<void> {
  * Performs on-chain validation of deployment status
  */
 async function performOnChainValidation(
-	diamond: any,
+	diamond: Diamond,
 	provider: ethers.JsonRpcProvider,
 ): Promise<void> {
 	console.log(chalk.blue('\n🔗 On-Chain Validation'));
