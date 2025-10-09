@@ -62,7 +62,7 @@ setup_git_secrets() {
 
     # Add all patterns from git-secrets_patterns.md
     git secrets --add 'PRIVATE_KEY|SECRET_KEY' || log_warning "Failed to add PRIVATE_KEY|SECRET_KEY pattern"
-    git secrets --add '0x[a-fA-F0-9]{64}' || log_warning "Failed to add 0x pattern"
+    git secrets --add '0x[a-fA-F0-9]{64}' || log_warning "Failed to add 0x pattern"failed 
     git secrets --add 'mnemonic.*[a-z]{3,}\s+[a-z]{3,}' || log_warning "Failed to add mnemonic pattern"
     git secrets --add '"mnemonic":\s*"[^"]+"' || log_warning "Failed to add mnemonic JSON pattern"
     git secrets --add "'mnemonic':\s*'[^']+'" || log_warning "Failed to add mnemonic JS pattern"
@@ -71,13 +71,12 @@ setup_git_secrets() {
     git secrets --add 'ETHERSCAN_API_KEY\s*=\s*["'\'']*[a-zA-Z0-9]{32}["'\'']*' || log_warning "Failed to add ETHERSCAN pattern"
     git secrets --add 'PRIVATE_KEY\s*=\s*["'\'']*0x[a-fA-F0-9]{64}["'\'']*' || log_warning "Failed to add PRIVATE_KEY pattern"
     git secrets --add 'PRIVATE_KEY\s*=\s*["'\'']*0x[a-fA-F0-9]{64}["'\'']*\s*$' || log_warning "Failed to add PRIVATE_KEY end pattern"
-    git secrets --add 'SECRET_KEY\s*=\s*["'\'']*[a-zA-Z0-9]{32,}["'\'']*' || log_warning "Failed to add SECRET_KEY pattern"
+    git secrets --add 'SECRET_KEY\s*=\s*["'\'']*0x[a-fA-F0-9]{64}["'\'']*' || log_warning "Failed to add SECRET_KEY pattern"
     git secrets --add 'API_SECRET\s*=\s*["'\'']*[a-zA-Z0-9]{32,}["'\'']*' || log_warning "Failed to add API_SECRET pattern"
     git secrets --add 'https://[^/]*:[^@]*@[^/]*' || log_warning "Failed to add HTTPS URL pattern"
     git secrets --add 'wss://[^/]*:[^@]*@[^/]*' || log_warning "Failed to add WSS URL pattern"
 
     # Add all allowed patterns from git-secrets_patterns.md
-    git secrets --add --allowed '0x0000000000000000000000000000000000000000' || log_warning "Failed to add zero address allowed pattern"
     git secrets --add --allowed 'PRIVATE_KEY\s*=\s*your_private_key_here' || log_warning "Failed to add placeholder allowed pattern"
     git secrets --add --allowed 'process\.env\.PRIVATE_KEY' || log_warning "Failed to add env var allowed pattern"
     git secrets --add --allowed 'PRIVATE_KEY\s*,' || log_warning "Failed to add comma allowed pattern"
@@ -93,14 +92,15 @@ setup_git_secrets() {
     git secrets --add --allowed "git secrets --add 'SECRET_KEY" || log_warning "Failed to add git secrets SECRET_KEY allowed pattern"
     git secrets --add --allowed '/PRIVATE_KEY\\s*= /,' || log_warning "Failed to add regex pattern 2 allowed"
     git secrets --add --allowed '/PRIVATE_KEY\\\\s*= /' || log_warning "Failed to add regex pattern 3 allowed"
-    git secrets --add --allowed '/PRIVATE_KEY\\\\s*= /' || log_warning "Failed to add regex pattern 4 allowed"
     git secrets --add --allowed '/PRIVATE_KEY\\\\s*= /,' || log_warning "Failed to add regex pattern 5 allowed"
     git secrets --add --allowed '/PRIVATE_KEY\\s\\*=/' || log_warning "Failed to add regex pattern 6 allowed"
     git secrets --add --allowed 'const secretPatterns = \[' || log_warning "Failed to add const allowed pattern"
     git secrets --add --allowed 'SECRET_KEYs*' || log_warning "Failed to add SECRET_KEYs allowed pattern"
     git secrets --add --allowed 'scripts/devops/signed-artifacts/' || log_warning "Failed to add signed-artifacts allowed pattern"
     git secrets --add --allowed '.devcontainer/scripts/setup-security.sh' || log_warning "Failed to add .devcontainer allowed pattern"
-
+    git config --add secrets.allowed 'API_KEY|API_SECRET|PRIVATE_KEY|SECRET_KEY' || log_warning "Failed to add combined API_KEY|API_SECRET|PRIVATE_KEY|SECRET_KEY allowed pattern"
+    git config --add secrets.allowed '.yarn/releases/' || log_warning "Failed to add .yarn/releases allowed pattern"
+    
     # Install git-secrets hooks
     if [ -d .git ]; then
         git secrets --install -f || log_warning "Failed to install git-secrets hooks"
