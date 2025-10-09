@@ -1,8 +1,8 @@
-import { ethers } from 'hardhat';
-import * as fs from 'fs';
-import * as path from 'path';
 import { Diamond } from 'diamonds';
-import type { Signer, Provider } from 'ethers';
+import type { Provider, Signer } from 'ethers';
+import * as fs from 'fs';
+import { ethers } from 'hardhat';
+import * as path from 'path';
 
 /**
  * Loads a Diamond contract instance using the generated Diamond ABI.

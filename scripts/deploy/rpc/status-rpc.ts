@@ -6,19 +6,19 @@
  */
 
 import chalk from 'chalk';
-import { ethers } from 'ethers';
 import { Diamond } from 'diamonds';
+import { ethers } from 'ethers';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
 	StatusOptions,
-	setupProgram,
 	addStatusOptions,
-	createRPCConfig,
-	showPreOperationInfo,
-	showOperationSummary,
-	createMainCommand,
 	createLegacyCommand,
+	createMainCommand,
 	createQuickCommand,
+	createRPCConfig,
+	setupProgram,
+	showOperationSummary,
+	showPreOperationInfo,
 } from './common';
 
 /**

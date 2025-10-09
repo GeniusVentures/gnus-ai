@@ -1,12 +1,10 @@
-import { BaseContract } from 'ethers';
-import { ethers } from 'hardhat';
-import { parseEther, Interface, FunctionFragment } from 'ethers';
-import { debug } from 'debug';
 import * as chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { debug } from 'debug';
+import { BaseContract, Interface, parseEther } from 'ethers';
 
 export const assert = chai.assert;
 export const expect = chai.expect;
-import chaiAsPromised from 'chai-as-promised';
 
 import fs from 'fs';
 import util from 'util';

@@ -10,14 +10,14 @@ import { Diamond } from 'diamonds';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
 	UpgradeOptions,
-	setupProgram,
 	addUpgradeOptions,
-	createRPCConfig,
-	showPreOperationInfo,
-	showOperationSummary,
-	createMainCommand,
 	createLegacyCommand,
+	createMainCommand,
 	createQuickCommand,
+	createRPCConfig,
+	setupProgram,
+	showOperationSummary,
+	showPreOperationInfo,
 } from './common';
 
 /**
