@@ -219,7 +219,7 @@ run_ci_compilation() {
     fi
 
     # TypeChain generation
-    if npx hardhat diamond:generate-abi-typechain --diamond-name "$DIAMOND_NAME"; then
+    if npx hardhat diamond:generate-abi-typechain --diamond-name GeniusDiamond; then
         log_success "TypeChain generation successful"
     else
         log_warning "TypeChain generation failed (may be expected)"
