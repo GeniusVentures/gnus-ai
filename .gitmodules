@@ -4,3 +4,6 @@
 [submodule "diamonds/GeniusDiamond"]
 	path = diamonds/GeniusDiamond
 	url = git@github.com:GeniusVentures/GeniusDiamond.git
+[submodule ".devcontainer"]
+	path = .devcontainer
+	url = https://github.com/GeniusVentures/diamonds-devcontainer.git
