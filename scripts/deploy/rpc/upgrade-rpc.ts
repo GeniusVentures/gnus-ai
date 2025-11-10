@@ -5,8 +5,8 @@
  * Upgrades GNUS.AI Diamond contracts using RPCDiamondDeployer
  */
 
+import { Diamond } from '@diamondslab/diamonds';
 import chalk from 'chalk';
-import { Diamond } from 'diamonds';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
 	UpgradeOptions,

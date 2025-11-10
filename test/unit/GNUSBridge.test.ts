@@ -1,20 +1,19 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-import { debug } from 'debug';
-import { expect } from 'chai';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
+import { Diamond } from '@diamondslab/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
+import { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
-import { toWei } from '../../scripts/utils/helpers';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond } from 'diamonds';
-import { GeniusDiamond } from '../../diamond-typechain-types';
+import { toWei } from '../../scripts/utils/helpers';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 chai.use(chaiAsPromised);

@@ -1,14 +1,14 @@
 import * as dotenv from 'dotenv';
 
-import { HardhatUserConfig, task } from 'hardhat/config';
+import '@diamondslab/hardhat-diamonds';
 import '@nomicfoundation/hardhat-toolbox';
-import 'hardhat-abi-exporter';
-import '@typechain/hardhat';
-import 'hardhat-gas-reporter';
-import 'solidity-coverage';
 import '@nomicfoundation/hardhat-web3-v4';
+import '@typechain/hardhat';
+import 'hardhat-abi-exporter';
+import 'hardhat-gas-reporter';
 import 'hardhat-multichain';
-import 'hardhat-diamonds';
+import { HardhatUserConfig, task } from 'hardhat/config';
+import 'solidity-coverage';
 
 dotenv.config();
 

@@ -1,27 +1,25 @@
 import {
-	Diamond,
-	DiamondDeployer,
-	FileDeploymentRepository,
 	DeploymentRepository,
+	Diamond,
 	DiamondConfig,
+	DiamondDeployer,
 	DiamondPathsConfig,
+	FileDeploymentRepository,
 	RPCDeploymentStrategy,
 	cutKey,
-} from 'diamonds';
-import { JsonRpcProvider } from 'ethers';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
+} from '@diamondslab/diamonds';
+import '@diamondslab/hardhat-diamonds';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { join } from 'path';
-import { readFileSync, existsSync } from 'fs';
-import 'hardhat-diamonds';
-import 'hardhat-multichain';
-import type { HardhatUserConfig } from 'hardhat/types';
-import * as dotenv from 'dotenv';
 import chalk from 'chalk';
+import * as dotenv from 'dotenv';
+import { JsonRpcProvider } from 'ethers';
+import { existsSync } from 'fs';
+import hre, { ethers } from 'hardhat';
+import 'hardhat-multichain';
+import { join } from 'path';
 
-import 'hardhat-diamonds';
+import '@diamondslab/hardhat-diamonds';
 
 dotenv.config();
 
@@ -206,7 +204,7 @@ export class RPCDiamondDeployer {
 	}
 
 	/**
-	 * Load diamond configuration from hardhat-diamonds
+	 * Load diamond configuration from @diamondslab/hardhat-diamonds
 	 *
 	 * @param diamondName - Name of the diamond
 	 * @returns DiamondPathsConfig from hardhat configuration
@@ -268,7 +266,7 @@ export class RPCDiamondDeployer {
 		privateKey: string,
 		overrides: Partial<RPCDiamondDeployerConfig> = {},
 	): RPCDiamondDeployerConfig {
-		// Get diamond configuration from hardhat-diamonds
+		// Get diamond configuration from @diamondslab/hardhat-diamonds
 		const diamondConfig = this.getDiamondConfigFromHardhat(diamondName);
 
 		// Get network configuration from hardhat chainManager

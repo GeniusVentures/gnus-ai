@@ -77,8 +77,8 @@ class ProvenanceValidator {
 			'ethers',
 			'typescript',
 			'@types/node',
-			'diamonds',
-			'hardhat-diamonds',
+			'@diamondslab/diamonds',
+			'@diamondslab/hardhat-diamonds',
 			'@openzeppelin/contracts',
 			'@openzeppelin/contracts-upgradeable',
 		];

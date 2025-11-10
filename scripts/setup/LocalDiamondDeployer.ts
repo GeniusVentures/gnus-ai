@@ -1,21 +1,20 @@
 import {
-	Diamond,
-	DiamondDeployer,
-	LocalDeploymentStrategy,
-	FileDeploymentRepository,
 	DeploymentRepository,
+	Diamond,
 	DiamondConfig,
+	DiamondDeployer,
 	DiamondPathsConfig,
+	FileDeploymentRepository,
+	LocalDeploymentStrategy,
 	cutKey,
 	impersonateAndFundSigner,
-} from 'diamonds';
+} from '@diamondslab/diamonds';
+import '@diamondslab/hardhat-diamonds';
 import type { JsonRpcProvider } from '@ethersproject/providers';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import hre, { ethers } from 'hardhat';
 import { join } from 'path';
-import 'hardhat-diamonds';
 
 export interface LocalDiamondDeployerConfig extends DiamondConfig {
 	provider?: JsonRpcProvider | HardhatEthersProvider;

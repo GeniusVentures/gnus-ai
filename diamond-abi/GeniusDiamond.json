@@ -2508,9 +2508,9 @@
   "linkReferences": {},
   "deployedLinkReferences": {},
   "_diamondMetadata": {
-    "generatedAt": "2025-10-09T22:11:14.928Z",
+    "generatedAt": "2025-11-10T20:12:20.562Z",
     "diamondName": "GeniusDiamond",
-    "networkName": "localhost",
+    "networkName": "sepolia",
     "chainId": 31337,
     "selectorMap": {
       "0x1f931c1c": "DiamondCutFacet",

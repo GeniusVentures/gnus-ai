@@ -5,8 +5,8 @@
  * Verifies contract deployment and validates integrity
  */
 
+import { Diamond } from '@diamondslab/diamonds';
 import chalk from 'chalk';
-import { Diamond } from 'diamonds';
 import { ethers } from 'ethers';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {

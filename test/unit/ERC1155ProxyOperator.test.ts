@@ -1,23 +1,27 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-import { debug } from 'debug';
-import { expect } from 'chai';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
+import {
+	DeployedDiamondData,
+	Diamond,
+	getDeployedFacetInterfaces,
+	logTx,
+} from '@diamondslab/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { debug } from 'debug';
 import { JsonRpcProvider, ZeroAddress } from 'ethers';
+import { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
-
-// Type alias for provider compatibility
-type ProviderType = JsonRpcProvider | any;
+import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '../../scripts/setup/LocalDiamondDeployer';
-import { DeployedDiamondData, Diamond, getDeployedFacetInterfaces, logTx } from 'diamonds';
-import { GeniusDiamond } from '../../diamond-typechain-types';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
+
+// Type alias for provider compatibility
+type ProviderType = JsonRpcProvider | any;
 
 chai.use(chaiAsPromised);
 

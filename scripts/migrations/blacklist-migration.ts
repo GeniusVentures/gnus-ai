@@ -1,9 +1,6 @@
-import { ethers } from 'hardhat';
 import hre from 'hardhat';
-import { GeniusDiamond } from '../../diamond-typechain-types';
-import { loadDiamondContract } from '../utils/loadDiamondArtifact';
-import { Diamond } from 'diamonds';
 import { debuglog } from 'util';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 
 /**
  * Migration script for GNUS Blacklist V2

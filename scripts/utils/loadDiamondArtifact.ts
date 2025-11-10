@@ -1,4 +1,4 @@
-import { Diamond } from 'diamonds';
+import { Diamond } from '@diamondslab/diamonds';
 import type { Provider, Signer } from 'ethers';
 import * as fs from 'fs';
 import { ethers } from 'hardhat';

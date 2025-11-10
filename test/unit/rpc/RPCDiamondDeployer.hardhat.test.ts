@@ -1,7 +1,6 @@
+import '@diamondslab/hardhat-diamonds';
 import { expect } from 'chai';
 import { RPCDiamondDeployer } from '../../../scripts/setup/RPCDiamondDeployer';
-import hre from 'hardhat';
-import 'hardhat-diamonds';
 
 describe('RPCDiamondDeployer - Hardhat Integration', function () {
 	this.timeout(60000);
@@ -12,7 +11,7 @@ describe('RPCDiamondDeployer - Hardhat Integration', function () {
 	});
 
 	describe('Hardhat Configuration Loading', function () {
-		it('should load diamond configuration from hardhat-diamonds', function () {
+		it('should load diamond configuration from @diamondslab/hardhat-diamonds', function () {
 			try {
 				const diamondConfig =
 					RPCDiamondDeployer.getDiamondConfigFromHardhat('GeniusDiamond');

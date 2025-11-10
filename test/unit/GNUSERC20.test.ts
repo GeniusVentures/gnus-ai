@@ -1,22 +1,19 @@
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { expect, assert } from 'chai';
-import hre from 'hardhat';
-import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { JsonRpcProvider } from 'ethers';
+import { Diamond } from '@diamondslab/diamonds';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import chai, { assert, expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { JsonRpcProvider } from 'ethers';
+import hre from 'hardhat';
 import { multichain } from 'hardhat-multichain';
-import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond } from 'diamonds';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-import { GeniusDiamond } from '../../diamond-typechain-types';
-import { IERC20Upgradeable__factory, GeniusOwnershipFacet } from '../../typechain-types';
+import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
+import { GeniusOwnershipFacet, IERC20Upgradeable__factory } from '../../typechain-types';
 
 chai.use(chaiAsPromised);
 

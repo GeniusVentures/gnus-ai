@@ -1,33 +1,30 @@
-import { iObjToString } from '../../scripts/utils/iObjToString';
-import { GNUS_TOKEN_ID } from '../../scripts/common';
-import { debuglog } from 'util';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import { debuglog } from 'util';
+import { GNUS_TOKEN_ID } from '../../scripts/common';
+import { iObjToString } from '../../scripts/utils/iObjToString';
 import { logEvents } from '../../scripts/utils/logEvents';
 
+import { Diamond } from '@diamondslab/diamonds';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { assert, expect } from 'chai';
 import { debug } from 'debug';
-import { expect, assert } from 'chai';
+import { formatEther, id, JsonRpcProvider } from 'ethers';
 import { ethers } from 'hardhat';
-import { formatEther, id } from 'ethers';
-import hre from 'hardhat';
+import { multichain } from 'hardhat-multichain';
+import { GeniusDiamond } from '../../diamond-typechain-types';
+import {
+	LocalDiamondDeployer,
+	LocalDiamondDeployerConfig,
+} from '../../scripts/setup/LocalDiamondDeployer';
+import { toWei } from '../../scripts/utils/helpers';
+import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 // Create utils object for compatibility
 const utils = { formatEther, id };
 
 // Helper function to replace toBN - in ethers v6 we use BigInt directly
 const toBN = (value: number | string) => BigInt(Math.floor(Number(value) * 1e18));
-import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { JsonRpcProvider } from 'ethers';
-import { multichain } from 'hardhat-multichain';
-import { toWei } from '../../scripts/utils/helpers';
-import {
-	LocalDiamondDeployer,
-	LocalDiamondDeployerConfig,
-} from '../../scripts/setup/LocalDiamondDeployer';
-import { Diamond } from 'diamonds';
-import { GeniusDiamond } from '../../diamond-typechain-types';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
-import { Artifact } from 'hardhat/types';
 
 chai.use(chaiAsPromised);
 
