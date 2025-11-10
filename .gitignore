@@ -18,5 +18,5 @@ dist
 
 tmp
 notes
-diamond-abi
+diamond-abi/**/*.json
 .yarn/
