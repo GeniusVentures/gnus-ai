@@ -20,3 +20,5 @@ tmp
 notes
 diamond-abi/**/*.json
 .yarn/
+diamond-typechain-types/*.ts
+diamond-typechain-types/factories
