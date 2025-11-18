@@ -133,7 +133,6 @@ This repository contains the smart contracts powering the GNUS.ai platform, an a
 
 - **Purpose:** Manages security and protocol settings for the GNUS ecosystem.
 - **Features:**
-  - Blacklist management for addresses and token IDs.
   - Bridge fee and protocol version management.
   - Methods:
     - `banTransferorForAll`: Globally bans an address from transferring tokens.
