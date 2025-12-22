@@ -1,27 +1,25 @@
-import { debug } from 'debug';
-import { pathExistsSync } from 'fs-extra';
-import { expect, assert } from 'chai';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
+import { Diamond } from '@diamondslab/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
+import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
-
-// Type alias for provider compatibility
-type ProviderType = JsonRpcProvider | any;
-import { getInterfaceID } from '../../../scripts/utils/helpers';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '../../../scripts/setup/LocalDiamondDeployer';
-import { Diamond, deleteDeployInfo } from 'diamonds';
+import { getInterfaceID } from '../../../scripts/utils/helpers';
+import { loadDiamondContract } from '../../../scripts/utils/loadDiamondArtifact';
 import {
 	GeniusDiamond,
-	IERC20Upgradeable__factory,
 	IDiamondCut__factory,
 	IDiamondLoupe__factory,
+	IERC20Upgradeable__factory,
 } from '../../../typechain-types';
-import { config } from 'dotenv';
+
+// Type alias for provider compatibility
+type ProviderType = JsonRpcProvider | any;
 
 describe('🧪 Sepolia Upgrade v2.4 to v2.5 Tests', async function () {
 	const diamondName = 'GeniusDiamond';
@@ -90,12 +88,22 @@ describe('🧪 Sepolia Upgrade v2.4 to v2.5 Tests', async function () {
 				diamond = await diamondDeployer.getDiamondDeployed();
 				const deployedDiamondData = diamond.getDeployedDiamondData();
 
-				const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-				const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-				geniusDiamond = (await ethers.getContractAt(
-					diamondArtifactName,
+				// const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
+				// const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
+				// geniusDiamond = (await ethers.getContractAt(
+				// 	diamondArtifactName,
+				// 	deployedDiamondData.DiamondAddress!,
+				// )) as unknown as GeniusDiamond;
+				let geniusDiamondPlain: GeniusDiamond;
+
+				let geniusDiamondContract: GeniusDiamond;
+
+				// Load the Diamond contract using the utility function
+				geniusDiamondContract = await loadDiamondContract<GeniusDiamond>(
+					diamond,
 					deployedDiamondData.DiamondAddress!,
-				)) as unknown as GeniusDiamond;
+				);
+				geniusDiamond = geniusDiamondContract;
 
 				ethersMultichain = ethers;
 				ethersMultichain.provider = provider as any;
@@ -109,8 +117,12 @@ describe('🧪 Sepolia Upgrade v2.4 to v2.5 Tests', async function () {
 				signer1Diamond = geniusDiamond.connect(signers[1]);
 				signer2Diamond = geniusDiamond.connect(signers[2]);
 
-				// get the signer for the owner
-				owner = await diamond.getSigner()?.getAddress()!;
+				owner = diamond.getDeployedDiamondData().DeployerAddress!;
+				if (!owner) {
+					diamond.setSigner(signers[0]);
+					owner = signer0;
+					ownerSigner;
+				}
 				ownerSigner = await ethersMultichain.getSigner(owner);
 
 				ownerDiamond = geniusDiamond.connect(ownerSigner);

@@ -1,33 +1,29 @@
-import { debug } from 'debug';
-import { pathExistsSync } from 'fs-extra';
-import { expect, assert } from 'chai';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
+import {
+	compareFacetSelectors,
+	DeployedDiamondData,
+	Diamond,
+	diffDeployedFacets,
+	getDeployedFacets,
+	isProtocolInitRegistered,
+} from '@diamondslab/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
+import { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
-
-// Type alias for provider compatibility
-type ProviderType = JsonRpcProvider | any;
-import { getInterfaceID } from '../../scripts/utils/helpers';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '../../scripts/setup/LocalDiamondDeployer';
-import {
-	Diamond,
-	getDeployedFacetInterfaces,
-	diffDeployedFacets,
-	compareFacetSelectors,
-	isProtocolInitRegistered,
-	getDeployedFacets,
-} from 'diamonds';
-import { GeniusDiamond } from '../../diamond-typechain-types';
-import { DeployedDiamondData } from 'diamonds';
+
+// Type alias for provider compatibility
+type ProviderType = JsonRpcProvider | any;
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
-	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
+	const log: debug.Debugger = debug(`GNUSDeploy:log:${diamondName}`);
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	const networkProviders = multichain.getProviders() || new Map<string, ProviderType>();

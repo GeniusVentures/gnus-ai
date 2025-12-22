@@ -2,17 +2,17 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
 import { Diamond } from '@diamondslab/diamonds';
+import {
+	LocalDiamondDeployer,
+	LocalDiamondDeployerConfig,
+} from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
-import { ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
-import {
-	LocalDiamondDeployer,
-	LocalDiamondDeployerConfig,
-} from '../../scripts/setup/LocalDiamondDeployer';
 import { toWei } from '../../scripts/utils/helpers';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
@@ -64,7 +64,7 @@ describe('GNUS Bridge Tests', async function () {
 					writeDeployedDiamondData: false,
 					configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
 				} as LocalDiamondDeployerConfig;
-				const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
+				const diamondDeployer = await LocalDiamondDeployer.getInstance(hre, config);
 				await diamondDeployer.setVerbose(true);
 				diamond = await diamondDeployer.getDiamondDeployed();
 				const deployedDiamondData = diamond.getDeployedDiamondData();

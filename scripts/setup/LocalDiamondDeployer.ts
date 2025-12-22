@@ -6,18 +6,18 @@ import {
 	DiamondPathsConfig,
 	FileDeploymentRepository,
 	LocalDeploymentStrategy,
+	SupportedProvider,
 	cutKey,
 	impersonateAndFundSigner,
 } from '@diamondslab/diamonds';
 import '@diamondslab/hardhat-diamonds';
-import type { JsonRpcProvider } from '@ethersproject/providers';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import hre, { ethers } from 'hardhat';
 import { join } from 'path';
 
 export interface LocalDiamondDeployerConfig extends DiamondConfig {
-	provider?: JsonRpcProvider | HardhatEthersProvider;
+	provider?: SupportedProvider;
 	signer?: SignerWithAddress;
 	localDiamondDeployerKey?: string;
 }
@@ -29,7 +29,7 @@ export class LocalDiamondDeployer {
 	private diamond: Diamond | undefined;
 	private verbose: boolean = true;
 	private config: LocalDiamondDeployerConfig;
-	private provider: JsonRpcProvider | HardhatEthersProvider;
+	private provider: SupportedProvider;
 	private signer: SignerWithAddress;
 	private diamondName: string;
 	private networkName: string = 'hardhat';
@@ -46,7 +46,7 @@ export class LocalDiamondDeployer {
 		if (!config.networkName) {
 			// TODO account for "unknown" as hardhat
 			if ('_network' in this.provider) {
-				config.networkName = (this.provider as JsonRpcProvider)._network.name;
+				config.networkName = (this.provider as SupportedProvider)._network.name;
 			} else {
 				config.networkName = 'hardhat';
 			}
@@ -55,7 +55,7 @@ export class LocalDiamondDeployer {
 		}
 		if (!config.chainId) {
 			if ('_network' in this.provider) {
-				config.chainId = (this.provider as JsonRpcProvider)._network.chainId;
+				config.chainId = (this.provider as SupportedProvider)._network.chainId;
 			} else {
 				config.chainId = 31337;
 			}

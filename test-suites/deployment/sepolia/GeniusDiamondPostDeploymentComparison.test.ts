@@ -1,29 +1,26 @@
-import { debug } from 'debug';
-import { pathExistsSync } from 'fs-extra';
-import { expect, assert } from 'chai';
-import { ethers } from 'hardhat';
-import hre from 'hardhat';
+import {
+	compareFacetSelectors,
+	DeployedDiamondData,
+	Diamond,
+	diffDeployedFacets,
+	getDeployedFacets,
+	isProtocolInitRegistered,
+} from '@diamondslab/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
+import { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
-
-// Type alias for provider compatibility
-type ProviderType = JsonRpcProvider | any;
-import { getInterfaceID } from '../../../scripts/utils/helpers';
+import { GeniusDiamond } from '../../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '../../../scripts/setup/LocalDiamondDeployer';
-import {
-	Diamond,
-	getDeployedFacetInterfaces,
-	diffDeployedFacets,
-	compareFacetSelectors,
-	isProtocolInitRegistered,
-	getDeployedFacets,
-} from 'diamonds';
-import { GeniusDiamond } from '../../../diamond-typechain-types';
-import { DeployedDiamondData } from 'diamonds';
+import { loadDiamondContract } from '../../../scripts/utils/loadDiamondArtifact';
+
+// Type alias for provider compatibility
+type ProviderType = JsonRpcProvider | any;
 
 describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
 	const diamondName = 'GeniusDiamond';
@@ -75,12 +72,16 @@ describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
 				diamond = await diamondDeployer.getDiamond();
 				deployedDiamondData = diamond.getDeployedDiamondData();
 
-				const hardhatDiamondAbiPath = 'hardhat-diamond-abi/HardhatDiamondABI.sol:';
-				const diamondArtifactName = `${hardhatDiamondAbiPath}${diamond.diamondName}`;
-				geniusDiamond = (await ethers.getContractAt(
-					diamondArtifactName,
+				let geniusDiamondPlain: GeniusDiamond;
+
+				let geniusDiamondContract: GeniusDiamond;
+
+				// Load the Diamond contract using the utility function
+				geniusDiamondContract = await loadDiamondContract<GeniusDiamond>(
+					diamond,
 					deployedDiamondData.DiamondAddress!,
-				)) as unknown as GeniusDiamond;
+				);
+				geniusDiamond = geniusDiamondContract;
 
 				ethersMultichain = ethers;
 				ethersMultichain.provider = provider as any;
@@ -94,8 +95,12 @@ describe('🧪 Diamond Post-Deployment Comparison Tests', async function () {
 				signer1Diamond = geniusDiamond.connect(signers[1]);
 				signer2Diamond = geniusDiamond.connect(signers[2]);
 
-				// get the signer for the owner
-				owner = await diamond.getSigner()?.getAddress()!;
+				owner = diamond.getDeployedDiamondData().DeployerAddress!;
+				if (!owner) {
+					diamond.setSigner(signers[0]);
+					owner = signer0;
+					ownerSigner;
+				}
 				ownerSigner = await ethersMultichain.getSigner(owner);
 
 				ownerDiamond = geniusDiamond.connect(ownerSigner);

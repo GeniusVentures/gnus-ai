@@ -1,15 +1,14 @@
-import { Diamond } from '@diamondslab/diamonds';
-import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { expect } from 'chai';
-import { debug } from 'debug';
-import { JsonRpcProvider } from 'ethers';
-import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
-import { GeniusDiamond } from '../../diamond-typechain-types';
+import { Diamond, SupportedProvider } from '@diamondslab/diamonds';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '../../scripts/setup/LocalDiamondDeployer';
+} from '@diamondslab/hardhat-diamonds/dist/utils';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
+import { expect } from 'chai';
+import { debug } from 'debug';
+import hre, { ethers } from 'hardhat';
+import { multichain } from 'hardhat-multichain';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 import { getInterfaceID } from '../../scripts/utils/helpers';
 import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 import {
@@ -18,15 +17,13 @@ import {
 	IERC20Upgradeable__factory,
 } from '../../typechain-types';
 
-// Type alias for provider compatibility
-type ProviderType = JsonRpcProvider | any;
-
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
 	const log: debug.Debugger = debug(`GNUSDeploy:log:${diamondName}`);
 	this.timeout(0);
 
-	const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
+	const networkProviders =
+		multichain.getProviders() || new Map<string, SupportedProvider>();
 
 	if (process.argv.includes('test-multichain')) {
 		const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
@@ -64,7 +61,7 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 					writeDeployedDiamondData: false,
 					configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
 				} as LocalDiamondDeployerConfig;
-				const diamondDeployer = await LocalDiamondDeployer.getInstance(config);
+				const diamondDeployer = await LocalDiamondDeployer.getInstance(hre, config);
 				await diamondDeployer.setVerbose(true);
 				diamond = await diamondDeployer.getDiamondDeployed();
 				const deployedDiamondData = diamond.getDeployedDiamondData();
