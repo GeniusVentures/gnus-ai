@@ -24,3 +24,12 @@ diamond-abi/**/*.json
 .yarn/
 diamond-typechain-types/*.ts
 diamond-typechain-types/factories
+
+# Foundry test helper artifacts
+test/foundry/helpers/DiamondDeployment.sol
+
+#Foundry files
+out/
+cache_forge/
+broadcast/
+lib/

@@ -1,0 +1,66 @@
+{
+  "description": "Forge fuzzing configuration for GeniusDiamond",
+  "diamondName": "GeniusDiamond",
+  "targetFunctions": [
+    {
+      "facet": "GeniusOwnershipFacet",
+      "functions": ["transferOwnership", "owner"]
+    },
+    {
+      "facet": "GeniusAccessControlFacet",
+      "functions": ["grantRole", "revokeRole", "renounceRole", "hasRole"]
+    },
+    {
+      "facet": "DiamondLoupeFacet",
+      "functions": [
+        "facets",
+        "facetFunctionSelectors",
+        "facetAddresses",
+        "facetAddress"
+      ]
+    }
+  ],
+  "forgeSettings": {
+    "runs": 256,
+    "depth": 15,
+    "workers": 4,
+    "verbosity": 2,
+    "failOnRevert": false,
+    "matchTest": null,
+    "matchContract": null
+  },
+  "networkSettings": {
+    "defaultNetwork": "localhost",
+    "rpcUrl": "http://127.0.0.1:8545",
+    "chainId": 31337,
+    "supportedNetworks": ["localhost", "hardhat", "anvil"]
+  },
+  "gasProfiling": {
+    "enabled": true,
+    "threshold": 100000,
+    "functions": [
+      "transferOwnership",
+      "grantRole",
+      "revokeRole",
+      "facets",
+      "facetAddress"
+    ]
+  },
+  "invariantSettings": {
+    "runs": 256,
+    "depth": 15,
+    "failOnRevert": false,
+    "callOverride": false,
+    "targetContracts": ["DiamondProxyInvariant"]
+  },
+  "notes": {
+    "purpose": "Configuration for Forge-based fuzzing and invariant testing of GeniusDiamond",
+    "usage": "Reference this file when running forge tests with specific parameters",
+    "commands": {
+      "fuzz": "forge test --match-contract Fuzz -vv",
+      "invariant": "forge test --match-contract Invariant -vv",
+      "gas": "forge test --gas-report",
+      "coverage": "forge coverage"
+    }
+  }
+}

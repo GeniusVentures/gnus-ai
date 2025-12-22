@@ -8,8 +8,7 @@
         "useTabs": true,
         "trailingComma": "all",
         "semi": true,
-        "printWidth": 92,
-        "eslint.format.enable": true
+        "printWidth": 92
       }
     },
     {

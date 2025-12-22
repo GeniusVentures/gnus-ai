@@ -1,5 +1,4 @@
 rules:
-
   - id: diamond-selector-collision
     patterns:
       - pattern: diamondCut
@@ -94,6 +93,9 @@ rules:
     message: "Diamond facet function without explicit selector declaration. Ensure no selector clashes in diamond cuts."
     severity: WARNING
     languages: [solidity]
+    paths:
+      exclude:
+        - test/**
 
   - id: diamond-storage-violation
     patterns:
@@ -115,14 +117,20 @@ rules:
     message: "Direct state variable in contract detected. Use diamond storage library pattern to avoid storage collisions in diamond proxies."
     severity: ERROR
     languages: [solidity]
-    
+    paths:
+      exclude:
+        - test/**
+
   - id: diamond-storage-violation-2
     patterns:
       - pattern-regex: \bcontract\s+\w+\s*\{[\s\S]*?\w+\s+\w+\s*;
       - pattern-not: LibDiamond
     message: "Contract uses direct storage variables that may conflict with Diamond storage pattern. Use LibDiamond.diamondStorage() for upgrade-safe storage."
     severity: ERROR
-    languages: [solidity]  
+    languages: [solidity]
+    paths:
+      exclude:
+        - test/**
 
   - id: unsafe-diamond-cut
     patterns:

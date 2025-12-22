@@ -6,6 +6,6 @@
     "bash -c 'if [[ \"$1\" != scripts/devops/signed-artifacts* ]]; then git secrets --scan \"$1\"; fi' --"
   ],
   "*.sol": [
-    "semgrep scan --config .semgrep.yml --error --cache"
+    "semgrep scan --config .semgrep.yml --error"
   ]
 }

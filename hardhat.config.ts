@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 
+import '@diamondslab/diamonds-hardhat-foundry';
 import '@diamondslab/hardhat-diamonds';
 import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-web3-v4';
