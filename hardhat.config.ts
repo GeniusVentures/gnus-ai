@@ -135,7 +135,7 @@ const config: HardhatUserConfig = {
 		target: 'ethers-v6', // Match the version of Ethers.js you're using
 	},
 	solidity: {
-		version: '0.8.9',
+		version: '0.8.19',
 		settings: {
 			optimizer: {
 				enabled: true,
