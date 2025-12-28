@@ -51,14 +51,14 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 0.1 Create and checkout a new branch for the fuzz test suite (e.g., `git checkout -b feature/foundry-fuzz-tests`)
   - [x] 0.2 Verify the branch is based on `feature/add-diamonds-hardhat-foundry` to inherit existing Foundry setup
 
-- [ ] 1.0 Set up test infrastructure and base contracts
-  - [ ] 1.1 Create directory structure: `test/foundry/base/`, `test/foundry/handlers/`, invariant, fuzz
-  - [ ] 1.2 Verify DiamondDeployment.sol exists and contains correct deployment addresses
-  - [ ] 1.3 Create `GeniusDiamondTestBase.sol` extending `DiamondFuzzBase` from `@diamondslab/diamonds-hardhat-foundry`
-  - [ ] 1.4 Implement common setup in base contract: load diamond address, set up deployer impersonation, create interface casts
-  - [ ] 1.5 Add helper functions for role setup (grant MINTER_ROLE, DEFAULT_ADMIN_ROLE, etc.)
-  - [ ] 1.6 Add helper functions for token setup (mint initial GNUS tokens for testing)
-  - [ ] 1.7 Verify base contract compiles and can access diamond functions
+- [x] 1.0 Set up test infrastructure and base contracts
+  - [x] 1.1 Create directory structure: `test/foundry/base/`, `test/foundry/handlers/`, invariant, fuzz
+  - [x] 1.2 Verify DiamondDeployment.sol exists and contains correct deployment addresses
+  - [x] 1.3 Create `GeniusDiamondTestBase.sol` extending `DiamondFuzzBase` from `@diamondslab/diamonds-hardhat-foundry`
+  - [x] 1.4 Implement common setup in base contract: load diamond address, set up deployer impersonation, create interface casts
+  - [x] 1.5 Add helper functions for role setup (grant MINTER_ROLE, DEFAULT_ADMIN_ROLE, etc.)
+  - [x] 1.6 Add helper functions for token setup (mint initial GNUS tokens for testing)
+  - [x] 1.7 Verify base contract compiles and can access diamond functions
 
 - [ ] 2.0 Implement Diamond Core invariant and fuzz tests
   - [ ] 2.1 Create `DiamondCoreInvariant.t.sol` with base setup extending `GeniusDiamondTestBase`
