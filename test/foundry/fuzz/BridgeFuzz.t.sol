@@ -15,7 +15,7 @@ contract BridgeFuzz is GeniusDiamondTestBase {
      */
     function setUp() public override {
         super.setUp();
-        
+
         console.log("===== Bridge Fuzz Tests =====");
         console.log("Diamond:", diamond);
         console.log("=============================");
@@ -27,12 +27,12 @@ contract BridgeFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_bridgeDeposit(uint256 amount) public {
         amount = _boundUint256(amount, 1 ether, 1000 ether);
-        
+
         uint256 balance = _getGNUSBalance(address(this));
         if (balance < amount) {
             _mintGNUS(address(this), amount - balance + 100 ether);
         }
-        
+
         // Try bridge deposit (function signature may vary)
         bytes memory callData = abi.encodeWithSignature(
             "bridgeOut(uint256,uint256,uint256)",
@@ -40,9 +40,9 @@ contract BridgeFuzz is GeniusDiamondTestBase {
             GNUS_TOKEN_ID,
             1 // destination chain ID
         );
-        
+
         (bool success, ) = diamond.call(callData);
-        
+
         if (success) {
             console.log("[OK] Bridge deposit succeeded");
         } else {
@@ -57,17 +57,17 @@ contract BridgeFuzz is GeniusDiamondTestBase {
     function testFuzz_RevertWhen_depositExceedsBalance(uint256 excessAmount) public {
         uint256 balance = _getGNUSBalance(address(this));
         vm.assume(excessAmount > balance && excessAmount < type(uint256).max - 1000 ether);
-        
+
         bytes memory callData = abi.encodeWithSignature(
             "bridgeOut(uint256,uint256,uint256)",
             excessAmount,
             GNUS_TOKEN_ID,
             1
         );
-        
+
         (bool success, ) = diamond.call(callData);
         assertFalse(success, "Excess bridge should fail");
-        
+
         console.log("[OK] Excess bridge deposit rejected");
     }
 
@@ -81,14 +81,14 @@ contract BridgeFuzz is GeniusDiamondTestBase {
             console.log("[OK] Zero amount tested");
             return;
         }
-        
+
         amount = _boundUint256(amount, 1, 10000 ether);
-        
+
         uint256 balance = _getGNUSBalance(address(this));
         if (balance < amount) {
             amount = balance;
         }
-        
+
         if (amount > 0) {
             bytes memory callData = abi.encodeWithSignature(
                 "bridgeOut(uint256,uint256,uint256)",
@@ -96,10 +96,10 @@ contract BridgeFuzz is GeniusDiamondTestBase {
                 GNUS_TOKEN_ID,
                 1
             );
-            
+
             diamond.call(callData);
         }
-        
+
         console.log("[OK] Edge case tested");
     }
 }

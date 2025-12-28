@@ -12,13 +12,13 @@ import {console} from "forge-std/console.sol";
 contract NFTFactoryInvariant is GeniusDiamondTestBase {
     // Track created collections
     uint256[] internal createdCollections;
-    
+
     /**
      * @notice Setup for NFT Factory invariant tests
      */
     function setUp() public override {
         super.setUp();
-        
+
         console.log("===== NFT Factory Invariant Tests =====");
         console.log("Diamond:", diamond);
         console.log("=======================================");
@@ -38,7 +38,7 @@ contract NFTFactoryInvariant is GeniusDiamondTestBase {
                 );
             }
         }
-        
+
         console.log("[OK] Collection IDs are unique");
     }
 
@@ -48,10 +48,10 @@ contract NFTFactoryInvariant is GeniusDiamondTestBase {
      */
     function invariant_gnusBurnedOnCollectionCreate() public view {
         uint256 totalSupply = _getTotalGNUSSupply();
-        
+
         // Total supply should never increase without minting
         assertTrue(totalSupply >= 0, "Invalid total supply");
-        
+
         console.log("[OK] GNUS burn mechanics valid");
     }
 }

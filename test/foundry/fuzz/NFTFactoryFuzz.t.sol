@@ -15,7 +15,7 @@ contract NFTFactoryFuzz is GeniusDiamondTestBase {
      */
     function setUp() public override {
         super.setUp();
-        
+
         console.log("===== NFT Factory Fuzz Tests =====");
         console.log("Diamond:", diamond);
         console.log("==================================");
@@ -29,14 +29,14 @@ contract NFTFactoryFuzz is GeniusDiamondTestBase {
     function testFuzz_createNFTCollection(uint256 maxSupply, uint256 exchRate) public {
         maxSupply = _boundUint256(maxSupply, 1, 1000000);
         exchRate = _boundUint256(exchRate, 1 ether, 10000 ether);
-        
+
         // Ensure test contract has enough GNUS
         uint256 requiredGnus = exchRate;
         uint256 currentBalance = _getGNUSBalance(address(this));
         if (currentBalance < requiredGnus) {
             _mintGNUS(address(this), requiredGnus - currentBalance + 1000 ether);
         }
-        
+
         // Try to create collection (function may vary)
         bytes memory callData = abi.encodeWithSignature(
             "createNFTCollection(string,string,uint256,uint256)",
@@ -45,9 +45,9 @@ contract NFTFactoryFuzz is GeniusDiamondTestBase {
             maxSupply,
             exchRate
         );
-        
+
         (bool success, ) = diamond.call(callData);
-        
+
         if (success) {
             console.log("[OK] Collection created");
         } else {
@@ -61,13 +61,13 @@ contract NFTFactoryFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_RevertWhen_insufficientGnusForCollection(uint256 exchRate) public {
         exchRate = _boundUint256(exchRate, 100000 ether, 1000000 ether);
-        
+
         // Ensure balance is insufficient
         uint256 balance = _getGNUSBalance(address(this));
         if (balance >= exchRate) {
             return; // Skip test if we have enough
         }
-        
+
         bytes memory callData = abi.encodeWithSignature(
             "createNFTCollection(string,string,uint256,uint256)",
             "Test",
@@ -75,9 +75,9 @@ contract NFTFactoryFuzz is GeniusDiamondTestBase {
             1000,
             exchRate
         );
-        
+
         (bool success, ) = diamond.call(callData);
-        
+
         if (!success) {
             console.log("[OK] Insufficient GNUS rejected");
         }

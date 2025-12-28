@@ -15,7 +15,7 @@ contract EconomicInvariant is GeniusDiamondTestBase {
      */
     function setUp() public override {
         super.setUp();
-        
+
         console.log("===== Economic Invariant Tests =====");
         console.log("Diamond:", diamond);
         console.log("====================================");
@@ -30,7 +30,7 @@ contract EconomicInvariant is GeniusDiamondTestBase {
         // or payment in GNUS for NFT creation
         uint256 totalSupply = _getTotalGNUSSupply();
         assertTrue(totalSupply >= 0, "Supply integrity maintained");
-        
+
         console.log("[OK] No free token creation");
     }
 
@@ -40,10 +40,10 @@ contract EconomicInvariant is GeniusDiamondTestBase {
      */
     function invariant_burnMechanicsCorrect() public view {
         uint256 totalSupply = _getTotalGNUSSupply();
-        
+
         // Supply should never be negative
         assertTrue(totalSupply >= 0, "Supply should be non-negative");
-        
+
         console.log("[OK] Burn mechanics correct");
     }
 
@@ -53,15 +53,15 @@ contract EconomicInvariant is GeniusDiamondTestBase {
      */
     function invariant_tokenEconomicsConsistent() public view {
         uint256 totalSupply = _getTotalGNUSSupply();
-        
+
         // Sum of tracked balances should not exceed supply
         uint256 trackedBalance = _getGNUSBalance(address(this)) +
             _getGNUSBalance(user1) +
             _getGNUSBalance(user2) +
             _getGNUSBalance(user3);
-        
+
         assertTrue(trackedBalance <= totalSupply, "Tracked balances exceed supply");
-        
+
         console.log("[OK] Token economics consistent");
     }
 }

@@ -15,7 +15,7 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
      */
     function setUp() public override {
         super.setUp();
-        
+
         console.log("===== Diamond Core Fuzz Tests =====");
         console.log("Diamond Address:", diamond);
         console.log("Owner Address:", owner);
@@ -31,23 +31,23 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
         // Bound to valid addresses (not zero, not precompile)
         newOwner = _boundAddress(newOwner);
         vm.assume(newOwner != owner);
-        
+
         // Get current owner
         address currentOwner = _getDiamondOwner();
         assertEq(currentOwner, owner, "Initial owner mismatch");
-        
+
         // Transfer ownership as current owner
         bytes4 selector = bytes4(keccak256("transferOwnership(address)"));
         bytes memory data = abi.encode(newOwner);
-        
+
         vm.prank(owner);
         (bool success, ) = _callDiamond(selector, data);
         assertTrue(success, "Ownership transfer failed");
-        
+
         // Verify new owner
         address updatedOwner = _getDiamondOwner();
         assertEq(updatedOwner, newOwner, "Owner not updated");
-        
+
         console.log("[OK] Ownership transferred to:", newOwner);
     }
 
@@ -66,19 +66,19 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
         newOwner = _boundAddress(newOwner);
         vm.assume(attacker != owner);
         vm.assume(newOwner != address(0));
-        
+
         bytes4 selector = bytes4(keccak256("transferOwnership(address)"));
         bytes memory data = abi.encode(newOwner);
-        
+
         // Expect revert when non-owner tries to transfer
         vm.prank(attacker);
         (bool success, ) = _callDiamond(selector, data);
         assertFalse(success, "Non-owner should not be able to transfer ownership");
-        
+
         // Verify owner unchanged
         address currentOwner = _getDiamondOwner();
         assertEq(currentOwner, owner, "Owner should not have changed");
-        
+
         console.log("[OK] Non-owner", attacker, "correctly rejected");
     }
 
@@ -90,21 +90,21 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
     function testFuzz_RevertWhen_nonOwnerCallsDiamondCut(address attacker) public {
         attacker = _boundAddress(attacker);
         vm.assume(attacker != owner);
-        
+
         // Try to call diamondCut with empty cut (still should revert on auth)
         bytes4 selector = bytes4(keccak256("diamondCut((address,uint8,bytes4[])[],address,bytes)"));
-        
+
         // Empty cut array
         bytes memory data = abi.encode(
             new bytes[](0), // Empty facet cuts
-            address(0),     // No init
-            ""              // No init data
+            address(0), // No init
+            "" // No init data
         );
-        
+
         vm.prank(attacker);
         (bool success, ) = _callDiamond(selector, data);
         assertFalse(success, "Non-owner should not be able to call diamondCut");
-        
+
         console.log("[OK] Non-owner", attacker, "blocked from diamondCut");
     }
 
@@ -113,21 +113,21 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
      * @dev Tests that facetAddress() returns consistent results
      * @param selectorSeed Random seed for selecting a selector
      */
-    function testFuzz_facetAddressLookup(uint256 selectorSeed) public {
+    function testFuzz_facetAddressLookup(uint256 selectorSeed) public view {
         bytes4[] memory selectors = _getDiamondSelectors();
         vm.assume(selectors.length > 0);
-        
+
         // Pick a random selector
         uint256 index = selectorSeed % selectors.length;
         bytes4 selector = selectors[index];
-        
+
         // Query facet address
         address facet = _getFacetAddress(selector);
-        
+
         // Facet must be valid
         assertTrue(facet != address(0), "Facet is zero address");
         assertTrue(facet.code.length > 0, "Facet has no code");
-        
+
         console.log("[OK] Selector routes to:", facet);
     }
 
@@ -142,21 +142,21 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
         owner2 = _boundAddress(owner2);
         vm.assume(owner1 != owner);
         vm.assume(owner2 != owner1);
-        
+
         bytes4 selector = bytes4(keccak256("transferOwnership(address)"));
-        
+
         // First transfer
         vm.prank(owner);
         (bool success1, ) = _callDiamond(selector, abi.encode(owner1));
         assertTrue(success1, "First transfer failed");
         assertEq(_getDiamondOwner(), owner1, "First owner not set");
-        
+
         // Second transfer
         vm.prank(owner1);
         (bool success2, ) = _callDiamond(selector, abi.encode(owner2));
         assertTrue(success2, "Second transfer failed");
         assertEq(_getDiamondOwner(), owner2, "Second owner not set");
-        
+
         console.log("[OK] Ownership chain complete");
     }
 
@@ -167,14 +167,14 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
     function testFuzz_RevertWhen_transferToZeroAddress() public {
         bytes4 selector = bytes4(keccak256("transferOwnership(address)"));
         bytes memory data = abi.encode(address(0));
-        
+
         vm.prank(owner);
         (bool success, ) = _callDiamond(selector, data);
         assertFalse(success, "Should not allow transfer to zero address");
-        
+
         // Verify owner unchanged
         assertEq(_getDiamondOwner(), owner, "Owner should not have changed");
-        
+
         console.log("[OK] Transfer to zero address correctly rejected");
     }
 
@@ -185,17 +185,17 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
     function testFuzz_facetAddressesConsistency() public view {
         bytes memory callData = abi.encodeWithSignature("facetAddresses()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         assertTrue(success, "facetAddresses() call failed");
-        
+
         address[] memory facetAddresses = abi.decode(returnData, (address[]));
-        
+
         // All facet addresses must be valid
         for (uint256 i = 0; i < facetAddresses.length; i++) {
             assertTrue(facetAddresses[i] != address(0), "Facet address is zero");
             assertTrue(facetAddresses[i].code.length > 0, "Facet has no code");
         }
-        
+
         console.log("[OK] All", facetAddresses.length, "facet addresses are valid");
     }
 
@@ -209,25 +209,25 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
         bytes memory callData = abi.encodeWithSignature("facetAddresses()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
         require(success, "facetAddresses() call failed");
-        
+
         address[] memory facetAddresses = abi.decode(returnData, (address[]));
         vm.assume(facetAddresses.length > 0);
-        
+
         // Pick a random facet
         address facet = facetAddresses[facetIndex % facetAddresses.length];
-        
+
         // Get its selectors
         bytes4[] memory selectors = _getFacetFunctionSelectors(facet);
-        
+
         // Should have at least one selector
         assertTrue(selectors.length > 0, "Facet has no selectors");
-        
+
         // All selectors should route back to this facet
         for (uint256 i = 0; i < selectors.length; i++) {
             address routedFacet = _getFacetAddress(selectors[i]);
             assertEq(routedFacet, facet, "Selector routes to wrong facet");
         }
-        
+
         console.log("[OK] Facet verified with selectors:", selectors.length);
     }
 
@@ -240,12 +240,12 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
         address owner1 = _getDiamondOwner();
         address owner2 = _getDiamondOwner();
         address owner3 = _getDiamondOwner();
-        
+
         // All should return same value
         assertEq(owner1, owner2, "Owner changed between calls");
         assertEq(owner2, owner3, "Owner changed between calls");
         assertTrue(owner1 != address(0), "Owner is zero");
-        
+
         console.log("[OK] owner() consistently returns:", owner1);
     }
 
@@ -255,14 +255,14 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_noSelectorCollisions() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
-        
+
         // Check all pairs
         for (uint256 i = 0; i < selectors.length && i < 50; i++) {
             for (uint256 j = i + 1; j < selectors.length && j < 50; j++) {
                 assertTrue(selectors[i] != selectors[j], "Selector collision detected");
             }
         }
-        
+
         console.log("[OK] No collisions among", selectors.length, "selectors");
     }
 }

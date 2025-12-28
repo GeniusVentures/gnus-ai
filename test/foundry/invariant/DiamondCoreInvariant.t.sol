@@ -16,10 +16,10 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      */
     function setUp() public override {
         super.setUp();
-        
+
         // Target the diamond contract for invariant testing
         targetContract(diamond);
-        
+
         console.log("===== Diamond Core Invariant Tests =====");
         console.log("Diamond Address:", diamond);
         console.log("Owner Address:", owner);
@@ -31,10 +31,10 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: Diamond owner must never be address(0)
      * @dev Critical for ownership controls - a zero address owner would lock the diamond
      */
-    function invariant_ownerNeverZero() public {
+    function invariant_ownerNeverZero() public view {
         address currentOwner = _getDiamondOwner();
         assertTrue(currentOwner != address(0), "Diamond owner is address(0)");
-        
+
         console.log("[OK] Owner is valid:", currentOwner);
     }
 
@@ -42,10 +42,10 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: All registered selectors must route to valid (non-zero) facet addresses
      * @dev Ensures no selector routes to address(0) which would cause calls to fail
      */
-    function invariant_allSelectorsHaveValidFacets() public {
+    function invariant_allSelectorsHaveValidFacets() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
         uint256 invalidCount = 0;
-        
+
         for (uint256 i = 0; i < selectors.length; i++) {
             address facet = _getFacetAddress(selectors[i]);
             if (facet == address(0)) {
@@ -53,7 +53,7 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
                 invalidCount++;
             }
         }
-        
+
         assertEq(invalidCount, 0, "Some selectors have invalid facets");
         console.log("[OK] All", selectors.length, "selectors have valid facets");
     }
@@ -62,9 +62,9 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: Function selectors must not overlap across facets
      * @dev Each selector should appear exactly once in the diamond
      */
-    function invariant_noSelectorOverlap() public {
+    function invariant_noSelectorOverlap() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
-        
+
         // Check for duplicates
         for (uint256 i = 0; i < selectors.length; i++) {
             for (uint256 j = i + 1; j < selectors.length; j++) {
@@ -74,7 +74,7 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
                 }
             }
         }
-        
+
         console.log("[OK] No selector overlap across", selectors.length, "functions");
     }
 
@@ -82,26 +82,26 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: Facet addresses returned by loupe must be consistent
      * @dev facetAddress() and facets() should return consistent data
      */
-    function invariant_facetAddressesConsistent() public {
+    function invariant_facetAddressesConsistent() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
         uint256 inconsistentCount = 0;
-        
+
         // Get all facets from loupe
         bytes memory facetsCallData = abi.encodeWithSignature("facets()");
-        (bool success, bytes memory returnData) = diamond.staticcall(facetsCallData);
+        (bool success, ) = diamond.staticcall(facetsCallData);
         require(success, "facets() call failed");
-        
+
         // Verify each selector's facet address
         for (uint256 i = 0; i < selectors.length; i++) {
             address facet = _getFacetAddress(selectors[i]);
-            
+
             // Facet must exist and have code
             if (facet != address(0) && facet.code.length == 0) {
                 console.log("[ERR] Facet has no code:", facet);
                 inconsistentCount++;
             }
         }
-        
+
         assertEq(inconsistentCount, 0, "Facet address inconsistencies detected");
         console.log("[OK] Facet addresses are consistent");
     }
@@ -110,18 +110,18 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: Diamond must have the minimum required facets
      * @dev At minimum: DiamondCutFacet, DiamondLoupeFacet, OwnershipFacet
      */
-    function invariant_minimumFacetsPresent() public {
+    function invariant_minimumFacetsPresent() public view {
         bytes memory facetsCallData = abi.encodeWithSignature("facets()");
-        (bool success, bytes memory returnData) = diamond.staticcall(facetsCallData);
+        (bool success, ) = diamond.staticcall(facetsCallData);
         require(success, "facets() call failed");
-        
+
         // Decode the facets array - it's an array of structs
         // We just check that we have some facets
         bytes4[] memory selectors = _getDiamondSelectors();
-        
+
         // Should have at least 3 facets worth of functions
         assertTrue(selectors.length >= 10, "Too few functions registered");
-        
+
         console.log("[OK] Diamond has sufficient facets:", selectors.length, "functions");
     }
 
@@ -129,13 +129,15 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: DiamondCut function must be present
      * @dev Critical for upgradability
      */
-    function invariant_diamondCutFunctionExists() public {
-        bytes4 diamondCutSelector = bytes4(keccak256("diamondCut((address,uint8,bytes4[])[],address,bytes)"));
+    function invariant_diamondCutFunctionExists() public view {
+        bytes4 diamondCutSelector = bytes4(
+            keccak256("diamondCut((address,uint8,bytes4[])[],address,bytes)")
+        );
         address facet = _getFacetAddress(diamondCutSelector);
-        
+
         assertTrue(facet != address(0), "DiamondCut function not found");
         assertTrue(facet.code.length > 0, "DiamondCut facet has no code");
-        
+
         console.log("[OK] DiamondCut function exists at:", facet);
     }
 
@@ -143,18 +145,18 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: DiamondLoupe functions must be present
      * @dev Required for introspection
      */
-    function invariant_diamondLoupeFunctionsExist() public {
+    function invariant_diamondLoupeFunctionsExist() public view {
         bytes4[] memory loupeSelectors = new bytes4[](4);
         loupeSelectors[0] = bytes4(keccak256("facets()"));
         loupeSelectors[1] = bytes4(keccak256("facetFunctionSelectors(address)"));
         loupeSelectors[2] = bytes4(keccak256("facetAddresses()"));
         loupeSelectors[3] = bytes4(keccak256("facetAddress(bytes4)"));
-        
+
         for (uint256 i = 0; i < loupeSelectors.length; i++) {
             address facet = _getFacetAddress(loupeSelectors[i]);
             assertTrue(facet != address(0), "Loupe function missing");
         }
-        
+
         console.log("[OK] All DiamondLoupe functions exist");
     }
 
@@ -162,14 +164,14 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
      * @notice Invariant: Owner function must be callable
      * @dev Ensures ownership checks can always work
      */
-    function invariant_ownerFunctionCallable() public {
+    function invariant_ownerFunctionCallable() public view {
         bytes memory callData = abi.encodeWithSignature("owner()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         assertTrue(success, "owner() call failed");
         address returnedOwner = abi.decode(returnData, (address));
         assertTrue(returnedOwner != address(0), "owner() returned zero address");
-        
+
         console.log("[OK] owner() function is callable, returned:", returnedOwner);
     }
 }

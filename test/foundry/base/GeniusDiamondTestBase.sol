@@ -155,10 +155,18 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
      * @param amount Amount to mint
      */
     function _mintGNUS(address to, uint256 amount) internal {
-        bytes4 selector = bytes4(keccak256("mint(address,uint256,uint256,bytes)"));
-        bytes memory data = abi.encode(to, GNUS_TOKEN_ID, amount, "");
-        (bool success, bytes memory returnData) = _callDiamond(selector, data);
-        require(success, string(abi.encodePacked("_mintGNUS failed: ", returnData)));
+        // Use the correct 3-parameter mint signature from GNUSBridge
+        bytes memory callData = abi.encodeWithSignature(
+            "mint(address,uint256,uint256)",
+            to,
+            GNUS_TOKEN_ID,
+            amount
+        );
+        (bool success, bytes memory returnData) = diamond.call(callData);
+        if (!success) {
+            string memory revertReason = _getRevertMsg(returnData);
+            revert(string(abi.encodePacked("_mintGNUS failed: ", revertReason)));
+        }
     }
 
     /**
@@ -187,7 +195,11 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
      * @return balance GNUS balance
      */
     function _getGNUSBalance(address account) internal view returns (uint256) {
-        bytes memory callData = abi.encodeWithSignature("balanceOf(address,uint256)", account, GNUS_TOKEN_ID);
+        bytes memory callData = abi.encodeWithSignature(
+            "balanceOf(address,uint256)",
+            account,
+            GNUS_TOKEN_ID
+        );
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
         if (!success) return 0;
         return abi.decode(returnData, (uint256));
@@ -254,7 +266,7 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
      * @param role Role identifier
      * @param account Address to check
      */
-    function assertHasRole(bytes32 role, address account) internal {
+    function assertHasRole(bytes32 role, address account) internal view {
         assertTrue(_hasRole(role, account), "Account should have role");
     }
 
@@ -263,7 +275,7 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
      * @param role Role identifier
      * @param account Address to check
      */
-    function assertDoesNotHaveRole(bytes32 role, address account) internal {
+    function assertDoesNotHaveRole(bytes32 role, address account) internal view {
         assertFalse(_hasRole(role, account), "Account should not have role");
     }
 
@@ -272,7 +284,7 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
      * @param account Address to check
      * @param expected Expected balance
      */
-    function assertGNUSBalance(address account, uint256 expected) internal {
+    function assertGNUSBalance(address account, uint256 expected) internal view {
         uint256 actual = _getGNUSBalance(account);
         assertEq(actual, expected, "GNUS balance mismatch");
     }
@@ -280,7 +292,7 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
     /**
      * @notice Assert that all selectors route to valid (non-zero) facets
      */
-    function assertAllSelectorsValid() internal {
+    function assertAllSelectorsValid() internal view {
         bytes4[] memory selectors = _getDiamondSelectors();
         for (uint256 i = 0; i < selectors.length; i++) {
             address facet = _getFacetAddress(selectors[i]);
@@ -299,7 +311,11 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
      * @param max Maximum value
      * @return bounded Bounded value
      */
-    function _boundUint256(uint256 value, uint256 min, uint256 max) internal pure returns (uint256) {
+    function _boundUint256(
+        uint256 value,
+        uint256 min,
+        uint256 max
+    ) internal pure returns (uint256) {
         if (max == min) return min;
         return min + (value % (max - min + 1));
     }
@@ -315,5 +331,21 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
             return address(uint160(10 + (addrUint % 1000)));
         }
         return addr;
+    }
+
+    /**
+     * @notice Extract revert message from returnData
+     * @param returnData Bytes returned from failed call
+     * @return reason Decoded revert message
+     */
+    function _getRevertMsg(bytes memory returnData) internal pure returns (string memory) {
+        // If the returnData length is less than 68, then the transaction failed silently
+        if (returnData.length < 68) return "Transaction reverted silently";
+        
+        assembly {
+            // Slice the sighash (first 4 bytes of Error(string))
+            returnData := add(returnData, 0x04)
+        }
+        return abi.decode(returnData, (string));
     }
 }
