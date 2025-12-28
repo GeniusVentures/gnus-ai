@@ -47,9 +47,9 @@ Update the file after completing each sub-task, not just after completing an ent
 
 ## Tasks
 
-- [ ] 0.0 Create feature branch
-  - [ ] 0.1 Create and checkout a new branch for the fuzz test suite (e.g., `git checkout -b feature/foundry-fuzz-tests`)
-  - [ ] 0.2 Verify the branch is based on `feature/add-diamonds-hardhat-foundry` to inherit existing Foundry setup
+- [x] 0.0 Create feature branch
+  - [x] 0.1 Create and checkout a new branch for the fuzz test suite (e.g., `git checkout -b feature/foundry-fuzz-tests`)
+  - [x] 0.2 Verify the branch is based on `feature/add-diamonds-hardhat-foundry` to inherit existing Foundry setup
 
 - [ ] 1.0 Set up test infrastructure and base contracts
   - [ ] 1.1 Create directory structure: `test/foundry/base/`, `test/foundry/handlers/`, invariant, fuzz
