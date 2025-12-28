@@ -74,17 +74,17 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 2.11 Implement `testFuzz_diamondCut_replaceFacet`: fuzz replacing facet implementations
   - [x] 2.12 Implement `testFuzz_diamondCut_removeFacet`: fuzz removing facets
 
-- [ ] 3.0 Implement Access Control invariant and fuzz tests
-  - [ ] 3.1 Create `AccessControlInvariant.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 3.2 Implement `invariant_adminRoleCanGrantAll`: verify DEFAULT_ADMIN_ROLE can grant any role
-  - [ ] 3.3 Implement `invariant_roleConsistency`: verify hasRole matches granted/revoked state
-  - [ ] 3.4 Create `AccessControlFuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 3.5 Implement `testFuzz_grantRole`: fuzz granting roles to random addresses
-  - [ ] 3.6 Implement `testFuzz_revokeRole`: fuzz revoking roles from random addresses
-  - [ ] 3.7 Implement `testFuzz_renounceRole`: fuzz renouncing roles
-  - [ ] 3.8 Implement `testFuzz_RevertWhen_unauthorizedGrantRole`: verify non-admin cannot grant
-  - [ ] 3.9 Implement `testFuzz_RevertWhen_unauthorizedRevokeRole`: verify non-admin cannot revoke
-  - [ ] 3.10 Implement `testFuzz_roleProtectedFunctions`: fuzz calling protected functions without role
+- [x] 3.0 Implement Access Control invariant and fuzz tests
+  - [x] 3.1 Create `AccessControlInvariant.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 3.2 Implement `invariant_adminRoleCanGrantAll`: verify DEFAULT_ADMIN_ROLE can grant any role
+  - [x] 3.3 Implement `invariant_roleConsistency`: verify hasRole matches granted/revoked state
+  - [x] 3.4 Create `AccessControlFuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 3.5 Implement `testFuzz_grantRole`: fuzz granting roles to random addresses
+  - [x] 3.6 Implement `testFuzz_revokeRole`: fuzz revoking roles from random addresses
+  - [x] 3.7 Implement `testFuzz_renounceRole`: fuzz renouncing roles
+  - [x] 3.8 Implement `testFuzz_RevertWhen_unauthorizedGrantRole`: verify non-admin cannot grant
+  - [x] 3.9 Implement `testFuzz_RevertWhen_unauthorizedRevokeRole`: verify non-admin cannot revoke
+  - [x] 3.10 Implement `testFuzz_roleProtectedFunctions`: fuzz calling protected functions without role
 
 - [ ] 4.0 Implement ERC20 (GNUS Token) invariant and fuzz tests
   - [ ] 4.1 Create `ERC20Invariant.t.sol` extending `GeniusDiamondTestBase`
