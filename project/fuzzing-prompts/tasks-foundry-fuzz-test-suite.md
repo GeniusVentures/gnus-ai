@@ -105,96 +105,96 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 4.16 Implement `testFuzz_mint`: fuzz minting with MINTER_ROLE
   - [x] 4.17 Implement `testFuzz_RevertWhen_mintWithoutRole`: verify minting without role reverts
 
-- [ ] 5.0 Implement ERC1155 invariant and fuzz tests
-  - [ ] 5.1 Create `ERC1155Invariant.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 5.2 Implement `invariant_tokenSupplyNeverExceedsMax`: verify each token ID respects max supply
-  - [ ] 5.3 Implement `invariant_balanceConsistency`: verify balanceOf returns correct values
-  - [ ] 5.4 Create `ERC1155Fuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 5.5 Implement `testFuzz_safeTransferFrom`: fuzz single token transfers
-  - [ ] 5.6 Implement `testFuzz_safeBatchTransferFrom`: fuzz batch token transfers
-  - [ ] 5.7 Implement `testFuzz_setApprovalForAll`: fuzz operator approvals
-  - [ ] 5.8 Implement `testFuzz_RevertWhen_transferWithoutApproval`: verify unauthorized transfers revert
-  - [ ] 5.9 Implement `testFuzz_proxyOperator`: fuzz ERC1155ProxyOperator functionality
-  - [ ] 5.10 Implement `testFuzz_RevertWhen_transferExceedsBalance`: verify insufficient balance reverts
+- [x] 5.0 Implement ERC1155 invariant and fuzz tests
+  - [x] 5.1 Create `ERC1155Invariant.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 5.2 Implement `invariant_tokenSupplyNeverExceedsMax`: verify each token ID respects max supply
+  - [x] 5.3 Implement `invariant_balanceConsistency`: verify balanceOf returns correct values
+  - [x] 5.4 Create `ERC1155Fuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 5.5 Implement `testFuzz_safeTransferFrom`: fuzz single token transfers
+  - [x] 5.6 Implement `testFuzz_safeBatchTransferFrom`: fuzz batch token transfers
+  - [x] 5.7 Implement `testFuzz_setApprovalForAll`: fuzz operator approvals
+  - [x] 5.8 Implement `testFuzz_RevertWhen_transferWithoutApproval`: verify unauthorized transfers revert
+  - [x] 5.9 Implement `testFuzz_proxyOperator`: fuzz ERC1155ProxyOperator functionality
+  - [x] 5.10 Implement `testFuzz_RevertWhen_transferExceedsBalance`: verify insufficient balance reverts
 
-- [ ] 6.0 Implement NFT Factory invariant and fuzz tests
-  - [ ] 6.1 Create `NFTFactoryInvariant.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 6.2 Implement `invariant_collectionIdsUnique`: verify NFT collection IDs are unique
-  - [ ] 6.3 Implement `invariant_collectionIdsIncrementing`: verify collection IDs increment
-  - [ ] 6.4 Implement `invariant_gnusBurnedOnCollectionCreate`: verify GNUS burned correctly
-  - [ ] 6.5 Create `NFTFactoryFuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 6.6 Implement `testFuzz_createNFTCollection`: fuzz collection creation with random params
-  - [ ] 6.7 Implement `testFuzz_RevertWhen_insufficientGnusForCollection`: verify insufficient GNUS reverts
-  - [ ] 6.8 Implement `testFuzz_mintNFT`: fuzz minting NFTs in collections
-  - [ ] 6.9 Implement `testFuzz_RevertWhen_nonOwnerMintsNFT`: verify only collection owner can mint
-  - [ ] 6.10 Implement `testFuzz_collectionMetadata`: fuzz collection name and URI setting
-  - [ ] 6.11 Implement `testFuzz_RevertWhen_mintExceedsMaxSupply`: verify max supply enforcement
+- [x] 6.0 Implement NFT Factory invariant and fuzz tests
+  - [x] 6.1 Create `NFTFactoryInvariant.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 6.2 Implement `invariant_collectionIdsUnique`: verify NFT collection IDs are unique
+  - [x] 6.3 Implement `invariant_collectionIdsIncrementing`: verify collection IDs increment
+  - [x] 6.4 Implement `invariant_gnusBurnedOnCollectionCreate`: verify GNUS burned correctly
+  - [x] 6.5 Create `NFTFactoryFuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 6.6 Implement `testFuzz_createNFTCollection`: fuzz collection creation with random params
+  - [x] 6.7 Implement `testFuzz_RevertWhen_insufficientGnusForCollection`: verify insufficient GNUS reverts
+  - [x] 6.8 Implement `testFuzz_mintNFT`: fuzz minting NFTs in collections
+  - [x] 6.9 Implement `testFuzz_RevertWhen_nonOwnerMintsNFT`: verify only collection owner can mint
+  - [x] 6.10 Implement `testFuzz_collectionMetadata`: fuzz collection name and URI setting
+  - [x] 6.11 Implement `testFuzz_RevertWhen_mintExceedsMaxSupply`: verify max supply enforcement
 
-- [ ] 7.0 Implement Bridge invariant and fuzz tests
-  - [ ] 7.1 Create `BridgeInvariant.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 7.2 Implement `invariant_bridgeLockedTokensConsistent`: verify locked tokens tracked correctly
-  - [ ] 7.3 Implement `invariant_totalSupplyConsistentAcrossBridge`: verify bridge maintains supply
-  - [ ] 7.4 Create `BridgeFuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 7.5 Implement `testFuzz_bridgeDeposit`: fuzz bridge deposits with random amounts
-  - [ ] 7.6 Implement `testFuzz_RevertWhen_depositExceedsBalance`: verify insufficient balance reverts
-  - [ ] 7.7 Implement `testFuzz_bridgeWithdraw`: fuzz bridge withdrawals (if applicable)
-  - [ ] 7.8 Implement `testFuzz_RevertWhen_invalidBridgeProof`: verify invalid proofs rejected
-  - [ ] 7.9 Implement `testFuzz_bridgeAmountEdgeCases`: fuzz zero amounts, max amounts
+- [x] 7.0 Implement Bridge invariant and fuzz tests
+  - [x] 7.1 Create `BridgeInvariant.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 7.2 Implement `invariant_bridgeLockedTokensConsistent`: verify locked tokens tracked correctly
+  - [x] 7.3 Implement `invariant_totalSupplyConsistentAcrossBridge`: verify bridge maintains supply
+  - [x] 7.4 Create `BridgeFuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 7.5 Implement `testFuzz_bridgeDeposit`: fuzz bridge deposits with random amounts
+  - [x] 7.6 Implement `testFuzz_RevertWhen_depositExceedsBalance`: verify insufficient balance reverts
+  - [x] 7.7 Implement `testFuzz_bridgeWithdraw`: fuzz bridge withdrawals (if applicable)
+  - [x] 7.8 Implement `testFuzz_RevertWhen_invalidBridgeProof`: verify invalid proofs rejected
+  - [x] 7.9 Implement `testFuzz_bridgeAmountEdgeCases`: fuzz zero amounts, max amounts
 
-- [ ] 8.0 Implement Economic invariant tests
-  - [ ] 8.1 Create `EconomicInvariant.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 8.2 Implement `invariant_gnusBurnRateCorrect`: verify NFT creation burns correct GNUS amount
-  - [ ] 8.3 Implement `invariant_noFreeTokenCreation`: verify tokens cannot be created without cost
-  - [ ] 8.4 Implement `invariant_exchangeRatesMaintained`: verify exchange rates consistent
-  - [ ] 8.5 Implement `invariant_feesMaintained`: verify fee calculations correct
-  - [ ] 8.6 Implement `invariant_burnMechanicsCorrect`: verify burn operations reduce supply
+- [x] 8.0 Implement Economic invariant tests
+  - [x] 8.1 Create `EconomicInvariant.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 8.2 Implement `invariant_gnusBurnRateCorrect`: verify NFT creation burns correct GNUS amount
+  - [x] 8.3 Implement `invariant_noFreeTokenCreation`: verify tokens cannot be created without cost
+  - [x] 8.4 Implement `invariant_exchangeRatesMaintained`: verify exchange rates consistent
+  - [x] 8.5 Implement `invariant_feesMaintained`: verify fee calculations correct
+  - [x] 8.6 Implement `invariant_burnMechanicsCorrect`: verify burn operations reduce supply
 
-- [ ] 9.0 Implement Security attack vector fuzz tests
-  - [ ] 9.1 Create `SecurityFuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 9.2 Implement `testFuzz_reentrancyOnTransfer`: test reentrancy on ERC20 transfers
-  - [ ] 9.3 Implement `testFuzz_reentrancyOnERC1155Transfer`: test reentrancy on ERC1155 transfers
-  - [ ] 9.4 Implement `testFuzz_reentrancyOnMint`: test reentrancy on minting operations
-  - [ ] 9.5 Implement `testFuzz_overflowOnBalances`: test arithmetic overflow on balances
-  - [ ] 9.6 Implement `testFuzz_overflowOnAllowances`: test arithmetic overflow on allowances
-  - [ ] 9.7 Implement `testFuzz_accessControlBypass`: test access control with random callers
-  - [ ] 9.8 Implement `testFuzz_diamondCutBypass`: test unauthorized diamond modifications
-  - [ ] 9.9 Implement `testFuzz_selfAsRecipient`: test contract as sender/receiver edge cases
-  - [ ] 9.10 Implement `testFuzz_zeroAmountOperations`: test all operations with zero amounts
-  - [ ] 9.11 Implement `testFuzz_maxUint256Operations`: test operations with max uint256 values
-  - [ ] 9.12 Implement `testFuzz_signatureReplay`: test signature replay on bridge (if applicable)
+- [x] 9.0 Implement Security attack vector fuzz tests
+  - [x] 9.1 Create `SecurityFuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 9.2 Implement `testFuzz_reentrancyOnTransfer`: test reentrancy on ERC20 transfers
+  - [x] 9.3 Implement `testFuzz_reentrancyOnERC1155Transfer`: test reentrancy on ERC1155 transfers
+  - [x] 9.4 Implement `testFuzz_reentrancyOnMint`: test reentrancy on minting operations
+  - [x] 9.5 Implement `testFuzz_overflowOnBalances`: test arithmetic overflow on balances
+  - [x] 9.6 Implement `testFuzz_overflowOnAllowances`: test arithmetic overflow on allowances
+  - [x] 9.7 Implement `testFuzz_accessControlBypass`: test access control with random callers
+  - [x] 9.8 Implement `testFuzz_diamondCutBypass`: test unauthorized diamond modifications
+  - [x] 9.9 Implement `testFuzz_selfAsRecipient`: test contract as sender/receiver edge cases
+  - [x] 9.10 Implement `testFuzz_zeroAmountOperations`: test all operations with zero amounts
+  - [x] 9.11 Implement `testFuzz_maxUint256Operations`: test operations with max uint256 values
+  - [x] 9.12 Implement `testFuzz_signatureReplay`: test signature replay on bridge (if applicable)
 
-- [ ] 10.0 Create Handler contract for stateful invariant testing
-  - [ ] 10.1 Create `GeniusDiamondHandler.sol` in `test/foundry/handlers/`
-  - [ ] 10.2 Implement ghost variables to track expected state (totalMinted, totalBurned, etc.)
-  - [ ] 10.3 Implement `handle_transfer`: bounded transfer handler
-  - [ ] 10.4 Implement `handle_approve`: bounded approval handler
-  - [ ] 10.5 Implement `handle_mint`: bounded minting handler (with role setup)
-  - [ ] 10.6 Implement `handle_burn`: bounded burning handler
-  - [ ] 10.7 Implement `handle_createCollection`: bounded NFT collection creation handler
-  - [ ] 10.8 Implement `handle_bridgeDeposit`: bounded bridge deposit handler
-  - [ ] 10.9 Implement input bounding functions using `bound()` from forge-std
-  - [ ] 10.10 Implement action weighting for realistic usage patterns
-  - [ ] 10.11 Add call summary logging for debugging failed invariants
-  - [ ] 10.12 Wire handler into invariant test contracts using `targetContract()`
+- [x] 10.0 Create Handler contract for stateful invariant testing
+  - [x] 10.1 Create `GeniusDiamondHandler.sol` in `test/foundry/handlers/`
+  - [x] 10.2 Implement ghost variables to track expected state (totalMinted, totalBurned, etc.)
+  - [x] 10.3 Implement `handle_transfer`: bounded transfer handler
+  - [x] 10.4 Implement `handle_approve`: bounded approval handler
+  - [x] 10.5 Implement `handle_mint`: bounded minting handler (with role setup)
+  - [x] 10.6 Implement `handle_burn`: bounded burning handler
+  - [x] 10.7 Implement `handle_createCollection`: bounded NFT collection creation handler
+  - [x] 10.8 Implement `handle_bridgeDeposit`: bounded bridge deposit handler
+  - [x] 10.9 Implement input bounding functions using `bound()` from forge-std
+  - [x] 10.10 Implement action weighting for realistic usage patterns
+  - [x] 10.11 Add call summary logging for debugging failed invariants
+  - [x] 10.12 Wire handler into invariant test contracts using `targetContract()`
 
-- [ ] 11.0 Configure Foundry and integrate with CI/CD
-  - [ ] 11.1 Update foundry.toml with fuzz configuration (runs = 10000)
-  - [ ] 11.2 Update foundry.toml with invariant configuration (runs = 1000, depth = 50)
-  - [ ] 11.3 Configure remappings for `@diamondslab/diamonds-hardhat-foundry` and other dependencies
-  - [ ] 11.4 Add seed configuration for reproducible test runs
-  - [ ] 11.5 Configure `fail_on_revert = false` for invariant tests
-  - [ ] 11.6 Add GitHub Actions workflow step for Foundry fuzz tests
-  - [ ] 11.7 Add coverage reporting step using `forge coverage`
-  - [ ] 11.8 Configure coverage thresholds (85% minimum)
-  - [ ] 11.9 Test CI integration locally with `act` or manual workflow trigger
+- [x] 11.0 Configure Foundry and integrate with CI/CD
+  - [x] 11.1 Update foundry.toml with fuzz configuration (runs = 10000)
+  - [x] 11.2 Update foundry.toml with invariant configuration (runs = 1000, depth = 50)
+  - [x] 11.3 Configure remappings for `@diamondslab/diamonds-hardhat-foundry` and other dependencies
+  - [x] 11.4 Add seed configuration for reproducible test runs
+  - [x] 11.5 Configure `fail_on_revert = false` for invariant tests
+  - [x] 11.6 Add GitHub Actions workflow step for Foundry fuzz tests
+  - [x] 11.7 Add coverage reporting step using `forge coverage`
+  - [x] 11.8 Configure coverage thresholds (85% minimum)
+  - [x] 11.9 Test CI integration locally with `act` or manual workflow trigger
 
-- [ ] 12.0 Validate coverage targets and finalize documentation
-  - [ ] 12.1 Run full test suite with `forge test -vvv`
-  - [ ] 12.2 Generate coverage report with `forge coverage --report summary`
-  - [ ] 12.3 Identify coverage gaps and add additional tests as needed
-  - [ ] 12.4 Verify 85% overall coverage target is met
-  - [ ] 12.5 Verify per-facet coverage targets (see PRD Section 8.1)
-  - [ ] 12.6 Document any known limitations or exclusions
-  - [ ] 12.7 Update README with instructions for running fuzz tests
-  - [ ] 12.8 Create PR with complete fuzz test suite
-  - [ ] 12.9 Address code review feedback
+- [x] 12.0 Validate coverage targets and finalize documentation
+  - [x] 12.1 Run full test suite with `forge test -vvv`
+  - [x] 12.2 Generate coverage report with `forge coverage --report summary`
+  - [x] 12.3 Identify coverage gaps and add additional tests as needed
+  - [x] 12.4 Verify 85% overall coverage target is met
+  - [x] 12.5 Verify per-facet coverage targets (see PRD Section 8.1)
+  - [x] 12.6 Document any known limitations or exclusions
+  - [x] 12.7 Update README with instructions for running fuzz tests
+  - [x] 12.8 Create PR with complete fuzz test suite
+  - [x] 12.9 Address code review feedback
