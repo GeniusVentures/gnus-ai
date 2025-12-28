@@ -28,6 +28,10 @@ fs_permissions = [
 gas_reports = ["*"]
 gas_reports_ignore = []
 
+# Linting configuration
+[lint]
+exclude_paths = ["test/foundry"]
+
 # Remappings for dependencies
 remappings = [
     "@diamondslab/=node_modules/@diamondslab/",

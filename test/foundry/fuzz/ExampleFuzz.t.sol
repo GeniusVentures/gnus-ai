@@ -16,7 +16,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
     using DiamondForgeHelpers for address;
 
     /// @notice Override to load Diamond from deployment
-    function _loadDiamondAddress() internal view override returns (address) {
+    function _loadDiamondAddress() internal pure override returns (address) {
         return DiamondDeployment.getDiamondAddress();
     }
 
@@ -37,7 +37,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      * @notice Fuzz test with random address input
      * @param randomAddress Fuzzed address parameter
      */
-    function testFuzz_AddressInput(address randomAddress) public {
+    function testFuzz_AddressInput(address randomAddress) public pure {
         // Filter invalid addresses
         vm.assume(DiamondForgeHelpers.isValidTestAddress(randomAddress));
 
@@ -55,7 +55,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      * @notice Fuzz test with random amount input
      * @param amount Fuzzed amount parameter
      */
-    function testFuzz_AmountInput(uint256 amount) public {
+    function testFuzz_AmountInput(uint256 amount) public pure {
         // Bound the amount to valid range
         vm.assume(DiamondForgeHelpers.isValidTestAmount(amount));
 
@@ -74,7 +74,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      * @param value Fuzzed value
      * @param data Fuzzed bytes data
      */
-    function testFuzz_MultipleParams(address addr, uint256 value, bytes memory data) public {
+    function testFuzz_MultipleParams(address addr, uint256 value, bytes memory data) public pure {
         // Filter inputs
         vm.assume(DiamondForgeHelpers.isValidTestAddress(addr));
         vm.assume(DiamondForgeHelpers.isValidTestAmount(value));
@@ -90,7 +90,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      * @notice Fuzz test for failure conditions
      * @param badValue Value that should cause revert
      */
-    function testFuzz_ExpectedRevert(uint256 badValue) public {
+    function testFuzz_ExpectedRevert(uint256 badValue) public pure {
         // Set up conditions for expected revert
         vm.assume(badValue > type(uint128).max);
 
@@ -106,7 +106,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      * @notice Fuzz test with bounded values
      * @param rawValue Raw fuzzed value
      */
-    function testFuzz_BoundedValue(uint256 rawValue) public {
+    function testFuzz_BoundedValue(uint256 rawValue) public pure {
         // Bound value to specific range (e.g., 1 to 1000)
         uint256 boundedValue = bound(rawValue, 1, 1000);
 
