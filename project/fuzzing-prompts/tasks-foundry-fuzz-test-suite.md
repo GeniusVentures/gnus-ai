@@ -86,24 +86,24 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 3.9 Implement `testFuzz_RevertWhen_unauthorizedRevokeRole`: verify non-admin cannot revoke
   - [x] 3.10 Implement `testFuzz_roleProtectedFunctions`: fuzz calling protected functions without role
 
-- [ ] 4.0 Implement ERC20 (GNUS Token) invariant and fuzz tests
-  - [ ] 4.1 Create `ERC20Invariant.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 4.2 Implement `invariant_totalSupplyNeverExceedsMax`: verify total supply <= max supply
-  - [ ] 4.3 Implement `invariant_balancesSumToTotalSupply`: verify sum of all balances equals total supply
-  - [ ] 4.4 Implement `invariant_balanceConservation`: verify transfers don't create/destroy tokens
-  - [ ] 4.5 Create `ERC20Fuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 4.6 Implement `testFuzz_transfer`: fuzz transfers with random amounts and recipients
-  - [ ] 4.7 Implement `testFuzz_RevertWhen_transferExceedsBalance`: verify insufficient balance reverts
-  - [ ] 4.8 Implement `testFuzz_RevertWhen_transferToZeroAddress`: verify transfer to zero reverts
-  - [ ] 4.9 Implement `testFuzz_RevertWhen_transferFromZeroAddress`: verify transfer from zero reverts
-  - [ ] 4.10 Implement `testFuzz_approve`: fuzz approvals with random spenders and amounts
-  - [ ] 4.11 Implement `testFuzz_transferFrom`: fuzz transferFrom with random parameters
-  - [ ] 4.12 Implement `testFuzz_RevertWhen_transferFromExceedsAllowance`: verify allowance check
-  - [ ] 4.13 Implement `testFuzz_increaseAllowance`: fuzz increasing allowance
-  - [ ] 4.14 Implement `testFuzz_decreaseAllowance`: fuzz decreasing allowance
-  - [ ] 4.15 Implement `testFuzz_batchTransfer`: fuzz batch transfers (ERC20TransferBatch)
-  - [ ] 4.16 Implement `testFuzz_mint`: fuzz minting with MINTER_ROLE
-  - [ ] 4.17 Implement `testFuzz_RevertWhen_mintWithoutRole`: verify minting without role reverts
+- [x] 4.0 Implement ERC20 (GNUS Token) invariant and fuzz tests
+  - [x] 4.1 Create `ERC20Invariant.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 4.2 Implement `invariant_totalSupplyNeverExceedsMax`: verify total supply <= max supply
+  - [x] 4.3 Implement `invariant_balancesSumToTotalSupply`: verify sum of all balances equals total supply
+  - [x] 4.4 Implement `invariant_balanceConservation`: verify transfers don't create/destroy tokens
+  - [x] 4.5 Create `ERC20Fuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 4.6 Implement `testFuzz_transfer`: fuzz transfers with random amounts and recipients
+  - [x] 4.7 Implement `testFuzz_RevertWhen_transferExceedsBalance`: verify insufficient balance reverts
+  - [x] 4.8 Implement `testFuzz_RevertWhen_transferToZeroAddress`: verify transfer to zero reverts
+  - [x] 4.9 Implement `testFuzz_RevertWhen_transferFromZeroAddress`: verify transfer from zero reverts
+  - [x] 4.10 Implement `testFuzz_approve`: fuzz approvals with random spenders and amounts
+  - [x] 4.11 Implement `testFuzz_transferFrom`: fuzz transferFrom with random parameters
+  - [x] 4.12 Implement `testFuzz_RevertWhen_transferFromExceedsAllowance`: verify allowance check
+  - [x] 4.13 Implement `testFuzz_increaseAllowance`: fuzz increasing allowance
+  - [x] 4.14 Implement `testFuzz_decreaseAllowance`: fuzz decreasing allowance
+  - [x] 4.15 Implement `testFuzz_batchTransfer`: fuzz batch transfers (ERC20TransferBatch)
+  - [x] 4.16 Implement `testFuzz_mint`: fuzz minting with MINTER_ROLE
+  - [x] 4.17 Implement `testFuzz_RevertWhen_mintWithoutRole`: verify minting without role reverts
 
 - [ ] 5.0 Implement ERC1155 invariant and fuzz tests
   - [ ] 5.1 Create `ERC1155Invariant.t.sol` extending `GeniusDiamondTestBase`
