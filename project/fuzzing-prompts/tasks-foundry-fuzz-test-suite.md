@@ -60,19 +60,19 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 1.6 Add helper functions for token setup (mint initial GNUS tokens for testing)
   - [x] 1.7 Verify base contract compiles and can access diamond functions
 
-- [ ] 2.0 Implement Diamond Core invariant and fuzz tests
-  - [ ] 2.1 Create `DiamondCoreInvariant.t.sol` with base setup extending `GeniusDiamondTestBase`
-  - [ ] 2.2 Implement `invariant_ownerNeverZero`: verify owner is never `address(0)`
-  - [ ] 2.3 Implement `invariant_allSelectorsHaveValidFacets`: verify all selectors route to non-zero addresses
-  - [ ] 2.4 Implement `invariant_noSelectorOverlap`: verify no duplicate selectors across facets
-  - [ ] 2.5 Implement `invariant_facetAddressesConsistent`: verify loupe returns consistent facet data
-  - [ ] 2.6 Create `DiamondCoreFuzz.t.sol` extending `GeniusDiamondTestBase`
-  - [ ] 2.7 Implement `testFuzz_ownershipTransfer`: fuzz ownership transfer with random addresses
-  - [ ] 2.8 Implement `testFuzz_RevertWhen_nonOwnerTransfersOwnership`: verify non-owner cannot transfer
-  - [ ] 2.9 Implement `testFuzz_diamondCut_addFacet`: fuzz adding facets with random selectors
-  - [ ] 2.10 Implement `testFuzz_RevertWhen_nonOwnerCallsDiamondCut`: verify non-owner cannot cut
-  - [ ] 2.11 Implement `testFuzz_diamondCut_replaceFacet`: fuzz replacing facet implementations
-  - [ ] 2.12 Implement `testFuzz_diamondCut_removeFacet`: fuzz removing facets
+- [x] 2.0 Implement Diamond Core invariant and fuzz tests
+  - [x] 2.1 Create `DiamondCoreInvariant.t.sol` with base setup extending `GeniusDiamondTestBase`
+  - [x] 2.2 Implement `invariant_ownerNeverZero`: verify owner is never `address(0)`
+  - [x] 2.3 Implement `invariant_allSelectorsHaveValidFacets`: verify all selectors route to non-zero addresses
+  - [x] 2.4 Implement `invariant_noSelectorOverlap`: verify no duplicate selectors across facets
+  - [x] 2.5 Implement `invariant_facetAddressesConsistent`: verify loupe returns consistent facet data
+  - [x] 2.6 Create `DiamondCoreFuzz.t.sol` extending `GeniusDiamondTestBase`
+  - [x] 2.7 Implement `testFuzz_ownershipTransfer`: fuzz ownership transfer with random addresses
+  - [x] 2.8 Implement `testFuzz_RevertWhen_nonOwnerTransfersOwnership`: verify non-owner cannot transfer
+  - [x] 2.9 Implement `testFuzz_diamondCut_addFacet`: fuzz adding facets with random selectors
+  - [x] 2.10 Implement `testFuzz_RevertWhen_nonOwnerCallsDiamondCut`: verify non-owner cannot cut
+  - [x] 2.11 Implement `testFuzz_diamondCut_replaceFacet`: fuzz replacing facet implementations
+  - [x] 2.12 Implement `testFuzz_diamondCut_removeFacet`: fuzz removing facets
 
 - [ ] 3.0 Implement Access Control invariant and fuzz tests
   - [ ] 3.1 Create `AccessControlInvariant.t.sol` extending `GeniusDiamondTestBase`
