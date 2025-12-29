@@ -7,11 +7,11 @@ import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol"
 import "../helpers/DiamondDeployment.sol";
 
 /**
- * @title ExampleUnitTest
+ * @title GNUSUnitTest
  * @notice Example unit test for Diamond contract
  * @dev This is a template - customize for your specific Diamond implementation
  */
-contract ExampleUnitTest is Test {
+contract GNUSUnitTest is Test {
     using DiamondForgeHelpers for address;
 
     address diamond;
@@ -55,7 +55,7 @@ contract ExampleUnitTest is Test {
     /**
      * @notice Example test - customize for your Diamond's functionality
      */
-    function test_ExampleFunctionality() public {
+    function test_GNUSUnitFunctionality() public pure {
         // TODO: Add your Diamond-specific tests here
         // Example:
         // MyDiamond(diamond).someFunction();
