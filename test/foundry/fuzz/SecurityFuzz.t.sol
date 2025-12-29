@@ -27,21 +27,22 @@ contract SecurityFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_accessControlBypass(address unauthorizedCaller) public {
         unauthorizedCaller = _boundAddress(unauthorizedCaller);
+        
+        // Skip protected addresses (owner, deployer, test contract)
+        vm.assume(unauthorizedCaller != owner);
+        vm.assume(unauthorizedCaller != deployer);
+        vm.assume(unauthorizedCaller != address(this));
 
-        // Ensure caller has no special roles
-        if (_hasRole(MINTER_ROLE, unauthorizedCaller)) {
-            _revokeRole(MINTER_ROLE, unauthorizedCaller);
-        }
-        if (_hasRole(DEFAULT_ADMIN_ROLE, unauthorizedCaller)) {
-            _revokeRole(DEFAULT_ADMIN_ROLE, unauthorizedCaller);
-        }
-
-        // Try to mint (requires MINTER_ROLE)
-        bytes4 selector = bytes4(keccak256("mint(address,uint256,uint256,bytes)"));
-        bytes memory data = abi.encode(unauthorizedCaller, GNUS_TOKEN_ID, 1000 ether, "");
+        // Try to mint (requires MINTER_ROLE) - use correct 3-param signature
+        bytes memory callData = abi.encodeWithSignature(
+            "mint(address,uint256,uint256)",
+            unauthorizedCaller,
+            GNUS_TOKEN_ID,
+            1000 ether
+        );
 
         vm.prank(unauthorizedCaller);
-        (bool success, ) = _callDiamond(selector, data);
+        (bool success, ) = diamond.call(callData);
 
         assertFalse(success, "Unauthorized mint should fail");
 
@@ -55,13 +56,18 @@ contract SecurityFuzz is GeniusDiamondTestBase {
     function testFuzz_diamondCutBypass(address attacker) public {
         attacker = _boundAddress(attacker);
         vm.assume(attacker != owner);
+        vm.assume(attacker != deployer);
 
-        // Try to call diamondCut
-        bytes4 selector = bytes4(keccak256("diamondCut((address,uint8,bytes4[])[],address,bytes)"));
-        bytes memory data = abi.encode(new bytes[](0), address(0), "");
+        // Try to call diamondCut with empty cuts
+        bytes memory callData = abi.encodeWithSignature(
+            "diamondCut((address,uint8,bytes4[])[],address,bytes)",
+            new bytes[](0),
+            address(0),
+            ""
+        );
 
         vm.prank(attacker);
-        (bool success, ) = _callDiamond(selector, data);
+        (bool success, ) = diamond.call(callData);
 
         assertFalse(success, "Unauthorized diamondCut should fail");
 
@@ -69,24 +75,25 @@ contract SecurityFuzz is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Fuzz test: Contract as sender/receiver edge cases
+     * @notice Fuzz test: EOA self-transfer edge cases
      * @param amount Amount to transfer
      */
     function testFuzz_selfAsRecipient(uint256 amount) public {
         amount = _boundUint256(amount, 0, 1000 ether);
 
-        uint256 balanceBefore = _getGNUSBalance(address(this));
+        // Use user1 for self-transfer (EOA, not contract)
+        uint256 balanceBefore = _getGNUSBalance(user1);
 
         if (amount > balanceBefore) {
             amount = balanceBefore;
         }
 
         if (amount > 0) {
-            // Transfer to self
-            _transferGNUS(address(this), address(this), amount);
+            // Transfer user1 to user1 (self-transfer)
+            _transferGNUS(user1, user1, amount);
 
             // Balance should remain same
-            uint256 balanceAfter = _getGNUSBalance(address(this));
+            uint256 balanceAfter = _getGNUSBalance(user1);
             assertEq(balanceAfter, balanceBefore, "Self-transfer changed balance");
         }
 
@@ -99,9 +106,12 @@ contract SecurityFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_zeroAmountOperations(address to) public {
         to = _boundAddress(to);
+        // Only use EOAs (no contract code) to avoid ERC1155Receiver requirement
+        vm.assume(to.code.length == 0);
+        vm.assume(to != address(0));
 
-        // Zero amount transfer
-        _transferGNUS(address(this), to, 0);
+        // Zero amount transfer from user1 (EOA) to recipient
+        _transferGNUS(user1, to, 0);
 
         console.log("[OK] Zero amount operation handled");
     }
@@ -199,10 +209,11 @@ contract SecurityFuzz is GeniusDiamondTestBase {
         iterations = uint8(_boundUint256(iterations, 1, 10));
 
         for (uint256 i = 0; i < iterations; i++) {
-            uint256 balance = _getGNUSBalance(address(this));
+            uint256 balance = _getGNUSBalance(user1);
             if (balance > 1 ether) {
-                _transferGNUS(address(this), user1, 1 ether);
-                _transferGNUS(user1, address(this), 1 ether);
+                // Transfer between EOAs only (user1 <-> user2)
+                _transferGNUS(user1, user2, 1 ether);
+                _transferGNUS(user2, user1, 1 ether);
             }
         }
 
