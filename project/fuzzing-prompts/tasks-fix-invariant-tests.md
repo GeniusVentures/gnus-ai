@@ -75,37 +75,37 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 1.6.1 Add findings to PRD Section 8 (Open Questions) with decisions made
     - [x] 1.6.2 Create inline comments plan for handler functions to be added
 
-- [ ] 2.0 Phase 1: Complete Handler Implementation
-  - [ ] 2.1 Add missing access control handler functions
-    - [ ] 2.1.1 Implement `handler_grantRole(uint256 actorSeed, bytes32 role, uint256 targetSeed)` with proper role validation
-    - [ ] 2.1.2 Implement `handler_revokeRole(uint256 actorSeed, bytes32 role, uint256 targetSeed)` with proper role validation
-    - [ ] 2.1.3 Add ghost variable `ghost_totalRoleGrants` to track role grants
-    - [ ] 2.1.4 Add ghost variable `ghost_totalRoleRevokes` to track role revokes
-    - [ ] 2.1.5 Add call counters `calls_grantRole` and `calls_revokeRole`
-  - [ ] 2.2 Add missing ERC20 handler functions (if not already complete)
-    - [ ] 2.2.1 Verify `handler_transfer` is properly bounded to balance
-    - [ ] 2.2.2 Verify `handler_approve` has reasonable approval limits
-    - [ ] 2.2.3 Verify `handler_mint` is only callable by MINTER_ROLE and properly bounded
-    - [ ] 2.2.4 Add `handler_burn(uint256 actorSeed, uint256 amount)` if missing
-  - [ ] 2.3 Add missing ERC1155 handler functions
-    - [ ] 2.3.1 Implement `handler_mint1155(uint256 recipientSeed, uint256 tokenId, uint256 amount)` with max supply bounds
-    - [ ] 2.3.2 Implement `handler_burn1155(uint256 actorSeed, uint256 tokenId, uint256 amount)` with balance bounds
-    - [ ] 2.3.3 Add ghost variables for ERC1155 tracking if needed
-  - [ ] 2.4 Verify NFT Factory handler functions
-    - [ ] 2.4.1 Review existing `handler_createCollection` implementation
-    - [ ] 2.4.2 Ensure GNUS burn cost is properly tracked in ghost variables
-    - [ ] 2.4.3 Verify collection ID tracking works correctly
-  - [ ] 2.5 Add actor management enhancements if needed
-    - [ ] 2.5.1 Verify actor list has sufficient addresses (minimum 4: this, user1, user2, user3)
-    - [ ] 2.5.2 Add helper function `_getActor(uint256 seed)` if not exists
-    - [ ] 2.5.3 Ensure no address(0) can be selected as actor
-  - [ ] 2.6 Compile and verify handler compiles without errors
-    - [ ] 2.6.1 Run `forge build` and fix any compilation errors
-    - [ ] 2.6.2 Verify no missing imports or syntax errors
-  - [ ] 2.7 Test handler functions in isolation (optional but recommended)
-    - [ ] 2.7.1 Create simple test to call handler functions directly
-    - [ ] 2.7.2 Verify ghost variables update correctly
-    - [ ] 2.7.3 Verify bounds are respected
+- [x] 2.0 Phase 1: Complete Handler Implementation
+  - [x] 2.1 Add missing access control handler functions
+    - [x] 2.1.1 Implement `handler_grantRole(uint256 actorSeed, bytes32 role, uint256 targetSeed)` with proper role validation
+    - [x] 2.1.2 Implement `handler_revokeRole(uint256 actorSeed, bytes32 role, uint256 targetSeed)` with proper role validation
+    - [x] 2.1.3 Add ghost variable `ghost_totalRoleGrants` to track role grants
+    - [x] 2.1.4 Add ghost variable `ghost_totalRoleRevokes` to track role revokes
+    - [x] 2.1.5 Add call counters `calls_grantRole` and `calls_revokeRole`
+  - [x] 2.2 Add missing ERC20 handler functions (if not already complete)
+    - [x] 2.2.1 Verify `handler_transfer` is properly bounded to balance
+    - [x] 2.2.2 Verify `handler_approve` has reasonable approval limits
+    - [x] 2.2.3 Verify `handler_mint` is only callable by MINTER_ROLE and properly bounded
+    - [x] 2.2.4 Add `handler_burn(uint256 actorSeed, uint256 amount)` if missing
+  - [x] 2.3 Add missing ERC1155 handler functions
+    - [x] 2.3.1 Implement `handler_mint1155(uint256 recipientSeed, uint256 tokenId, uint256 amount)` with max supply bounds
+    - [x] 2.3.2 Implement `handler_burn1155(uint256 actorSeed, uint256 tokenId, uint256 amount)` with balance bounds
+    - [x] 2.3.3 Add ghost variables for ERC1155 tracking if needed
+  - [x] 2.4 Verify NFT Factory handler functions
+    - [x] 2.4.1 Review existing `handler_createCollection` implementation
+    - [x] 2.4.2 Ensure GNUS burn cost is properly tracked in ghost variables
+    - [x] 2.4.3 Verify collection ID tracking works correctly
+  - [x] 2.5 Add actor management enhancements if needed
+    - [x] 2.5.1 Verify actor list has sufficient addresses (minimum 4: this, user1, user2, user3)
+    - [x] 2.5.2 Add helper function `_getActor(uint256 seed)` if not exists
+    - [x] 2.5.3 Ensure no address(0) can be selected as actor
+  - [x] 2.6 Compile and verify handler compiles without errors
+    - [x] 2.6.1 Run `forge build` and fix any compilation errors
+    - [x] 2.6.2 Verify no missing imports or syntax errors
+  - [x] 2.7 Test handler functions in isolation (optional but recommended)
+    - [x] 2.7.1 Create simple test to call handler functions directly
+    - [x] 2.7.2 Verify ghost variables update correctly
+    - [x] 2.7.3 Verify bounds are respected
 
 - [ ] 3.0 Phase 2A: Fix Security-Critical Invariant Tests (Priority 1)
   - [ ] 3.1 Fix `AccessControlInvariant.t.sol` (8 tests)

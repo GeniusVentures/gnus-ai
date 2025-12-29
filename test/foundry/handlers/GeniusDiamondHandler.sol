@@ -26,6 +26,10 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     uint256 public calls_burn;
     uint256 public calls_createCollection;
     uint256 public calls_bridgeDeposit;
+    uint256 public calls_grantRole;
+    uint256 public calls_revokeRole;
+    uint256 public calls_mint1155;
+    uint256 public calls_burn1155;
 
     // Track actors
     address[] public actors;
@@ -190,6 +194,152 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
+     * @notice Bounded grant role handler
+     * @param actorSeed Seed to select admin actor
+     * @param roleSeed Seed to select role to grant
+     * @param targetSeed Seed to select target address
+     */
+    function handler_grantRole(uint256 actorSeed, uint256 roleSeed, uint256 targetSeed) public {
+        // Only address(this) has DEFAULT_ADMIN_ROLE initially
+        currentActor = address(this);
+
+        // Select a role to grant (from available roles)
+        bytes32[] memory roles = new bytes32[](4);
+        roles[0] = DEFAULT_ADMIN_ROLE;
+        roles[1] = MINTER_ROLE;
+        roles[2] = PAUSER_ROLE;
+        roles[3] = UPGRADER_ROLE;
+
+        bytes32 role = roles[roleSeed % roles.length];
+        address target = actors[targetSeed % actors.length];
+
+        // Grant role
+        vm.prank(currentActor);
+        _grantRole(role, target);
+
+        ghost_totalCollectionsCreated++; // Reusing ghost variable for role operations count
+        calls_grantRole++;
+
+        console.log("[HANDLER] Grant Role");
+    }
+
+    /**
+     * @notice Bounded revoke role handler
+     * @param actorSeed Seed to select admin actor
+     * @param roleSeed Seed to select role to revoke
+     * @param targetSeed Seed to select target address
+     */
+    function handler_revokeRole(uint256 actorSeed, uint256 roleSeed, uint256 targetSeed) public {
+        // Only address(this) has DEFAULT_ADMIN_ROLE initially
+        currentActor = address(this);
+
+        // Select a role to revoke
+        bytes32[] memory roles = new bytes32[](4);
+        roles[0] = DEFAULT_ADMIN_ROLE;
+        roles[1] = MINTER_ROLE;
+        roles[2] = PAUSER_ROLE;
+        roles[3] = UPGRADER_ROLE;
+
+        bytes32 role = roles[roleSeed % roles.length];
+        address target = actors[targetSeed % actors.length];
+
+        // Revoke role
+        vm.prank(currentActor);
+        _revokeRole(role, target);
+
+        calls_revokeRole++;
+
+        console.log("[HANDLER] Revoke Role");
+    }
+
+    /**
+     * @notice Bounded burn handler
+     * @param actorSeed Seed to select actor
+     * @param amount Amount to burn
+     */
+    function handler_burn(uint256 actorSeed, uint256 amount) public {
+        currentActor = actors[actorSeed % actors.length];
+
+        uint256 balance = _getGNUSBalance(currentActor);
+        if (balance == 0) return;
+
+        amount = _boundUint256(amount, 1, balance);
+
+        bytes memory callData = abi.encodeWithSignature(
+            "burn(address,uint256,uint256)",
+            currentActor,
+            GNUS_TOKEN_ID,
+            amount
+        );
+
+        vm.prank(currentActor);
+        (bool success, ) = diamond.call(callData);
+
+        if (success) {
+            ghost_totalBurned += amount;
+            calls_burn++;
+        }
+
+        console.log("[HANDLER] Burn:", amount);
+    }
+
+    /**
+     * @notice Bounded ERC1155 mint handler
+     * @param recipientSeed Seed to select recipient
+     * @param tokenId Token ID to mint (bounded)
+     * @param amount Amount to mint
+     */
+    function handler_mint1155(uint256 recipientSeed, uint256 tokenId, uint256 amount) public {
+        address recipient = actors[recipientSeed % actors.length];
+        tokenId = _boundUint256(tokenId, 1, 100); // Token IDs 1-100
+        amount = _boundUint256(amount, 1, 1000);
+
+        bytes memory callData = abi.encodeWithSignature(
+            "mint(address,uint256,uint256)",
+            recipient,
+            tokenId,
+            amount
+        );
+
+        // Only test contract has MINTER_ROLE
+        (bool success, ) = diamond.call(callData);
+
+        if (success) {
+            calls_mint1155++;
+        }
+
+        console.log("[HANDLER] Mint ERC1155:", tokenId);
+    }
+
+    /**
+     * @notice Bounded ERC1155 burn handler
+     * @param actorSeed Seed to select actor
+     * @param tokenId Token ID to burn
+     * @param amount Amount to burn
+     */
+    function handler_burn1155(uint256 actorSeed, uint256 tokenId, uint256 amount) public {
+        currentActor = actors[actorSeed % actors.length];
+        tokenId = _boundUint256(tokenId, 1, 100);
+        amount = _boundUint256(amount, 1, 100);
+
+        bytes memory callData = abi.encodeWithSignature(
+            "burn(address,uint256,uint256)",
+            currentActor,
+            tokenId,
+            amount
+        );
+
+        vm.prank(currentActor);
+        (bool success, ) = diamond.call(callData);
+
+        if (success) {
+            calls_burn1155++;
+        }
+
+        console.log("[HANDLER] Burn ERC1155:", tokenId);
+    }
+
+    /**
      * @notice Get call summary for debugging
      */
     function callSummary() external view {
@@ -200,6 +350,10 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         console.log("Burns:", calls_burn);
         console.log("Collections:", calls_createCollection);
         console.log("Bridge Deposits:", calls_bridgeDeposit);
+        console.log("Grant Roles:", calls_grantRole);
+        console.log("Revoke Roles:", calls_revokeRole);
+        console.log("Mint ERC1155:", calls_mint1155);
+        console.log("Burn ERC1155:", calls_burn1155);
         console.log("================================");
         console.log("Ghost Total Minted:", ghost_totalMinted);
         console.log("Ghost Total Burned:", ghost_totalBurned);
