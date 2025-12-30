@@ -73,13 +73,13 @@ contract ERC20Invariant is GeniusDiamondTestBase {
 
         // Total supply should be non-negative
         assertTrue(totalSupply >= 0, "Total supply must be non-negative");
-        
+
         // Sum of known balances should not exceed total supply
         uint256 sumOfBalances = _getGNUSBalance(address(this)) +
             _getGNUSBalance(user1) +
             _getGNUSBalance(user2) +
             _getGNUSBalance(user3);
-            
+
         assertTrue(sumOfBalances <= totalSupply, "Tracked balances exceed total supply");
 
         console.log("[OK] Balance conservation maintained");

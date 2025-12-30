@@ -134,17 +134,17 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 3.2.7 Compile and fix any errors
     - [x] 3.2.8 Run tests: `npx hardhat diamonds-forge:test --match-contract 'EconomicInvariant' --diamond-name GeniusDiamond --network localhost --force`
     - [x] 3.2.9 Verify all 3 tests passing with 256 runs
-  - [ ] 3.3 Fix `ERC20Invariant.t.sol` (8 tests)
-    - [ ] 3.3.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
-    - [ ] 3.3.2 Instantiate and setup handler with `targetContract(address(handler))`
-    - [ ] 3.3.3 Review `invariant_totalSupplyNeverExceedsMax()` - ensure view-only (likely already correct)
-    - [ ] 3.3.4 Review `invariant_balancesSumToTotalSupply()` - ensure view-only
-    - [ ] 3.3.5 Review `invariant_balanceConservation()` - add ghost variable comparison
-    - [ ] 3.3.6 Update ghost variables: Use handler's `ghost_totalMinted` and `ghost_totalBurned`
-    - [ ] 3.3.7 Review remaining 5 invariant functions - ensure all are view-only
-    - [ ] 3.3.8 Compile and fix any errors
-    - [ ] 3.3.9 Run tests: `npx hardhat diamonds-forge:test --match-contract 'ERC20Invariant' --diamond-name GeniusDiamond --network localhost --force`
-    - [ ] 3.3.10 Verify all 8 tests passing with 256 runs
+  - [x] 3.3 Fix `ERC20Invariant.t.sol` (8 tests)
+    - [x] 3.3.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
+    - [x] 3.3.2 Instantiate and setup handler with `targetContract(address(handler))`
+    - [x] 3.3.3 Review `invariant_totalSupplyNeverExceedsMax()` - ensure view-only (likely already correct)
+    - [x] 3.3.4 Review `invariant_balancesSumToTotalSupply()` - ensure view-only
+    - [x] 3.3.5 Review `invariant_balanceConservation()` - add ghost variable comparison
+    - [x] 3.3.6 Update ghost variables: Use handler's `ghost_totalMinted` and `ghost_totalBurned`
+    - [x] 3.3.7 Review remaining 5 invariant functions - ensure all are view-only
+    - [x] 3.3.8 Compile and fix any errors
+    - [x] 3.3.9 Run tests: `npx hardhat diamonds-forge:test --match-contract 'ERC20Invariant' --diamond-name GeniusDiamond --network localhost --force`
+    - [x] 3.3.10 Verify all 8 tests passing with 256 runs
   - [ ] 3.4 Verify all Priority 1 tests passing
     - [ ] 3.4.1 Run all security-critical tests together
     - [ ] 3.4.2 Confirm 19 tests passing (8 + 3 + 8)
