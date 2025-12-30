@@ -2,19 +2,28 @@
 pragma solidity ^0.8.19;
 
 import {GeniusDiamondTestBase} from "../base/GeniusDiamondTestBase.sol";
+import {GeniusDiamondHandler} from "../handlers/GeniusDiamondHandler.sol";
 import {console} from "forge-std/console.sol";
 
 /**
  * @title ERC1155Invariant
  * @notice Invariant tests for ERC1155 multi-token functionality
  * @dev Tests token IDs, max supply constraints, and balance consistency
+ * @dev Uses handler pattern: fuzzer calls handler functions, invariants verify properties
  */
 contract ERC1155Invariant is GeniusDiamondTestBase {
+    GeniusDiamondHandler public handler;
+
     /**
      * @notice Setup for ERC1155 invariant tests
      */
     function setUp() public override {
         super.setUp();
+
+        // Initialize handler and target it for fuzzing
+        handler = new GeniusDiamondHandler();
+        handler.setUp();
+        targetContract(address(handler));
 
         console.log("===== ERC1155 Multi-Token Invariant Tests =====");
         console.log("Diamond:", diamond);

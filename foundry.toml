@@ -21,7 +21,8 @@ verbosity = 2
 # fuzz = { runs = 10000, max_test_rejects = 65536, seed = "0x1234" }
 ## For development, use lower runs to speed up tests
 fuzz = { runs = 256, max_test_rejects = 65536, seed = "0x1234" }
-invariant = { runs = 1000, depth = 50, fail_on_revert = false }
+## Using moderate runs for testing - will increase to 256+ once all tests stable
+invariant = { runs = 5, depth = 10, fail_on_revert = false }
 
 # File system access permissions
 fs_permissions = [

@@ -2,14 +2,18 @@
 pragma solidity ^0.8.19;
 
 import {GeniusDiamondTestBase} from "../base/GeniusDiamondTestBase.sol";
+import {GeniusDiamondHandler} from "../handlers/GeniusDiamondHandler.sol";
 import {console} from "forge-std/console.sol";
 
 /**
  * @title DiamondCoreInvariant
  * @notice Invariant tests for core Diamond proxy functionality
  * @dev Tests fundamental Diamond properties that must always hold
+ * @dev Uses handler pattern: fuzzer calls handler functions, invariants verify properties
  */
 contract DiamondCoreInvariant is GeniusDiamondTestBase {
+    GeniusDiamondHandler public handler;
+
     /**
      * @notice Setup for invariant tests
      * @dev Calls parent setup to initialize diamond
@@ -17,8 +21,10 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     function setUp() public override {
         super.setUp();
 
-        // Target the diamond contract for invariant testing
-        targetContract(diamond);
+        // Initialize handler and target it for fuzzing
+        handler = new GeniusDiamondHandler();
+        handler.setUp();
+        targetContract(address(handler));
 
         console.log("===== Diamond Core Invariant Tests =====");
         console.log("Diamond Address:", diamond);

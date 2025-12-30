@@ -2,19 +2,28 @@
 pragma solidity ^0.8.19;
 
 import {GeniusDiamondTestBase} from "../base/GeniusDiamondTestBase.sol";
+import {GeniusDiamondHandler} from "../handlers/GeniusDiamondHandler.sol";
 import {console} from "forge-std/console.sol";
 
 /**
  * @title EconomicInvariant
  * @notice Invariant tests for economic and tokenomics rules
  * @dev Tests GNUS burn rates, exchange rates, and fee mechanics
+ * @dev Uses handler pattern: fuzzer calls handler functions, invariants verify properties
  */
 contract EconomicInvariant is GeniusDiamondTestBase {
+    GeniusDiamondHandler public handler;
+
     /**
      * @notice Setup for Economic invariant tests
      */
     function setUp() public override {
         super.setUp();
+
+        // Initialize handler and target it for fuzzing
+        handler = new GeniusDiamondHandler();
+        handler.setUp();
+        targetContract(address(handler));
 
         console.log("===== Economic Invariant Tests =====");
         console.log("Diamond:", diamond);

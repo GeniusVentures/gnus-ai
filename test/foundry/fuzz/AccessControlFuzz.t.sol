@@ -53,7 +53,7 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
     function testFuzz_revokeRole(address account, uint256 roleSeed) public {
         account = _boundAddress(account);
         bytes32 role = _selectRole(roleSeed);
-        
+
         // Skip protected addresses (owner/deployer have superAdmin protection)
         vm.assume(account != owner);
         vm.assume(account != deployer);
@@ -121,7 +121,7 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
 
         // Ensure caller doesn't have admin role
         vm.assume(!_hasRole(DEFAULT_ADMIN_ROLE, unauthorizedCaller));
-        
+
         // Skip if target is owner/deployer who already have roles
         vm.assume(target != owner);
         vm.assume(target != deployer);
@@ -158,13 +158,13 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
     ) public {
         unauthorizedCaller = _boundAddress(unauthorizedCaller);
         target = _boundAddress(target);
-        
+
         // Ensure caller and target are different
         vm.assume(unauthorizedCaller != target);
 
         // Ensure caller doesn't have admin role
         vm.assume(!_hasRole(DEFAULT_ADMIN_ROLE, unauthorizedCaller));
-        
+
         // Skip if target is owner/deployer/testContract who have admin roles
         vm.assume(target != owner);
         vm.assume(target != deployer);
@@ -199,7 +199,7 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_roleProtectedFunctions(address caller) public {
         caller = _boundAddress(caller);
-        
+
         // Skip protected addresses (owner/deployer have MINTER_ROLE and cannot be revoked)
         vm.assume(caller != owner);
         vm.assume(caller != deployer);
@@ -264,7 +264,7 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
         account = _boundAddress(account);
         bytes32 role = _selectRole(roleSeed);
         cycles = _boundUint256(cycles, 1, 10); // Limit to 10 cycles
-        
+
         // Skip protected addresses (have superAdmin protection)
         vm.assume(account != owner);
         vm.assume(account != deployer);
@@ -297,7 +297,7 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
         newAdmin = _boundAddress(newAdmin);
         targetUser = _boundAddress(targetUser);
         vm.assume(newAdmin != targetUser);
-        
+
         // Skip if newAdmin or targetUser is owner/deployer to avoid conflicts
         vm.assume(newAdmin != owner);
         vm.assume(newAdmin != deployer);
@@ -332,7 +332,7 @@ contract AccessControlFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_multipleRolesPerAddress(address account) public {
         account = _boundAddress(account);
-        
+
         // Skip protected addresses to avoid role conflicts
         vm.assume(account != owner);
         vm.assume(account != deployer);

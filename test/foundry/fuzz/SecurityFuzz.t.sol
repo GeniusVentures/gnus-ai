@@ -27,7 +27,7 @@ contract SecurityFuzz is GeniusDiamondTestBase {
      */
     function testFuzz_accessControlBypass(address unauthorizedCaller) public {
         unauthorizedCaller = _boundAddress(unauthorizedCaller);
-        
+
         // Skip protected addresses (owner, deployer, test contract)
         vm.assume(unauthorizedCaller != owner);
         vm.assume(unauthorizedCaller != deployer);

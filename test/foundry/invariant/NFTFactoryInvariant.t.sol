@@ -2,14 +2,17 @@
 pragma solidity ^0.8.19;
 
 import {GeniusDiamondTestBase} from "../base/GeniusDiamondTestBase.sol";
+import {GeniusDiamondHandler} from "../handlers/GeniusDiamondHandler.sol";
 import {console} from "forge-std/console.sol";
 
 /**
  * @title NFTFactoryInvariant
  * @notice Invariant tests for NFT Factory functionality
  * @dev Tests collection creation, GNUS burning, and NFT minting
+ * @dev Uses handler pattern: fuzzer calls handler functions, invariants verify properties
  */
 contract NFTFactoryInvariant is GeniusDiamondTestBase {
+    GeniusDiamondHandler public handler;
     // Track created collections
     uint256[] internal createdCollections;
 
@@ -18,6 +21,11 @@ contract NFTFactoryInvariant is GeniusDiamondTestBase {
      */
     function setUp() public override {
         super.setUp();
+
+        // Initialize handler and target it for fuzzing
+        handler = new GeniusDiamondHandler();
+        handler.setUp();
+        targetContract(address(handler));
 
         console.log("===== NFT Factory Invariant Tests =====");
         console.log("Diamond:", diamond);

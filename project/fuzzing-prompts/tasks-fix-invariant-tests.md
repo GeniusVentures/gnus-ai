@@ -108,32 +108,32 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 2.7.3 Verify bounds are respected
 
 - [ ] 3.0 Phase 2A: Fix Security-Critical Invariant Tests (Priority 1)
-  - [ ] 3.1 Fix `AccessControlInvariant.t.sol` (8 tests)
-    - [ ] 3.1.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
-    - [ ] 3.1.2 Instantiate handler: `GeniusDiamondHandler handler = new GeniusDiamondHandler()`
-    - [ ] 3.1.3 Call `handler.setUp()` to initialize handler
-    - [ ] 3.1.4 Add `targetContract(address(handler))` to setUp()
-    - [ ] 3.1.5 Review `invariant_adminRoleCanGrantAll()` - remove state-changing calls, make view-only
-    - [ ] 3.1.6 Review `invariant_roleConsistency()` - ensure view-only property check
-    - [ ] 3.1.7 Review `invariant_ownerHasAdminRole()` - ensure view-only (likely already correct)
-    - [ ] 3.1.8 Review `invariant_nonAdminsLackAdminRole()` - ensure view-only
-    - [ ] 3.1.9 Review `invariant_minterRoleRestricted()` - ensure view-only
-    - [ ] 3.1.10 Review `invariant_roleQueriesNeverRevert()` - ensure view-only
-    - [ ] 3.1.11 Review `invariant_multipleAdminsSupported()` - remove state-changing calls
-    - [ ] 3.1.12 Review `invariant_revokingUnownedRoleIsSafe()` - remove state-changing calls
-    - [ ] 3.1.13 Compile with `forge build` and fix any errors
-    - [ ] 3.1.14 Run tests: `npx hardhat diamonds-forge:test --match-contract 'AccessControlInvariant' --diamond-name GeniusDiamond --network localhost --force`
-    - [ ] 3.1.15 Verify all 8 tests passing with 256 runs, calls > 0
-  - [ ] 3.2 Fix `EconomicInvariant.t.sol` (3 tests)
-    - [ ] 3.2.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
-    - [ ] 3.2.2 Instantiate and setup handler with `targetContract(address(handler))`
-    - [ ] 3.2.3 Review `invariant_noFreeTokenCreation()` - ensure view-only, verifies total supply integrity
-    - [ ] 3.2.4 Review `invariant_burnMechanicsCorrect()` - ensure view-only, verifies supply decreases
-    - [ ] 3.2.5 Review `invariant_tokenEconomicsConsistent()` - ensure view-only, verifies balance conservation
-    - [ ] 3.2.6 Add ghost variable checks if needed (compare contract state to handler ghost variables)
-    - [ ] 3.2.7 Compile and fix any errors
-    - [ ] 3.2.8 Run tests: `npx hardhat diamonds-forge:test --match-contract 'EconomicInvariant' --diamond-name GeniusDiamond --network localhost --force`
-    - [ ] 3.2.9 Verify all 3 tests passing with 256 runs
+  - [x] 3.1 Fix `AccessControlInvariant.t.sol` (8 tests)
+    - [x] 3.1.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
+    - [x] 3.1.2 Instantiate handler: `GeniusDiamondHandler handler = new GeniusDiamondHandler()`
+    - [x] 3.1.3 Call `handler.setUp()` to initialize handler
+    - [x] 3.1.4 Add `targetContract(address(handler))` to setUp()
+    - [x] 3.1.5 Review `invariant_adminRoleCanGrantAll()` - remove state-changing calls, make view-only
+    - [x] 3.1.6 Review `invariant_roleConsistency()` - ensure view-only property check
+    - [x] 3.1.7 Review `invariant_ownerHasAdminRole()` - ensure view-only (likely already correct)
+    - [x] 3.1.8 Review `invariant_nonAdminsLackAdminRole()` - ensure view-only
+    - [x] 3.1.9 Review `invariant_minterRoleRestricted()` - ensure view-only
+    - [x] 3.1.10 Review `invariant_roleQueriesNeverRevert()` - ensure view-only
+    - [x] 3.1.11 Review `invariant_multipleAdminsSupported()` - remove state-changing calls
+    - [x] 3.1.12 Review `invariant_revokingUnownedRoleIsSafe()` - remove state-changing calls
+    - [x] 3.1.13 Compile with `forge build` and fix any errors
+    - [x] 3.1.14 Run tests: `npx hardhat diamonds-forge:test --match-contract 'AccessControlInvariant' --diamond-name GeniusDiamond --network localhost --force`
+    - [x] 3.1.15 Verify all 8 tests passing with 256 runs, calls > 0
+  - [x] 3.2 Fix `EconomicInvariant.t.sol` (3 tests)
+    - [x] 3.2.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
+    - [x] 3.2.2 Instantiate and setup handler with `targetContract(address(handler))`
+    - [x] 3.2.3 Review `invariant_noFreeTokenCreation()` - ensure view-only, verifies total supply integrity
+    - [x] 3.2.4 Review `invariant_burnMechanicsCorrect()` - ensure view-only, verifies supply decreases
+    - [x] 3.2.5 Review `invariant_tokenEconomicsConsistent()` - ensure view-only, verifies balance conservation
+    - [x] 3.2.6 Add ghost variable checks if needed (compare contract state to handler ghost variables)
+    - [x] 3.2.7 Compile and fix any errors
+    - [x] 3.2.8 Run tests: `npx hardhat diamonds-forge:test --match-contract 'EconomicInvariant' --diamond-name GeniusDiamond --network localhost --force`
+    - [x] 3.2.9 Verify all 3 tests passing with 256 runs
   - [ ] 3.3 Fix `ERC20Invariant.t.sol` (8 tests)
     - [ ] 3.3.1 Remove `targetContract(diamond)` and `excludeSender()` from setUp()
     - [ ] 3.3.2 Instantiate and setup handler with `targetContract(address(handler))`
