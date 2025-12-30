@@ -29,6 +29,8 @@ contract ERC20Fuzz is GeniusDiamondTestBase {
     function testFuzz_transfer(address to, uint256 amount) public {
         to = _boundAddress(to);
         vm.assume(to != address(this));
+        // Skip contract addresses that don't implement ERC1155Receiver
+        vm.assume(to.code.length == 0);
 
         uint256 balance = _getGNUSBalance(address(this));
         amount = _boundUint256(amount, 0, balance);
@@ -119,6 +121,11 @@ contract ERC20Fuzz is GeniusDiamondTestBase {
         from = _boundAddress(from);
         to = _boundAddress(to);
         vm.assume(from != to && from != address(0) && to != address(0));
+        // Skip contract addresses that don't implement ERC1155Receiver
+        vm.assume(to.code.length == 0);
+
+        // Bound amount to reasonable range to avoid max supply issues
+        amount = _boundUint256(amount, 1 ether, 100000 ether);
 
         // Ensure 'from' has balance
         if (_getGNUSBalance(from) < amount) {
@@ -231,12 +238,17 @@ contract ERC20Fuzz is GeniusDiamondTestBase {
      */
     function testFuzz_RevertWhen_mintWithoutRole(address caller, uint256 amount) public {
         caller = _boundAddress(caller);
+        // Skip owner/deployer who has admin privileges
+        vm.assume(caller != owner && caller != deployer);
         amount = _boundUint256(amount, 1 ether, 1000 ether);
 
         // Ensure caller doesn't have MINTER_ROLE
         if (_hasRole(MINTER_ROLE, caller)) {
             _revokeRole(MINTER_ROLE, caller);
         }
+
+        // Also ensure they don't have DEFAULT_ADMIN_ROLE
+        vm.assume(!_hasRole(DEFAULT_ADMIN_ROLE, caller));
 
         bytes4 selector = bytes4(keccak256("mint(address,uint256,uint256,bytes)"));
         bytes memory data = abi.encode(caller, GNUS_TOKEN_ID, amount, "");

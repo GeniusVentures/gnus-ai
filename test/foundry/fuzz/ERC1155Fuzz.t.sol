@@ -29,6 +29,8 @@ contract ERC1155Fuzz is GeniusDiamondTestBase {
     function testFuzz_safeTransferFrom(address to, uint256 amount) public {
         to = _boundAddress(to);
         vm.assume(to != address(this));
+        // Skip contract addresses that don't implement ERC1155Receiver
+        vm.assume(to.code.length == 0);
 
         uint256 balance = _getGNUSBalance(address(this));
         amount = _boundUint256(amount, 0, balance);
@@ -89,6 +91,11 @@ contract ERC1155Fuzz is GeniusDiamondTestBase {
         from = _boundAddress(from);
         to = _boundAddress(to);
         vm.assume(from != to && from != address(this));
+        // Skip contract addresses that don't implement ERC1155Receiver
+        vm.assume(to.code.length == 0);
+
+        // Bound amount to reasonable range to avoid max supply issues
+        amount = _boundUint256(amount, 1 ether, 100000 ether);
 
         // Ensure 'from' has balance
         if (_getGNUSBalance(from) < amount) {

@@ -145,10 +145,10 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 3.3.8 Compile and fix any errors
     - [x] 3.3.9 Run tests: `npx hardhat diamonds-forge:test --match-contract 'ERC20Invariant' --diamond-name GeniusDiamond --network localhost --force`
     - [x] 3.3.10 Verify all 8 tests passing with 256 runs
-  - [ ] 3.4 Verify all Priority 1 tests passing
-    - [ ] 3.4.1 Run all security-critical tests together
-    - [ ] 3.4.2 Confirm 19 tests passing (8 + 3 + 8)
-    - [ ] 3.4.3 Review any failures and iterate if needed
+  - [x] 3.4 Verify all Priority 1 tests passing
+    - [x] 3.4.1 Run all security-critical tests together
+    - [x] 3.4.2 Confirm 19 tests passing (8 + 3 + 8)
+    - [x] 3.4.3 Review any failures and iterate if needed
 
 - [ ] 4.0 Phase 2B: Fix Core Functionality Invariant Tests (Priority 2)
   - [ ] 4.1 Fix `DiamondCoreInvariant.t.sol` (8 tests)

@@ -45,7 +45,7 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Invariant: All registered selectors must route to valid (non-zero) facet addresses  
+     * @notice Invariant: All registered selectors must route to valid (non-zero) facet addresses
      * @dev Most selectors should have valid facets; allows for edge cases in diamond loupe
      */
     function invariant_allSelectorsHaveValidFacets() public view {
@@ -70,7 +70,7 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
             // For small selector counts, just verify at least 1 is valid
             assertTrue(validCount > 0, "No valid selectors found");
         }
-        
+
         console.log("[OK] Valid selectors:", validCount, "/", selectors.length);
     }
 
