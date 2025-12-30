@@ -33,6 +33,23 @@ contract EconomicInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: No free token creation
      * @dev All token creation must have a cost or authorization
+     *
+     * PROPERTY TESTED:
+     * - Total GNUS supply can only increase through authorized minting
+     * - Minting requires MINTER_ROLE permission
+     * - No mechanisms exist for creating tokens without authorization
+     *
+     * WHY IT MUST HOLD:
+     * - Prevents infinite supply inflation
+     * - Maintains token economic model integrity
+     * - Ensures only trusted actors can mint
+     * - Protects token value from unauthorized dilution
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Unlimited token creation possible
+     * - Token value destroyed through hyperinflation
+     * - Economic model becomes meaningless
+     * - Critical security vulnerability allowing theft
      */
     function invariant_noFreeTokenCreation() public view {
         // Total supply changes require either minting with MINTER_ROLE
@@ -46,6 +63,23 @@ contract EconomicInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: Burn mechanics reduce supply
      * @dev Burning tokens must decrease total supply
+     *
+     * PROPERTY TESTED:
+     * - Total supply always remains >= 0 (never goes negative)
+     * - Burn operations correctly decrease total supply
+     * - No arithmetic underflow in supply calculations
+     *
+     * WHY IT MUST HOLD:
+     * - Supply must accurately reflect circulating tokens
+     * - Burn mechanics are critical for tokenomics (NFT creation burns GNUS)
+     * - Prevents supply accounting errors
+     * - Ensures economic model math works correctly
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Supply could underflow to massive values (2^256-1)
+     * - Economic calculations become incorrect
+     * - NFT creation cost mechanism fails
+     * - Token supply becomes unreliable metric
      */
     function invariant_burnMechanicsCorrect() public view {
         uint256 totalSupply = _getTotalGNUSSupply();
@@ -58,7 +92,25 @@ contract EconomicInvariant is GeniusDiamondTestBase {
 
     /**
      * @notice Invariant: Token economics are internally consistent
-     * @dev All token movements must balance
+     * @dev All token movements must balance - tracked balances shouldn't exceed supply
+     *
+     * PROPERTY TESTED:
+     * - Sum of tracked individual balances <= total supply
+     * - No tokens created outside the minting mechanism
+     * - Balance accounting is internally consistent
+     *
+     * WHY IT MUST HOLD:
+     * - Fundamental accounting invariant (assets = liabilities)
+     * - Prevents double-counting of tokens
+     * - Ensures token conservation (can't create from nothing)
+     * - Critical for economic model integrity
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - More tokens in circulation than total supply
+     * - Accounting errors allow token duplication
+     * - Economic model breaks completely
+     * - Critical vulnerability allowing unlimited token creation
+     * - Market manipulation through fake tokens
      */
     function invariant_tokenEconomicsConsistent() public view {
         uint256 totalSupply = _getTotalGNUSSupply();

@@ -77,6 +77,21 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: Function selectors must not overlap across facets
      * @dev Each selector should appear exactly once in the diamond
+     *
+     * PROPERTY TESTED:
+     * - No duplicate function selectors exist
+     * - Each function signature maps to exactly one implementation
+     *
+     * WHY IT MUST HOLD:
+     * - Selector collisions cause ambiguous routing
+     * - Diamond proxy cannot decide which facet to call
+     * - ERC-2535 standard violation
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Unpredictable function behavior
+     * - Wrong facet might be called
+     * - Security vulnerabilities from function shadowing
+     * - Diamond becomes non-compliant with ERC-2535
      */
     function invariant_noSelectorOverlap() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
@@ -97,6 +112,22 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: Facet addresses returned by loupe must be consistent
      * @dev facetAddress() and facets() should return consistent data
+     *
+     * PROPERTY TESTED:
+     * - Facet addresses point to contracts with code
+     * - No facets point to EOAs or destroyed contracts
+     * - DiamondLoupe functions return accurate data
+     *
+     * WHY IT MUST HOLD:
+     * - Introspection tools depend on accurate loupe data
+     * - Off-chain systems query loupe for diamond structure
+     * - Verification systems need reliable facet information
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Contract verification fails
+     * - Block explorers show incorrect information
+     * - Integration tools cannot analyze diamond
+     * - Users cannot trust displayed contract structure
      */
     function invariant_facetAddressesConsistent() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
@@ -125,6 +156,23 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: Diamond must have the minimum required facets
      * @dev At minimum: DiamondCutFacet, DiamondLoupeFacet, OwnershipFacet
+     *
+     * PROPERTY TESTED:
+     * - Diamond has >= 10 registered functions
+     * - Core required facets are present
+     * - Diamond is not in broken/incomplete state
+     *
+     * WHY IT MUST HOLD:
+     * - Core facets provide essential functionality
+     * - DiamondCut enables upgrades
+     * - DiamondLoupe enables introspection
+     * - Ownership enables governance
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Cannot upgrade diamond (no DiamondCut)
+     * - Cannot inspect diamond structure (no Loupe)
+     * - Cannot manage ownership (no Ownership facet)
+     * - Diamond becomes permanently limited
      */
     function invariant_minimumFacetsPresent() public view {
         bytes memory facetsCallData = abi.encodeWithSignature("facets()");
@@ -144,6 +192,21 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: DiamondCut function must be present
      * @dev Critical for upgradability
+     *
+     * PROPERTY TESTED:
+     * - diamondCut() function is registered and routable
+     * - DiamondCutFacet has deployed code
+     *
+     * WHY IT MUST HOLD:
+     * - DiamondCut is the only way to upgrade the diamond
+     * - Required by ERC-2535 standard
+     * - Enables adding/removing/replacing facets
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Diamond becomes permanently frozen
+     * - Cannot add new features
+     * - Cannot fix bugs in existing facets
+     * - Contract becomes obsolete over time
      */
     function invariant_diamondCutFunctionExists() public view {
         bytes4 diamondCutSelector = bytes4(
@@ -160,6 +223,22 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: DiamondLoupe functions must be present
      * @dev Required for introspection
+     *
+     * PROPERTY TESTED:
+     * - All 4 DiamondLoupe functions are registered
+     * - facets(), facetFunctionSelectors(), facetAddresses(), facetAddress()
+     *
+     * WHY IT MUST HOLD:
+     * - Required by ERC-2535 standard
+     * - Enables contract introspection
+     * - Tools and UIs depend on loupe for navigation
+     * - Verification systems need loupe data
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Cannot inspect diamond structure
+     * - Contract verification fails
+     * - Block explorers cannot show functions
+     * - Developer tools cannot analyze diamond
      */
     function invariant_diamondLoupeFunctionsExist() public view {
         bytes4[] memory loupeSelectors = new bytes4[](4);
@@ -179,6 +258,21 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: Owner function must be callable
      * @dev Ensures ownership checks can always work
+     *
+     * PROPERTY TESTED:
+     * - owner() function is callable and returns valid address
+     * - Ownership query never reverts
+     *
+     * WHY IT MUST HOLD:
+     * - All access-controlled functions depend on owner()
+     * - diamondCut requires owner check
+     * - Governance depends on reliable owner queries
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Cannot determine contract owner
+     * - Access control checks fail
+     * - diamondCut becomes unusable
+     * - Contract governance breaks completely
      */
     function invariant_ownerFunctionCallable() public view {
         bytes memory callData = abi.encodeWithSignature("owner()");
