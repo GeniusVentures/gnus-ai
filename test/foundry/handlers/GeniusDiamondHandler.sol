@@ -54,10 +54,29 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded transfer handler
-     * @param actorSeed Seed to select actor
+     * @notice Bounded transfer handler for ERC20 token transfers
+     * @dev Executes random GNUS token transfers between actors with bounded amounts.
+     *      This handler simulates realistic user transfer behavior while maintaining
+     *      token conservation properties.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unbounded, modulo actors.length to select sender
+     * - recipientSeed: Unbounded, modulo actors.length to select recipient
+     * - amount: Bounded to [1, sender's balance] to prevent underflow
+     *
+     * RATIONALE:
+     * - Tests token conservation across transfers
+     * - Validates balance updates are atomic
+     * - Ensures transfer events are properly emitted
+     * - Verifies no tokens are created or destroyed during transfer
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalTransfers: Incremented on successful transfer
+     * - calls_transfer: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select actor (sender)
      * @param recipientSeed Seed to select recipient
-     * @param amount Amount to transfer
+     * @param amount Amount to transfer (bounded to sender's balance)
      */
     function handler_transfer(uint256 actorSeed, uint256 recipientSeed, uint256 amount) public {
         // Select actor and recipient
@@ -82,10 +101,28 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded approve handler
-     * @param actorSeed Seed to select actor
+     * @notice Bounded approve handler for ERC20 allowance management
+     * @dev Executes random approval operations to test allowance tracking and edge cases.
+     *      Approvals are critical for DEX integrations and delegated spending patterns.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unbounded, modulo actors.length to select owner
+     * - spenderSeed: Unbounded, modulo actors.length to select spender
+     * - amount: Bounded to [0, type(uint128).max] for realistic approval amounts
+     *
+     * RATIONALE:
+     * - Tests approval storage and retrieval consistency
+     * - Validates approval events are emitted correctly
+     * - Ensures allowances don't affect token balances
+     * - Verifies zero approvals work (revoke pattern)
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalApprovals: Incremented on successful approval
+     * - calls_approve: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select actor (token owner)
      * @param spenderSeed Seed to select spender
-     * @param amount Approval amount
+     * @param amount Approval amount (bounded to uint128 max)
      */
     function handler_approve(uint256 actorSeed, uint256 spenderSeed, uint256 amount) public {
         currentActor = actors[actorSeed % actors.length];
@@ -111,9 +148,27 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded mint handler
+     * @notice Bounded mint handler for GNUS token creation
+     * @dev Mints GNUS tokens to random recipients to test supply cap and balance tracking.
+     *      Only the test contract has MINTER_ROLE, simulating privileged minting operations.
+     *
+     * INPUT BOUNDS:
+     * - recipientSeed: Unbounded, modulo actors.length to select recipient
+     * - amount: Bounded to [1 ether, 1000 ether] for realistic mint sizes
+     *
+     * RATIONALE:
+     * - Tests total supply increases correctly
+     * - Validates max supply cap enforcement (10 billion GNUS)
+     * - Ensures mint events are emitted with correct data
+     * - Verifies role-based access control for minting
+     * - Checks balance updates are atomic with supply changes
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalMinted: Incremented by minted amount
+     * - calls_mint: Counter for this handler invocation
+     *
      * @param recipientSeed Seed to select recipient
-     * @param amount Amount to mint
+     * @param amount Amount to mint (bounded to 1-1000 ether)
      */
     function handler_mint(uint256 recipientSeed, uint256 amount) public {
         address recipient = actors[recipientSeed % actors.length];
@@ -129,9 +184,28 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded collection creation handler
-     * @param maxSupply Maximum supply for collection
-     * @param exchRate Exchange rate
+     * @notice Bounded NFT collection creation handler
+     * @dev Creates NFT collections with random parameters, burning GNUS tokens as payment.
+     *      Tests the NFT Factory economics and token burn mechanism.
+     *
+     * INPUT BOUNDS:
+     * - maxSupply: Bounded to [1, 10000] for realistic collection sizes
+     * - exchRate: Bounded to [1 ether, 100 ether] GNUS burned per collection
+     *
+     * RATIONALE:
+     * - Tests GNUS burn mechanism on collection creation
+     * - Validates collection ID uniqueness across all collections
+     * - Ensures max supply is enforced per collection
+     * - Verifies economic model: GNUS supply decreases when creating collections
+     * - Checks collection metadata storage and retrieval
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalCollectionsCreated: Incremented on successful creation
+     * - ghost_totalBurned: Incremented by exchRate (GNUS burned)
+     * - calls_createCollection: Counter for this handler invocation
+     *
+     * @param maxSupply Maximum supply for the new NFT collection
+     * @param exchRate GNUS tokens to burn for collection creation
      */
     function handler_createCollection(uint256 maxSupply, uint256 exchRate) public {
         maxSupply = _boundUint256(maxSupply, 1, 10000);
@@ -163,9 +237,27 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded bridge deposit handler
-     * @param actorSeed Seed to select actor
-     * @param amount Amount to bridge
+     * @notice Bounded cross-chain bridge deposit handler
+     * @dev Simulates GNUS token deposits to bridge contract for cross-chain transfers.
+     *      Tests bridge accounting and token locking mechanism.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unbounded, modulo actors.length to select depositor
+     * - amount: Bounded to [1 ether, depositor's balance] for valid deposits
+     *
+     * RATIONALE:
+     * - Tests bridge deposit accounting and token locking
+     * - Validates tokens are properly escrowed during bridge operations
+     * - Ensures bridge events contain correct destination chain data
+     * - Verifies depositor balance decreases correctly
+     * - Checks total supply remains constant (tokens locked, not burned)
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalBridgeDeposits: Incremented on successful deposit
+     * - calls_bridgeDeposit: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select actor (depositor)
+     * @param amount Amount to bridge (bounded to depositor's balance)
      */
     function handler_bridgeDeposit(uint256 actorSeed, uint256 amount) public {
         currentActor = actors[actorSeed % actors.length];
@@ -194,10 +286,35 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded grant role handler
-     * @param actorSeed Seed to select admin actor
+     * @notice Bounded role granting handler for access control testing
+     * @dev Grants random roles to random actors to test RBAC (Role-Based Access Control).
+     *      Only DEFAULT_ADMIN_ROLE can grant roles, enforcing security hierarchy.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unused (admin is always address(this))
+     * - roleSeed: Unbounded, modulo 4 to select from available roles
+     * - targetSeed: Unbounded, modulo actors.length to select target
+     *
+     * AVAILABLE ROLES:
+     * - DEFAULT_ADMIN_ROLE: Can grant/revoke all roles
+     * - MINTER_ROLE: Can mint new GNUS tokens
+     * - PAUSER_ROLE: Can pause/unpause contract
+     * - UPGRADER_ROLE: Can upgrade diamond facets
+     *
+     * RATIONALE:
+     * - Tests role grant mechanics and permission delegation
+     * - Validates only admins can grant roles (security critical)
+     * - Ensures role changes emit correct events
+     * - Verifies role queries reflect granted permissions
+     * - Checks multiple roles can coexist on same address
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalCollectionsCreated: Reused as role operation counter
+     * - calls_grantRole: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select admin actor (always address(this))
      * @param roleSeed Seed to select role to grant
-     * @param targetSeed Seed to select target address
+     * @param targetSeed Seed to select target address receiving role
      */
     function handler_grantRole(uint256 actorSeed, uint256 roleSeed, uint256 targetSeed) public {
         // Only address(this) has DEFAULT_ADMIN_ROLE initially
@@ -224,10 +341,34 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded revoke role handler
-     * @param actorSeed Seed to select admin actor
+     * @notice Bounded role revocation handler for access control testing
+     * @dev Revokes random roles from random actors to test permission removal.
+     *      Only DEFAULT_ADMIN_ROLE can revoke roles, maintaining security model.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unused (admin is always address(this))
+     * - roleSeed: Unbounded, modulo 4 to select from available roles
+     * - targetSeed: Unbounded, modulo actors.length to select target
+     *
+     * REVOCABLE ROLES:
+     * - DEFAULT_ADMIN_ROLE: Removes admin privileges
+     * - MINTER_ROLE: Removes minting privileges
+     * - PAUSER_ROLE: Removes pause privileges
+     * - UPGRADER_ROLE: Removes upgrade privileges
+     *
+     * RATIONALE:
+     * - Tests role revocation mechanics and permission removal
+     * - Validates only admins can revoke roles (security critical)
+     * - Ensures revoke events are emitted correctly
+     * - Verifies role queries reflect revoked state
+     * - Checks revoking non-existent roles doesn't break state
+     *
+     * GHOST VARIABLE UPDATES:
+     * - calls_revokeRole: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select admin actor (always address(this))
      * @param roleSeed Seed to select role to revoke
-     * @param targetSeed Seed to select target address
+     * @param targetSeed Seed to select target address losing role
      */
     function handler_revokeRole(uint256 actorSeed, uint256 roleSeed, uint256 targetSeed) public {
         // Only address(this) has DEFAULT_ADMIN_ROLE initially
@@ -253,9 +394,27 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded burn handler
-     * @param actorSeed Seed to select actor
-     * @param amount Amount to burn
+     * @notice Bounded token burn handler for supply reduction
+     * @dev Burns GNUS tokens from random actors to test deflationary mechanics.
+     *      Burning permanently reduces total supply, testing economic model integrity.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unbounded, modulo actors.length to select burner
+     * - amount: Bounded to [1, burner's balance] to prevent underflow
+     *
+     * RATIONALE:
+     * - Tests total supply decreases correctly on burn
+     * - Validates burn events are emitted with correct data
+     * - Ensures burned tokens are permanently removed (not recoverable)
+     * - Verifies balance updates are atomic with supply changes
+     * - Checks burn affects accounting in NFT factory (collection creation)
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalBurned: Incremented by burned amount
+     * - calls_burn: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select actor (burner)
+     * @param amount Amount to burn (bounded to burner's balance)
      */
     function handler_burn(uint256 actorSeed, uint256 amount) public {
         currentActor = actors[actorSeed % actors.length];
@@ -284,10 +443,28 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded ERC1155 mint handler
+     * @notice Bounded ERC1155 multi-token mint handler
+     * @dev Mints ERC1155 tokens (NFTs) to test multi-token accounting.
+     *      Tests separate token ID tracking within the same contract.
+     *
+     * INPUT BOUNDS:
+     * - recipientSeed: Unbounded, modulo actors.length to select recipient
+     * - tokenId: Bounded to [1, 100] to simulate realistic NFT collection IDs
+     * - amount: Bounded to [1, 1000] for batch minting scenarios
+     *
+     * RATIONALE:
+     * - Tests per-token-ID supply tracking and max supply enforcement
+     * - Validates balance queries for specific token IDs
+     * - Ensures ERC1155 events are emitted correctly
+     * - Verifies token ID isolation (minting ID 1 doesn't affect ID 2)
+     * - Checks batch operations maintain consistency
+     *
+     * GHOST VARIABLE UPDATES:
+     * - calls_mint1155: Counter for this handler invocation
+     *
      * @param recipientSeed Seed to select recipient
-     * @param tokenId Token ID to mint (bounded)
-     * @param amount Amount to mint
+     * @param tokenId Token ID to mint (bounded to 1-100)
+     * @param amount Amount to mint (bounded to 1-1000)
      */
     function handler_mint1155(uint256 recipientSeed, uint256 tokenId, uint256 amount) public {
         address recipient = actors[recipientSeed % actors.length];
@@ -312,10 +489,28 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Bounded ERC1155 burn handler
-     * @param actorSeed Seed to select actor
-     * @param tokenId Token ID to burn
-     * @param amount Amount to burn
+     * @notice Bounded ERC1155 multi-token burn handler
+     * @dev Burns ERC1155 tokens to test supply reduction for specific token IDs.
+     *      Tests that burning one token ID doesn't affect others.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unbounded, modulo actors.length to select burner
+     * - tokenId: Bounded to [1, 100] matching mint handler range
+     * - amount: Bounded to [1, 100] for smaller burn operations
+     *
+     * RATIONALE:
+     * - Tests per-token-ID supply decreases correctly
+     * - Validates burn events contain correct token ID and amount
+     * - Ensures burning doesn't underflow (fails if insufficient balance)
+     * - Verifies token ID isolation (burning ID 1 doesn't affect ID 2)
+     * - Checks zero address balance remains zero after burns
+     *
+     * GHOST VARIABLE UPDATES:
+     * - calls_burn1155: Counter for this handler invocation
+     *
+     * @param actorSeed Seed to select actor (burner)
+     * @param tokenId Token ID to burn (bounded to 1-100)
+     * @param amount Amount to burn (bounded to 1-100)
      */
     function handler_burn1155(uint256 actorSeed, uint256 tokenId, uint256 amount) public {
         currentActor = actors[actorSeed % actors.length];

@@ -35,6 +35,22 @@ contract NFTFactoryInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: Collection IDs are unique
      * @dev No duplicate collection IDs should exist
+     *
+     * PROPERTY TESTED:
+     * - Each created collection has a unique ID
+     * - No ID collisions in collection creation
+     * - Collection counter increments properly
+     *
+     * WHY IT MUST HOLD:
+     * - Collections are identified by their ID
+     * - Duplicate IDs would cause data conflicts
+     * - Collection metadata would be overwritten
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Multiple collections share same ID
+     * - Collection metadata gets mixed up
+     * - NFTs could be minted to wrong collection
+     * - Data corruption in factory state
      */
     function invariant_collectionIdsUnique() public view {
         // Check tracked collections for uniqueness
@@ -53,6 +69,23 @@ contract NFTFactoryInvariant is GeniusDiamondTestBase {
     /**
      * @notice Invariant: GNUS is burned when creating collections
      * @dev Collection creation should reduce GNUS supply
+     *
+     * PROPERTY TESTED:
+     * - Total GNUS supply never increases without minting
+     * - Collection creation burns GNUS tokens
+     * - Burn mechanism functions correctly
+     *
+     * WHY IT MUST HOLD:
+     * - Collection creation has a cost (burns GNUS)
+     * - Prevents spam/free collection creation
+     * - Deflationary mechanism for token economics
+     * - Creates value sink for GNUS token
+     *
+     * WHAT BREAKS IF VIOLATED:
+     * - Free collection creation possible
+     * - GNUS token has no use case/value
+     * - Spam collections flood the system
+     * - Economic model breaks (no burn pressure)
      */
     function invariant_gnusBurnedOnCollectionCreate() public view {
         uint256 totalSupply = _getTotalGNUSSupply();
