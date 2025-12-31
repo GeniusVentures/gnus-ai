@@ -5,6 +5,7 @@ import { GNUS_TOKEN_ID } from '../../scripts/common';
 
 import { Diamond } from '@diamondslab/diamonds';
 import {
+	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
@@ -16,7 +17,6 @@ import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 // Create utils object for compatibility
 const utils = { formatEther };

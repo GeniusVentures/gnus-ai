@@ -7,6 +7,7 @@ import { logEvents } from '../../scripts/utils/logEvents';
 
 import { Diamond } from '@diamondslab/diamonds';
 import {
+	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
@@ -18,7 +19,6 @@ import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 // Create utils object for compatibility
 const utils = { formatEther, id };
@@ -30,7 +30,7 @@ chai.use(chaiAsPromised);
 
 describe('NFT Factory Tests', async function () {
 	const diamondName = 'GeniusDiamond';
-	const log: debug.Debugger = debug('GNUSDeploy:log:${diamondName}');
+	const log: debug.Debugger = debug(`GNUSDeploy:log:${diamondName}`);
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();

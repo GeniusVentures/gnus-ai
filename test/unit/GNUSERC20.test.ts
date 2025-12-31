@@ -1,5 +1,6 @@
 import { Diamond } from '@diamondslab/diamonds';
 import {
+	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
@@ -12,7 +13,6 @@ import hre from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 import { GeniusOwnershipFacet, IERC20Upgradeable__factory } from '../../typechain-types';
 
 chai.use(chaiAsPromised);

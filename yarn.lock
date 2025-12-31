@@ -850,16 +850,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@diamondslab/hardhat-diamonds@npm:^1.1.14":
-  version: 1.1.14
-  resolution: "@diamondslab/hardhat-diamonds@npm:1.1.14"
+"@diamondslab/hardhat-diamonds@npm:^1.1.15":
+  version: 1.1.15
+  resolution: "@diamondslab/hardhat-diamonds@npm:1.1.15"
   dependencies:
     chalk: "npm:^5.6.2"
   peerDependencies:
     "@diamondslab/diamonds": ^1.0.0
     ethers: ^6.0.0
     hardhat: ^2.0.0
-  checksum: 10c0/8bd05ff5afe5bf3597e3f64e6ac1c09d6c2b354bc7dbacbdb60134c43925e2c11e8f0b7b679b6824362b5252c3d1a4cf12ac0143efaa3d796977c1d656066b73
+  checksum: 10c0/7aac1b2e48f76700f58a836352226da953d8b4a86afb6cf77972a9a5de86257bd6ad27f993673ed5e07c422a204d20db4cc48ea794e322d3d100c0a0919db989
   languageName: node
   linkType: hard
 
@@ -1421,7 +1421,7 @@ __metadata:
     "@diamondslab/diamonds": "npm:^1.3.0"
     "@diamondslab/diamonds-hardhat-foundry": "npm:^2.4.0"
     "@diamondslab/diamonds-monitor": "npm:^1.0.4"
-    "@diamondslab/hardhat-diamonds": "npm:^1.1.14"
+    "@diamondslab/hardhat-diamonds": "npm:^1.1.15"
     "@gnus.ai/contracts-upgradeable-diamond": "npm:=4.5.0"
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.0"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.0"

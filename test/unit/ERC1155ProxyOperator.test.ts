@@ -8,6 +8,7 @@ import {
 	logTx,
 } from '@diamondslab/diamonds';
 import {
+	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
@@ -18,7 +19,6 @@ import { JsonRpcProvider, ZeroAddress } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 
 // Type alias for provider compatibility
 type ProviderType = JsonRpcProvider | any;
