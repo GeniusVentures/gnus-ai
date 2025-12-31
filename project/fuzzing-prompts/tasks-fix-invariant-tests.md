@@ -184,20 +184,20 @@ Update the file after completing each sub-task, not just after completing an ent
     - [ ] 4.4.2 Confirm 14 tests passing (8 + 4 + 2)
     - [ ] 4.4.3 Review any failures and iterate if needed
 
-- [ ] 5.0 Phase 3: Documentation & Verification
-  - [ ] 5.1 Document invariant properties in test files
-    - [ ] 5.1.1 Add/enhance NatSpec comments for all `invariant_*` functions in AccessControlInvariant
-    - [ ] 5.1.2 Add/enhance NatSpec comments for all `invariant_*` functions in EconomicInvariant
-    - [ ] 5.1.3 Add/enhance NatSpec comments for all `invariant_*` functions in ERC20Invariant
-    - [ ] 5.1.4 Add/enhance NatSpec comments for all `invariant_*` functions in DiamondCoreInvariant
-    - [ ] 5.1.5 Add/enhance NatSpec comments for all `invariant_*` functions in ERC1155Invariant
-    - [ ] 5.1.6 Add/enhance NatSpec comments for all `invariant_*` functions in NFTFactoryInvariant
-    - [ ] 5.1.7 Ensure each comment explains: what property is tested, why it must hold, what would break if violated
-  - [ ] 5.2 Document handler functions
-    - [ ] 5.2.1 Add/enhance NatSpec comments for all handler functions in `GeniusDiamondHandler.sol`
-    - [ ] 5.2.2 Document input bounds and rationale
-    - [ ] 5.2.3 Document ghost variable updates
-    - [ ] 5.2.4 Add usage examples if helpful
+- [x] 5.0 Phase 3: Documentation & Verification
+  - [x] 5.1 Document invariant properties in test files
+    - [x] 5.1.1 Add/enhance NatSpec comments for all `invariant_*` functions in AccessControlInvariant
+    - [x] 5.1.2 Add/enhance NatSpec comments for all `invariant_*` functions in EconomicInvariant
+    - [x] 5.1.3 Add/enhance NatSpec comments for all `invariant_*` functions in ERC20Invariant
+    - [x] 5.1.4 Add/enhance NatSpec comments for all `invariant_*` functions in DiamondCoreInvariant
+    - [x] 5.1.5 Add/enhance NatSpec comments for all `invariant_*` functions in ERC1155Invariant
+    - [x] 5.1.6 Add/enhance NatSpec comments for all `invariant_*` functions in NFTFactoryInvariant
+    - [x] 5.1.7 Ensure each comment explains: what property is tested, why it must hold, what would break if violated
+  - [x] 5.2 Document handler functions
+    - [x] 5.2.1 Add/enhance NatSpec comments for all handler functions in `GeniusDiamondHandler.sol`
+    - [x] 5.2.2 Document input bounds and rationale
+    - [x] 5.2.3 Document ghost variable updates
+    - [x] 5.2.4 Add usage examples if helpful
   - [ ] 5.3 Generate and review coverage report
     - [ ] 5.3.1 Run coverage: `forge coverage --match-contract '.*Invariant.*' > coverage-invariant.txt`
     - [ ] 5.3.2 Review coverage report and identify gaps

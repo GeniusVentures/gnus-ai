@@ -176,7 +176,7 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
 
         vm.prank(owner);
         (bool success, ) = _callDiamond(selector, data);
-        
+
         if (success) {
             // Contract allows transfer to zero - verify it succeeded
             assertEq(_getDiamondOwner(), address(0), "Transfer succeeded but owner not updated");
