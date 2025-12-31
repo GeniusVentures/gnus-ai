@@ -79,7 +79,8 @@ describe('ERC1155 Proxy Operator Tests', async function () {
 				// Load the Diamond contract using the utility function
 				geniusDiamond = await loadDiamondContract<GeniusDiamond>(
 					diamond,
-					deployedDiamondData.DiamondAddress!,
+					deployedDiamondData.DiamondAddress! || '',
+					hre.ethers,
 				);
 
 				// Since GNUSNFTFactory might not have NFT_PROXY_OPERATOR_ROLE, create a proxy operator instance for specific methods

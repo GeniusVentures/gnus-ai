@@ -76,7 +76,8 @@ describe('NFT Factory Tests', async function () {
 				// Load the Diamond contract using the utility function
 				geniusDiamond = await loadDiamondContract<GeniusDiamond>(
 					diamond,
-					deployedDiamondData.DiamondAddress!,
+					deployedDiamondData.DiamondAddress! || '',
+					hre.ethers,
 				);
 
 				ethersMultichain = ethers;
