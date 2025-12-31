@@ -52,7 +52,7 @@
 - Tests must support `hardhat-multichain` provider structure
 - Use `loadDiamondContract` utility to load Diamond instances
 - Follow the pattern established in `test/unit/NFTFactory.test.ts`
-- Run coverage with `yarn coverage` or `npx hardhat coverage`
+- Run coverage with `yarn coverage`
 - Review coverage reports at `coverage/index.html` after each phase
 
 ## Instructions for Completing Tasks
@@ -70,16 +70,16 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 0.1 Create and checkout a new branch (e.g., `git checkout -b feature/test-coverage-improvement`)
 
 - [ ] 1.0 Analyze existing contracts and prepare test infrastructure
-  - [ ] 1.1 Run baseline coverage report with `yarn coverage` and document current state
-  - [ ] 1.2 Review existing test file `test/unit/NFTFactory.test.ts` to understand the test pattern
-  - [ ] 1.3 Verify `LocalDiamondDeployer` and `loadDiamondContract` utilities are working correctly
-  - [ ] 1.4 Create a test template file based on NFTFactory.test.ts pattern for reuse
-  - [ ] 1.5 Read and analyze zero-coverage contracts to understand their functionality:
-    - [ ] 1.5.1 Read `contracts/gnus-ai/GNUSContractAssets.sol`
-    - [ ] 1.5.2 Read `contracts/gnus-ai/GeniusAI.sol`
-    - [ ] 1.5.3 Read `contracts/gnus-ai/GeniusAIStorage.sol`
-    - [ ] 1.5.4 Read `contracts/gnus-ai/GeniusOwnershipFacet.sol`
-    - [ ] 1.5.5 Read `contracts/gnus-ai/libraries/TransferHelper.sol`
+  - [x] 1.1 Run baseline coverage report with `yarn coverage` and document current state
+  - [x] 1.2 Review existing test file `test/unit/NFTFactory.test.ts` to understand the test pattern
+  - [x] 1.3 Verify `LocalDiamondDeployer` and `loadDiamondContract` utilities are working correctly
+  - [x] 1.4 Create a test template file based on NFTFactory.test.ts pattern for reuse
+  - [x] 1.5 Read and analyze zero-coverage contracts to understand their functionality:
+    - [x] 1.5.1 Read `contracts/gnus-ai/GNUSContractAssets.sol`
+    - [x] 1.5.2 Read `contracts/gnus-ai/GeniusAI.sol`
+    - [x] 1.5.3 Read `contracts/gnus-ai/GeniusAIStorage.sol`
+    - [x] 1.5.4 Read `contracts/gnus-ai/GeniusOwnershipFacet.sol`
+    - [x] 1.5.5 Read `contracts/gnus-ai/libraries/TransferHelper.sol`
 
 - [ ] 2.0 Phase 1: Implement tests for zero-coverage contracts (Target: 75% overall coverage)
   - [ ] 2.1 GNUSContractAssets.sol tests
