@@ -82,14 +82,17 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 1.5.5 Read `contracts/gnus-ai/libraries/TransferHelper.sol`
 
 - [ ] 2.0 Phase 1: Implement tests for zero-coverage contracts (Target: 75% overall coverage)
-  - [ ] 2.1 GNUSContractAssets.sol tests
-    - [ ] 2.1.1 Create `test/unit/GNUSContractAssets.test.ts` with Diamond deployment setup
-    - [ ] 2.1.2 Implement test for `setContractAsset()` with valid parameters (happy path)
-    - [ ] 2.1.3 Implement test for `setContractAsset()` access control (should reject unauthorized)
-    - [ ] 2.1.4 Implement test for `getContractAsset()` retrieval of stored assets
-    - [ ] 2.1.5 Implement test for `getContractAsset()` with non-existent assets
-    - [ ] 2.1.6 Implement test for asset update scenarios (overwriting existing assets)
-    - [ ] 2.1.7 Run tests and verify they pass: `npx hardhat test test/unit/GNUSContractAssets.test.ts`
+  - [x] 2.1 GNUSContractAssets.sol tests
+    - [x] 2.1.1 Create `test/unit/GNUSContractAssets.test.ts` with Diamond deployment setup
+    - [x] 2.1.2 Implement test for `withdrawToken()` access control (super admin and non-admin)
+    - [x] 2.1.3 Implement test for `withdrawToken()` GNUS token protection
+    - [x] 2.1.4 Implement test for `withdrawToken()` ERC20 token withdrawal (full amount)
+    - [x] 2.1.5 Implement test for `withdrawToken()` ERC20 token withdrawal (partial amount)
+    - [x] 2.1.6 Implement test for `withdrawToken()` ETH withdrawal (single transaction)
+    - [x] 2.1.7 Implement test for `withdrawToken()` ETH withdrawal (multiple transactions)
+    - [x] 2.1.8 Implement test for WithdrawToken event emission
+    - [x] 2.1.9 Run tests and verify they pass: `npx hardhat test test/unit/GNUSContractAssets.test.ts`
+    - [x] 2.1.10 Commit: Task 2.1 completed with 8 passing tests
   - [ ] 2.2 GeniusAI.sol tests
     - [ ] 2.2.1 Create `test/unit/GeniusAI.test.ts` with Diamond deployment setup
     - [ ] 2.2.2 Implement test for AI-related state initialization
