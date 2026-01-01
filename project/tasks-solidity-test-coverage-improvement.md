@@ -112,14 +112,15 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 2.3.6 Implement test for Diamond storage pattern and no collisions
     - [x] 2.3.7 Run tests and verify they pass: `npx hardhat test test/unit/GeniusAIStorage.test.ts`
     - [x] 2.3.8 Commit: Task 2.3 completed with 15 passing tests
-  - [ ] 2.4 GeniusOwnershipFacet.sol tests
-    - [ ] 2.4.1 Create `test/unit/GeniusOwnershipFacet.test.ts` with Diamond deployment setup
-    - [ ] 2.4.2 Implement test for `transferOwnership()` with valid new owner
-    - [ ] 2.4.3 Implement test for `transferOwnership()` rejects non-owner callers
-    - [ ] 2.4.4 Implement test for `transferOwnership()` rejects zero address
-    - [ ] 2.4.5 Implement test for ownership verification functions
-    - [ ] 2.4.6 Implement test for ownership transfer event emission
-    - [ ] 2.4.7 Run tests and verify they pass: `npx hardhat test test/unit/GeniusOwnershipFacet.test.ts`
+  - [x] 2.4 GeniusOwnershipFacet.sol tests
+    - [x] 2.4.1 Create `test/unit/GeniusOwnershipFacet.test.ts` with Diamond deployment setup
+    - [x] 2.4.2 Implement test for `transferOwnership()` with valid new owner
+    - [x] 2.4.3 Implement test for `transferOwnership()` rejects non-owner callers
+    - [x] 2.4.4 Implement test for ownership transfer event emission
+    - [x] 2.4.5 Implement test for role grants/revocations during transfer
+    - [x] 2.4.6 Implement test for owner() verification function
+    - [x] 2.4.7 Run tests and verify they pass: `npx hardhat test test/unit/GeniusOwnershipFacet.test.ts`
+    - [x] 2.4.8 Commit: Task 2.4 completed with 19 passing tests
   - [ ] 2.5 TransferHelper.sol tests
     - [ ] 2.5.1 Create `test/unit/TransferHelper.test.ts` with Diamond deployment setup
     - [ ] 2.5.2 Deploy mock ERC20 token for testing transfer helper
