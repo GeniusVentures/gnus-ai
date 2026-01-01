@@ -103,13 +103,15 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 2.2.7 Implement test for UUID handling (empty, max, shared)
     - [x] 2.2.8 Run tests and verify they pass: `npx hardhat test test/unit/GeniusAI.test.ts`
     - [x] 2.2.9 Commit: Task 2.2 completed with 14 passing tests
-  - [ ] 2.3 GeniusAIStorage.sol tests
-    - [ ] 2.3.1 Create `test/unit/GeniusAIStorage.test.ts` with Diamond deployment setup
-    - [ ] 2.3.2 Implement test for storage initialization for AI-related data
-    - [ ] 2.3.3 Implement test for storage read/write operations
-    - [ ] 2.3.4 Implement test for storage access control
-    - [ ] 2.3.5 Implement test for storage state persistence across transactions
-    - [ ] 2.3.6 Run tests and verify they pass: `npx hardhat test test/unit/GeniusAIStorage.test.ts`
+  - [x] 2.3 GeniusAIStorage.sol tests
+    - [x] 2.3.1 Create `test/unit/GeniusAIStorage.test.ts` with Diamond deployment setup
+    - [x] 2.3.2 Implement test for storage initialization for new addresses
+    - [x] 2.3.3 Implement test for storage read/write operations and persistence
+    - [x] 2.3.4 Implement test for storage isolation between users
+    - [x] 2.3.5 Implement test for storage state persistence across blocks/snapshots
+    - [x] 2.3.6 Implement test for Diamond storage pattern and no collisions
+    - [x] 2.3.7 Run tests and verify they pass: `npx hardhat test test/unit/GeniusAIStorage.test.ts`
+    - [x] 2.3.8 Commit: Task 2.3 completed with 15 passing tests
   - [ ] 2.4 GeniusOwnershipFacet.sol tests
     - [ ] 2.4.1 Create `test/unit/GeniusOwnershipFacet.test.ts` with Diamond deployment setup
     - [ ] 2.4.2 Implement test for `transferOwnership()` with valid new owner
