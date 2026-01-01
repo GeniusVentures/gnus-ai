@@ -96,6 +96,7 @@ rules:
     paths:
       exclude:
         - test/**
+        - contracts/mocks/**
 
   - id: diamond-storage-violation
     patterns:
@@ -120,6 +121,7 @@ rules:
     paths:
       exclude:
         - test/**
+        - contracts/mocks/**
 
   - id: diamond-storage-violation-2
     patterns:
@@ -131,6 +133,7 @@ rules:
     paths:
       exclude:
         - test/**
+        - contracts/mocks/**
 
   - id: unsafe-diamond-cut
     patterns:
