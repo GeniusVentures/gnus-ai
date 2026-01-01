@@ -184,6 +184,13 @@ describe('NFT Factory Tests', async function () {
 
 			// Test case to validate restrictions on NFT creation for unauthorized users
 			it('Testing NFT Factory to create new token for non-creator nor admin', async () => {
+				// // Ensure signer1 doesn't have CREATOR_ROLE (may persist from other test files)
+				// const CREATOR_ROLE = utils.id('CREATOR_ROLE');
+				// const hasRole = await signer1Diamond.hasRole(CREATOR_ROLE, signer1);
+				// if (hasRole) {
+				// 	await ownerDiamond.revokeRole(CREATOR_ROLE, signer1);
+				// }
+
 				// Attempt to create an NFT as an unauthorized user, expecting rejection
 				await expect(
 					signer1Diamond.createNFT(
