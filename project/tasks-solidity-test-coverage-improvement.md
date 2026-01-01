@@ -139,18 +139,19 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 2.7.4 Commit Phase 1 completion documentation
 
 - [ ] 3.0 Phase 2: Implement tests for low-coverage contracts (Target: 85% overall coverage)
-  - [ ] 3.1 Analyze low-coverage contracts:
-    - [ ] 3.1.1 Read `contracts/gnus-ai/ERC1155ProxyOperator.sol` and identify uncovered lines
+  - [x] 3.1 Analyze low-coverage contracts:
+    - [x] 3.1.1 Read `contracts/gnus-ai/ERC1155ProxyOperator.sol` and identify uncovered lines
     - [ ] 3.1.2 Read `contracts/gnus-ai/ERC20TransferBatch.sol` and identify uncovered lines
     - [ ] 3.1.3 Read `contracts/gnus-ai/GNUSControlStorage.sol` and identify uncovered lines
-  - [ ] 3.2 ERC1155ProxyOperator.sol tests
-    - [ ] 3.2.1 Create `test/unit/ERC1155ProxyOperator.test.ts` with Diamond deployment setup
-    - [ ] 3.2.2 Implement test for proxy operator approval functionality
-    - [ ] 3.2.3 Implement test for proxy operator transfer operations
-    - [ ] 3.2.4 Implement test for proxy operator access control
-    - [ ] 3.2.5 Implement test for proxy operator revocation
-    - [ ] 3.2.6 Implement test for batch operations via proxy
-    - [ ] 3.2.7 Run tests and verify they pass: `npx hardhat test test/unit/ERC1155ProxyOperator.test.ts`
+  - [x] 3.2 ERC1155ProxyOperator.sol tests
+    - [x] 3.2.1 Create `test/unit/ERC1155ProxyOperator.test.ts` with Diamond deployment setup
+    - [x] 3.2.2 Implement test for proxy operator approval functionality
+    - [x] 3.2.3 Implement test for proxy operator transfer operations
+    - [x] 3.2.4 Implement test for proxy operator access control
+    - [x] 3.2.5 Implement test for proxy operator revocation
+    - [x] 3.2.6 Implement test for batch operations via proxy
+    - [x] 3.2.7 Run tests and verify they pass: `npx hardhat test test/unit/ERC1155ProxyOperator.test.ts`
+    - [x] 3.2.8 Commit: Task 3.2 completed with 22 passing tests
   - [ ] 3.3 ERC20TransferBatch.sol tests
     - [ ] 3.3.1 Create `test/unit/ERC20TransferBatch.test.ts` with Diamond deployment setup
     - [ ] 3.3.2 Implement test for batch transfer with multiple recipients
