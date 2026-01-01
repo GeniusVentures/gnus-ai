@@ -93,14 +93,16 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 2.1.8 Implement test for WithdrawToken event emission
     - [x] 2.1.9 Run tests and verify they pass: `npx hardhat test test/unit/GNUSContractAssets.test.ts`
     - [x] 2.1.10 Commit: Task 2.1 completed with 8 passing tests
-  - [ ] 2.2 GeniusAI.sol tests
-    - [ ] 2.2.1 Create `test/unit/GeniusAI.test.ts` with Diamond deployment setup
-    - [ ] 2.2.2 Implement test for AI-related state initialization
-    - [ ] 2.2.3 Implement test for AI function calls with valid inputs
-    - [ ] 2.2.4 Implement test for AI function access control restrictions
-    - [ ] 2.2.5 Implement test for AI configuration updates
-    - [ ] 2.2.6 Implement test for interaction with GeniusAIStorage
-    - [ ] 2.2.7 Run tests and verify they pass: `npx hardhat test test/unit/GeniusAI.test.ts`
+  - [x] 2.2 GeniusAI.sol tests
+    - [x] 2.2.1 Create `test/unit/GeniusAI.test.ts` with Diamond deployment setup
+    - [x] 2.2.2 Implement test for GeniusAI_Initialize() function
+    - [x] 2.2.3 Implement test for OpenEscrow() with various msg.value amounts
+    - [x] 2.2.4 Implement test for multiple escrows per address
+    - [x] 2.2.5 Implement test for escrow storage and ID incrementing
+    - [x] 2.2.6 Implement test for contract balance verification
+    - [x] 2.2.7 Implement test for UUID handling (empty, max, shared)
+    - [x] 2.2.8 Run tests and verify they pass: `npx hardhat test test/unit/GeniusAI.test.ts`
+    - [x] 2.2.9 Commit: Task 2.2 completed with 14 passing tests
   - [ ] 2.3 GeniusAIStorage.sol tests
     - [ ] 2.3.1 Create `test/unit/GeniusAIStorage.test.ts` with Diamond deployment setup
     - [ ] 2.3.2 Implement test for storage initialization for AI-related data
