@@ -121,15 +121,16 @@ Update the file after completing each sub-task, not just after completing an ent
     - [x] 2.4.6 Implement test for owner() verification function
     - [x] 2.4.7 Run tests and verify they pass: `npx hardhat test test/unit/GeniusOwnershipFacet.test.ts`
     - [x] 2.4.8 Commit: Task 2.4 completed with 19 passing tests
-  - [ ] 2.5 TransferHelper.sol tests
-    - [ ] 2.5.1 Create `test/unit/TransferHelper.test.ts` with Diamond deployment setup
-    - [ ] 2.5.2 Deploy mock ERC20 token for testing transfer helper
-    - [ ] 2.5.3 Implement test for safe ERC20 transfer functionality
-    - [ ] 2.5.4 Implement test for safe ERC20 transferFrom functionality
-    - [ ] 2.5.5 Implement test for safe ERC20 approve functionality
-    - [ ] 2.5.6 Implement test for handling of non-compliant ERC20 tokens
-    - [ ] 2.5.7 Implement test for revert conditions for failed transfers
-    - [ ] 2.5.8 Run tests and verify they pass: `npx hardhat test test/unit/TransferHelper.test.ts`
+  - [x] 2.5 TransferHelper.sol tests
+    - [x] 2.5.1 Create `test/unit/TransferHelper.test.ts` with Diamond deployment setup
+    - [x] 2.5.2 Deploy mock ERC20 token for testing transfer helper
+    - [x] 2.5.3 Implement test for safe ERC20 transfer functionality
+    - [x] 2.5.4 Implement test for safe ERC20 transferFrom functionality
+    - [x] 2.5.5 Implement test for safe ERC20 approve functionality
+    - [x] 2.5.6 Implement test for handling of non-compliant ERC20 tokens
+    - [x] 2.5.7 Implement test for revert conditions for failed transfers
+    - [x] 2.5.8 Run tests and verify they pass: `npx hardhat test test/unit/TransferHelper.test.ts`
+    - [x] 2.5.9 Commit: Task 2.5 completed with 21 passing tests
   - [ ] 2.6 Run coverage report after Phase 1: `yarn coverage`
   - [ ] 2.7 Verify overall coverage is at least 75%, document results
 
