@@ -164,12 +164,13 @@ describe('[ContractName] Tests', async function () {
 					assert(true, 'Test not implemented');
 				});
 
-				it('should reject [invalid action] (error condition)', async () => {
+				it.skip('should reject [invalid action] (error condition)', async () => {
 					// Test error condition
-					await expect(signer1Diamond['someFunction']()).to.eventually.be.rejectedWith(
-						Error,
-						/Expected error message/,
-					);
+					// TODO: Replace 'someFunction' with actual contract function
+					// await expect(signer1Diamond['someFunction']()).to.eventually.be.rejectedWith(
+					// 	Error,
+					// 	/Expected error message/,
+					// );
 				});
 
 				it('should handle [edge case]', async () => {
