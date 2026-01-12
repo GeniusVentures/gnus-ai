@@ -291,7 +291,6 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      *      Only DEFAULT_ADMIN_ROLE can grant roles, enforcing security hierarchy.
      *
      * INPUT BOUNDS:
-     * - actorSeed: Unused (admin is always address(this))
      * - roleSeed: Unbounded, modulo 4 to select from available roles
      * - targetSeed: Unbounded, modulo actors.length to select target
      *
@@ -312,11 +311,10 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      * - ghost_totalCollectionsCreated: Reused as role operation counter
      * - calls_grantRole: Counter for this handler invocation
      *
-     * @param actorSeed Seed to select admin actor (always address(this))
      * @param roleSeed Seed to select role to grant
      * @param targetSeed Seed to select target address receiving role
      */
-    function handler_grantRole(uint256 actorSeed, uint256 roleSeed, uint256 targetSeed) public {
+    function handler_grantRole(uint256 roleSeed, uint256 targetSeed) public {
         // Only address(this) has DEFAULT_ADMIN_ROLE initially
         currentActor = address(this);
 
@@ -346,7 +344,6 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      *      Only DEFAULT_ADMIN_ROLE can revoke roles, maintaining security model.
      *
      * INPUT BOUNDS:
-     * - actorSeed: Unused (admin is always address(this))
      * - roleSeed: Unbounded, modulo 4 to select from available roles
      * - targetSeed: Unbounded, modulo actors.length to select target
      *
@@ -366,11 +363,10 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      * GHOST VARIABLE UPDATES:
      * - calls_revokeRole: Counter for this handler invocation
      *
-     * @param actorSeed Seed to select admin actor (always address(this))
      * @param roleSeed Seed to select role to revoke
      * @param targetSeed Seed to select target address losing role
      */
-    function handler_revokeRole(uint256 actorSeed, uint256 roleSeed, uint256 targetSeed) public {
+    function handler_revokeRole(uint256 roleSeed, uint256 targetSeed) public {
         // Only address(this) has DEFAULT_ADMIN_ROLE initially
         currentActor = address(this);
 
