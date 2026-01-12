@@ -1,16 +1,16 @@
 import {
-    LocalDiamondDeployer,
-    loadDiamondContract,
+	LocalDiamondDeployer,
+	loadDiamondContract,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
-import { SignerWithAddress } from '@nomicfoundry/hardhat-ethers/signers';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
-    MockBadERC20,
-    MockERC20,
-    MockNonPayable,
-    TransferHelperWrapper,
+	MockBadERC20,
+	MockERC20,
+	MockNonPayable,
+	TransferHelperWrapper,
 } from '../../typechain-types';
 
 describe('TransferHelper Library Tests', function () {
@@ -93,7 +93,7 @@ describe('TransferHelper Library Tests', function () {
 			const amount = hre.ethers.parseEther('100');
 
 			await expect(
-				wrapper.testSafeApprove(
+				wrapper.wrapSafeApprove(
 					await goodToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -112,7 +112,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setFailApprove(true);
 
 			await expect(
-				wrapper.testSafeApprove(
+				wrapper.wrapSafeApprove(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -125,7 +125,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setReturnFalse(true);
 
 			await expect(
-				wrapper.testSafeApprove(
+				wrapper.wrapSafeApprove(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -139,7 +139,7 @@ describe('TransferHelper Library Tests', function () {
 
 			// This should succeed because the library handles tokens that don't return a value
 			await expect(
-				wrapper.testSafeApprove(
+				wrapper.wrapSafeApprove(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -149,7 +149,7 @@ describe('TransferHelper Library Tests', function () {
 
 		it('should handle zero amount approval', async function () {
 			await expect(
-				wrapper.testSafeApprove(await goodToken.getAddress(), await addr1.getAddress(), 0),
+				wrapper.wrapSafeApprove(await goodToken.getAddress(), await addr1.getAddress(), 0),
 			).to.not.be.reverted;
 
 			const allowance = await goodToken.allowance(
@@ -173,7 +173,7 @@ describe('TransferHelper Library Tests', function () {
 			const initialBalance = await goodToken.balanceOf(await addr1.getAddress());
 
 			await expect(
-				wrapper.testSafeTransfer(
+				wrapper.wrapSafeTransfer(
 					await goodToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -189,7 +189,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setFailTransfer(true);
 
 			await expect(
-				wrapper.testSafeTransfer(
+				wrapper.wrapSafeTransfer(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -202,7 +202,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setReturnFalse(true);
 
 			await expect(
-				wrapper.testSafeTransfer(
+				wrapper.wrapSafeTransfer(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -215,7 +215,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setReturnNothing(true);
 
 			await expect(
-				wrapper.testSafeTransfer(
+				wrapper.wrapSafeTransfer(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					amount,
@@ -227,7 +227,7 @@ describe('TransferHelper Library Tests', function () {
 			const initialBalance = await goodToken.balanceOf(await addr1.getAddress());
 
 			await expect(
-				wrapper.testSafeTransfer(await goodToken.getAddress(), await addr1.getAddress(), 0),
+				wrapper.wrapSafeTransfer(await goodToken.getAddress(), await addr1.getAddress(), 0),
 			).to.not.be.reverted;
 
 			const finalBalance = await goodToken.balanceOf(await addr1.getAddress());
@@ -252,7 +252,7 @@ describe('TransferHelper Library Tests', function () {
 			const initialBalance = await goodToken.balanceOf(await addr2.getAddress());
 
 			await expect(
-				wrapper.testSafeTransferFrom(
+				wrapper.wrapSafeTransferFrom(
 					await goodToken.getAddress(),
 					await addr1.getAddress(),
 					await addr2.getAddress(),
@@ -269,7 +269,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setFailTransfer(true);
 
 			await expect(
-				wrapper.testSafeTransferFrom(
+				wrapper.wrapSafeTransferFrom(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					await addr2.getAddress(),
@@ -283,7 +283,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setReturnFalse(true);
 
 			await expect(
-				wrapper.testSafeTransferFrom(
+				wrapper.wrapSafeTransferFrom(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					await addr2.getAddress(),
@@ -297,7 +297,7 @@ describe('TransferHelper Library Tests', function () {
 			await badToken.setReturnNothing(true);
 
 			await expect(
-				wrapper.testSafeTransferFrom(
+				wrapper.wrapSafeTransferFrom(
 					await badToken.getAddress(),
 					await addr1.getAddress(),
 					await addr2.getAddress(),
@@ -310,7 +310,7 @@ describe('TransferHelper Library Tests', function () {
 			const amount = hre.ethers.parseEther('2000'); // More than approved
 
 			await expect(
-				wrapper.testSafeTransferFrom(
+				wrapper.wrapSafeTransferFrom(
 					await goodToken.getAddress(),
 					await addr1.getAddress(),
 					await addr2.getAddress(),
@@ -323,7 +323,7 @@ describe('TransferHelper Library Tests', function () {
 			const initialBalance = await goodToken.balanceOf(await addr2.getAddress());
 
 			await expect(
-				wrapper.testSafeTransferFrom(
+				wrapper.wrapSafeTransferFrom(
 					await goodToken.getAddress(),
 					await addr1.getAddress(),
 					await addr2.getAddress(),
@@ -350,7 +350,7 @@ describe('TransferHelper Library Tests', function () {
 			const amount = hre.ethers.parseEther('1');
 			const initialBalance = await hre.ethers.provider.getBalance(await addr1.getAddress());
 
-			await expect(wrapper.testSafeTransferETH(await addr1.getAddress(), amount)).to.not.be
+			await expect(wrapper.wrapSafeTransferETH(await addr1.getAddress(), amount)).to.not.be
 				.reverted;
 
 			const finalBalance = await hre.ethers.provider.getBalance(await addr1.getAddress());
@@ -370,7 +370,7 @@ describe('TransferHelper Library Tests', function () {
 				await payableTarget.getAddress(),
 			);
 
-			await expect(wrapper.testSafeTransferETH(await payableTarget.getAddress(), amount)).to
+			await expect(wrapper.wrapSafeTransferETH(await payableTarget.getAddress(), amount)).to
 				.not.be.reverted;
 
 			const finalBalance = await hre.ethers.provider.getBalance(
@@ -383,7 +383,7 @@ describe('TransferHelper Library Tests', function () {
 			const amount = hre.ethers.parseEther('1');
 
 			await expect(
-				wrapper.testSafeTransferETH(await nonPayable.getAddress(), amount),
+				wrapper.wrapSafeTransferETH(await nonPayable.getAddress(), amount),
 			).to.be.revertedWith('STE');
 		});
 
@@ -391,14 +391,14 @@ describe('TransferHelper Library Tests', function () {
 			const amount = hre.ethers.parseEther('100'); // More than wrapper has
 
 			await expect(
-				wrapper.testSafeTransferETH(await addr1.getAddress(), amount),
+				wrapper.wrapSafeTransferETH(await addr1.getAddress(), amount),
 			).to.be.revertedWith('STE');
 		});
 
 		it('should handle zero amount ETH transfer', async function () {
 			const initialBalance = await hre.ethers.provider.getBalance(await addr1.getAddress());
 
-			await expect(wrapper.testSafeTransferETH(await addr1.getAddress(), 0)).to.not.be
+			await expect(wrapper.wrapSafeTransferETH(await addr1.getAddress(), 0)).to.not.be
 				.reverted;
 
 			const finalBalance = await hre.ethers.provider.getBalance(await addr1.getAddress());
