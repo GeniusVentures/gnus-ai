@@ -97,7 +97,9 @@ contract BridgeFuzz is GeniusDiamondTestBase {
                 1
             );
 
-            diamond.call(callData);
+            // Attempt bridge
+            (bool success, ) = diamond.call(callData);
+            assertTrue(success, "Bridge should succeed for valid amount");
         }
 
         console.log("[OK] Edge case tested");
