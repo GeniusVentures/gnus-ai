@@ -7,7 +7,7 @@ pragma solidity ^0.8.2;
 contract MockNonPayable {
     // This contract explicitly does NOT have a receive() or fallback() function
     // to test ETH transfer failures
-    
+
     bool public receivedCall;
 
     function markCalled() external {

@@ -86,6 +86,13 @@ describe('ERC1155ProxyOperator Tests', function () {
 				await proxyOperator.getAddress(),
 			);
 			expect(hasRole).to.be.true;
+
+			// // Directly call isApprovedForAll to test the function override (lines 33-34)
+			// const isApproved = await geniusDiamond.isApprovedForAll(
+			// 	await user1.getAddress(),
+			// 	await proxyOperator.getAddress(),
+			// );
+			// expect(isApproved).to.be.true; // Should be true due to role
 		});
 
 		it('should return false for addresses without NFT_PROXY_OPERATOR_ROLE', async function () {
@@ -130,6 +137,20 @@ describe('ERC1155ProxyOperator Tests', function () {
 				await proxyOperator.getAddress(),
 			);
 			expect(hasRole).to.be.true;
+
+			// Call isApprovedForAll to verify role-based approval (lines 33-34)
+			const isApproved = await geniusDiamond.isApprovedForAll(
+				await user1.getAddress(),
+				await proxyOperator.getAddress(),
+			);
+			expect(isApproved).to.be.true;
+
+			// Even without explicit setApprovalForAll, role provides approval
+			const explicitApproval = await geniusDiamond.isApprovedForAll(
+				await user2.getAddress(),
+				await proxyOperator.getAddress(),
+			);
+			expect(explicitApproval).to.be.true; // Role applies to all accounts
 		});
 
 		it('should return false after NFT_PROXY_OPERATOR_ROLE is revoked', async function () {
@@ -146,7 +167,17 @@ describe('ERC1155ProxyOperator Tests', function () {
 			);
 			expect(hasRole).to.be.true;
 
-			// Revoke role
+			// Note: The isApprovedForAll override in ERC1155ProxyOperator may not be called
+			// in the Diamond context. This test verifies role assignment works correctly.
+			// For actual approval in transfers, explicit setApprovalForAll may be needed.
+			// Verify isApprovedForAll returns true with role (lines 33-34)
+			let isApproved = await geniusDiamond.isApprovedForAll(
+				await user1.getAddress(),
+				await proxyOperator.getAddress(),
+			);
+			expect(isApproved).to.be.true;
+
+			// Revoke roleisAppr
 			await geniusDiamond.revokeRole(
 				NFT_PROXY_OPERATOR_ROLE,
 				await proxyOperator.getAddress(),
@@ -158,6 +189,13 @@ describe('ERC1155ProxyOperator Tests', function () {
 				await proxyOperator.getAddress(),
 			);
 			expect(hasRole).to.be.false;
+
+			// Verify isApprovedForAll now returns false (line 38)
+			isApproved = await geniusDiamond.isApprovedForAll(
+				await user1.getAddress(),
+				await proxyOperator.getAddress(),
+			);
+			expect(isApproved).to.be.false;
 		});
 
 		it('should work for multiple proxy operators simultaneously', async function () {
@@ -180,6 +218,19 @@ describe('ERC1155ProxyOperator Tests', function () {
 
 			expect(hasRole1).to.be.true;
 			expect(hasRole2).to.be.true;
+
+			// Both should be approved via isApprovedForAll (lines 33-34)
+			const isApproved1 = await geniusDiamond.isApprovedForAll(
+				await user1.getAddress(),
+				await proxyOperator.getAddress(),
+			);
+			const isApproved2 = await geniusDiamond.isApprovedForAll(
+				await user1.getAddress(),
+				await user2.getAddress(),
+			);
+
+			expect(isApproved1).to.be.true;
+			expect(isApproved2).to.be.true;
 		});
 
 		it('should return false after standard approval is revoked', async function () {

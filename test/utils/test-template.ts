@@ -13,24 +13,20 @@
 
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { GNUS_TOKEN_ID } from '../../scripts/common';
-import { iObjToString } from '../../scripts/utils/iObjToString';
-import { logEvents } from '../../scripts/utils/logEvents';
 
 import { Diamond } from '@diamondslab/diamonds';
 import {
-	loadDiamondContract,
-	LocalDiamondDeployer,
-	LocalDiamondDeployerConfig,
+    loadDiamondContract,
+    LocalDiamondDeployer,
+    LocalDiamondDeployerConfig,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import { debug } from 'debug';
 import { formatEther, id, JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
-import { toWei } from '../../scripts/utils/helpers';
 
 // Create utils object for compatibility
 const utils = { formatEther, id };

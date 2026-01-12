@@ -1,16 +1,16 @@
+import {
+    LocalDiamondDeployer,
+    loadDiamondContract,
+} from '@diamondslab/hardhat-diamonds/dist/utils';
+import { SignerWithAddress } from '@nomicfoundry/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@nomicfoundry/hardhat-ethers/signers';
-import {
-	LocalDiamondDeployer,
-	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
-	MockERC20,
-	MockBadERC20,
-	TransferHelperWrapper,
-	MockNonPayable,
+    MockBadERC20,
+    MockERC20,
+    MockNonPayable,
+    TransferHelperWrapper,
 } from '../../typechain-types';
 
 describe('TransferHelper Library Tests', function () {

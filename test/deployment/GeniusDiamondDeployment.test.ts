@@ -2,6 +2,7 @@ import { Diamond, SupportedProvider } from '@diamondslab/diamonds';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
+	loadDiamondContract,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
@@ -10,7 +11,6 @@ import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { getInterfaceID } from '../../scripts/utils/helpers';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
 import {
 	IDiamondCut__factory,
 	IDiamondLoupe__factory,
@@ -74,6 +74,7 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 				geniusDiamondContract = await loadDiamondContract<GeniusDiamond>(
 					diamond,
 					deployedDiamondData.DiamondAddress!,
+					hre.ethers,
 				);
 				geniusDiamond = geniusDiamondContract;
 

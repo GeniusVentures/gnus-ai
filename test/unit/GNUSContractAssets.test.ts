@@ -1,10 +1,12 @@
-import { expect } from 'chai';
-import hre from 'hardhat';
-import { LocalDiamondDeployer } from '@diamondslab/hardhat-diamonds/dist/utils';
-import { GeniusDiamond } from '../../diamond-typechain-types';
-import { loadDiamondContract } from '../../scripts/utils/loadDiamondArtifact';
-import type { Signer } from 'ethers';
 import type { Diamond } from '@diamondslab/diamonds';
+import {
+	LocalDiamondDeployer,
+	loadDiamondContract,
+} from '@diamondslab/hardhat-diamonds/dist/utils';
+import { expect } from 'chai';
+import type { Signer } from 'ethers';
+import hre from 'hardhat';
+import { GeniusDiamond } from '../../diamond-typechain-types';
 
 describe('GNUSContractAssets', function () {
 	let geniusDiamond: GeniusDiamond;

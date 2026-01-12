@@ -88,7 +88,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@diamondslab/diamonds": "^1.3.0",
+    "@diamondslab/diamonds": "^1.3.2",
     "@diamondslab/diamonds-hardhat-foundry": "^2.4.0",
     "@diamondslab/diamonds-monitor": "^1.0.4",
     "@diamondslab/hardhat-diamonds": "^1.1.15",

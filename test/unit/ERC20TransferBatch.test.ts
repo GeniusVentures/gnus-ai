@@ -1,10 +1,10 @@
+import {
+    LocalDiamondDeployer,
+    loadDiamondContract,
+} from '@diamondslab/hardhat-diamonds/dist/utils';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
-import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import {
-	LocalDiamondDeployer,
-	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 
 describe('ERC20TransferBatch Tests', function () {

@@ -830,9 +830,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@diamondslab/diamonds@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "@diamondslab/diamonds@npm:1.3.0"
+"@diamondslab/diamonds@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "@diamondslab/diamonds@npm:1.3.2"
   dependencies:
     "@ethersproject/abstract-signer": "npm:^5.8.0"
     axios: "npm:^1.12.0"
@@ -846,7 +846,7 @@ __metadata:
     typescript: ^5.0.0
   bin:
     diamond-abi: dist/scripts/diamond-abi-cli.js
-  checksum: 10c0/27f827f88ad14861248665214058116bed3ba926a90ce9c2d25e501ab00dad5bdddd8d465a786c64698a1aeba2c87d8a49cead1cd77e5efbd0443514a7bc2eda
+  checksum: 10c0/756aad4d94b4882aeff5b6b7f9a0566f53a374acd88217c9a74315d6e56f12bfa5c1fe45d50b849915b8e8b9500244725529b4a69a6fdb1fb4ef31ddc8cb03a2
   languageName: node
   linkType: hard
 
@@ -1418,7 +1418,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": "npm:^19.8.1"
     "@commitlint/config-conventional": "npm:^19.8.1"
-    "@diamondslab/diamonds": "npm:^1.3.0"
+    "@diamondslab/diamonds": "npm:^1.3.2"
     "@diamondslab/diamonds-hardhat-foundry": "npm:^2.4.0"
     "@diamondslab/diamonds-monitor": "npm:^1.0.4"
     "@diamondslab/hardhat-diamonds": "npm:^1.1.15"

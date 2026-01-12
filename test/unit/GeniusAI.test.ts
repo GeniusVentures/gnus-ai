@@ -1,12 +1,11 @@
+import { Diamond } from '@diamondslab/diamonds';
+import {
+    LocalDiamondDeployer,
+    loadDiamondContract,
+} from '@diamondslab/hardhat-diamonds/dist/utils';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import {
-	LocalDiamondDeployer,
-	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
-import { Diamond } from '@diamondslab/diamonds';
 import { GeniusDiamond } from '../../diamond-typechain-types/GeniusDiamond';
 
 describe('GeniusAI', function () {
