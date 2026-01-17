@@ -69,32 +69,32 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 1.25 Refactor code for clarity and gas optimization
 
 - [ ] 2.0 Create GNUSWithdrawLimiter.sol facet with administrative functions (TDD)
-  - [ ] 2.1 Create test file `test/unit/GNUSWithdrawLimiter.test.ts` with Diamond deployment setup
-  - [ ] 2.2 Write test: "should initialize with correct default values" (FR-24)
-  - [ ] 2.3 Write test: "should allow super admin to set default limit amount" (FR-19)
-  - [ ] 2.4 Write test: "should allow super admin to set default window seconds" (FR-19)
-  - [ ] 2.5 Write test: "should allow super admin to set default bin count with validation" (FR-19)
-  - [ ] 2.6 Write test: "should allow super admin to set per-account config" (FR-11, FR-20)
-  - [ ] 2.7 Write test: "should allow super admin to enable/disable limiter globally" (FR-17)
-  - [ ] 2.8 Write test: "should return correct account withdrawal status" (FR-14)
-  - [ ] 2.9 Write test: "should emit WithdrawLimiterConfigUpdated event" (FR-49)
-  - [ ] 2.10 Write test: "should emit AccountConfigUpdated event" (FR-50)
-  - [ ] 2.11 Write test: "should revert when non-admin tries to configure" (FR-16)
-  - [ ] 2.12 Create file `contracts/gnus-ai/GNUSWithdrawLimiter.sol` extending GeniusAccessControl
-  - [ ] 2.13 Import GNUSWithdrawLimiterStorage library
-  - [ ] 2.14 Define events: `WithdrawLimiterConfigUpdated`, `AccountConfigUpdated`, `WithdrawLimiterTriggered`, `WithdrawRecorded` (FR-47 to FR-50)
-  - [ ] 2.15 Implement `setDefaultLimitAmount(uint256)` external onlySuperAdminRole with event emission (FR-19)
-  - [ ] 2.16 Implement `setDefaultWindowSeconds(uint256)` external onlySuperAdminRole with event emission (FR-19)
-  - [ ] 2.17 Implement `setDefaultBinCount(uint256)` external onlySuperAdminRole with validation (must be > 0) (FR-19)
-  - [ ] 2.18 Implement `setAccountConfig(address, uint32, uint64, uint256)` external onlySuperAdminRole with event emission (FR-11, FR-20)
-  - [ ] 2.19 Implement `setLimiterEnabled(bool)` external onlySuperAdminRole with event emission (FR-17)
-  - [ ] 2.20 Implement `getWithdrawLimiterConfig()` external view returning default config tuple (FR-13)
-  - [ ] 2.21 Implement `getAccountConfig(address)` external view returning effective config (custom or defaults) (FR-13)
-  - [ ] 2.22 Implement `getAccountWithdrawStatus(address)` external view returning current usage, remaining capacity, window end (FR-14)
-  - [ ] 2.23 Implement `supportsInterface(bytes4)` override for ERC-165 compatibility
-  - [ ] 2.24 Add NatSpec documentation for all public/external functions
-  - [ ] 2.25 Run tests to verify all facet tests pass: `yarn test test/unit/GNUSWithdrawLimiter.test.ts`
-  - [ ] 2.26 Refactor for code clarity and consistency
+  - [x] 2.1 Create test file `test/unit/GNUSWithdrawLimiter.test.ts` with Diamond deployment setup
+  - [x] 2.2 Write test: "should initialize with correct default values" (FR-24)
+  - [x] 2.3 Write test: "should allow super admin to set default limit amount" (FR-19)
+  - [x] 2.4 Write test: "should allow super admin to set default window seconds" (FR-19)
+  - [x] 2.5 Write test: "should allow super admin to set default bin count with validation" (FR-19)
+  - [x] 2.6 Write test: "should allow super admin to set per-account config" (FR-11, FR-20)
+  - [x] 2.7 Write test: "should allow super admin to enable/disable limiter globally" (FR-17)
+  - [x] 2.8 Write test: "should return correct account withdrawal status" (FR-14)
+  - [x] 2.9 Write test: "should emit WithdrawLimiterConfigUpdated event" (FR-49)
+  - [x] 2.10 Write test: "should emit AccountConfigUpdated event" (FR-50)
+  - [x] 2.11 Write test: "should revert when non-admin tries to configure" (FR-16)
+  - [x] 2.12 Create file `contracts/gnus-ai/GNUSWithdrawLimiter.sol` extending GeniusAccessControl
+  - [x] 2.13 Import GNUSWithdrawLimiterStorage library
+  - [x] 2.14 Define events: `WithdrawLimiterConfigUpdated`, `AccountConfigUpdated`, `WithdrawLimiterTriggered`, `WithdrawRecorded` (FR-47 to FR-50)
+  - [x] 2.15 Implement `setDefaultLimitAmount(uint256)` external onlySuperAdminRole with event emission (FR-19)
+  - [x] 2.16 Implement `setDefaultWindowSeconds(uint256)` external onlySuperAdminRole with event emission (FR-19)
+  - [x] 2.17 Implement `setDefaultBinCount(uint256)` external onlySuperAdminRole with validation (must be > 0) (FR-19)
+  - [x] 2.18 Implement `setAccountConfig(address, uint32, uint64, uint256)` external onlySuperAdminRole with event emission (FR-11, FR-20)
+  - [x] 2.19 Implement `setLimiterEnabled(bool)` external onlySuperAdminRole with event emission (FR-17)
+  - [x] 2.20 Implement `getWithdrawLimiterConfig()` external view returning default config tuple (FR-13)
+  - [x] 2.21 Implement `getAccountConfig(address)` external view returning effective config (custom or defaults) (FR-13)
+  - [x] 2.22 Implement `getAccountWithdrawStatus(address)` external view returning current usage, remaining capacity, window end (FR-14)
+  - [x] 2.23 Implement `supportsInterface(bytes4)` override for ERC-165 compatibility
+  - [x] 2.24 Add NatSpec documentation for all public/external functions
+  - [x] 2.25 Run tests to verify all facet tests pass: `yarn test test/unit/GNUSWithdrawLimiter.test.ts`
+  - [x] 2.26 Refactor for code clarity and consistency
 
 - [ ] 3.0 Integrate limiter into GNUSBridge.sol withdraw() function (TDD)
   - [ ] 3.1 Write integration test: "GNUSBridge.withdraw() should trigger limiter" (FR-31)
