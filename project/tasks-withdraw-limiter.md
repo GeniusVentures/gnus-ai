@@ -4,7 +4,10 @@
 
 - `contracts/gnus-ai/GNUSWithdrawLimiterStorage.sol` - ✅ COMPLETE - Diamond storage library with bin-based withdrawal tracking (Task 1.0)
 - `test/unit/GNUSWithdrawLimiterStorage.test.ts` - ✅ COMPLETE - Unit tests for storage functions (9 tests, Task 1.0)
-- `contracts/gnus-ai/GNUSWithdrawLimiter.sol` - Facet implementing limiter logic and administrative functions
+- `contracts/gnus-ai/GNUSWithdrawLimiter.sol` - ✅ COMPLETE - Facet with administrative functions (Task 2.0)
+- `test/unit/GNUSWithdrawLimiter.test.ts` - ✅ COMPLETE - Unit tests for facet (10 tests, Task 2.0)
+- `contracts/gnus-ai/DiamondInitFacet.sol` - ✅ COMPLETE - Initialization with defaults (Task 2.0)
+- `diamonds/GeniusDiamond/geniusdiamond.config.json` - ✅ COMPLETE - Diamond configuration with priority 115 (Task 2.0, partial Task 7.0)
 - `contracts/gnus-ai/GNUSBridge.sol` - Modified to integrate limiter checks into withdraw() function
 - `contracts/gnus-ai/ERC20TransferBatch.sol` - Modified to integrate limiter checks into _transferBatch() to prevent Sybil attacks
 - `contracts/gnus-ai/GNUSERC1155MaxSupply.sol` - Modified to integrate limiter checks into _beforeTokenTransfer() hook
@@ -68,7 +71,7 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 1.24 Run tests to verify all storage tests pass: `yarn test test/unit/GNUSWithdrawLimiterStorage.test.ts --chains sepolia`
   - [x] 1.25 Refactor code for clarity and gas optimization
 
-- [ ] 2.0 Create GNUSWithdrawLimiter.sol facet with administrative functions (TDD)
+- [x] 2.0 Create GNUSWithdrawLimiter.sol facet with administrative functions (TDD)
   - [x] 2.1 Create test file `test/unit/GNUSWithdrawLimiter.test.ts` with Diamond deployment setup
   - [x] 2.2 Write test: "should initialize with correct default values" (FR-24)
   - [x] 2.3 Write test: "should allow super admin to set default limit amount" (FR-19)
