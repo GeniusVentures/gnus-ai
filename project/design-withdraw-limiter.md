@@ -2,9 +2,17 @@
 
 ### Overview
 
-The Withdraw Limiter is a rate-limiting mechanism that restricts the amount of GNUS tokens that can be withdrawn by any account within a configurable time window. This prevents rapid drainage of funds and provides additional security against exploits or unauthorized withdrawals.
+The Withdraw Limiter is a rate-limiting mechanism that restricts the amount of GNUS tokens that can be transferred or withdrawn by any account within a configurable time window. This prevents rapid drainage of funds and provides additional security against exploits, unauthorized withdrawals, and Sybil attacks.
 
-The system uses a **bin-based aggregation** approach where withdrawals are accumulated into time bins rather than storing individual transactions, providing superior gas efficiency while maintaining accurate rate limiting.
+The system uses a **bin-based aggregation** approach where GNUS token transfers are accumulated into time bins rather than storing individual transactions, providing superior gas efficiency while maintaining accurate rate limiting.
+
+**Critical Security Scope**: The limiter applies to ALL outbound GNUS token transfers, not just NFT→GNUS conversions. This includes:
+- NFT withdrawals via `GNUSBridge.withdraw()`
+- Batch transfers via `ERC20TransferBatch.transferBatch()`
+- Batch burn/transfer via `ERC20TransferBatch.transferOrBurnBatch()`
+- ERC-1155 transfers via `safeTransferFrom()` and `safeBatchTransferFrom()`
+
+This comprehensive coverage prevents attackers from bypassing per-account limits by distributing GNUS to multiple Sybil accounts.
 
 ### Architecture
 
@@ -14,6 +22,8 @@ Following the ERC-2535 Diamond pattern used in the GNUS.AI system, the implement
 2. **`GNUSWithdrawLimiter.sol`** - Facet implementing limiter logic and configuration management
 3. **`DiamondInitFacet.sol`** - Modified to include initialization function for limiter settings
 4. **Modifications to GNUSBridge.sol** - Integration of limiter checks into the existing `withdraw()` function
+5. **Modifications to ERC20TransferBatch.sol** - Integration of limiter checks into `transferBatch()` and `transferOrBurnBatch()` functions to prevent Sybil attack bypass
+6. **Modifications to GNUSERC1155MaxSupply.sol** - Integration of limiter checks into `_beforeTokenTransfer()` hook for comprehensive coverage
 
 ### Storage Design
 
@@ -198,7 +208,7 @@ For each bin:
 
 ### Integration Points
 
-**GNUSBridge.sol `withdraw()` function modification:**
+**1. GNUSBridge.sol `withdraw()` function modification:**
 
 The existing withdraw function at GNUSBridge.sol:
 
@@ -215,6 +225,97 @@ function withdraw(uint256 amount, uint256 id) external {
     
     _burn(sender, id, amount);
     _mintWithdrawFee(sender, GNUS_TOKEN_ID, gnusAmount);
+}
+```
+
+**2. ERC20TransferBatch.sol `_transferBatch()` function modification:**
+
+**Security Rationale**: Without this check, attackers could convert NFTs to GNUS (hitting limiter), then use `transferBatch()` to distribute GNUS to N Sybil accounts (bypassing limiter), with each Sybil withdrawing independently (N × limit total).
+
+```solidity
+function _transferBatch(
+    address[] memory destinations,
+    uint256[] memory amounts,
+    bool checkBurn
+) internal virtual {
+    address operator = _msgSender();
+    require(
+        destinations.length == amounts.length,
+        "TransferBatch: to and amounts length mismatch"
+    );
+
+    // ADD: Limiter check for batch transfers (prevent Sybil bypass)
+    // Super admins bypass limiter checks
+    if (!hasRole(SUPER_ADMIN_ROLE, operator)) {
+        uint256 totalAmount = 0;
+        for (uint256 i = 0; i < amounts.length; i++) {
+            totalAmount += amounts[i];
+        }
+        // Check aggregate transfer amount against limiter
+        GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(operator, totalAmount);
+    }
+
+    _beforeTokenTransfer(operator, destinations, amounts);
+
+    for (uint256 i = 0; i < destinations.length; i++) {
+        address to = destinations[i];
+        if (checkBurn) {
+            require(to != address(0), "TransferBatch: transfer to the zero address");
+        }
+
+        uint256 fromBalance = ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][operator];
+        require(
+            fromBalance >= amounts[i],
+            "TransferBatch: transfer amount exceeds balance"
+        );
+        unchecked {
+            ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][operator] = fromBalance - amounts[i];
+            ERC1155Storage.layout()._balances[GNUS_TOKEN_ID][to] += amounts[i];
+        }
+    }
+
+    emit TransferBatch(operator, operator, destinations, amounts);
+
+    _afterTokenTransfer(operator, operator, destinations, amounts);
+}
+```
+
+**Note**: This modification applies to both `transferBatch()` and `transferOrBurnBatch()` since they both call `_transferBatch()` internally.
+
+**3. GNUSERC1155MaxSupply.sol `_beforeTokenTransfer()` hook modification:**
+
+**Security Rationale**: Provides a fallback layer to catch any ERC-1155 GNUS token transfers (including `safeTransferFrom()` and `safeBatchTransferFrom()`) that might bypass other integration points.
+
+```solidity
+function _beforeTokenTransfer(
+    address operator,
+    address from,
+    address to,
+    uint256[] memory ids,
+    uint256[] memory amounts,
+    bytes memory data
+) internal virtual override {
+    super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    
+    // ADD: Limiter check for GNUS token transfers
+    // Only check outbound transfers (from != address(0))
+    // Skip burns (to == address(0)) as they're handled separately
+    // Super admins bypass limiter checks
+    if (from != address(0) && to != address(0) && !hasRole(SUPER_ADMIN_ROLE, operator)) {
+        uint256 totalGnusAmount = 0;
+        
+        // Accumulate GNUS token amounts (GNUS_TOKEN_ID = 1)
+        for (uint256 i = 0; i < ids.length; i++) {
+            if (ids[i] == GNUS_TOKEN_ID) {
+                totalGnusAmount += amounts[i];
+            }
+        }
+        
+        // Check aggregate GNUS transfer amount against limiter
+        if (totalGnusAmount > 0) {
+            GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(from, totalGnusAmount);
+        }
+    }
 }
 ```
 
@@ -263,6 +364,30 @@ event WithdrawRecorded(address indexed account, uint256 amount, uint256 timestam
 8. **Precision**: Limiter applies to GNUS output amount (after exchange rate conversion)
 9. **Base Timestamp**: First withdrawal establishes consistent bin timeline for the account
 10. **Wrap-Around Logic**: Bins wrap around using modulo arithmetic, automatically reusing old bins
+
+#### Sybil Attack Prevention
+
+**Attack Vector Identified**: An attacker could attempt to bypass per-account limits by:
+1. Converting NFTs to GNUS tokens (hits limiter)
+2. Using `transferBatch()` to distribute GNUS to N Sybil accounts (bypasses limiter if unchecked)
+3. Each Sybil account withdraws independently, each getting full withdrawal limit
+4. **Result**: N × limit can be extracted instead of 1 × limit
+
+**Mitigation Strategy**: The limiter is integrated into ALL GNUS token transfer paths:
+- **`GNUSBridge.withdraw()`**: Primary NFT→GNUS conversion point
+- **`ERC20TransferBatch._transferBatch()`**: Aggregates batch transfer amounts and checks against limiter BEFORE executing transfers
+- **`GNUSERC1155MaxSupply._beforeTokenTransfer()`**: Hook catches any ERC-1155 GNUS token transfers as fallback
+
+**Design Decision**: Batch transfers aggregate total amount across all destinations and check against the SENDER's limit, not individual recipient limits. This prevents distributing large amounts to Sybil accounts for later extraction.
+
+**Edge Cases Covered**:
+- Single transfers via `safeTransferFrom()` → caught by `_beforeTokenTransfer()` hook
+- Batch transfers via `safeBatchTransferFrom()` → caught by `_beforeTokenTransfer()` hook
+- Batch transfers via `transferBatch()` → caught by `_transferBatch()` modification
+- Batch burn/transfer via `transferOrBurnBatch()` → caught by `_transferBatch()` modification
+- Mixed token batch transfers → hook filters for GNUS_TOKEN_ID only
+
+**Gas Impact**: Batch transfer limiter check adds ~30k gas overhead (bin calculation + storage updates), consistent with single withdrawal overhead.
 
 ### Diamond Configuration Entry
 

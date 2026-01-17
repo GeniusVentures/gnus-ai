@@ -1,16 +1,18 @@
-# Product Requirements Document: Withdraw Limiter Gate
+# Product Requirements Document: Withdraw Limiter
 
 ## Introduction/Overview
 
-The Withdraw Limiter Gate is a security feature for the GNUS.AI smart contract system that rate-limits the amount of GNUS tokens any account can withdraw within a configurable time window. This feature addresses the need to mitigate problematic withdrawal activity, providing a deterrent against exploiting accounts and malicious behavior.
+The Withdraw Limiter is a security feature for the GNUS.AI smart contract system that rate-limits the amount of GNUS tokens any account can transfer or withdraw within a configurable time window. This feature addresses the need to mitigate problematic withdrawal activity, providing a deterrent against exploiting accounts, malicious behavior, and Sybil attacks.
 
-When users convert hierarchical NFTs back to GNUS ERC-20 tokens via the `withdraw()` function, the limiter gate will track withdrawal amounts using a **bin-based aggregation system** and block transactions that exceed per-account configured limits within a specified time window. This creates a temporal boundary that allows detection of abnormal withdrawal patterns while minimally impacting legitimate user behavior and maintaining optimal gas efficiency.
+**Comprehensive Security Scope**: The limiter applies to ALL outbound GNUS token transfers, not just NFT→GNUS conversions. This includes NFT withdrawals via `GNUSBridge.withdraw()`, batch transfers via `ERC20TransferBatch`, and ERC-1155 transfers via `safeTransferFrom()` and `safeBatchTransferFrom()`. This comprehensive coverage prevents attackers from bypassing per-account limits by distributing GNUS to multiple Sybil accounts.
+
+The limiter tracks transfer amounts using a **bin-based aggregation system** and blocks transactions that exceed per-account configured limits within a specified time window. This creates a temporal boundary that allows detection of abnormal withdrawal patterns while minimally impacting legitimate user behavior and maintaining optimal gas efficiency.
 
 ## Goals
 
 1. **Configurable Rate Limiting**: Implement per-account withdrawal limits that can be adjusted based on user roles, reputation, or security requirements
 2. **Minimal Impact on Legitimate Users**: Design limits that don't hinder normal user operations while catching abnormal behavior
-3. **Administrative Control**: Provide super administrators with tools to configure limits, bypass throttles, and manage the system
+3. **Administrative Control**: Provide super administrators with tools to configure limits, bypass limiters, and manage the system
 4. **Gas Efficiency**: Implement storage and cleanup mechanisms that minimize gas costs while maintaining security
 
 ## User Stories
@@ -84,33 +86,52 @@ When users convert hierarchical NFTs back to GNUS ERC-20 tokens via the `withdra
 35. The system **must** use diamond storage pattern to avoid storage collisions
 36. Integration **must** call `GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(account, amount)`
 
+### Sybil Attack Prevention (Critical Security)
+
+37. The limiter **must** be integrated into `ERC20TransferBatch._transferBatch()` to prevent Sybil account bypass
+38. Batch transfers **must** aggregate total amounts across all destinations and check against the SENDER's limit
+39. The limiter check in batch transfers **must** occur BEFORE `_beforeTokenTransfer()` hook execution
+40. Super admin transfers via batch functions **must** bypass limiter checks (consistent with other integration points)
+41. The limiter **must** be integrated into `GNUSERC1155MaxSupply._beforeTokenTransfer()` hook as fallback coverage
+42. The transfer hook **must** filter for GNUS_TOKEN_ID (token ID = 1) and accumulate amounts
+43. The transfer hook **must** skip minting operations (from == address(0)) and burning operations (to == address(0))
+44. The transfer hook **must** only check outbound transfers where both from and to are non-zero addresses
+45. Both `transferBatch()` and `transferOrBurnBatch()` **must** be covered by the `_transferBatch()` modification
+46. Mixed-token batch transfers **must** only count GNUS token amounts toward the limiter
+
 ### Error Handling and Events
 
-37. The system **must** emit a `WithdrawLimiterTriggered` event when a withdrawal is blocked, including: account, requested amount, active total, and limit
-38. The system **must** emit a `WithdrawRecorded` event for each successful withdrawal, including: account, amount, timestamp, and binIndex
-39. The system **must** emit a `WithdrawLimiterConfigUpdated` event when default configuration changes
-40. The system **must** emit an `AccountConfigUpdated` event when per-account configuration changes
-41. Reverted transactions **must** include descriptive error messages indicating why the limiter was triggered
-42. Event names **must** use "Limiter" terminology consistently throughout
+47. The system **must** emit a `WithdrawLimiterTriggered` event when a withdrawal is blocked, including: account, requested amount, active total, and limit
+48. The system **must** emit a `WithdrawRecorded` event for each successful withdrawal, including: account, amount, timestamp, and binIndex
+49. The system **must** emit a `WithdrawLimiterConfigUpdated` event when default configuration changes
+50. The system **must** emit an `AccountConfigUpdated` event when per-account configuration changes
+51. Reverted transactions **must** include descriptive error messages indicating why the limiter was triggered
+52. Event names **must** use "Limiter" terminology consistently throughout
+53. Batch transfer events **must** indicate if limiter was triggered for batch operation (not per-destination)
 
 ### Bin Calculation Mathematics
 
-43. Bin length **must** be calculated as: `binLengthSeconds = windowSeconds / binCount`
-44. Current bin index **must** be calculated as: `binIndex = ((currentTime - baseTimestamp) / binLengthSeconds) % binCount`
-45. The first withdrawal **must** initialize `baseTimestamp = block.timestamp`
-46. Bin expiration check **must** use: `isExpired = (bin.timestamp < (currentTime - windowSeconds))`
-47. The system **must** handle edge cases: zero bin count, first withdrawal, exact bin boundaries, wrap-around
-48. All timestamp arithmetic **must** use `uint128` to fit two values per storage slot
+54. Bin length **must** be calculated as: `binLengthSeconds = windowSeconds / binCount`
+55. Current bin index **must** be calculated as: `binIndex = ((currentTime - baseTimestamp) / binLengthSeconds) % binCount`
+56. The first withdrawal **must** initialize `baseTimestamp = block.timestamp`
+57. Bin expiration check **must** use: `isExpired = (bin.timestamp < (currentTime - windowSeconds))`
+58. The system **must** handle edge cases: zero bin count, first withdrawal, exact bin boundaries, wrap-around
+59. All timestamp arithmetic **must** use `uint128` to fit two values per storage slot
 
 ### Test-Driven Development
 
-49. Implementation **must** follow Test-Driven Development (TDD) methodology
-50. Tests **must** be written before implementation code for each function
-51. Minimum 95% code coverage **must** be achieved
-52. Test suite **must** include: unit tests, integration tests, fuzz tests, and gas benchmarks
-53. All bin calculation edge cases **must** have explicit test coverage: first withdrawal, wrap-around, bin boundaries, expiration
-54. All error conditions **must** have test cases
-55. Tests **must** follow RED-GREEN-REFACTOR workflow
+60. Implementation **must** follow Test-Driven Development (TDD) methodology
+61. Tests **must** be written before implementation code for each function
+62. Minimum 95% code coverage **must** be achieved
+63. Test suite **must** include: unit tests, integration tests, fuzz tests, gas benchmarks, and security tests
+64. All bin calculation edge cases **must** have explicit test coverage: first withdrawal, wrap-around, bin boundaries, expiration
+65. All error conditions **must** have test cases
+66. Tests **must** follow RED-GREEN-REFACTOR workflow
+67. **Sybil attack simulation tests** **must** verify that batch transfers aggregate amounts against sender's limit
+68. **Sybil attack tests** **must** verify that distributing GNUS to multiple accounts via `transferBatch()` does not bypass limiter
+69. **Integration tests** **must** verify limiter is triggered in all three integration points: `GNUSBridge.withdraw()`, `ERC20TransferBatch._transferBatch()`, and `GNUSERC1155MaxSupply._beforeTokenTransfer()`
+70. **Edge case tests** **must** verify mixed-token batch transfers only count GNUS_TOKEN_ID amounts
+71. **Gas benchmarks** **must** measure overhead added to batch transfers (~30k gas expected)
 
 ## Non-Goals (Out of Scope)
 
