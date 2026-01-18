@@ -115,22 +115,22 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 3.13 Run integration tests: `yarn test test/integration/withdraw-limiter-integration.test.ts`
   - [x] 3.14 Verify limiter blocks excessive withdrawals and allows normal ones
 
-- [ ] 4.0 Integrate limiter into ERC20TransferBatch.sol for Sybil attack prevention (TDD)
-  - [ ] 4.1 Write test: "transferBatch() should aggregate amounts and trigger limiter" (FR-37, FR-38)
-  - [ ] 4.2 Write test: "transferBatch() should allow super admin bypass" (FR-40)
-  - [ ] 4.3 Write test: "transferBatch() should prevent Sybil attack by checking sender limit" (FR-67, FR-68)
-  - [ ] 4.4 Write test: "transferOrBurnBatch() should also trigger limiter" (FR-45)
-  - [ ] 4.5 Write test: "transferBatch() should emit WithdrawRecorded with total amount" (FR-48, FR-53)
-  - [ ] 4.6 Read current `ERC20TransferBatch.sol` _transferBatch() function implementation
-  - [ ] 4.7 Import GNUSWithdrawLimiterStorage at top of file
-  - [ ] 4.8 Add limiter check at start of _transferBatch(), after parameter validation (FR-39)
-  - [ ] 4.9 Implement super admin bypass: `if (!hasRole(SUPER_ADMIN_ROLE, operator))` (FR-40)
-  - [ ] 4.10 Aggregate total amount across all destinations in loop: `totalAmount += amounts[i]` (FR-38)
-  - [ ] 4.11 Call `GNUSWithdrawLimiterStorage.layout().checkAndRecordWithdraw(operator, totalAmount)` (FR-37)
-  - [ ] 4.12 Verify this integration covers both `transferBatch()` and `transferOrBurnBatch()` (FR-45)
-  - [ ] 4.13 Add error message for Sybil attack prevention: "Batch transfer exceeds withdrawal limit"
-  - [ ] 4.14 Run tests to verify Sybil attack prevention works
-  - [ ] 4.15 Verify batch transfers cannot bypass per-account limits
+- [x] 4.0 Integrate limiter into ERC20TransferBatch.sol for Sybil attack prevention (TDD)
+  - [x] 4.1 Write test: "transferBatch() should aggregate amounts and trigger limiter" (FR-37, FR-38)
+  - [x] 4.2 Write test: "transferBatch() should allow super admin bypass" (FR-40)
+  - [x] 4.3 Write test: "transferBatch() should prevent Sybil attack by checking sender limit" (FR-67, FR-68)
+  - [x] 4.4 Write test: "transferOrBurnBatch() should also trigger limiter" (FR-45)
+  - [x] 4.5 Write test: "transferBatch() should emit WithdrawRecorded with total amount" (FR-48, FR-53)
+  - [x] 4.6 Read current `ERC20TransferBatch.sol` _transferBatch() function implementation
+  - [x] 4.7 Import GNUSWithdrawLimiterStorage at top of file
+  - [x] 4.8 Add limiter check at start of _transferBatch(), after parameter validation (FR-39)
+  - [x] 4.9 Implement super admin bypass: `if (!hasRole(SUPER_ADMIN_ROLE, operator))` (FR-40)
+  - [x] 4.10 Aggregate total amount across all destinations in loop: `totalAmount += amounts[i]` (FR-38)
+  - [x] 4.11 Call `GNUSWithdrawLimiterStorage.layout().checkAndRecordWithdraw(operator, totalAmount)` (FR-37)
+  - [x] 4.12 Verify this integration covers both `transferBatch()` and `transferOrBurnBatch()` (FR-45)
+  - [x] 4.13 Add error message for Sybil attack prevention: "Batch transfer exceeds withdrawal limit"
+  - [x] 4.14 Run tests to verify Sybil attack prevention works
+  - [x] 4.15 Verify batch transfers cannot bypass per-account limits
 
 - [ ] 5.0 Integrate limiter into GNUSERC1155MaxSupply.sol transfer hook (TDD)
   - [ ] 5.1 Write test: "transfer hook should filter GNUS_TOKEN_ID and accumulate amounts" (FR-42, FR-46)
