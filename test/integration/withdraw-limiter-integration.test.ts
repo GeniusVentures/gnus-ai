@@ -49,7 +49,8 @@ describe('Withdraw Limiter Integration Tests', async function () {
 			let ownerDiamond: GeniusDiamond;
 
 			let ethersMultichain: typeof ethers;
-			let snapshotId: string;
+			let snapshotId_1: string;
+			let snapshotId_2: string;
 			let nftID: bigint;
 
 			before(async function () {
@@ -91,6 +92,9 @@ describe('Withdraw Limiter Integration Tests', async function () {
 				log('Owner:', owner);
 				log('Signer0:', signer0);
 				log('Signer1:', signer1);
+
+				// Take snapshot after setup for test isolation
+				snapshotId_1 = (await provider.send('evm_snapshot', [])) as string;
 			});
 
 			beforeEach(async function () {
@@ -105,7 +109,7 @@ describe('Withdraw Limiter Integration Tests', async function () {
 					toWei('2000000'),
 					'ipfs://test',
 				);
-
+				``;
 				// Mint GNUS tokens to owner first (to burn when minting NFTs)
 				// Need 50,000 GNUS to mint 5000 NFTs (5000 * 10 = 50,000)
 				const mintTx = await ownerDiamond['mint(address,uint256)'](owner, toWei('50000'));
@@ -120,12 +124,17 @@ describe('Withdraw Limiter Integration Tests', async function () {
 				);
 
 				// Take snapshot after setup for test isolation
-				snapshotId = (await provider.send('evm_snapshot', [])) as string;
+				snapshotId_2 = (await provider.send('evm_snapshot', [])) as string;
 			});
 
 			afterEach(async function () {
 				// Revert to snapshot after each test
-				await provider.send('evm_revert', [snapshotId]);
+				await provider.send('evm_revert', [snapshotId_2]);
+			});
+
+			after(async function () {
+				// Final revert to clean up
+				await provider.send('evm_revert', [snapshotId_1]);
 			});
 
 			// Task 3.1: Test that withdraw() triggers the limiter (FR-31)

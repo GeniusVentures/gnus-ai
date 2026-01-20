@@ -62,6 +62,8 @@ describe('DiamondInitFacet Withdraw Limiter Initialization Tests', async functio
 			let ownerDiamond: GeniusDiamond;
 
 			let ethersMultichain: typeof ethers;
+			let initialSnapshotId: string;
+			let snapshotId: string;
 
 			before(async function () {
 				const config = {
@@ -94,6 +96,19 @@ describe('DiamondInitFacet Withdraw Limiter Initialization Tests', async functio
 
 				log('Diamond deployed at:', geniusDiamond.target);
 				log('Owner:', owner);
+				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
+			});
+
+			beforeEach(async function () {
+				snapshotId = await ethers.provider.send('evm_snapshot', []);
+			});
+
+			afterEach(async function () {
+				await provider.send('evm_revert', [snapshotId]);
+			});
+
+			after(async function () {
+				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
 			/**

@@ -50,6 +50,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 
 			let ethersMultichain: typeof ethers;
 			let snapshotId: string;
+			let initialSnapshotId: string;
 
 			before(async function () {
 				const config = {
@@ -90,6 +91,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				log('Owner:', owner);
 				log('Signer0:', signer0);
 				log('Signer1:', signer1);
+				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 			});
 
 			beforeEach(async function () {
@@ -100,6 +102,11 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 			afterEach(async function () {
 				// Revert to snapshot after each test
 				await provider.send('evm_revert', [snapshotId]);
+			});
+
+			after(async function () {
+				// Final revert to clean up
+				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
 			// Task 2.1: Test initialization with defaults (FR-24)

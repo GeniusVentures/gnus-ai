@@ -15,7 +15,7 @@ describe('GNUSBridge Enhanced Tests', function () {
 	let user2: SignerWithAddress;
 	let user3: SignerWithAddress;
 	let initialSnapshotId: string;
-	let testSnapshotId: string;
+	let snapshotId: string;
 
 	before(async function () {
 		const config = {
@@ -41,11 +41,11 @@ describe('GNUSBridge Enhanced Tests', function () {
 	});
 
 	beforeEach(async function () {
-		testSnapshotId = await hre.network.provider.send('evm_snapshot');
+		snapshotId = await hre.network.provider.send('evm_snapshot');
 	});
 
 	afterEach(async function () {
-		await hre.network.provider.send('evm_revert', [testSnapshotId]);
+		await hre.network.provider.send('evm_revert', [snapshotId]);
 	});
 
 	after(async function () {
@@ -501,6 +501,7 @@ describe('GNUSBridge Enhanced Tests', function () {
 		});
 
 		it('should handle large amounts correctly', async function () {
+			await geniusDiamond.setLimiterEnabled(false);
 			const largeAmount = toWei(1000000); // 1 million tokens
 
 			// Mint large amount

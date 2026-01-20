@@ -43,6 +43,7 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			let user2: SignerWithAddress;
 			let geniusDiamond: GeniusDiamond;
 			let ethersMultichain: typeof ethers;
+			let initialSnapshotId: string;
 			let snapshotId: string;
 
 			before(async function () {
@@ -79,6 +80,8 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 				log('Owner:', owner.address);
 				log('User1:', user1.address);
 				log('User2:', user2.address);
+
+				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 			});
 
 			beforeEach(async function () {
@@ -87,6 +90,10 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 
 			afterEach(async function () {
 				await ethers.provider.send('evm_revert', [snapshotId]);
+			});
+
+			after(async function () {
+				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
 			describe('Bin Calculation', function () {

@@ -49,6 +49,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 			let ownerDiamond: GeniusDiamond;
 
 			let ethersMultichain: typeof ethers;
+			let initialSnapshotId: string;
 			let snapshotId: string;
 
 			before(async function () {
@@ -88,6 +89,8 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				log('Owner:', owner);
 				log('Signer1:', signer1);
 				log('Signer2:', signer2);
+
+				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 			});
 
 			beforeEach(async function () {
@@ -103,6 +106,10 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 
 			afterEach(async function () {
 				await provider.send('evm_revert', [snapshotId]);
+			});
+
+			after(async function () {
+				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
 			// Task 4.1: Test that transferBatch() aggregates amounts and triggers limiter (FR-37, FR-38)

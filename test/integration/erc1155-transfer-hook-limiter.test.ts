@@ -61,6 +61,7 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 			let ownerDiamond: GeniusDiamond;
 
 			let ethersMultichain: typeof ethers;
+			let initialSnapshotId: string;
 			let snapshotId: string;
 
 			before(async function () {
@@ -101,6 +102,7 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 				log('Signer1:', signer1);
 				log('Signer2:', signer2);
 
+				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 				// Enable limiter with 100k GNUS limit
 				await ownerDiamond.setLimiterEnabled(true);
 				await ownerDiamond.setDefaultLimitAmount(toWei('100000'));
@@ -119,6 +121,10 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 
 			afterEach(async function () {
 				await provider.send('evm_revert', [snapshotId]);
+			});
+
+			after(async function () {
+				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
 			/**

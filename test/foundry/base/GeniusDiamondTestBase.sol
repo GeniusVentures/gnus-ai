@@ -10,6 +10,7 @@ import {console} from "forge-std/console.sol";
  * @title GeniusDiamondTestBase
  * @notice Base contract for all GeniusDiamond fuzz and invariant tests
  * @dev Extends DiamondFuzzBase with GeniusDiamond-specific setup and helpers
+ * @dev Implements ERC1155Receiver to receive ERC1155 tokens
  * @dev All test contracts should inherit from this base
  */
 abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
@@ -92,20 +93,24 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
 
     /**
      * @notice Setup initial GNUS token balances for test actors
-     * @dev Mints initial supply to test contract and distributes to users
+     * @dev Mints initial supply to owner and distributes to users
+     * @dev Owner (super admin) bypasses withdrawal limiter, so transfers from owner won't fail
      */
     function _setupInitialBalances() internal virtual {
         // Grant MINTER_ROLE to this contract for initial setup
         vm.prank(owner);
         _grantRoleToSelf(MINTER_ROLE);
 
-        // Mint initial GNUS supply to test contract
-        _mintGNUS(address(this), INITIAL_GNUS_SUPPLY);
+        // Mint initial GNUS supply to owner (super admin bypasses limiter)
+        _mintGNUS(owner, INITIAL_GNUS_SUPPLY);
 
-        // Distribute to test users
-        _transferGNUS(address(this), user1, 100000 ether);
-        _transferGNUS(address(this), user2, 100000 ether);
-        _transferGNUS(address(this), user3, 100000 ether);
+        // Distribute to test users from owner (super admin bypasses limiter)
+        _transferGNUS(owner, user1, 100000 ether);
+        _transferGNUS(owner, user2, 100000 ether);
+        _transferGNUS(owner, user3, 100000 ether);
+
+        // Transfer some to test contract for convenience
+        _transferGNUS(owner, address(this), 100000 ether);
     }
 
     // ========================================
@@ -341,11 +346,57 @@ abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
     function _getRevertMsg(bytes memory returnData) internal pure returns (string memory) {
         // If the returnData length is less than 68, then the transaction failed silently
         if (returnData.length < 68) return "Transaction reverted silently";
-        
+
         assembly {
             // Slice the sighash (first 4 bytes of Error(string))
             returnData := add(returnData, 0x04)
         }
         return abi.decode(returnData, (string));
+    }
+
+    // ========================================
+    // ERC1155Receiver Implementation
+    // ========================================
+
+    /**
+     * @notice Handle the receipt of a single ERC1155 token type
+     * @dev Implements ERC1155Receiver to allow test contract to receive ERC1155 tokens
+     * @return bytes4 Magic value indicating acceptance of the transfer
+     */
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) external pure returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
+
+    /**
+     * @notice Handle the receipt of multiple ERC1155 token types
+     * @dev Implements ERC1155Receiver to allow test contract to receive ERC1155 batch transfers
+     * @return bytes4 Magic value indicating acceptance of the transfer
+     */
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    ) external pure returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    /**
+     * @notice Indicates whether the contract implements a given interface
+     * @dev Implements ERC165 supportsInterface for ERC1155Receiver
+     * @param interfaceId The interface identifier to check
+     * @return bool True if the contract implements the interface
+     */
+    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
+        return
+            interfaceId == 0x4e2312e0 || // ERC1155Receiver interface ID
+            interfaceId == 0x01ffc9a7; // ERC165 interface ID
     }
 }
