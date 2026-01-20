@@ -6,7 +6,7 @@ import "../helpers/DiamondDeployment.sol";
 
 /// @title ExampleDiamondAccessControl
 /// @notice Fuzzing tests for Diamond access control mechanisms
-/// @dev Task 4.5-4.9: Tests role granting, revocation, renunciation, and unauthorized access
+/// @dev Tests role granting, revocation, renunciation, and unauthorized access
 contract ExampleDiamondAccessControl is DiamondFuzzBase {
     /// @notice Override to load Diamond from deployment
     function _loadDiamondAddress() internal pure override returns (address) {
@@ -50,7 +50,7 @@ contract ExampleDiamondAccessControl is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for granting roles to random addresses
-    /// @dev Task 4.6: Tests role granting with random addresses and roles
+    /// @dev Tests role granting with random addresses and roles
     /// @param recipient Random address to receive the role
     /// @param roleIndex Index to select which role to grant
     function testFuzz_GrantRole(address recipient, uint8 roleIndex) public {
@@ -85,7 +85,7 @@ contract ExampleDiamondAccessControl is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for revoking roles from random addresses
-    /// @dev Task 4.7: Tests role revocation
+    /// @dev Tests role revocation
     /// @param recipient Random address to have role revoked
     /// @param roleIndex Index to select which role to revoke
     function testFuzz_RevokeRole(address recipient, uint8 roleIndex) public {
@@ -117,7 +117,7 @@ contract ExampleDiamondAccessControl is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for role renunciation
-    /// @dev Task 4.8: Tests role renunciation (self-revocation)
+    /// @dev Tests role renunciation (self-revocation)
     /// @param user Random address that will renounce their role
     function testFuzz_RenounceRole(address user) public {
         // Constrain inputs
@@ -149,7 +149,7 @@ contract ExampleDiamondAccessControl is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for unauthorized access attempts
-    /// @dev Task 4.9: Tests that unauthorized addresses cannot grant roles
+    /// @dev Tests that unauthorized addresses cannot grant roles
     /// @param unauthorized Random address without admin role
     /// @param recipient Address that unauthorized user tries to grant role to
     function testFuzz_UnauthorizedGrantRole(address unauthorized, address recipient) public {

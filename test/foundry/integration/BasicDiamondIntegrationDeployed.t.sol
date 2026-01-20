@@ -7,10 +7,10 @@ import "contracts-starter/contracts/interfaces/IDiamondLoupe.sol";
 
 /// @title ExampleDiamondIntegrationDeployed
 /// @notice Integration tests using deployed Diamond via DiamondDeployment library
-/// @dev Task 4.13-4.14: Tests facet upgrades and integration scenarios on deployed Diamond
+/// @dev Tests facet upgrades and integration scenarios on deployed Diamond
 contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     /// @notice Override to load Diamond from deployment
-    /// @dev Task 4.8.3: Use DiamondDeployment library to get deployed Diamond address
+    /// @dev Use DiamondDeployment library to get deployed Diamond address
     function _loadDiamondAddress() internal pure override returns (address) {
         return DiamondDeployment.getDiamondAddress();
     }
@@ -59,7 +59,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test that Diamond deployment is valid
-    /// @dev Task 4.13: Basic integration test using DiamondDeployment
+    /// @dev Basic integration test using DiamondDeployment
     function test_DeployedDiamondExists() public view onlyWhenDeployed {
         // Diamond address should be loaded from DiamondDeployment library
         assertTrue(diamond != address(0), "Diamond should have valid address");
@@ -69,7 +69,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test facet introspection on deployed Diamond
-    /// @dev Task 4.13: Verify all facets are properly registered
+    /// @dev Verify all facets are properly registered
     function test_DeployedFacetsIntrospection() public view onlyWhenDeployed {
         // Call facets() via DiamondLoupe
         bytes4 selector = bytes4(keccak256("facets()"));
@@ -99,7 +99,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test facet addresses are accessible
-    /// @dev Task 4.13: Verify facet address lookup works
+    /// @dev Verify facet address lookup works
     function test_FacetAddressLookup() public view onlyWhenDeployed {
         // Get all selectors
         bytes4[] memory selectors = _getDiamondSelectors();
@@ -129,7 +129,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test Diamond owner functionality
-    /// @dev Task 4.13: Verify ownership functions work on deployed Diamond
+    /// @dev Verify ownership functions work on deployed Diamond
     function test_DeployedDiamondOwner() public view onlyWhenDeployed {
         address owner = _getDiamondOwner();
 
@@ -139,7 +139,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test facet function selectors enumeration
-    /// @dev Task 4.13: Verify we can enumerate all facet functions
+    /// @dev Verify we can enumerate all facet functions
     function test_FacetFunctionSelectors() public view onlyWhenDeployed {
         // Get facet addresses
         bytes4 facetAddressesSelector = bytes4(keccak256("facetAddresses()"));
@@ -170,7 +170,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test that all loaded selectors are valid
-    /// @dev Task 4.13: Cross-check ABI selectors with on-chain selectors
+    /// @dev Cross-check ABI selectors with on-chain selectors
     function test_SelectorsMatchOnChain() public view onlyWhenDeployed {
         bytes4[] memory abiSelectors = _getDiamondSelectors();
 
@@ -201,7 +201,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test gas measurement for Diamond calls
-    /// @dev Task 4.22: Gas profiling for optimization
+    /// @dev Gas profiling for optimization
     function test_GasMeasurement() public onlyWhenDeployed {
         // Test gas for owner() call
         bytes4 ownerSelector = bytes4(keccak256("owner()"));
@@ -214,7 +214,7 @@ contract ExampleDiamondIntegrationDeployed is DiamondFuzzBase {
     }
 
     /// @notice Test simulated facet upgrade scenario
-    /// @dev Task 4.14: Test upgrade patterns (simulated without actual upgrade)
+    /// @dev Test upgrade patterns (simulated without actual upgrade)
     function test_SimulateFacetUpgrade() public view onlyWhenDeployed {
         // Get current facets
         bytes4 facetsSelector = bytes4(keccak256("facets()"));

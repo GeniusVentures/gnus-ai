@@ -7,7 +7,7 @@ import "../helpers/DiamondDeployment.sol";
 
 /// @title DiamondInvariants
 /// @notice Invariant tests for Diamond state consistency
-/// @dev Task 4.21-4.27: State consistency and invariant testing
+/// @dev State consistency and invariant testing
 contract DiamondInvariants is DiamondFuzzBase {
     /// @notice Override to load Diamond from deployment
     function _loadDiamondAddress() internal pure override returns (address) {
@@ -56,7 +56,7 @@ contract DiamondInvariants is DiamondFuzzBase {
     }
 
     /// @notice Test: Owner should always be valid address
-    /// @dev Task 4.23: Verify owner is always valid
+    /// @dev Verify owner is always valid
     function test_OwnershipConsistency() public view {
         address owner = _getDiamondOwner();
 
@@ -71,7 +71,7 @@ contract DiamondInvariants is DiamondFuzzBase {
     }
 
     /// @notice Test: Admin roles should maintain proper hierarchy
-    /// @dev Task 4.24: Verify role hierarchy is consistent
+    /// @dev Verify role hierarchy is consistent
     function test_RoleHierarchy() public view {
         bytes32 DEFAULT_ADMIN_ROLE = 0x00;
         bytes32 UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -94,7 +94,7 @@ contract DiamondInvariants is DiamondFuzzBase {
     }
 
     /// @notice Test: All facet addresses should be non-zero and contain code
-    /// @dev Task 4.25: Verify all facets are valid
+    /// @dev Verify all facets are valid
     function test_FacetAddressesValid() public view {
         // Get actual deployed facets from Diamond
         bytes4 facetsSelector = bytes4(keccak256("facets()"));
@@ -127,7 +127,7 @@ contract DiamondInvariants is DiamondFuzzBase {
     }
 
     /// @notice Test: No duplicate function selectors across facets
-    /// @dev Task 4.26: Verify no selector collisions
+    /// @dev Verify no selector collisions
     function test_NoSelectorCollisions() public view {
         // Check for duplicates
         for (uint256 i = 0; i < diamondSelectors.length; i++) {
@@ -297,7 +297,7 @@ contract DiamondInvariants is DiamondFuzzBase {
     }
 
     /// @notice Test state consistency after role operations
-    /// @dev Task 4.27: Verify state remains consistent
+    /// @dev Verify state remains consistent
     function testFuzz_StateConsistencyAfterRoleOps(uint256 seed) public {
         address account = testAccounts[seed % testAccounts.length];
         bytes32 UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -335,7 +335,7 @@ contract DiamondInvariants is DiamondFuzzBase {
     }
 
     /// @notice Test gas bounds for Diamond calls
-    /// @dev Task 4.28: Ensure gas consumption is reasonable
+    /// @dev Ensure gas consumption is reasonable
     function test_GasBounds_DiamondCalls() public {
         // Test owner() call gas
         bytes4 ownerSelector = bytes4(keccak256("owner()"));

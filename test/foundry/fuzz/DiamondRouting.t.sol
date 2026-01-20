@@ -7,7 +7,7 @@ import "../helpers/DiamondDeployment.sol";
 
 /// @title DiamondRouting
 /// @notice Tests for Diamond selector routing to facets
-/// @dev Task 4.16-4.20: Validate function selector routing
+/// @dev Validate function selector routing
 contract DiamondRouting is DiamondFuzzBase {
     /// @notice Override to load Diamond from deployment
     function _loadDiamondAddress() internal pure override returns (address) {
@@ -38,7 +38,7 @@ contract DiamondRouting is DiamondFuzzBase {
     }
 
     /// @notice Load facet addresses for verification
-    /// @dev Task 4.18: Query facet addresses using DiamondLoupe
+    /// @dev Query facet addresses using DiamondLoupe
     function _loadFacetAddresses() internal {
         for (uint256 i = 0; i < diamondSelectors.length; i++) {
             bytes4 selector = diamondSelectors[i];
@@ -71,7 +71,7 @@ contract DiamondRouting is DiamondFuzzBase {
     }
 
     /// @notice Test that all selectors route to correct facets
-    /// @dev Task 4.17: Validate function selectors route to correct facet addresses
+    /// @dev Validate function selectors route to correct facet addresses
     function test_AllSelectorsRouteCorrectly() public view {
         for (uint256 i = 0; i < diamondSelectors.length; i++) {
             bytes4 selector = diamondSelectors[i];
@@ -97,7 +97,7 @@ contract DiamondRouting is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for selector routing
-    /// @dev Task 4.19: Fuzz with random selectors
+    /// @dev Fuzz with random selectors
     function testFuzz_SelectorRouting(bytes4 randomSelector) public view {
         // Try to get facet for random selector
         bytes memory callData = abi.encodeWithSignature("facetAddress(bytes4)", randomSelector);
@@ -120,7 +120,7 @@ contract DiamondRouting is DiamondFuzzBase {
     }
 
     /// @notice Test for function selector collisions
-    /// @dev Task 4.20: Verify no duplicate selectors
+    /// @dev Verify no duplicate selectors
     function test_NoSelectorCollisions() public view {
         // Check all selectors are unique
         for (uint256 i = 0; i < diamondSelectors.length; i++) {
@@ -283,7 +283,7 @@ contract DiamondRouting is DiamondFuzzBase {
     }
 
     /// @notice Test gas consumption for facetAddress queries
-    /// @dev Task 4.29: Gas profiling for routing queries
+    /// @dev Gas profiling for routing queries
     function test_GasProfile_FacetAddress() public {
         bytes4 testSelector = diamondSelectors[0];
 
@@ -294,7 +294,7 @@ contract DiamondRouting is DiamondFuzzBase {
 
         console.log("Gas used for facetAddress query:", gasUsed);
 
-        // Task 4.28: Assert gas is reasonable
+        // Assert gas is reasonable
         assertTrue(gasUsed > 0 && gasUsed < 50000, "Gas should be reasonable");
     }
 

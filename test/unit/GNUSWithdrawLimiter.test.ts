@@ -109,7 +109,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
-			// Task 2.1: Test initialization with defaults (FR-24)
+			// Test initialization with correct default values
 			it('should initialize limiter with correct default values', async function () {
 				const config = await ownerDiamond.getWithdrawLimiterConfig();
 				expect(config.defaultLimitAmount).to.equal(toWei('100000')); // 100,000 GNUS
@@ -117,7 +117,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				expect(config.defaultBinCount).to.equal(24n); // hourly bins
 			});
 
-			// Task 2.2: Test setDefaultLimitAmount (FR-19)
+			// Test that super admin can set default limit amount
 			it('should allow super admin to set default limit amount', async function () {
 				const newLimit = toWei('200000'); // 200,000 GNUS
 				await ownerDiamond.setDefaultLimitAmount(newLimit);
@@ -126,7 +126,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				expect(config.defaultLimitAmount).to.equal(newLimit);
 			});
 
-			// Task 2.3: Test setDefaultWindowSeconds (FR-19)
+			// Test that super admin can set default window seconds
 			it('should allow super admin to set default window seconds', async function () {
 				const sevenDays = 7n * 24n * 60n * 60n; // 7 days in seconds
 				await ownerDiamond.setDefaultWindowSeconds(sevenDays);
@@ -135,7 +135,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				expect(config.defaultWindowSeconds).to.equal(sevenDays);
 			});
 
-			// Task 2.5: Test setDefaultBinCount with validation (FR-19)
+			// Test that super admin can set default bin count with validation
 			it('should allow super admin to set default bin count with validation', async function () {
 				const newBinCount = 48n; // twice-hourly bins
 				await ownerDiamond.setDefaultBinCount(newBinCount);
@@ -149,7 +149,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				);
 			});
 
-			// Task 2.6: Test setAccountConfig (FR-11, FR-20)
+			// Test that super admin can set per-account custom configuration
 			it('should allow super admin to set per-account config', async function () {
 				const customBinCount = 12n;
 				const customWindowSeconds = 43200n; // 12 hours
@@ -174,7 +174,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				expect(config1.limitAmount).to.equal(toWei('100000')); // default
 			});
 
-			// Task 2.7: Test setLimiterEnabled (FR-17)
+			// Test that super admin can enable/disable limiter globally
 			it('should allow super admin to enable/disable limiter globally', async function () {
 				// Disable limiter
 				await ownerDiamond.setLimiterEnabled(false);
@@ -187,7 +187,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				expect(configEnabled.limiterEnabled).to.be.true;
 			});
 
-			// Task 2.8: Test getAccountWithdrawStatus (FR-14)
+			// Test that withdrawal status query returns correct information
 			it('should return correct account withdrawal status', async function () {
 				// This test will be fully implemented after integration with GNUSBridge
 				// For now, test with zero usage (no withdrawals yet)
@@ -196,14 +196,14 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 				expect(status.remainingCapacity).to.equal(toWei('100000')); // full default limit
 			});
 
-			// Task 2.9: Test WithdrawLimiterConfigUpdated event (FR-49)
+			// Test that config update events are emitted correctly
 			it('should emit WithdrawLimiterConfigUpdated event', async function () {
 				const newLimit = toWei('300000');
 				const tx = await ownerDiamond.setDefaultLimitAmount(newLimit);
 				await expect(tx).to.emit(ownerDiamond, 'WithdrawLimiterConfigUpdated');
 			});
 
-			// Task 2.10: Test AccountConfigUpdated event (FR-50)
+			// Test that account config update events are emitted correctly
 			it('should emit AccountConfigUpdated event', async function () {
 				const tx = await ownerDiamond.setAccountConfig(
 					signer0,
@@ -216,7 +216,7 @@ describe('GNUS Withdraw Limiter Facet Tests', async function () {
 					.withArgs(signer0, 12n, 43200n, toWei('50000'));
 			});
 
-			// Task 2.11: Test access control (FR-16)
+			// Test that only super admin can modify limiter configuration
 			it('should revert when non-admin tries to configure', async function () {
 				// Use signer0Diamond (non-admin) to try administrative functions
 				await expect(signer0Diamond.setDefaultLimitAmount(toWei('999999'))).to.be.reverted;

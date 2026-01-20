@@ -99,7 +99,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			describe('Bin Calculation', function () {
 				it('should calculate bin length correctly', async function () {
 					// Test: windowSeconds / binCount = binLength
-					// FR-15: binLength = windowSeconds / binCount
 
 					// Default config: 86400 seconds / 24 bins = 3600 seconds per bin
 					const defaultWindowSeconds = 86400;
@@ -119,7 +118,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 
 				it('should calculate bin index using modulo arithmetic', async function () {
 					// Test: ((currentTime - baseTimestamp) / binLengthSeconds) % binCount
-					// FR-55
 
 					const baseTimestamp = 1000000;
 					const windowSeconds = 86400; // 24 hours
@@ -150,7 +148,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 
 				it('should handle bin wrap-around at array boundary', async function () {
 					// Test: When binIndex reaches binCount, it wraps to 0
-					// FR-30
 
 					const baseTimestamp = 1000000;
 					const binCount = 24;
@@ -181,7 +178,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			describe('Account State Initialization', function () {
 				it('should initialize baseTimestamp on first withdrawal', async function () {
 					// Test: First withdrawal sets baseTimestamp = block.timestamp
-					// FR-4, FR-56
 					// This test will verify that when an account makes its first withdrawal:
 					// 1. baseTimestamp is set to current block.timestamp
 					// 2. Bins array is initialized with binCount elements
@@ -198,7 +194,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			describe('Bin Expiration and Cleanup', function () {
 				it('should zero expired bins during validation', async function () {
 					// Test: bin.timestamp < (currentTime - windowSeconds) => bin.totalAmount = 0
-					// FR-28, FR-57
 
 					const windowSeconds = 86400; // 24 hours
 					const currentTime = 1100000;
@@ -218,7 +213,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			describe('Bin Aggregation', function () {
 				it('should sum only active bins within window', async function () {
 					// Test: Sum all bins where timestamp >= (currentTime - windowSeconds)
-					// FR-7
 
 					const windowSeconds = 86400;
 					const currentTime = 1100000;
@@ -235,7 +229,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 
 				it('should accumulate withdrawals in current bin', async function () {
 					// Test: Multiple withdrawals in same time period add to same bin
-					// FR-6
 					// Scenario:
 					// - User withdraws 1000 GNUS at time T (bin index = 5)
 					// - User withdraws 2000 GNUS at time T+100 (still bin index = 5)
@@ -247,7 +240,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			describe('Limit Enforcement', function () {
 				it('should revert when withdrawal exceeds limit', async function () {
 					// Test: If sum(active bins) + requested amount > limit, revert
-					// FR-9
 
 					const limit = toWei('100000'); // 100,000 GNUS
 					const activeBinsTotal = toWei('95000'); // Current usage
@@ -263,7 +255,6 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			describe('Configuration', function () {
 				it('should use default config when account config is zero', async function () {
 					// Test: accountConfig = {0, 0, 0} => use defaults
-					// FR-12
 
 					// Default values:
 					const defaultBinCount = 24;

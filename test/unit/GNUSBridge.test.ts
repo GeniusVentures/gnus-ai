@@ -245,7 +245,7 @@ describe('GNUS Bridge Tests', async function () {
 					);
 				});
 
-				// Task 3.1: Test that withdraw() triggers the limiter (FR-31)
+				// Test that withdraw() triggers the limiter check
 				it('should trigger limiter on withdraw', async function () {
 					const withdrawAmount = toWei('1000'); // 1000 NFTs
 					const gnusEquivalent = toWei('100'); // 1000 / 10 = 100 GNUS
@@ -262,7 +262,7 @@ describe('GNUS Bridge Tests', async function () {
 					expect(usageIncrease).to.equal(gnusEquivalent);
 				});
 
-				// Task 3.2: Test that withdraw() calculates GNUS amount from exchange rate (FR-33)
+				// Test that withdraw() calculates GNUS amount from exchange rate before checking limit
 				it('should calculate GNUS amount from exchange rate', async function () {
 					const withdrawAmount = toWei('500'); // 500 NFTs
 					const expectedGNUS = toWei('50'); // 500 / 10 = 50 GNUS
@@ -275,7 +275,7 @@ describe('GNUS Bridge Tests', async function () {
 					expect(status.currentUsage).to.equal(expectedGNUS);
 				});
 
-				// Task 3.3: Test that super admin can bypass limiter (FR-18)
+				// Test that super admin can bypass limiter
 				it('should allow super admin bypass', async function () {
 					// Mint plenty of GNUS to owner
 					// Need 15M GNUS to mint 1.5M NFTs (1.5M * exchangeRate of 10)
@@ -298,7 +298,7 @@ describe('GNUS Bridge Tests', async function () {
 					expect(status.currentUsage).to.equal(0n);
 				});
 
-				// Task 3.5: Test that withdraw() reverts with clear message when limit exceeded (FR-41, FR-51)
+				// Test that withdraw() reverts with clear message when limit exceeded
 				it('should revert with clear message when limit exceeded', async function () {
 					// Default limit is 100,000 GNUS
 					// With exchangeRate 10, need 1,000,000 NFTs to get 100k GNUS (1M / 10 = 100k)

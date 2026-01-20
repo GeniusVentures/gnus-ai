@@ -37,7 +37,7 @@ contract GNUSWithdrawLimiterSybilAttack is GeniusDiamondTestBase {
 
     /**
      * @notice Test: Cannot bypass limit by distributing to multiple accounts
-     * @dev FR-67, FR-68: Batch transfer aggregation prevents splitting withdrawals
+     * @dev Batch transfer aggregation prevents splitting withdrawals across multiple recipients
      */
     function testFuzz_cannotBypassLimitByDistributing(uint8 recipientCount) public {
         // Bound to reasonable number of recipients
@@ -88,7 +88,7 @@ contract GNUSWithdrawLimiterSybilAttack is GeniusDiamondTestBase {
 
     /**
      * @notice Test: Batch transfer aggregation prevents N×limit extraction
-     * @dev FR-38, FR-67: Single batch counts as one withdrawal with aggregated amount
+     * @dev Single batch counts as one withdrawal with aggregated amount preventing multiplication attacks
      */
     function testFuzz_batchTransferAggregation(uint256 totalAmount) public {
         // Test amounts from just above limit to 3x the limit
@@ -134,7 +134,7 @@ contract GNUSWithdrawLimiterSybilAttack is GeniusDiamondTestBase {
 
     /**
      * @notice Test: Mixed-token batch only counts GNUS tokens
-     * @dev FR-46, FR-70: Non-GNUS tokens should not count toward limit
+     * @dev Non-GNUS tokens should not count toward withdrawal limit in batch transfers
      */
     function test_mixedTokenBatchOnlyCountsGNUS() public {
         uint256 gnusAmount = DEFAULT_LIMIT / 2; // Half limit in GNUS
@@ -216,7 +216,7 @@ contract GNUSWithdrawLimiterSybilAttack is GeniusDiamondTestBase {
 
     /**
      * @notice Test: Sequential small transfers cannot bypass limit
-     * @dev FR-6, FR-7: Multiple small transfers accumulate in bins
+     * @dev Multiple small transfers accumulate in bins and trigger limit when total exceeds threshold
      */
     function testFuzz_sequentialSmallTransfersAccumulate(uint8 transferCount) public {
         // Bound to reasonable number of transfers

@@ -7,7 +7,7 @@ import "../helpers/DiamondDeployment.sol";
 
 /// @title DiamondProxyInvariant
 /// @notice Invariant tests for Diamond proxy integrity and consistency
-/// @dev Task 4.15-4.19: Tests critical invariants that must always hold
+/// @dev Tests critical invariants that must always hold
 contract DiamondProxyInvariant is DiamondFuzzBase {
     /// @notice Override to load Diamond from deployment
     function _loadDiamondAddress() internal pure override returns (address) {
@@ -49,14 +49,14 @@ contract DiamondProxyInvariant is DiamondFuzzBase {
     }
 
     /// @notice Test: Diamond contract must always have code at deployment address
-    /// @dev Task 4.16: Ensures Diamond proxy is never destroyed
+    /// @dev Ensures Diamond proxy is never destroyed
     function test_DiamondContractExists() public view {
         assertTrue(diamond != address(0), "Diamond address must not be zero");
         assertTrue(diamond.code.length > 0, "Diamond must have code");
     }
 
     /// @notice Test: All facet addresses must remain valid and have code
-    /// @dev Task 4.17: Ensures facet contracts are not destroyed
+    /// @dev Ensures facet contracts are not destroyed
     function test_FacetAddressesValid() public view {
         // Get current facet addresses
         bytes4 facetAddressesSelector = bytes4(keccak256("facetAddresses()"));
@@ -78,7 +78,7 @@ contract DiamondProxyInvariant is DiamondFuzzBase {
     }
 
     /// @notice Test: Function selectors must route to correct facets
-    /// @dev Task 4.18: Ensures selector-to-facet mapping integrity
+    /// @dev Ensures selector-to-facet mapping integrity
     function test_SelectorsRouteCorrectly() public view {
         bytes4[] memory selectors = _getDiamondSelectors();
 
@@ -114,7 +114,7 @@ contract DiamondProxyInvariant is DiamondFuzzBase {
     }
 
     /// @notice Test: Owner address must be non-zero and valid
-    /// @dev Task 4.19: Ensures ownership is never null (unless renounced)
+    /// @dev Ensures ownership is never null (unless renounced)
     function test_OwnerAddressValid() public view {
         address currentOwner = _getDiamondOwner();
 

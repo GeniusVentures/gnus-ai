@@ -5,13 +5,13 @@ import "forge-std/Test.sol";
 
 /// @title Diamond ABI Loading Proof of Concept
 /// @notice Tests the capability of vm.parseJson() to load and parse Diamond ABI
-/// @dev This is a research/POC test to validate the approach for Task 1.1-1.4
+/// @dev This is a research/POC test to validate the approach for Diamond ABI handling
 contract DiamondABILoadingPOC is Test {
     string constant DIAMOND_ABI_PATH = "./diamond-abi/GeniusDiamond.json";
 
     /// @notice Test reading the Diamond ABI file
-    /// @dev Task 1.1 & 1.2: Research and test vm.parseJson() capability
-    function test_ReadDiamondABI() public {
+    /// @dev Research and test vm.parseJson() capability
+    function test_ReadDiamondABI() public view {
         // Read the entire ABI file as a string
         string memory abiJson = vm.readFile(DIAMOND_ABI_PATH);
 
@@ -24,8 +24,8 @@ contract DiamondABILoadingPOC is Test {
     }
 
     /// @notice Test parsing the ABI array from the JSON
-    /// @dev Task 1.3: Extract function selectors from Diamond ABI
-    function test_ParseABIArray() public {
+    /// @dev Extract function selectors from Diamond ABI
+    function test_ParseABIArray() public view {
         string memory abiJson = vm.readFile(DIAMOND_ABI_PATH);
 
         // Parse the ABI array from the JSON
@@ -40,8 +40,8 @@ contract DiamondABILoadingPOC is Test {
     }
 
     /// @notice Test extracting function names from ABI
-    /// @dev Task 1.4: Extract function signatures for call encoding
-    function test_ExtractFunctionNames() public {
+    /// @dev Extract function signatures for call encoding
+    function test_ExtractFunctionNames() public view {
         string memory abiJson = vm.readFile(DIAMOND_ABI_PATH);
 
         // Try to parse individual ABI entries
@@ -69,8 +69,8 @@ contract DiamondABILoadingPOC is Test {
     }
 
     /// @notice Test extracting specific function selectors
-    /// @dev Task 1.3: Demonstrate extracting selectors for validation
-    function test_ExtractFunctionSelector() public {
+    /// @dev Demonstrate extracting selectors for validation
+    function test_ExtractFunctionSelector() public view {
         string memory abiJson = vm.readFile(DIAMOND_ABI_PATH);
 
         // Try to find a specific function and extract its selector
@@ -109,8 +109,8 @@ contract DiamondABILoadingPOC is Test {
     }
 
     /// @notice Test building function signatures for encoding
-    /// @dev Task 1.4: Extract function signatures for call encoding
-    function test_BuildFunctionSignature() public {
+    /// @dev Extract function signatures for call encoding
+    function test_BuildFunctionSignature() public view {
         string memory abiJson = vm.readFile(DIAMOND_ABI_PATH);
 
         // Look for a function and try to build its signature
@@ -154,7 +154,7 @@ contract DiamondABILoadingPOC is Test {
     }
 
     /// @notice Test computing function selector from signature
-    /// @dev Demonstrates how to compute selector for validation (Task 1.5)
+    /// @dev Demonstrates how to compute selector for validation
     function test_ComputeFunctionSelector() public pure {
         // Example: owner() function selector
         bytes4 selector = bytes4(keccak256("owner()"));

@@ -6,7 +6,7 @@ import "../helpers/DiamondDeployment.sol";
 
 /// @title ExampleDiamondOwnership
 /// @notice Fuzzing tests for Diamond ownership mechanisms
-/// @dev Task 4.10-4.12: Tests ownership transfer and constraints
+/// @dev Tests ownership transfer and constraints
 contract ExampleDiamondOwnership is DiamondFuzzBase {
     /// @notice Override to load Diamond from deployment
     function _loadDiamondAddress() internal pure override returns (address) {
@@ -38,7 +38,7 @@ contract ExampleDiamondOwnership is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for ownership transfer with random addresses
-    /// @dev Task 4.11: Tests ownership transfer to valid random addresses
+    /// @dev Tests ownership transfer to valid random addresses
     /// @param newOwner Random address to become new owner
     function testFuzz_TransferOwnership(address newOwner) public {
         // Constrain to valid addresses
@@ -71,7 +71,7 @@ contract ExampleDiamondOwnership is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for zero address rejection in ownership transfer
-    /// @dev Task 4.12: Verifies that transferring to address(0) is rejected
+    /// @dev Verifies that transferring to address(0) is rejected
     function testFuzz_TransferOwnershipZeroAddress() public {
         address currentOwner = _getDiamondOwner();
 
@@ -92,7 +92,7 @@ contract ExampleDiamondOwnership is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for unauthorized ownership transfer attempts
-    /// @dev Task 4.12: Verifies that non-owners cannot transfer ownership
+    /// @dev Verifies that non-owners cannot transfer ownership
     /// @param unauthorized Random address without ownership
     /// @param newOwner Address that unauthorized user tries to make owner
     function testFuzz_UnauthorizedTransferOwnership(address unauthorized, address newOwner) public {
@@ -146,7 +146,7 @@ contract ExampleDiamondOwnership is DiamondFuzzBase {
     }
 
     /// @notice Fuzz test for ownership transfer to contract addresses
-    /// @dev Task 4.12: Tests constraint on transferring to contracts
+    /// @dev Tests constraint on transferring to contracts
     /// @param contractAddress Random address that might be a contract
     function testFuzz_TransferOwnershipToContract(address contractAddress) public {
         // Only test with actual contract addresses

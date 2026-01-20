@@ -30,11 +30,6 @@ chai.use(chaiAsPromised);
  * - Default bin count initialization (24 bins)
  * - Limiter enabled state initialization (true)
  * - InitLog event emission during initialization
- *
- * PRD References:
- * - FR-22: Initialize limiter during Diamond initialization
- * - FR-23: Call initialization in protocol initializer
- * - FR-24: Set default values (100k GNUS, 24 hours, 24 bins, enabled)
  */
 describe('DiamondInitFacet Withdraw Limiter Initialization Tests', async function () {
 	const diamondName = 'GeniusDiamond';

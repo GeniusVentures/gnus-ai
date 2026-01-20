@@ -24,12 +24,11 @@ chai.use(chaiAsPromised);
  * Tests withdrawal limiter integration with GNUSERC1155MaxSupply._beforeTokenTransfer hook.
  * This is the third and final integration point for comprehensive Sybil attack prevention.
  *
- * PRD References:
- * - FR-42: Apply limiter to all ERC-1155 transfers of GNUS tokens
- * - FR-43: Hook positioned after supply validation
- * - FR-44: Filter by GNUS_TOKEN_ID only
- * - FR-45: Support both single and batch transfers
- * - FR-46: Aggregate amounts in batch transfers
+ * - Apply limiter to all ERC-1155 transfers of GNUS tokens
+ * - Hook positioned after supply validation
+ * - Filter by GNUS_TOKEN_ID only
+ * - Support both single and batch transfers
+ * - Aggregate amounts in batch transfers
  */
 describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 	const diamondName = 'GeniusDiamond';

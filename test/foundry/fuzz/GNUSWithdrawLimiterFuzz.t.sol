@@ -33,7 +33,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
      * @notice Fuzz test: Bin index calculation with random timestamps and configs
      * @param timestamp Random timestamp
      * @param binCount Random bin count
-     * @dev FR-55: Tests bin index calculation using modulo arithmetic
+     * @dev Tests bin index calculation using modulo arithmetic for proper bin selection
      */
     function testFuzz_binIndexCalculation(uint256 timestamp, uint32 binCount) public view {
         // Bound inputs
@@ -55,7 +55,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
      * @notice Fuzz test: Bin wrap-around with random bin counts
      * @param binCount Random bin count
      * @param iterations Random number of iterations
-     * @dev FR-30: Tests bin array wrap-around at boundaries
+     * @dev Tests bin array wrap-around at boundaries using circular buffer pattern
      */
     function testFuzz_binWrapAround(uint32 binCount, uint256 iterations) public view {
         // Bound inputs
@@ -80,7 +80,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
     /**
      * @notice Fuzz test: Withdrawal amounts near limit boundaries
      * @param amount Random withdrawal amount
-     * @dev FR-9: Tests limit enforcement near boundary conditions
+     * @dev Tests limit enforcement near boundary conditions (90%-110% of limit)
      */
     function testFuzz_withdrawalNearLimit(uint256 amount) public {
         // Test amounts from 90% to 110% of limit
@@ -131,7 +131,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
      * @notice Fuzz test: Multiple sequential withdrawals over time
      * @param withdrawalCount Number of withdrawals
      * @param timeGap Time gap between withdrawals
-     * @dev FR-6, FR-7: Tests withdrawal accumulation in bins
+     * @dev Tests withdrawal amount accumulation across multiple bins over time
      */
     function testFuzz_sequentialWithdrawals(uint8 withdrawalCount, uint256 timeGap) public {
         // Bound inputs
@@ -187,7 +187,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
     /**
      * @notice Fuzz test: Expired bin cleanup with various time gaps
      * @param timeGap Time gap for bin expiration
-     * @dev FR-28: Tests lazy cleanup of expired bins
+     * @dev Tests lazy cleanup of expired bins after window duration
      */
     function testFuzz_expiredBinCleanup(uint256 timeGap) public {
         // Test time gaps from 1 window to 5 windows
@@ -258,7 +258,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
     /**
      * @notice Fuzz test: Super admin bypass with random amounts
      * @param amount Random withdrawal amount
-     * @dev FR-18: Tests super admin can bypass limits
+     * @dev Tests that super admin can withdraw unlimited amounts bypassing rate limits
      */
     function testFuzz_superAdminBypass(uint256 amount) public {
         // Test amounts up to 10x the limit
@@ -301,7 +301,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
      * @param limitAmount Custom limit amount
      * @param windowSeconds Custom window duration
      * @param binCount Custom bin count
-     * @dev FR-11, FR-20: Tests per-account custom configuration
+     * @dev Tests per-account custom configuration overriding default limits
      */
     function testFuzz_customAccountConfig(
         uint256 limitAmount,
@@ -346,7 +346,7 @@ contract GNUSWithdrawLimiterFuzz is GeniusDiamondTestBase {
     /**
      * @notice Fuzz test: Limiter enabled/disabled state
      * @param shouldEnable Random boolean for enabled state
-     * @dev FR-17: Tests global limiter enable/disable
+     * @dev Tests global limiter enable/disable functionality
      */
     function testFuzz_limiterEnabledState(bool shouldEnable) public {
         vm.prank(owner);

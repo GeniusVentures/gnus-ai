@@ -112,7 +112,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				await ethers.provider.send('evm_revert', [initialSnapshotId]);
 			});
 
-			// Task 4.1: Test that transferBatch() aggregates amounts and triggers limiter (FR-37, FR-38)
+			// Test that transferBatch() aggregates amounts and triggers limiter
 			it('should aggregate batch amounts and trigger limiter', async function () {
 				const destinations = [signer2, signer2, signer2]; // Same destination multiple times
 				const amounts = [toWei('30000'), toWei('20000'), toWei('10000')]; // Total: 60,000 GNUS
@@ -129,7 +129,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				expect(usageIncrease).to.equal(toWei('60000')); // Sum of all amounts
 			});
 
-			// Task 4.2: Test that transferBatch() allows super admin bypass (FR-40)
+			// Test that transferBatch() allows super admin bypass
 			it('should allow super admin bypass for batch transfers', async function () {
 				// Owner mints themselves tokens
 				const ownerMintTx = await ownerDiamond['mint(address,uint256)'](
@@ -149,7 +149,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				expect(status.currentUsage).to.equal(0n);
 			});
 
-			// Task 4.3: Test that batch transfers block when limit exceeded
+			// Test that batch transfers block when limit exceeded
 			it('should revert when batch transfer exceeds limit', async function () {
 				// First batch transfer close to limit
 				const destinations1 = [signer2];
@@ -165,7 +165,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				).to.be.revertedWith('Withdrawal limit exceeded for time window');
 			});
 
-			// Task 4.4: Test that multiple batch transfers accumulate
+			// Test that multiple batch transfers accumulate in bins
 			it('should accumulate multiple batch transfers', async function () {
 				// First batch
 				await signer1Diamond.transferBatch([signer2], [toWei('10000')]);
@@ -185,7 +185,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				expect(status.remainingCapacity).to.equal(toWei('50000')); // 100k - 50k
 			});
 
-			// Task 4.5: Test that transferOrBurnBatch also triggers limiter
+			// Test that transferOrBurnBatch also triggers limiter
 			it('should trigger limiter on transferOrBurnBatch', async function () {
 				const destinations = [signer2, ethers.ZeroAddress]; // Transfer and burn
 				const amounts = [toWei('30000'), toWei('20000')]; // Total: 50,000 GNUS
@@ -197,7 +197,7 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				expect(status.currentUsage).to.equal(toWei('50000'));
 			});
 
-			// Task 4.6: Test that limiter can be disabled for batch transfers
+			// Test that limiter can be disabled for batch transfers
 			it('should allow unlimited batch transfers when limiter disabled', async function () {
 				// Disable limiter
 				await ownerDiamond.setLimiterEnabled(false);
