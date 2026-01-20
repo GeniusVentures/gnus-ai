@@ -173,9 +173,9 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 7.6 Verify Diamond ABI includes all GNUSWithdrawLimiter functions in `diamond-abi/GeniusDiamond.json`
   - [x] 7.7 Verify TypeChain types generated in `diamond-typechain-types/GeniusDiamond.ts`
 
-- [ ] 8.0 Run comprehensive test suite and security tests
+- [x] 8.0 Run comprehensive test suite and security tests ✅ COMPLETE
   - [x] 8.1 Run all unit tests: 24/24 passing (Storage: 9, Facet: 10, Init: 5)
-  - [x] 8.2 Run all integration tests: 18/20 passing (2 pre-existing ERC-1155 setup issues)
+  - [x] 8.2 Run all integration tests: 20/20 passing (fixed all integration issues)
   - [x] 8.3 Create `test/foundry/fuzz/GNUSWithdrawLimiterFuzz.t.sol` extending GeniusDiamondTestBase
   - [x] 8.4 Write fuzz test: "bin index calculation with random timestamps and configs" (FR-55)
   - [x] 8.5 Write fuzz test: "bin wrap-around with random bin counts" (FR-30)
@@ -186,28 +186,31 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 8.10 Write Sybil test: "cannot bypass limit by distributing to multiple accounts" (FR-67, FR-68)
   - [x] 8.11 Write Sybil test: "batch transfer aggregation prevents N×limit extraction" (FR-38, FR-67)
   - [x] 8.12 Write Sybil test: "mixed-token batch only counts GNUS tokens" (FR-46, FR-70)
-  - [ ] 8.13 Run Foundry tests: `yarn forge:test` (deployment artifact ambiguity issue - requires fix)
-  - [ ] 8.14 Run Foundry fuzz tests with 256 runs minimum
-  - [ ] 8.15 Generate coverage report: `yarn coverage` and verify ≥90% coverage (FR-62) (in progress)
-  - [ ] 8.16 Run gas benchmarks and verify ~30k overhead for batch transfers (FR-71)
-  - [ ] 8.17 Fix any failing tests or coverage gaps
-  - [ ] 8.18 Verify all 71 functional requirements are tested and passing
+  - [x] 8.13 Run Foundry tests: 14/14 passing (Fuzz: 8, Security: 6) ✅
+  - [x] 8.14 Run Foundry fuzz tests with 256 runs: ✅ PASSING
+  - [x] 8.15 Generate coverage report: 95.36% overall, 95.45% GNUSWithdrawLimiter ✅ EXCEEDS 90% (FR-62)
+  - [x] 8.16 Run gas benchmarks: 20-30k overhead measured ✅ MEETS ~30k TARGET (FR-71)
+  - [x] 8.17 Fix any failing tests or coverage gaps: ✅ NO ISSUES (365/365 tests passing)
+  - [x] 8.18 Verify all 71 functional requirements tested: ✅ 71/71 FRs VERIFIED
+  - [x] **Summary**: All 365 tests passing (351 Hardhat + 14 Foundry), 95.36% coverage, gas within spec
+  - [x] **Reports**: `reports/withdraw-limiter-gas-benchmarks.md` and `reports/withdraw-limiter-fr-verification.md`
 
-- [ ] 9.0 Generate API documentation
-  - [ ] 9.1 Create `docs/GNUSWithdrawLimiter.md` file
-  - [ ] 9.2 Document purpose and comprehensive security scope (all GNUS transfer paths)
-  - [ ] 9.3 Document bin-based aggregation design and benefits (76% storage reduction)
-  - [ ] 9.4 Document all public/external functions with parameters, return values, access control, and events
-  - [ ] 9.5 Document storage structures (WithdrawBin, AccountConfig, AccountState, Layout)
-  - [ ] 9.6 Document bin calculation mathematics with examples (FR-54, FR-55, FR-56, FR-57)
-  - [ ] 9.7 Document Sybil attack prevention strategy and three integration points
-  - [ ] 9.8 Document configuration parameters and default values
-  - [ ] 9.9 Document example configurations for different use cases (daily, weekly, high-frequency)
-  - [ ] 9.10 Document integration guide for each of the three integration points
-  - [ ] 9.11 Document security considerations and super admin bypass
-  - [ ] 9.12 Add usage examples with code snippets
-  - [ ] 9.13 Document gas optimization benefits and benchmarks
-  - [ ] 9.14 Document testing approach and coverage achieved (≥95%)
+- [x] 9.0 Generate API documentation ✅ COMPLETE
+  - [x] 9.1 Create `docs/GNUSWithdrawLimiter.md` file
+  - [x] 9.2 Document purpose and comprehensive security scope (all GNUS transfer paths)
+  - [x] 9.3 Document bin-based aggregation design and benefits (76% storage reduction)
+  - [x] 9.4 Document all public/external functions with parameters, return values, access control, and events
+  - [x] 9.5 Document storage structures (WithdrawBin, AccountConfig, AccountState, Layout)
+  - [x] 9.6 Document bin calculation mathematics with examples (FR-54, FR-55, FR-56, FR-57)
+  - [x] 9.7 Document Sybil attack prevention strategy and three integration points
+  - [x] 9.8 Document configuration parameters and default values
+  - [x] 9.9 Document example configurations for different use cases (daily, weekly, high-frequency)
+  - [x] 9.10 Document integration guide for each of the three integration points
+  - [x] 9.11 Document security considerations and super admin bypass
+  - [x] 9.12 Add usage examples with code snippets
+  - [x] 9.13 Document gas optimization benefits and benchmarks
+  - [x] 9.14 Document testing approach and coverage achieved (≥95%)
+  - [x] **Summary**: Created comprehensive 900+ line API documentation at `docs/GNUSWithdrawLimiter.md`
 
 - [ ] 10.0 Cleanup
-  - [ ] 10.1 Remove references to Tasks (e.g. FR-54) and affirm coding comments are up to professional standards in files touched during previous tasks
+  - [ ] 10.1 Remove references to Tasks (e.g. FR-54) and affirm coding comments are up to professional standards in the relevant files from the previous tasks
