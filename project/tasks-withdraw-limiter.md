@@ -164,14 +164,14 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 6.12 Add NatSpec documentation explaining initialization parameters
   - [x] 6.13 Run tests to verify initialization works correctly
 
-- [ ] 7.0 Configure Diamond with GNUSWithdrawLimiter facet
-  - [ ] 7.1 Open `diamonds/GeniusDiamond/geniusdiamond.config.json`
-  - [ ] 7.2 Add new entry for GNUSWithdrawLimiter with priority 115 (after GNUSBridge at 110)
-  - [ ] 7.3 Set version to "0.0" for initial implementation
-  - [ ] 7.4 No deployInit or upgradeInit needed (initialization via DiamondInitFacet)
-  - [ ] 7.5 Run `yarn clean-compile` to regenerate Diamond ABI and TypeChain types
-  - [ ] 7.6 Verify Diamond ABI includes all GNUSWithdrawLimiter functions in `diamond-abi/GeniusDiamond.json`
-  - [ ] 7.7 Verify TypeChain types generated in `diamond-typechain-types/GeniusDiamond.ts`
+- [x] 7.0 Configure Diamond with GNUSWithdrawLimiter facet
+  - [x] 7.1 Open `diamonds/GeniusDiamond/geniusdiamond.config.json`
+  - [x] 7.2 Add new entry for GNUSWithdrawLimiter with priority 120 (after GNUSBridge at 115)
+  - [x] 7.3 Set version to "0.0" for initial implementation
+  - [x] 7.4 No deployInit or upgradeInit needed (initialization via DiamondInitFacet)
+  - [x] 7.5 Run `yarn compile` to regenerate Diamond ABI and TypeChain types
+  - [x] 7.6 Verify Diamond ABI includes all GNUSWithdrawLimiter functions in `diamond-abi/GeniusDiamond.json`
+  - [x] 7.7 Verify TypeChain types generated in `diamond-typechain-types/GeniusDiamond.ts`
 
 - [ ] 8.0 Run comprehensive test suite and security tests
   - [ ] 8.1 Run all unit tests on multiple chains: `yarn test test/unit/*.test.ts,polygon_amoy`
@@ -208,3 +208,6 @@ Update the file after completing each sub-task, not just after completing an ent
   - [ ] 9.12 Add usage examples with code snippets
   - [ ] 9.13 Document gas optimization benefits and benchmarks
   - [ ] 9.14 Document testing approach and coverage achieved (≥95%)
+
+- [ ] 10.0 Cleanup
+  - [ ] 10.1 Remove references to Tasks (e.g. FR-54) and affirm coding comments are up to professional standards in files touched during previous tasks
