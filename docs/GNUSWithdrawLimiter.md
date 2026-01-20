@@ -1,4 +1,4 @@
-# GNUSWithdrawLimiter API Documentation
+# GNUSWithdrawLimiter Documentation
 
 ## Overview
 

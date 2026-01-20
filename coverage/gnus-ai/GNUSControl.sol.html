@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for gnus-ai/GNUSControl.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">gnus-ai/</a> GNUSControl.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>9/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">95% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>19/20</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>9/9</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>25/25</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">23×</span>
+<span class="cline-any cline-yes">23×</span>
+<span class="cline-any cline-yes">23×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+&nbsp;
+import "./GNUSConstants.sol";
+import "./GNUSControlStorage.sol";
+import "./GNUSNFTFactoryStorage.sol";
+import "./GeniusAccessControl.sol";
+import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
+import "contracts-starter/contracts/libraries/LibDiamond.sol";
+import "./GNUSBridge.sol";
+&nbsp;
+/**
+ * @title GNUS Control Contract
+ * @dev Manages protocol-level security and controls, including blacklists and bridge fees.
+ * @notice This contract allows super administrators to manage global and token-specific blacklists,
+ * update protocol parameters, and handle bridge fees.
+ * @custom:security-contact support@gnus.ai
+ */
+contract GNUSControl is GeniusAccessControl {
+    using GNUSControlStorage for GNUSControlStorage.Layout;
+&nbsp;
+    uint256 private constant MAX_FEE = 200;
+&nbsp;
+    /// @dev Emitted when addresses or token IDs are added to the blacklist.
+    event AddToBlackList(uint256[] tokenIds, address[] addresses);
+&nbsp;
+    /// @dev Emitted when addresses or token IDs are removed from the blacklist.
+    event RemoveFromBlackList(uint256[] tokenIds, address[] addresses);
+&nbsp;
+    /// @dev Emitted when an address is added to the global blacklist.
+    event AddToGlobalBlackList(address bannedAddress);
+&nbsp;
+    /// @dev Emitted when an address is removed from the global blacklist.
+    event RemoveFromGlobalBlackList(address bannedAddress);
+&nbsp;
+    /// @dev Emitted when the bridge fee is updated.
+    /// @param newFee The new bridge fee value.
+    event UpdateBridgeFee(uint256 indexed newFee);
+&nbsp;
+    bytes4 constant GNUS_NFT_INIT_SELECTOR = bytes4(keccak256(bytes('GNUSNFTFactory_Initialize()')));
+    bytes32 constant MINTER_ROLE = keccak256("MINTER_ROLE");
+&nbsp;
+    /**
+     * @notice Initializes the protocol to version 2.30.
+     * @dev Ensures the protocol version is not already initialized to 2.30 or greater.
+     * Sets the protocol version to 230.
+     */
+    function GNUSControl_Initialize230() external <span class="missing-if-branch" title="else path not taken" >E</span>onlySuperAdminRole {
+        require(
+            GNUSControlStorage.layout().protocolVersion &lt; 230,
+            "Constructor was already initialized &gt;= 2.30"
+        );
+&nbsp;
+        GNUSControlStorage.layout().protocolVersion = 230;
+        InitializableStorage.layout()._initialized = true;
+    }
+&nbsp;
+    /**
+     * @notice Adds an address to the global transfer ban list.
+     * @param bannedAddress The address to ban from transferring all tokens globally.
+     */
+    function banTransferorForAll(address bannedAddress) external onlySuperAdminRole {
+        GNUSControlStorage.layout().gBannedTransferors[bannedAddress] = true;
+        emit AddToGlobalBlackList(bannedAddress);
+    }
+&nbsp;
+    /**
+     * @notice Removes an address from the global transfer ban list.
+     * @param bannedAddress The address to unban from transferring all tokens globally.
+     */
+    function allowTransferorForAll(address bannedAddress) external onlySuperAdminRole {
+        GNUSControlStorage.layout().gBannedTransferors[bannedAddress] = false;
+        emit RemoveFromGlobalBlackList(bannedAddress);
+    }
+&nbsp;
+    /**
+     * @notice Adds a batch of addresses and token IDs to the blacklist.
+     * @param tokenIds The list of token IDs.
+     * @param bannedAddresses The list of addresses to ban for the specified token IDs.
+     */
+    function banTransferorBatch(
+        uint256[] calldata tokenIds,
+        address[] calldata bannedAddresses
+    ) external onlySuperAdminRole {
+        for (uint256 i; i &lt; tokenIds.length; ) {
+            GNUSControlStorage.layout().bannedTransferors[tokenIds[i]][bannedAddresses[i]] = true;
+            unchecked {
+                ++i;
+            }
+        }
+        emit AddToBlackList(tokenIds, bannedAddresses);
+    }
+&nbsp;
+    /**
+     * @notice Removes a batch of addresses and token IDs from the blacklist.
+     * @param tokenIds The list of token IDs.
+     * @param bannedAddresses The list of addresses to unban for the specified token IDs.
+     */
+    function allowTransferorBatch(
+        uint256[] calldata tokenIds,
+        address[] calldata bannedAddresses
+    ) external onlySuperAdminRole {
+        for (uint256 i; i &lt; tokenIds.length; ) {
+            GNUSControlStorage.layout().bannedTransferors[tokenIds[i]][bannedAddresses[i]] = false;
+            unchecked {
+                ++i;
+            }
+        }
+        emit RemoveFromBlackList(tokenIds, bannedAddresses);
+    }
+&nbsp;
+    /**
+     * @notice Updates the bridge fee.
+     * @param newFee The new bridge fee value.
+     * @dev Ensures the new fee does not exceed the maximum allowed fee.
+     */
+    function updateBridgeFee(uint256 newFee) external onlySuperAdminRole {
+        require(newFee &lt;= MAX_FEE, "Too big fee");
+        GNUSControlStorage.layout().bridgeFee = newFee;
+        emit UpdateBridgeFee(newFee);
+    }
+&nbsp;
+    /**
+     * @notice Sets the chain ID for the protocol.
+     * @param chainID The new chain ID.
+     */
+    function setChainID(uint256 chainID) external onlySuperAdminRole {
+        GNUSControlStorage.layout().chainID = chainID;
+    }
+&nbsp;
+    /**
+     * @notice Retrieves protocol information.
+     * @return bridgeFee The current bridge fee.
+     * @return protocolVersion The current protocol version.
+     * @return chainID The current chain ID.
+     */
+    function protocolInfo() external view returns (uint256 bridgeFee, uint256 protocolVersion, uint256 chainID) {
+        bridgeFee = GNUSControlStorage.layout().bridgeFee;
+        protocolVersion = GNUSControlStorage.layout().protocolVersion;
+        chainID = GNUSControlStorage.layout().chainID;
+    }
+&nbsp;
+    /**
+     * @notice Sets the protocol version.
+     * @param protocolVersion The new protocol version.
+     */
+    function setProtocolVersion(uint256 protocolVersion) external onlySuperAdminRole {
+        GNUSControlStorage.layout().protocolVersion = protocolVersion;
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jan 20 2026 19:58:52 GMT+0000 (Coordinated Universal Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
