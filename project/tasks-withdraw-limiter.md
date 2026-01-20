@@ -149,20 +149,20 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 5.14 Run tests to verify transfer hook integration works correctly
   - [x] 5.15 Verify fallback coverage for all ERC-1155 GNUS transfers
 
-- [ ] 6.0 Add initialization function to DiamondInitFacet.sol (TDD)
-  - [ ] 6.1 Write test: "should initialize limiter with correct default values" (FR-24)
-  - [ ] 6.2 Write test: "should set limiter enabled to true after initialization" (FR-24)
-  - [ ] 6.3 Write test: "should emit initialization event"
-  - [ ] 6.4 Read current `DiamondInitFacet.sol` to understand initialization pattern
-  - [ ] 6.5 Import GNUSWithdrawLimiterStorage
-  - [ ] 6.6 Create `initializeGNUSWithdrawLimiter()` internal function (FR-22)
-  - [ ] 6.7 Set `defaultLimitAmount = 100_000 * 10**18` (100,000 GNUS tokens) (FR-24)
-  - [ ] 6.8 Set `defaultWindowSeconds = 86400` (1 day) (FR-24)
-  - [ ] 6.9 Set `defaultBinCount = 24` (hourly bins) (FR-24)
-  - [ ] 6.10 Set `limiterEnabled = true` (FR-24)
-  - [ ] 6.11 Add call to `initializeGNUSWithdrawLimiter()` in appropriate protocol initializer (FR-23)
-  - [ ] 6.12 Add NatSpec documentation explaining initialization parameters
-  - [ ] 6.13 Run tests to verify initialization works correctly
+- [x] 6.0 Add initialization function to DiamondInitFacet.sol (TDD)
+  - [x] 6.1 Write test: "should initialize limiter with correct default values" (FR-24)
+  - [x] 6.2 Write test: "should set limiter enabled to true after initialization" (FR-24)
+  - [x] 6.3 Write test: "should emit initialization event"
+  - [x] 6.4 Read current `DiamondInitFacet.sol` to understand initialization pattern
+  - [x] 6.5 Import GNUSWithdrawLimiterStorage
+  - [x] 6.6 Create `initializeGNUSWithdrawLimiter()` internal function (FR-22)
+  - [x] 6.7 Set `defaultLimitAmount = 100_000 * 10**18` (100,000 GNUS tokens) (FR-24)
+  - [x] 6.8 Set `defaultWindowSeconds = 86400` (1 day) (FR-24)
+  - [x] 6.9 Set `defaultBinCount = 24` (hourly bins) (FR-24)
+  - [x] 6.10 Set `limiterEnabled = true` (FR-24)
+  - [x] 6.11 Add call to `initializeGNUSWithdrawLimiter()` in appropriate protocol initializer (FR-23)
+  - [x] 6.12 Add NatSpec documentation explaining initialization parameters
+  - [x] 6.13 Run tests to verify initialization works correctly
 
 - [ ] 7.0 Configure Diamond with GNUSWithdrawLimiter facet
   - [ ] 7.1 Open `diamonds/GeniusDiamond/geniusdiamond.config.json`

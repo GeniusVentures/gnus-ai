@@ -129,9 +129,13 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 				const transferAmount = toWei('50000'); // 50k GNUS
 
 				// Transfer 50k GNUS from signer1 to signer2
-				const transferTx = await signer1Diamond[
-					'safeTransferFrom(address,address,uint256,uint256,bytes)'
-				](signer1, signer2, 0, transferAmount, '0x');
+				const transferTx = await signer1Diamond.safeTransferFrom(
+					signer1,
+					signer2,
+					0,
+					transferAmount,
+					'0x',
+				);
 				await transferTx.wait();
 
 				// Verify limiter recorded the withdrawal
@@ -210,9 +214,13 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 				await (await ownerDiamond['mint(address,uint256)'](owner, largeAmount)).wait();
 
 				// Owner transfers 160k GNUS (should bypass limiter)
-				const transferTx = await ownerDiamond[
-					'safeTransferFrom(address,address,address,uint256)'
-				](owner, signer2, 0, largeAmount, '0x');
+				const transferTx = await ownerDiamond.safeTransferFrom(
+					owner,
+					signer2,
+					0,
+					largeAmount,
+					'0x',
+				);
 				await transferTx.wait();
 
 				// Verify owner's usage is 0 (bypassed limiter)
@@ -230,25 +238,13 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 
 				// First transfer: 95k GNUS (within limit)
 				await (
-					await signer1Diamond['safeTransferFrom(address,address,uint256,uint256,bytes)'](
-						signer1,
-						signer2,
-						0,
-						transfer1,
-						'0x',
-					)
+					await signer1Diamond.safeTransferFrom(signer1, signer2, 0, transfer1, '0x')
 				).wait();
 
 				// Second transfer: 6k GNUS (total 101k > 100k, should revert)
 				await expect(
-					signer1Diamond['safeTransferFrom(address,address,uint256,uint256,bytes)'](
-						signer1,
-						signer2,
-						0,
-						transfer2,
-						'0x',
-					),
-				).to.be.revertedWith('Withdrawal limit exceeded for time window');
+					signer1Diamond.safeTransferFrom(signer1, signer2, 0, transfer2, '0x'),
+				).to.be.rejectedWith('Withdrawal limit exceeded for time window');
 			});
 
 			/**
@@ -298,9 +294,13 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 				).wait();
 
 				// Transfer 150k of custom NFT (NOT GNUS, should not trigger limiter)
-				const transferTx = await signer1Diamond[
-					'safeTransferFrom(address,address,uint256,uint256,bytes)'
-				](signer1, signer2, nftID, nftAmount, '0x');
+				const transferTx = await signer1Diamond.safeTransferFrom(
+					signer1,
+					signer2,
+					nftID,
+					nftAmount,
+					'0x',
+				);
 				await transferTx.wait();
 
 				// Verify limiter was NOT triggered
@@ -319,9 +319,13 @@ describe('ERC-1155 Transfer Hook Limiter Integration Tests', async function () {
 				const largeAmount = toWei('160000'); // 160k > 100k limit
 
 				// Transfer 160k GNUS (should succeed with disabled limiter)
-				const transferTx = await signer1Diamond[
-					'safeTransferFrom(address,address,uint256,uint256,bytes)'
-				](signer1, signer2, 0, largeAmount, '0x');
+				const transferTx = await signer1Diamond.safeTransferFrom(
+					signer1,
+					signer2,
+					0,
+					largeAmount,
+					'0x',
+				);
 				await transferTx.wait();
 
 				// Verify usage is 0 (limiter disabled)
