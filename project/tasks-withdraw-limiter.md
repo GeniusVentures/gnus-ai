@@ -132,22 +132,22 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 4.14 Run tests to verify Sybil attack prevention works
   - [x] 4.15 Verify batch transfers cannot bypass per-account limits
 
-- [ ] 5.0 Integrate limiter into GNUSERC1155MaxSupply.sol transfer hook (TDD)
-  - [ ] 5.1 Write test: "transfer hook should filter GNUS_TOKEN_ID and accumulate amounts" (FR-42, FR-46)
-  - [ ] 5.2 Write test: "transfer hook should skip minting operations (from==0)" (FR-43)
-  - [ ] 5.3 Write test: "transfer hook should skip burning operations (to==0)" (FR-44)
-  - [ ] 5.4 Write test: "transfer hook should allow super admin bypass" (FR-40)
-  - [ ] 5.5 Write test: "mixed-token batch should only count GNUS tokens" (FR-46, FR-70)
-  - [ ] 5.6 Read current `GNUSERC1155MaxSupply.sol` _beforeTokenTransfer() hook implementation
-  - [ ] 5.7 Import GNUSWithdrawLimiterStorage and GNUSConstants (for GNUS_TOKEN_ID)
-  - [ ] 5.8 Add limiter check after super._beforeTokenTransfer() call in _beforeTokenTransfer() hook (FR-41)
-  - [ ] 5.9 Add condition checks: skip if from==0 (minting) or to==0 (burning) (FR-43, FR-44)
-  - [ ] 5.10 Add super admin bypass: `!hasRole(SUPER_ADMIN_ROLE, operator)` (FR-40)
-  - [ ] 5.11 Loop through ids array and accumulate amounts where `ids[i] == GNUS_TOKEN_ID` (FR-42, FR-46)
-  - [ ] 5.12 Call `GNUSWithdrawLimiterStorage.layout().checkAndRecordWithdraw(from, totalGnusAmount)` if totalGnusAmount > 0 (FR-41)
-  - [ ] 5.13 Add error message: "ERC1155 transfer exceeds withdrawal limit"
-  - [ ] 5.14 Run tests to verify transfer hook integration works correctly
-  - [ ] 5.15 Verify fallback coverage for all ERC-1155 GNUS transfers
+- [x] 5.0 Integrate limiter into GNUSERC1155MaxSupply.sol transfer hook (TDD)
+  - [x] 5.1 Write test: "transfer hook should filter GNUS_TOKEN_ID and accumulate amounts" (FR-42, FR-46)
+  - [x] 5.2 Write test: "transfer hook should skip minting operations (from==0)" (FR-43)
+  - [x] 5.3 Write test: "transfer hook should skip burning operations (to==0)" (FR-44)
+  - [x] 5.4 Write test: "transfer hook should allow super admin bypass" (FR-40)
+  - [x] 5.5 Write test: "mixed-token batch should only count GNUS tokens" (FR-46, FR-70)
+  - [x] 5.6 Read current `GNUSERC1155MaxSupply.sol` _beforeTokenTransfer() hook implementation
+  - [x] 5.7 Import GNUSWithdrawLimiterStorage and GNUSConstants (for GNUS_TOKEN_ID)
+  - [x] 5.8 Add limiter check after super._beforeTokenTransfer() call in _beforeTokenTransfer() hook (FR-41)
+  - [x] 5.9 Add condition checks: skip if from==0 (minting) or to==0 (burning) (FR-43, FR-44)
+  - [x] 5.10 Add super admin bypass: `!hasRole(SUPER_ADMIN_ROLE, operator)` (FR-40)
+  - [x] 5.11 Loop through ids array and accumulate amounts where `ids[i] == GNUS_TOKEN_ID` (FR-42, FR-46)
+  - [x] 5.12 Call `GNUSWithdrawLimiterStorage.layout().checkAndRecordWithdraw(from, totalGnusAmount)` if totalGnusAmount > 0 (FR-41)
+  - [x] 5.13 Add error message: "ERC1155 transfer exceeds withdrawal limit"
+  - [x] 5.14 Run tests to verify transfer hook integration works correctly
+  - [x] 5.15 Verify fallback coverage for all ERC-1155 GNUS transfers
 
 - [ ] 6.0 Add initialization function to DiamondInitFacet.sol (TDD)
   - [ ] 6.1 Write test: "should initialize limiter with correct default values" (FR-24)
