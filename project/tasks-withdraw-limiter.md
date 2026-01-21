@@ -212,5 +212,22 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 9.14 Document testing approach and coverage achieved (≥95%)
   - [x] **Summary**: Created comprehensive 900+ line API documentation at `docs/GNUSWithdrawLimiter.md`
 
-- [ ] 10.0 Cleanup
-  - [ ] 10.1 Remove references to Tasks (e.g. FR-54) and affirm coding comments are up to professional standards in the relevant files from the previous tasks
+- [x] 10.0 Cleanup
+  - [x] 10.1 Remove references to Tasks (e.g. FR-54) and affirm coding comments are up to professional standards in the relevant files from the previous tasks
+
+- [ ] 11.0 Generate gas usage comparison report for different Withdraw Limiter configurations
+  - [x] 11.1 Create test script to measure gas usage with varying bin counts (6, 12, 24, 48, 96)
+  - [x] 11.2 Measure gas usage for GNUSBridge.withdraw() operations for each bin count configuration
+  - [x] 11.3 Measure gas usage for GNUSBridge.bridgeOut() operations for each bin count configuration
+  - [x] 11.4 Measure gas usage for ERC20TransferBatch.transferBatch() operations for each bin count configuration
+  - [x] 11.5 Measure gas usage for ERC20TransferBatch.transferOrBurnBatch() operations for each bin count configuration
+  - [x] 11.6 Measure gas usage for failed transactions (limiter exceeded) for each bin count configuration
+  - [x] 11.7 Test scenarios: first withdrawal (cold storage), subsequent withdrawals (warm storage), limit exceeded
+  - [x] 11.8 Create comparison table showing gas costs vs bin count for all operations
+  - [x] 11.9 Analyze gas cost trends and identify optimal configurations for different use cases
+  - [x] 11.10 Generate markdown report with tables and charts in `reports/gas-coverage/withdraw-limiter-gas-comparison.md`
+  - [x] 11.11 Include recommendations for bin count selection based on gas costs and window granularity
+  - [x] 11.12 Document methodology and test conditions in report
+  - [x] 11.13 Run tests and verify all measurements are accurate and reproducible
+  - [ ] 11.14 Commit report with conventional commit format
+  
