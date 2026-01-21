@@ -229,5 +229,5 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 11.11 Include recommendations for bin count selection based on gas costs and window granularity
   - [x] 11.12 Document methodology and test conditions in report
   - [x] 11.13 Run tests and verify all measurements are accurate and reproducible
-  - [ ] 11.14 Commit report with conventional commit format
+  - [x] 11.14 Commit report with conventional commit format
   
