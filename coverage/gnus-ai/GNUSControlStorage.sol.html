@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for gnus-ai/GNUSControlStorage.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">gnus-ai/</a> GNUSControlStorage.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">40% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>2/5</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">50% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>2/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">66.67% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>2/3</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">50% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>3/6</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">663×</span>
+<span class="cline-any cline-yes">663×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">227×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+&nbsp;
+import "contracts-starter/contracts/libraries/LibDiamond.sol";
+&nbsp;
+/// @title GNUS Control Storage Library
+/// @notice This library defines the storage layout and utility functions for managing GNUS control data.
+/// @dev Utilizes the diamond storage pattern to manage control-related state.
+/// @custom:security-contact support@gnus.ai
+library GNUSControlStorage {
+    /**
+     * @notice Defines the storage structure for GNUS control.
+     */
+    struct Layout {
+        /// @dev Mapping from token ID to address to indicate if the transferor is banned or allowed.
+        mapping(uint256 =&gt; mapping(address =&gt; bool)) bannedTransferors;
+        /// @dev Global mapping of addresses banned from transferring any token ID.
+        mapping(address =&gt; bool) gBannedTransferors;
+        /// @dev Percentage fee applied when minting through the bridge.
+        uint256 bridgeFee;
+        /// @dev Current protocol version for GNUS.
+        uint256 protocolVersion;
+        /// @dev The chain ID for the current chain.
+        uint256 chainID;
+    }
+&nbsp;
+    using LibDiamond for LibDiamond.DiamondStorage;
+&nbsp;
+    /// @dev Unique storage slot identifier for GNUS control storage.
+    bytes32 constant GNUS_CONTROL_STORAGE_POSITION = keccak256("gnus.ai.control.storage");
+&nbsp;
+    /**
+     * @notice Accesses the GNUS control storage layout.
+     * @return l A reference to the storage layout.
+     */
+    function layout() internal pure returns (Layout storage l) {
+        bytes32 slot = GNUS_CONTROL_STORAGE_POSITION;
+        assembly {
+            l.slot := slot
+        }
+    }
+&nbsp;
+    /**
+     * @notice Checks if a transferor is banned for a specific token ID.
+     * @param tokenId The ID of the token.
+     * @param sender The address of the transferor.
+     * @return bool True if the transferor is banned, otherwise false.
+     */
+    function isBannedTransferor(uint256 tokenId, address sender) internal view returns (bool) {
+        return layout().gBannedTransferors[sender] || layout().bannedTransferors[tokenId][sender];
+    }
+&nbsp;
+    /**
+     * @notice Executes a delegate call to a facet with the given selector and parameters.
+     * @param facetSelector The function selector of the target facet.
+     * @param encodedParameters The encoded function parameters.
+     * @return success True if the delegate call succeeds, otherwise false.
+     * @return data The returned data from the delegate call.
+     * @dev Reverts if the facet address is not found.
+     */
+<span class="fstat-no" title="function not covered" >    function callFacetDelegate(bytes4 facetSelector, bytes memory encodedParameters) internal returns (bool success, bytes memory data) {</span>
+<span class="cstat-no" title="statement not covered" >        address facetAddress = address(bytes20(LibDiamond.diamondStorage().facets[facetSelector]));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        require(facetAddress != address(0), "Diamond: Function does not exist")</span>;
+<span class="cstat-no" title="statement not covered" >        return facetAddress.delegatecall(abi.encodePacked(facetSelector, encodedParameters));</span>
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jan 20 2026 19:58:52 GMT+0000 (Coordinated Universal Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

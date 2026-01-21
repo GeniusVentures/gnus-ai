@@ -1,0 +1,13 @@
+{
+  "name": "mainnet",
+  "chainId": 1,
+  "rpcUrl": "https://mainnet.infura.io/v3/YOUR_PROJECT_ID",
+  "blockExplorer": "https://etherscan.io",
+  "nativeCurrency": {
+    "name": "Ether",
+    "symbol": "ETH",
+    "decimals": 18
+  },
+  "defaultGasLimit": 5000000,
+  "defaultMaxGasPrice": "50000000000"
+}

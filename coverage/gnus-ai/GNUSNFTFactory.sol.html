@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for gnus-ai/GNUSNFTFactory.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">gnus-ai/</a> GNUSNFTFactory.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">96.23% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>51/53</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">78.57% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>44/56</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">85.71% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>12/14</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">94.92% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>56/59</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39×</span>
+<span class="cline-any cline-yes">39×</span>
+<span class="cline-any cline-yes">37×</span>
+<span class="cline-any cline-yes">37×</span>
+<span class="cline-any cline-yes">37×</span>
+<span class="cline-any cline-yes">34×</span>
+<span class="cline-any cline-yes">28×</span>
+<span class="cline-any cline-yes">28×</span>
+<span class="cline-any cline-yes">27×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">33×</span>
+<span class="cline-any cline-yes">33×</span>
+<span class="cline-any cline-yes">26×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">58×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">64×</span>
+<span class="cline-any cline-yes">64×</span>
+<span class="cline-any cline-yes">64×</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8×</span>
+<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">60×</span>
+<span class="cline-any cline-yes">60×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">58×</span>
+<span class="cline-any cline-yes">65×</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">63×</span>
+<span class="cline-any cline-yes">63×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23×</span>
+<span class="cline-any cline-yes">22×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+&nbsp;
+import "@gnus.ai/contracts-upgradeable-diamond/proxy/utils/Initializable.sol";
+import "./GNUSERC1155MaxSupply.sol";
+import "contracts-starter/contracts/libraries/LibDiamond.sol";
+import "./GNUSNFTFactoryStorage.sol";
+import "./GeniusAccessControl.sol";
+import "./GNUSConstants.sol";
+&nbsp;
+/// @custom:security-contact support@gnus.ai
+/// @title GNUSNFTFactory
+/// @notice This contract manages the creation, minting, and management of NFTs within the GNUS ecosystem.
+/// @dev This contract extends GNUSERC1155MaxSupply and GeniusAccessControl for additional functionality.
+contract GNUSNFTFactory is Initializable, GNUSERC1155MaxSupply, GeniusAccessControl {
+    using GNUSNFTFactoryStorage for GNUSNFTFactoryStorage.Layout;
+    using ERC1155SupplyStorage for ERC1155SupplyStorage.Layout;
+&nbsp;
+    /// @notice Role identifier for creators.
+    bytes32 public constant CREATOR_ROLE = keccak256("CREATOR_ROLE");
+&nbsp;
+    /// @notice Initializes the GNUSNFTFactory contract.
+    /// @dev This function is called only once and subsequent calls are ignored due to the initializer modifier.
+    function GNUSNFTFactory_Initialize() public <span class="missing-if-branch" title="else path not taken" >E</span>onlySuperAdminRole {
+        InitializableStorage.layout()._initializing = true;
+        __ERC1155_init("");
+        __Pausable_init();
+        __ERC1155Burnable_init();
+        __ERC1155Supply_init();
+        __GeniusAccessControl_init();
+&nbsp;
+        address superAdmin = _msgSender();
+        _grantRole(CREATOR_ROLE, superAdmin);
+&nbsp;
+        createNFT(GNUS_TOKEN_ID, GNUS_NAME, GNUS_SYMBOL, 1.0, GNUS_MAX_SUPPLY, GNUS_URI);
+&nbsp;
+        InitializableStorage.layout()._initialized = false;
+    }
+&nbsp;
+    /// @notice Initializes the GNUSNFTFactory contract for version 2.3.0.
+    /// @dev This function ensures that the GNUS token is created if it hasn't been already.
+    function GNUSNFTFactory_Initialize230() public <span class="missing-if-branch" title="else path not taken" >E</span>onlySuperAdminRole {
+        if (!GNUSNFTFactoryStorage.layout().NFTs[GNUS_TOKEN_ID].nftCreated) {
+            GNUSNFTFactory_Initialize();
+        }
+    }
+&nbsp;
+    /// @notice Sets the top-level URI for the GNUS Token NFT.
+    /// @dev This function can only be called by an account with the DEFAULT_ADMIN_ROLE.
+    /// @param newuri The new URI to set.
+<span class="fstat-no" title="function not covered" >    function setURI(string memory newuri) public onlyRole(DEFAULT_ADMIN_ROLE) {</span>
+<span class="cstat-no" title="statement not covered" >        _setURI(newuri)</span>;
+        GNUSNFTFactoryStorage.layout().NFTs[GNUS_TOKEN_ID].uri = newuri;
+    }
+&nbsp;
+    /// @notice Sets the URI for a specific NFT.
+    /// @dev This function can only be called by the creator of the NFT or an account with the DEFAULT_ADMIN_ROLE.
+    /// @param id The ID of the NFT.
+    /// @param newuri The new URI to set.
+    function setURI(uint256 id, string memory newuri) public {
+        address sender = _msgSender();
+        NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[id];
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(nft.nftCreated, "NFT must have been created to set the URI for");
+        require((nft.creator == sender) || hasRole(DEFAULT_ADMIN_ROLE, sender), "Only Admin or Creator can set URI of NFT");
+        nft.uri = newuri;
+    }
+&nbsp;
+    /// @notice Retrieves the URI for a specific NFT.
+    /// @dev This function overrides the uri function from ERC1155Upgradeable.
+    /// @param id The ID of the NFT.
+    /// @return The URI of the NFT.
+    function uri(uint256 id) public view virtual override(ERC1155Upgradeable) returns (string memory) {
+        NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[id];
+        require(nft.nftCreated, "NFT must already be created to get the URI for it");
+        return nft.uri;
+    }
+&nbsp;
+    /// @notice Pauses all token transfers.
+    /// @dev This function can only be called by an account with the DEFAULT_ADMIN_ROLE.
+    function pause() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+&nbsp;
+    /// @notice Unpauses all token transfers.
+    /// @dev This function can only be called by an account with the DEFAULT_ADMIN_ROLE.
+    function unpause() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
+    }
+&nbsp;
+    /// @notice Internal function to perform checks before minting an NFT.
+    /// @dev This function ensures that the minting conditions are met.
+    /// @param to The address to mint the NFT to.
+    /// @param id The ID of the NFT.
+    /// @param nft The NFT storage object.
+    /// @param amount The amount of the NFT to mint.
+    function beforeMint(address to, uint256 id, NFT storage nft, uint256 amount) internal {
+        address sender = _msgSender();
+        require(id != GNUS_TOKEN_ID, "Shouldn't mint GNUS tokens tokens, only deposit and withdraw");
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(to != address(0), "ERC1155: mint to the zero address");
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(nft.nftCreated, "Cannot mint NFT that doesn't exist");
+        require((sender == nft.creator) || <span class="branch-1 cbranch-no" title="branch not covered" >hasRole(DEFAULT_ADMIN_ROLE, sender)</span>, "Creator or Admin can only mint NFT");
+        if ((id &gt;&gt; 128) == GNUS_TOKEN_ID) {
+            uint256 convAmount = amount * nft.exchangeRate;
+            require(balanceOf(sender, GNUS_TOKEN_ID) &gt;= convAmount, "Not enough GNUS_TOKEN to burn");
+            _burn(sender, GNUS_TOKEN_ID, convAmount);
+        }
+    }
+&nbsp;
+    /// @notice Mints a new NFT.
+    /// @dev This function mints a new NFT to the specified address.
+    /// @param to The address to mint the NFT to.
+    /// @param id The ID of the NFT.
+    /// @param amount The amount of the NFT to mint.
+    /// @param data Additional data with no specified format.
+    function mint(address to, uint256 id, uint256 amount, bytes memory data) external {
+        NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[id];
+        beforeMint(to, id, nft, amount);
+        _mint(to, id, amount, data);
+    }
+&nbsp;
+    /// @notice Mints a batch of new NFTs.
+    /// @dev This function mints a batch of new NFTs to the specified address.
+    /// @param to The address to mint the NFTs to.
+    /// @param ids The IDs of the NFTs.
+    /// @param amounts The amounts of the NFTs to mint.
+    /// @param data Additional data with no specified format.
+    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) external {
+        for (uint256 i = 0; i &lt; ids.length; i++) {
+            uint256 id = ids[i];
+            NFT storage nft = GNUSNFTFactoryStorage.layout().NFTs[id];
+            beforeMint(to, id, nft, amounts[i]);
+        }
+        _mintBatch(to, ids, amounts, data);
+    }
+&nbsp;
+    /// @notice Checks if the contract supports a specific interface.
+    /// @dev This function overrides the supportsInterface function from ERC1155Upgradeable and AccessControlEnumerableUpgradeable.
+    /// @param interfaceId The ID of the interface to check.
+    /// @return True if the interface is supported, false otherwise.
+<span class="fstat-no" title="function not covered" >    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable) returns (bool) {</span>
+<span class="cstat-no" title="statement not covered" >        return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||</span>
+        (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true));
+    }
+&nbsp;
+    /// @notice Creates a new NFT.
+    /// @dev This function creates a new NFT with the specified parameters.
+    /// @param parentID The ID of the parent NFT.
+    /// @param name The name of the NFT.
+    /// @param symbol The symbol of the NFT.
+    /// @param exchRate The exchange rate of the NFT.
+    /// @param max_supply The maximum supply of the NFT.
+    /// @param newuri The URI of the NFT.
+    function createNFT(uint256 parentID, string memory name, string memory symbol, uint256 exchRate, uint256 max_supply, string memory newuri) public {
+        createNFTs(parentID, asSingletonArray(name), asSingletonArray(symbol), asSingletonArray(exchRate), asSingletonArray(max_supply), asSingletonArray(newuri));
+    }
+&nbsp;
+    /// @notice Creates multiple new NFTs.
+    /// @dev This function creates multiple new NFTs with the specified parameters.
+    /// @param parentID The ID of the parent NFT.
+    /// @param names The names of the NFTs.
+    /// @param symbols The symbols of the NFTs.
+    /// @param exchRates The exchange rates of the NFTs.
+    /// @param max_supplies The maximum supplies of the NFTs.
+    /// @param newuris The URIs of the NFTs.
+    function createNFTs(uint256 parentID, string[] memory names, string[] memory symbols, uint256[] memory exchRates, uint256[] memory max_supplies, string[] memory newuris) public {
+        address sender = _msgSender();
+        NFT memory nft = GNUSNFTFactoryStorage.layout().NFTs[parentID];
+        if (parentID == GNUS_TOKEN_ID) {
+            require(hasRole(DEFAULT_ADMIN_ROLE, sender) || (hasRole(CREATOR_ROLE, sender)), "Only Creators or Admins can create NFT child of GNUS");
+        } else {
+            require(nft.nftCreated, "Parent NFT Should have been created already");
+            require(sender == nft.creator, "Only parent creator can create child NFTs");
+        }
+        uint numToCreate = names.length;
+        require((numToCreate == symbols.length) &amp;&amp; (numToCreate == exchRates.length) &amp;&amp; (numToCreate == max_supplies.length) &amp;&amp; (numToCreate == newuris.length),
+            "NFT creation array lengths, should be the same");
+        for (uint256 i = 0; i &lt; names.length; i++) {
+            if (parentID == GNUS_TOKEN_ID) {
+                require(exchRates[i] &gt; 0, "Exchange Rate has to be &gt; 0 for creating a new Child NFT of GNUS");
+            }
+            uint256 newTokenID = (parentID &lt;&lt; 128) | nft.childCurIndex++;
+            GNUSNFTFactoryStorage.layout().NFTs[newTokenID] = NFT({
+                name: names[i],
+                symbol: symbols[i],
+                exchangeRate: exchRates[i],
+                maxSupply: max_supplies[i],
+                uri: newuris[i],
+                creator: sender,
+                childCurIndex: 0,
+                nftCreated: true
+            });
+        }
+        GNUSNFTFactoryStorage.layout().NFTs[parentID].childCurIndex = nft.childCurIndex;
+    }
+&nbsp;
+    /// @notice Retrieves information about a specific NFT.
+    /// @dev This function returns the NFT storage object for the specified ID.
+    /// @param id The ID of the NFT.
+    /// @return The NFT storage object.
+    function getNFTInfo(uint256 id) public view returns (NFT memory) {
+        require(GNUSNFTFactoryStorage.layout().NFTs[id].nftCreated, "No Token created for this ID");
+        return GNUSNFTFactoryStorage.layout().NFTs[id];
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jan 20 2026 19:58:52 GMT+0000 (Coordinated Universal Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

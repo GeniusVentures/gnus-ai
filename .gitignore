@@ -1,7 +1,7 @@
 node_modules
 .env
-coverage
-coverage.json
+.env.backup
+.env.local
 typechain
 
 #Hardhat files
@@ -17,4 +17,17 @@ dist
 .vscode/settings.json
 
 tmp
+notes
+diamond-abi/**/*.json
+.yarn/
+diamond-typechain-types/*.ts
+diamond-typechain-types/factories
 
+# Foundry test helper artifacts
+test/foundry/helpers/DiamondDeployment.sol
+
+#Foundry files
+out/
+cache_forge/
+broadcast/
+lib/

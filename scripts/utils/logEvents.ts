@@ -1,11 +1,11 @@
-import { ContractTransaction } from "ethers";
+import { ContractTransactionResponse } from 'ethers';
 
-export async function logEvents(tx: ContractTransaction) {
-  const receipt = await tx.wait();
+export async function logEvents(tx: ContractTransactionResponse) {
+	const receipt = await tx.wait();
 
-  if (receipt.events) {
-    for (const event of receipt.events) {
-      debuglog(`Event ${event.event} with args ${event.args}`);
-    }
-  }
+	if (receipt && receipt.logs) {
+		for (const log of receipt.logs) {
+			console.log(`Log: ${JSON.stringify(log)}`);
+		}
+	}
 }

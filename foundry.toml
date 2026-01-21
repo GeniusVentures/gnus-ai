@@ -1,0 +1,84 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["node_modules", "lib"]
+test = "test/foundry"
+script = "scripts/foundry"
+cache_path = "cache_forge"
+
+# Solidity version matching Hardhat config
+solc_version = "0.8.19"
+evm_version = "paris"
+
+# Optimizer settings (match Hardhat settings)
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+
+# Test settings
+verbosity = 2
+## For Production/CI use higher runs
+# fuzz = { runs = 10000, max_test_rejects = 65536, seed = "0x1234" }
+## For development, use lower runs to speed up tests
+fuzz = { runs = 256, max_test_rejects = 65536, seed = "0x1234" }
+## Using moderate runs for testing - will increase to 256+ once all tests stable
+invariant = { runs = 5, depth = 10, fail_on_revert = false }
+
+# File system access permissions
+fs_permissions = [
+    { access = "read", path = "./" }
+]
+
+# Gas reporting
+gas_reports = ["*"]
+gas_reports_ignore = []
+
+# Linting configuration
+[lint]
+exclude_paths = ["test/foundry"]
+
+# Remappings for dependencies
+remappings = [
+    "@diamondslab/=node_modules/@diamondslab/",
+    "@gnus.ai/=node_modules/@gnus.ai/",
+    "@helpers/=test/foundry/helpers/",
+    "contracts-starter/=node_modules/contracts-starter/",
+    "eth-gas-reporter/=node_modules/eth-gas-reporter/",
+    "hardhat-multichain/=node_modules/hardhat-multichain/",
+    "hardhat/=node_modules/hardhat/",
+    "forge-std/=lib/forge-std/src/",
+    "@openzeppelin/=node_modules/@openzeppelin/",
+    "ds-test/=lib/forge-std/lib/ds-test/src/",
+]
+
+# Formatter settings
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = true
+int_types = "long"
+multiline_func_header = "all"
+quote_style = "double"
+number_underscore = "thousands"
+wrap_comments = true
+
+# RPC endpoints for forking
+[rpc_endpoints]
+mainnet = "${MAINNET_RPC_URL}"
+sepolia = "${SEPOLIA_RPC_URL}"
+hardhat = "http://localhost:${HARDHAT_PORT}"
+
+# Etherscan API keys for verification
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+
+# Additional profiles for different environments
+[profile.ci]
+fuzz = { runs = 10000 }
+verbosity = 3
+
+[profile.intense]
+fuzz = { runs = 50000 }
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

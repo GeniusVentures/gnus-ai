@@ -1,0 +1,17 @@
+{
+  ".devcontainer": {
+    "rev": "ea233aba51cc2c4e31eda19f2e3d940b17d5195c"
+  },
+  "contracts/gnus-ai": {
+    "rev": "7c0b23756bef1748715434cad45248bb64c36547"
+  },
+  "diamonds/GeniusDiamond": {
+    "rev": "f40d9b3e8c14c7878fa844604566501409654085"
+  },
+  "lib/forge-std": {
+    "tag": {
+      "name": "v1.12.0",
+      "rev": "7117c90c8cf6c68e5acce4f09a6b24715cea4de6"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "sepolia",
+  "chainId": 11155111,
+  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/YOUR_PROJECT_ID",
+  "blockExplorer": "https://sepolia.etherscan.io",
+  "nativeCurrency": {
+    "name": "Ether",
+    "symbol": "ETH",
+    "decimals": 18
+  },
+  "defaultGasLimit": 5000000,
+  "defaultMaxGasPrice": "50000000000"
+}

@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for gnus-ai/GNUSWithdrawLimiterStorage.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">gnus-ai/</a> GNUSWithdrawLimiterStorage.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">97.14% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>34/35</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">72.22% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>13/18</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>6/6</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">93.48% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>43/46</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line high'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">383×</span>
+<span class="cline-any cline-yes">383×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-yes">1344×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">80×</span>
+<span class="cline-any cline-yes">1632×</span>
+<span class="cline-any cline-yes">26×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">61×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">61×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-yes">42×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">42×</span>
+<span class="cline-any cline-yes">1008×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">56×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">52×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+&nbsp;
+import "./GeniusAccessControl.sol";
+&nbsp;
+/// @title GNUSWithdrawLimiterStorage
+/// @notice Diamond storage library for limiter configuration and bin-based withdrawal tracking
+/// @dev Uses bin-based aggregation with fixed-size arrays for O(binCount) complexity and predictable gas costs
+/// @custom:security-contact support@gnus.ai
+&nbsp;
+/// @notice Struct representing a time bin for withdrawal aggregation
+/// @dev Stores bin timestamp and accumulated withdrawal amount (FR-2)
+struct WithdrawBin {
+    uint128 timestamp; ///&lt; Timestamp when this bin was last updated
+    uint128 totalAmount; ///&lt; Total GNUS amount accumulated in this bin
+}
+&nbsp;
+/// @notice Struct representing per-account configuration
+/// @dev Zero values indicate use of default configuration (FR-10)
+struct AccountConfig {
+    uint32 binCount; ///&lt; Number of bins for this account (0 = use default)
+    uint64 windowSeconds; ///&lt; Window duration in seconds (0 = use default)
+    uint256 limitAmount; ///&lt; Withdrawal limit for this account (0 = use default)
+}
+&nbsp;
+/// @notice Struct representing per-account state
+/// @dev Contains base timestamp and dynamic bin array (FR-4, FR-26)
+struct AccountState {
+    uint128 baseTimestamp; ///&lt; First withdrawal timestamp (establishes bin timeline)
+    WithdrawBin[] bins; ///&lt; Array of withdrawal bins (size = binCount)
+}
+&nbsp;
+/// @custom:security-contact support@gnus.ai
+library GNUSWithdrawLimiterStorage {
+    /// @notice Struct representing the storage layout for the Withdraw Limiter
+    /// @dev Uses diamond storage pattern to avoid collisions (FR-35)
+    struct Layout {
+        mapping(address =&gt; AccountState) accountStates; ///&lt; Per-account bin state
+        mapping(address =&gt; AccountConfig) accountConfigs; ///&lt; Per-account custom configs
+        uint256 defaultBinCount; ///&lt; Default number of bins
+        uint256 defaultWindowSeconds; ///&lt; Default window duration
+        uint256 defaultLimitAmount; ///&lt; Default withdrawal limit
+        bool limiterEnabled; ///&lt; Global enable/disable flag
+    }
+&nbsp;
+    /// @notice Storage position for the Withdraw Limiter storage (FR-35)
+    bytes32 constant GNUS_WITHDRAW_LIMITER_STORAGE_POSITION =
+        keccak256("gnus.ai.withdraw.limiter.storage");
+&nbsp;
+    /// @notice Event emitted when a withdrawal is recorded
+    /// @param account The account making the withdrawal
+    /// @param amount The amount of GNUS tokens withdrawn
+    /// @param timestamp The timestamp of the withdrawal
+    /// @param binIndex The bin index where the withdrawal was recorded
+    event WithdrawRecorded(
+        address indexed account,
+        uint256 amount,
+        uint256 timestamp,
+        uint256 binIndex
+    );
+&nbsp;
+    /// @notice Event emitted when a withdrawal is blocked by the limiter
+    /// @param account The account attempting withdrawal
+    /// @param requestedAmount The amount requested
+    /// @param activeTotal The current total in active bins
+    /// @param limit The configured limit
+    event WithdrawLimiterTriggered(
+        address indexed account,
+        uint256 requestedAmount,
+        uint256 activeTotal,
+        uint256 limit
+    );
+&nbsp;
+    /// @notice Retrieves the storage layout for the Withdraw Limiter
+    /// @dev Uses inline assembly to access the storage slot (FR-35)
+    /// @return l The storage layout
+    function layout() internal pure returns (Layout storage l) {
+        bytes32 slot = GNUS_WITHDRAW_LIMITER_STORAGE_POSITION;
+        assembly {
+            l.slot := slot
+        }
+    }
+&nbsp;
+    /// @notice Gets effective configuration for an account (custom or defaults)
+    /// @dev Zero values in account config trigger use of defaults (FR-12)
+    /// @param account The account address
+    /// @return config The effective AccountConfig
+    function getAccountConfigOrDefaults(
+        address account
+    ) internal view returns (AccountConfig memory config) {
+        Layout storage l = layout();
+        AccountConfig storage custom = l.accountConfigs[account];
+&nbsp;
+        // Use custom values if non-zero, otherwise use defaults
+        config.binCount = custom.binCount == 0 ? uint32(l.defaultBinCount) : <span class="missing-if-branch" title="else path not taken" >E</span>custom.binCount;
+        config.windowSeconds = custom.windowSeconds == 0
+            ? uint64(l.defaultWindowSeconds)
+            : <span class="missing-if-branch" title="else path not taken" >E</span>custom.windowSeconds;
+        config.limitAmount = custom.limitAmount == 0 ? l.defaultLimitAmount : <span class="missing-if-branch" title="else path not taken" >E</span>custom.limitAmount;
+    }
+&nbsp;
+    /// @notice Calculates the current bin index for an account
+    /// @dev Uses formula: ((currentTime - baseTimestamp) / binLengthSeconds) % binCount (FR-55)
+    /// @param account The account address
+    /// @param currentTime The current timestamp
+    /// @param config The account's configuration
+    /// @return binIndex The calculated bin index
+    function calculateCurrentBin(
+        address account,
+        uint256 currentTime,
+        AccountConfig memory config
+    ) internal view returns (uint256 binIndex) {
+        Layout storage l = layout();
+        AccountState storage state = l.accountStates[account];
+&nbsp;
+        // If no base timestamp, return 0 (will be set on first withdrawal)
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (state.baseTimestamp == 0) {
+<span class="cstat-no" title="statement not covered" >            return 0;</span>
+        }
+&nbsp;
+        // Calculate bin length: windowSeconds / binCount (FR-15)
+        uint256 binLengthSeconds = config.windowSeconds / config.binCount;
+&nbsp;
+        // Calculate elapsed time since base
+        uint256 elapsedSeconds = currentTime - state.baseTimestamp;
+&nbsp;
+        // Calculate bin index with modulo wrap-around (FR-55)
+        binIndex = (elapsedSeconds / binLengthSeconds) % config.binCount;
+    }
+&nbsp;
+    /// @notice Zeros expired bins for an account (lazy cleanup)
+    /// @dev Bins are expired if bin.timestamp &lt; (currentTime - windowSeconds) (FR-27, FR-28, FR-57)
+    /// @param account The account address
+    /// @param currentTime The current timestamp
+    /// @param config The account's configuration
+    function zeroExpiredBins(
+        address account,
+        uint256 currentTime,
+        AccountConfig memory config
+    ) internal {
+        Layout storage l = layout();
+        AccountState storage state = l.accountStates[account];
+&nbsp;
+        uint256 windowCutoff = currentTime - config.windowSeconds;
+&nbsp;
+        // Iterate through bins and zero expired ones
+        for (uint256 i = 0; i &lt; state.bins.length; i++) {
+            <span class="missing-if-branch" title="if path not taken" >I</span>if (state.bins[i].timestamp &lt; windowCutoff &amp;&amp; state.bins[i].timestamp != 0) {
+                state.bins[i].totalAmount = 0;
+                state.bins[i].timestamp = 0;
+            }
+        }
+    }
+&nbsp;
+    /// @notice Sums all active bins within the window
+    /// @dev Active bins have timestamp &gt;= (currentTime - windowSeconds) (FR-7)
+    /// @param account The account address
+    /// @param currentTime The current timestamp
+    /// @param config The account's configuration
+    /// @return total The sum of all active bin amounts
+    function sumActiveBins(
+        address account,
+        uint256 currentTime,
+        AccountConfig memory config
+    ) internal view returns (uint256 total) {
+        Layout storage l = layout();
+        AccountState storage state = l.accountStates[account];
+&nbsp;
+        uint256 windowCutoff = currentTime - config.windowSeconds;
+&nbsp;
+        // Sum bins that are still within the active window
+        for (uint256 i = 0; i &lt; state.bins.length; i++) {
+            if (state.bins[i].timestamp &gt;= windowCutoff &amp;&amp; state.bins[i].timestamp != 0) {
+                total += state.bins[i].totalAmount;
+            }
+        }
+    }
+&nbsp;
+    /// @notice Core validation and recording logic for withdrawals
+    /// @dev Implements full limiter logic: check enabled, validate limit, update bins (FR-1 to FR-9)
+    /// @param account The account making the withdrawal
+    /// @param amount The amount of GNUS tokens to withdraw
+    function checkAndRecordWithdraw(address account, uint256 amount) internal {
+        Layout storage l = layout();
+&nbsp;
+        // If limiter is disabled, allow withdrawal without checks
+        if (!l.limiterEnabled) {
+            return;
+        }
+&nbsp;
+        AccountConfig memory config = getAccountConfigOrDefaults(account);
+        AccountState storage state = l.accountStates[account];
+        uint256 currentTime = block.timestamp;
+&nbsp;
+        // Initialize base timestamp on first withdrawal (FR-4, FR-56)
+        if (state.baseTimestamp == 0) {
+            state.baseTimestamp = uint128(currentTime);
+            // Initialize bins array with binCount elements
+            for (uint256 i = 0; i &lt; config.binCount; i++) {
+                state.bins.push(WithdrawBin({timestamp: 0, totalAmount: 0}));
+            }
+        }
+&nbsp;
+        // Zero expired bins (lazy cleanup) (FR-27, FR-28)
+        zeroExpiredBins(account, currentTime, config);
+&nbsp;
+        // Sum active bins (FR-7)
+        uint256 activeTotal = sumActiveBins(account, currentTime, config);
+&nbsp;
+        // Check if withdrawal would exceed limit (FR-9)
+        if (activeTotal + amount &gt; config.limitAmount) {
+            emit WithdrawLimiterTriggered(account, amount, activeTotal, config.limitAmount);
+            revert("Withdrawal limit exceeded for time window");
+        }
+&nbsp;
+        // Calculate current bin and add withdrawal amount (FR-5, FR-6)
+        uint256 binIndex = calculateCurrentBin(account, currentTime, config);
+        state.bins[binIndex].timestamp = uint128(currentTime);
+        state.bins[binIndex].totalAmount += uint128(amount);
+&nbsp;
+        emit WithdrawRecorded(account, amount, currentTime, binIndex);
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jan 20 2026 19:58:52 GMT+0000 (Coordinated Universal Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

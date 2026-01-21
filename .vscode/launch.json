@@ -1,263 +1,315 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-          "name": "Diamonds Deployment",
-          "type": "node",
-          "request": "launch",
-          // "preLaunchTask": "tsc: build - tsconfig.json",
-          "outFiles": [
-            "${workspaceFolder}/dist/**/*.js"
-          ],
-          "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-          "args": [
-            "test-multichain",
-            "${workspaceFolder}/test/deployment/GeniusDiamondDeployment.test.ts",
-            "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
-            "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
-            "${workspaceFolder}/test/unit/NFTFactory.test.ts",
-            "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
-            "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
-            "--chains",
-            "hardhat",
-            // "polygon_amoy",
-            // "sepolia",
-            "--logs",
-            "logs"
-          ],
-          "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v18.20.5/bin/node",
-          "runtimeArgs": [
-            "--preserve-symlinks"
-          ],
-          "skipFiles": [
-            // "<node_internals>/**",
-            // "${workspaceFolder}/node_modules/**/*.js",
-          ],
-          "resolveSourceMapLocations": [
-            "${workspaceFolder}/dist/**/*.js",
-            "${workspaceFolder}/**/*.ts",
-          ],
-          "sourceMaps": true,
-          "smartStep": true,
-          "console": "integratedTerminal",
-        },
-        {
-          "name": "Seplolia 2.4->2.5 upgrade test",
-          "type": "node",
-          "request": "launch",
-          // "preLaunchTask": "tsc: build - tsconfig.json",
-          "outFiles": [
-            "${workspaceFolder}/dist/**/*.js"
-          ],
-          "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-          "args": [
-            "test-multichain",
-            "${workspaceFolder}/test-suites/deployment/sepolia/GeniusDiamondDeploymentSuite.test.ts",
-            "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
-            "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
-            "${workspaceFolder}/test/unit/NFTFactory.test.ts",
-            "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
-            "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
-            "--chains",
-            // "hardhat",
-            // "polygon_amoy",
-            "sepolia",
-            "--logs",
-            "logs"
-          ],
-          "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v18.20.5/bin/node",
-          "runtimeArgs": [
-            "--preserve-symlinks"
-          ],
-          "skipFiles": [
-            "<node_internals>/**",
-            "${workspaceFolder}/node_modules/**/*.js",
-          ],
-          "resolveSourceMapLocations": [
-            "${workspaceFolder}/dist/**/*.js",
-            "${workspaceFolder}/**/*.ts",
-          ],
-          "sourceMaps": true,
-          "smartStep": true,
-          "console": "integratedTerminal",
-        },        
-        {
-            "name": "Unit Tests",
-            "type": "node",
-            "request": "launch",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-            "args": [ 
-                "test-multichain", 
-                "${workspaceFolder}/test/unit/NFTFactory.test.ts",
-                "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
-                "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
-                "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
-                "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
-                // "--chains", "hardhat", "--logs", "logs",
-                // "--chains", "sepolia", "--logs", "logs",
-                // "--chains", "polygon_amoy", "--logs", "logs",
-                // "--chains", "mainnet", "--logs", "logs", 
-                // "--chains", "polygon", "--logs", "logs",
-                // "--chains", "bsc", "--logs", "logs",
-                // "--chains", "base", "--logs", "logs",
-                // "--chains", "bsc_testnet", "--logs", "logs",
-                // "--chains", "base_sepolia", "--logs", "logs",
-                "--chains", "hardhat,sepolia", "--logs", "logs",
-                // "--chains", "sepolia,polygon_amoy", "--logs", "logs",
-                // "--chains", "hardhat,sepolia,polygon_amoy", "--logs", "logs", 
-            ],
-            "runtimeArgs": [ "--preserve-symlinks" ],
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "skipFiles": [
-                "<node_internals>/**", 
-                "${workspaceFolder}/node_modules/**/*.js", 
-            ],
-            "resolveSourceMapLocations": [
-                "${workspaceFolder}/dist/**/*.js", 
-                "${workspaceFolder}/**/*.ts",
-                "${workspaceFolder}/node_modules/hardhat/**/*.js",
-                "${workspaceFolder}/node_modules/hardhat/**/*.ts",
-            ],
-            "sourceMaps": true,
-            "smartStep": true,
-            "console": "integratedTerminal",
-        },
-        {
-            "name": "Deployment Tests",
-            "type": "node",
-            "request": "launch",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-            "args": [ 
-                "test-multichain", 
-                "${workspaceFolder}/test/deployment/MultiChainForkDeploy.test.ts",
-                // "${workspaceFolder}/test/unit/NFTFactory.test.ts",
-                // "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
-                // "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
-                // "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
-                "--chains", "hardhat", "--logs", "logs",
-                // "--chains", "sepolia", "--logs", "logs",
-                // "--chains", "polygon_amoy", "--logs", "logs",
-                // "--chains", "mainnet", "--logs", "logs", 
-                // "--chains", "polygon", "--logs", "logs",
-                // "--chains", "bsc", "--logs", "logs",
-                // "--chains", "base", "--logs", "logs",
-                // "--chains", "bsc_testnet", "--logs", "logs",
-                // "--chains", "base_sepolia", "--logs", "logs",
-                // "--chains", "hardhat,sepolia", "--logs", "logs",
-                // "--chains", "sepolia,polygon_amoy", "--logs", "logs",
-                // "--chains", "hardhat,sepolia,polygon_amoy", "--logs", "logs", 
-            ],
-            "runtimeArgs": [ "--preserve-symlinks" ],
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "skipFiles": [
-                "<node_internals>/**", 
-                "${workspaceFolder}/node_modules/**/*.js", 
-            ],
-            "resolveSourceMapLocations": [
-                "${workspaceFolder}/dist/**/*.js", 
-                "${workspaceFolder}/**/*.ts",
-                "${workspaceFolder}/node_modules/hardhat/**/*.js",
-                "${workspaceFolder}/node_modules/hardhat/**/*.ts",
-            ],
-            "sourceMaps": true,
-            "smartStep": true,
-            "console": "integratedTerminal",
-        },
-        {
-          "name": "Diamond Deployment Tests",
-          "type": "node",
-          "request": "launch",
-          "preLaunchTask": "tsc: build - tsconfig.json",
-          "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-          "args": [ 
-              "test-multichain", 
-              "${workspaceFolder}/test/deployment/DiamondMultichainDeployment.test.ts",
-              "${workspaceFolder}/test/deployment/DiamondDeployment.test.ts",
-              "--chains", 
-              "hardhat",
-              // "polygon_amoy", 
-              // "mainnet",
-              // "polygon",
-              // "bsc",
-              // "base",
-              // "bsc_testnet",
-              // "base_sepolia",
-              // "hardhat,sepolia",
-              // "sepolia,polygon_amoy",
-              // "hardhat,sepolia,polygon_amoy",  
-              "--logs", "logs",
-          ],
-          "runtimeArgs": [ "--preserve-symlinks" ],
-          "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-          "skipFiles": [
-              "<node_internals>/**", 
-              "${workspaceFolder}/node_modules/**/*.js", 
-          ],
-          "resolveSourceMapLocations": [
-              "${workspaceFolder}/dist/**/*.js", 
-              "${workspaceFolder}/**/*.ts",
-              "${workspaceFolder}/node_modules/hardhat/**/*.js",
-              "${workspaceFolder}/node_modules/hardhat/**/*.ts",
-          ],
-          "sourceMaps": true,
-          "smartStep": true,
-          "console": "integratedTerminal",
-        },
-        {
-            "name": "Multichain Plugin Sepolia,Amoy Test",
-            "type": "node",
-            "request": "launch",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-            "args": [ 
-                "test-multichain", 
-                // "./test/unit/*",
-                "${workspaceFolder}/test/unit/NFTFactoryTests.ts",
-                "${workspaceFolder}/test/unit/MultiChainForkDeployTests.ts",
-                "${workspaceFolder}/test/unit/GNUSBridgeTests.ts",
-                "${workspaceFolder}/multichain/tests/GNUSERC20Tests.ts",             
-                "${workspaceFolder}/test/unit/Erc20BatchTests.ts",
-                "--chains", "polygon_amoy,sepolia", "--logs", "logs"],
-            "runtimeArgs": [ "--preserve-symlinks" ],
-            "skipFiles": [
-                "<node_internals>/**", 
-                "${workspaceFolder}/node_modules/**/*.js", 
-            ],
-            "resolveSourceMapLocations": [
-                "${workspaceFolder}/dist/**/*.js", 
-                "${workspaceFolder}/**/*.ts",
-            ],
-            "sourceMaps": true,
-            "smartStep": true,
-            "console": "integratedTerminal",
-        },
-        {
-            "name": "Solidity Coverage",
-            "type": "node",
-            "request": "launch",
-            // "preLaunchTask": "tsc: build - tsconfig.json",
-            "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
-            "args": [ 
-                "coverage", 
-            ],
-            "runtimeArgs": [ "--preserve-symlinks" ],
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "skipFiles": [
-                "<node_internals>/**", 
-                // "${workspaceFolder}/node_modules/**/*.js", 
-            ],
-            "resolveSourceMapLocations": [
-                "${workspaceFolder}/dist/**/*.js", 
-                "${workspaceFolder}/**/*.ts",
-                "${workspaceFolder}/node_modules/hardhat/**/*.js",
-                "${workspaceFolder}/node_modules/hardhat/**/*.ts",
-            ],
-            "sourceMaps": true,
-            "smartStep": true,
-            "console": "integratedTerminal",
-        },
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Basic Tests",
+      "type": "node",
+      "request": "launch",
+      // "preLaunchTask": "tsc: build - tsconfig.json",
+      "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+      "args": [
+        "test",
+        "${workspaceFolder}/test",
+        // "${workspaceFolder}/test/index.ts"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/**/*.ts",
+        // "${workspaceFolder}/node_modules/hardhat/**/*.js",
+        // "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      // "trace": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "All Tests",
+      "type": "node",
+      "request": "launch",
+      // "preLaunchTask": "tsc: build - tsconfig.json",
+      "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+      "args": [
+        // "test-multichain",
+        "test",
+        // "./test/unit/diamond-abi-generator.test.ts",
+        // "${workspaceFolder}/test/deployment/GeniusDiamondDeployment.test.ts",
+        // "${workspaceFolder}/test/unit/NFTFactory.test.ts",
+        // "${workspaceFolder}/test/integration/multichain/tests/GNUSBridge.test.ts",
+        // "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
+        // "${workspaceFolder}/test/integration/multichain/tests/Erc20Batch.test.ts",
+        "--chains",
+        "hardhat",
+        "--logs",
+        "logs",
+        // "--chains", "sepolia", "--logs", "logs",
+        // "--chains", "polygon_amoy", "--logs", "logs",
+        // "--chains", "mainnet", "--logs", "logs", 
+        // "--chains", "polygon", "--logs", "logs",
+        // "--chains", "bsc", "--logs", "logs",
+        // "--chains", "base", "--logs", "logs",
+        // "--chains", "bsc_testnet", "--logs", "logs",
+        // "--chains", "base_sepolia", "--logs", "logs",
+        // "--chains", "hardhat,sepolia", "--logs", "logs",
+        // "--chains", "sepolia,polygon_amoy", "--logs", "logs",
+        // "--chains", "hardhat,sepolia,polygon_amoy", "--logs", "logs", 
+      ],
+      "runtimeArgs": [
+        "--preserve-symlinks"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/**/*.ts",
+        "${workspaceFolder}/node_modules/hardhat/**/*.js",
+        "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Multichain Plugin Test",
+      "type": "node",
+      "request": "launch",
+      // "preLaunchTask": "tsc: build - tsconfig.json",
+      "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+      "args": [
+        // "test-multichain",
+        "test",
+        // "./test/unit/diamond-abi-generator.test.ts",
+        "${workspaceFolder}/test/deployment/GeniusDiamondDeployment.test.ts",
+        // "${workspaceFolder}/test/unit/NFTFactory.test.ts",
+        // "${workspaceFolder}/test/integration/multichain/tests/GNUSBridge.test.ts",
+        // "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
+        // "${workspaceFolder}/test/integration/multichain/tests/Erc20Batch.test.ts",
+        // "--chains",
+        // "hardhat",
+        // "--logs",
+        // "logs",
+        // "--chains", "sepolia", "--logs", "logs",
+        // "--chains", "polygon_amoy", "--logs", "logs",
+        // "--chains", "mainnet", "--logs", "logs", 
+        // "--chains", "polygon", "--logs", "logs",
+        // "--chains", "bsc", "--logs", "logs",
+        // "--chains", "base", "--logs", "logs",
+        // "--chains", "bsc_testnet", "--logs", "logs",
+        // "--chains", "base_sepolia", "--logs", "logs",
+        // "--chains", "hardhat,sepolia", "--logs", "logs",
+        // "--chains", "sepolia,polygon_amoy", "--logs", "logs",
+        // "--chains", "hardhat,sepolia,polygon_amoy", "--logs", "logs", 
+      ],
+      "runtimeArgs": [
+        "--preserve-symlinks"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/**/*.ts",
+        "${workspaceFolder}/node_modules/hardhat/**/*.js",
+        "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Multichain Plugin Sepolia,Amoy Test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+      "args": [
+        "test-multichain",
+        "${workspaceFolder}/test/deployment/GeniusDiamondDeployment.test.ts",
+        // "${workspaceFolder}/test/integration/multichain/tests/NFTFactoryTests.ts",
+        // "${workspaceFolder}/test/integration/multichain/tests/GNUSBridgeTests.ts",
+        // "${workspaceFolder}/multichain/tests/GNUSERC20Tests.ts",             
+        // "${workspaceFolder}/test/integration/multichain/tests/Erc20BatchTests.ts",
+        "--chains",
+        "sepolia",
+        // "polygon_amoy,sepolia", 
+        "--logs",
+        "logs"
+      ],
+      "runtimeArgs": [
+        "--preserve-symlinks"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/**/*.ts",
+        "${workspaceFolder}/node_modules/hardhat/**/*.js",
+        "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Solidity Coverage",
+      "type": "node",
+      "request": "launch",
+      // "preLaunchTask": "tsc: build - tsconfig.json",
+      "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+      "args": [
+        "coverage",
+      ],
+      "runtimeArgs": [
+        "--preserve-symlinks"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        // "${workspaceFolder}/node_modules/**/*.js", 
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/**/*.ts",
+        "${workspaceFolder}/node_modules/hardhat/**/*.js",
+        "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Seplolia 2.4->2.5 upgrade test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/hardhat/internal/cli/cli.js",
+      "args": [
+        // "test-multichain",
+        "test",
+        "${workspaceFolder}/test-suites/deployment/sepolia/GeniusDiamondDeploymentSuite.test.ts",
+        // "${workspaceFolder}/test/unit/ERC1155ProxyOperator.test.ts",
+        // "${workspaceFolder}/test/unit/GNUSBridge.test.ts",
+        // "${workspaceFolder}/test/unit/NFTFactory.test.ts",
+        // "${workspaceFolder}/test/unit/Erc20Batch.test.ts",
+        // "${workspaceFolder}/test/unit/GNUSERC20.test.ts",             
+        // "--chains",
+        // "sepolia",
+        // "--logs",
+        // "logs"
+      ],
+      "runtimeArgs": [
+        "--preserve-symlinks"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/dist/**/*.js",
+        "${workspaceFolder}/**/*.ts",
+        "${workspaceFolder}/node_modules/hardhat/**/*.js",
+        "${workspaceFolder}/node_modules/hardhat/**/*.ts",
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "OZDef Sepolia Deployment",
+      "type": "node",
+      "request": "launch",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "env": {
+        "VERBOSE_DEPLOYMENT": "true"
+      },
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register/transpile-only",
+        "--preserve-symlinks"
+      ],
+      // point to the .ts script instead of dist .js
+      "program": "${workspaceFolder}/scripts/deploy/deploy-defender.ts",
+      "args": [
+        "GeniusDiamond",
+        "sepolia"
+      ],
+      "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v20.15.0/bin/node",
+      // let VS Code map directly into your .ts files
+      "outFiles": [
+        "${workspaceFolder}/**/*.ts"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**/*.ts"
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "OZDef Manual Sepolia Deployment",
+      "type": "node",
+      "request": "launch",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "env": {
+        "VERBOSE_DEPLOYMENT": "true"
+      },
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register/transpile-only",
+        "--preserve-symlinks"
+      ],
+      // point to the .ts script instead of dist .js
+      "program": "${workspaceFolder}/scripts/deploy/deploy-defender-manual.ts",
+      "args": [
+        "GeniusDiamond",
+        "sepolia"
+      ],
+      "runtimeExecutable": "/home/jamatulli/.nvm/versions/node/v20.15.0/bin/node",
+      // let VS Code map directly into your .ts files
+      "outFiles": [
+        "${workspaceFolder}/**/*.ts"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**/*.ts"
+      ],
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal"
+    }
+  ]
 }

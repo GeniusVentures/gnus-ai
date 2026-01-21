@@ -44,10 +44,13 @@ cp .env.example .env
 vim .env
 ```
 
-### 3. Compile Contracts
+4. Install the node dependencies in the local node_modules folder. 
+```bash
+yarn install
+``` 
 
 ```bash
-yarn compile
+yarn compile 
 ```
 
 ### 4. Run Tests
@@ -56,58 +59,7 @@ yarn compile
 yarn test
 ```
 
-### 5. Multichain Testing (e.g., Sepolia and Polygon Amoy)
-
+7. Testing Multichain Forks for Sepolia and Polygon Amoy
 ```bash
 yarn hardhat test-multichain ./test/integration/multichain/tests/* --chains sepolia,polygon_amoy --logs logs
 ```
-
-## Test Architecture
-
-The test suite is organized by purpose:
-
-* `unit/` — Component-level tests
-* `integration/` — End-to-end cross-contract and multichain validations
-* `deployment/` — Facet and selector integrity checks
-
-Key utilities:
-
-* **Mocha & Chai**: Test framework and assertions
-* **Hardhat Multichain Plugin**: Network abstraction for multichain test coverage
-* **Snapshot & Revert**: Ensures deterministic test isolation
-
-## Directory Structure
-
-```bash
-├── contracts/                # Solidity source code
-├── test/                    # Unit and integration test cases
-│   ├── unit/                # Core feature testing
-│   ├── integration/         # Cross-module and multichain validation
-│   └── deployment/          # Facet selector verification
-├── diamonds/                # Diamond deployment configurations
-├── scripts/                 # Utilities and deployment helpers
-├── typechain-types/        # Auto-generated contract types
-├── hardhat.config.ts       # Hardhat + multichain configuration
-```
-
-## Deployment & Upgrade
-
-Contracts are deployed and upgraded via the Diamond deployment orchestrator:
-
-* Uses `@gnus.ai/diamonds` module
-* Supports multiple deployment strategies (local, OpenZeppelin Defender, remote RPC)
-* Manages protocol versions, facet selectors, and initializer tracking
-
-Deployment configs reside in `diamonds/GeniusDiamond/geniusdiamond.config.json`.
-
-## License
-
-MIT License. See `LICENSE` file for more details.
-
-## Contact
-
-For inquiries or support, contact: [super@gnus.ai](mailto:support@gnus.ai)
-
----
-
-This project represents the foundational on-chain system for GNUS.ai's decentralized asset framework.

@@ -1,14 +1,47 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2020",
     "module": "commonjs",
-    "strict": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "rootDirs": [
+      "./scripts",
+      "./test",
+      "./test-suites",
+      "./typechain-types"
+    ],
     "outDir": "dist",
     "resolveJsonModule": true,
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "typeRoots": [
+      "node_modules/@types",
+    ],
   },
-  "include": ["./scripts", "./test", "./typechain-types", "scripts/setup/DiamondsMultichainTestDeployer.ts", "test-suites/deployment/GeniusDiamondPostDeploymentComparison.test.ts", "test-suites/deployment/GeniusDiamondPreDeploymentComparison.test.ts", "test-suites/deployment/GeniusDiamondDeploymentSuite.test.ts", "test-suites/deployment/GeniusDiamondDeploymentSuite.test.ts", "test-suites/deployment/sepolia"],
-  "files": ["./hardhat.config.ts"]
+  "include": [
+    "./scripts",
+    "./test",
+    "./test-suites",
+    "./typechain-types"
+  ],
+  "files": [
+    "./hardhat.config.ts"
+  ],
+  "exclude": [
+    "./notes/**/*",
+    "./node_modules",
+    "./dist",
+    "./artifacts",
+    "./coverage",
+    "./cache",
+    "./tmp",
+    "./test-assets",
+    "./diamond-abi",
+    "./.git",
+    "./.vscode",
+    "./.idea",
+    "./reports",
+  ],
 }
