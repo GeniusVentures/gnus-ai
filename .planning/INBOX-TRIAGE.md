@@ -126,3 +126,30 @@ ACTIONABLE FOR CURRENT ROADMAP
   #39 — Cross-chain supply design. Related to child NFT treasury investigation (v2).
 
 ===================================================================
+
+FINAL STATE (2026-05-26)
+========================
+Open: 2    Closed: 12
+
+Remaining open:
+  #39 [enhancement, documentation] Total Supply Cross-Chain Facet Design
+    → v2 investigation item. Aligned with child NFT treasury research.
+
+  #56 [enhancement] Diamonds Devcontainer tests action CI/CD
+    → Could feed into Phase 6 (Test Coverage). Keep open for roadmap consideration.
+
+Closed (already done):
+  #15 Verification Scripts — hardhat-verify v2.1.3 configured
+  #19 rename deployment files — naming convention applied
+  #21 Verification Callback (ETHERSCAN) — etherscan config in hardhat.config.ts
+  #31 Diamonds Monitor Node Module — @diamondslab/diamonds-monitor v1.0.4 installed
+  #35 OZ Defender Monitor — @openzeppelin/defender-sdk v2.7.0 installed
+  #36 TheGraph module — exploration never pursued, not required
+  #37 Callbacks dev env — callbacks exist in test-assets/
+  #43 Diamonds-Hardhat-Foundry — @diamondslab/diamonds-hardhat-foundry v2.4.0 installed
+  #50 NPM security policy — partially implemented (pinned versions, 7-day check, checksums)
+
+Closed (stale/irrelevant):
+  #16 Callback Tests — 418d stale, out of scope
+  #22 Callback Tests for GNUS-AI — GeniusAI facet being removed
+  #38 Axelar bridging — investigation never pursued
