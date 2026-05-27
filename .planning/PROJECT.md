@@ -60,6 +60,7 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 - Real-time chat or video NFT features — not part of the GNUS token ecosystem
 - GNUSNFTCollectionName facet consolidation — low-priority refactor, defer to future cleanup pass
 - Multisig/timelock for super admin — defer to governance phase, out of scope for this remediation
+- Child NFT treasury GNUS tokens — investigation for v2: whether child NFTs can hold GNUS treasuries, swap childToken/grandchild NFTs for GNUS, and transfer GNUS to swap contracts. Needs research on ERC-1155 token economics and swap integration patterns before committing to requirements.
 
 ## Context
 
