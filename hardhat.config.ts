@@ -234,11 +234,6 @@ const config: HardhatUserConfig = {
 				},
 			},
 		},
-		// polygon: {
-		// 	url: polygonUrl,
-		// 	chainId: 137,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
 		sepolia: {
 			url: sepoliaUrl,
 			chainId: 11155111,
@@ -279,49 +274,6 @@ const config: HardhatUserConfig = {
 			chainId: 97,
 			accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
 		},
-		// arbitrum_sepolia: {
-		//   url: arbitrumSepoliaUrl,
-		//   chainId: 421614,
-		//   accounts: [process.env.PRIVATE_KEY || ''],
-		// },
-		// arbitrum: {
-		// 	url: arbitrumUrl,
-		// 	chainId: 42161,
-		// 	accounts: [process.env.PRIVATE_KEY || ''],
-		// },
-		// base_sepolia: {
-		// 	url: baseSepoliaUrl,
-		// 	chainId: 84532,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
-		// bsc_testnet: {
-		// 	url: bscTestnetUrl,
-		// 	chainId: 97,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
-		// polygon_amoy: {
-		// 	url: polygonAmoyUrl,
-		// 	chainId: 80002,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
-		// local: {
-		// 	url: `http://127.0.0.1:8545`,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
-		// mainnet: {
-		// 	url: mainnetUrl,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
-		// bsc: {
-		// 	url: bscUrl,
-		// 	chainId: 56,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
-		// base: {
-		// 	url: baseUrl,
-		// 	chainId: 8453,
-		// 	accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-		// },
 	},
 	gasReporter: {
 		enabled: process.env.REPORT_GAS !== undefined,
