@@ -32,7 +32,7 @@
 
 Plans:
 - [x] 01-01-PLAN.md — Remove console.log from DiamondInitFacet.sol, standardize all pragmas to ^0.8.19
-- [ ] 01-02-PLAN.md — Remove commented-out network blocks from hardhat.config.ts
+- [x] 01-02-PLAN.md — Remove commented-out network blocks from hardhat.config.ts
 
 ---
 
