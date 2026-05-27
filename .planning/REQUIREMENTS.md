@@ -69,27 +69,27 @@ _These are investigation items only — no implementation committed until resear
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEBT-01 | Phase 1 | Pending |
+| DEBT-01 | Phase 2 | Pending |
 | DEBT-02 | Phase 1 | Pending |
 | DEBT-03 | Phase 1 | Pending |
-| DEBT-04 | Phase 1 | Pending |
-| DEBT-05 | Phase 1 | Pending |
+| DEBT-04 | Phase 2 | Pending |
+| DEBT-05 | Phase 2 | Pending |
 | DEBT-06 | Phase 1 | Pending |
-| SEC-01 | Phase 1 | Pending |
-| SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
-| SEC-04 | Phase 1 | Pending |
-| SEC-05 | Phase 1 | Pending |
-| SEC-06 | Phase 1 | Pending |
-| SEC-07 | Phase 1 | Pending |
-| SEC-08 | Phase 1 | Pending |
-| PERF-01 | Phase 1 | Pending |
-| PERF-02 | Phase 1 | Pending |
-| TEST-01 | Phase 1 | Pending |
-| TEST-02 | Phase 1 | Pending |
-| TEST-03 | Phase 1 | Pending |
-| QUAL-01 | Phase 1 | Pending |
-| DEP-01 | Phase 1 | Pending |
+| SEC-01 | Phase 3 | Pending |
+| SEC-02 | Phase 3 | Pending |
+| SEC-03 | Phase 3 | Pending |
+| SEC-04 | Phase 3 | Pending |
+| SEC-05 | Phase 4 | Pending |
+| SEC-06 | Phase 4 | Pending |
+| SEC-07 | Phase 4 | Pending |
+| SEC-08 | Phase 5 | Pending |
+| PERF-01 | Phase 5 | Pending |
+| PERF-02 | Phase 5 | Pending |
+| TEST-01 | Phase 6 | Pending |
+| TEST-02 | Phase 6 | Pending |
+| TEST-03 | Phase 6 | Pending |
+| QUAL-01 | Phase 2 | Pending |
+| DEP-01 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 22 total
