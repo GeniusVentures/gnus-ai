@@ -28,6 +28,12 @@
 
 **Requirements:** DEBT-02, DEBT-03, DEBT-06
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Remove console.log from DiamondInitFacet.sol, standardize all pragmas to ^0.8.19
+- [ ] 01-02-PLAN.md — Remove commented-out network blocks from hardhat.config.ts
+
 ---
 
 ### Phase 2: Dead Code Removal
