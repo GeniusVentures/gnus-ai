@@ -8,8 +8,8 @@
 ### Technical Debt
 
 - [ ] **DEBT-01**: Remove GeniusAI facet — delete `GeniusAI.sol`, `GeniusAIStorage.sol`, and remove from diamond config. Escrow moved to SuperGenius chain.
-- [ ] **DEBT-02**: Remove `hardhat/console.sol` import and `console.log()` from `DiamondInitFacet.sol`. Replace with event emission.
-- [ ] **DEBT-03**: Standardize all contract pragmas to `^0.8.19` (currently mixed: `^0.8.0`, `^0.8.2`, `^0.8.19`).
+- [x] **DEBT-02**: Remove `hardhat/console.sol` import and `console.log()` from `DiamondInitFacet.sol`. Replace with event emission.
+- [x] **DEBT-03**: Standardize all contract pragmas to `^0.8.19` (currently mixed: `^0.8.0`, `^0.8.2`, `^0.8.19`).
 - [ ] **DEBT-04**: Remove duplicate `_setupRole`/`_grantRole` calls in `DiamondInitFacet.diamondInitialize250()` (lines 51-57).
 - [ ] **DEBT-05**: Remove duplicated `onlySuperAdminRole` modifier from `DiamondInitFacet.sol` — use inherited modifier from `GeniusAccessControl.sol`.
 - [ ] **DEBT-06**: Remove commented-out network configuration blocks from `hardhat.config.ts` (lines 237-241, 282-324).
@@ -70,8 +70,8 @@ _These are investigation items only — no implementation committed until resear
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DEBT-01 | Phase 2 | Pending |
-| DEBT-02 | Phase 1 | Pending |
-| DEBT-03 | Phase 1 | Pending |
+| DEBT-02 | Phase 1 | Complete |
+| DEBT-03 | Phase 1 | Complete |
 | DEBT-04 | Phase 2 | Pending |
 | DEBT-05 | Phase 2 | Pending |
 | DEBT-06 | Phase 1 | Pending |
