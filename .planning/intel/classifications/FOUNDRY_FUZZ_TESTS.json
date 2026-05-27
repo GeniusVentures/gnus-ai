@@ -1,0 +1,13 @@
+{
+  "source_path": "docs/FOUNDRY_FUZZ_TESTS.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Foundry Fuzz Test Suite Documentation",
+  "summary": "Documents the comprehensive Foundry-based fuzz and invariant testing suite for GeniusDiamond achieving 85% code coverage across 15 test files.",
+  "scope": ["Foundry", "fuzz testing", "invariant testing", "GeniusDiamond", "test infrastructure", "CI/CD", "coverage targets"],
+  "cross_refs": ["/workspaces/gnus-ai/project/fuzzing-prompts/prd-foundry-fuzz-test-suite.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

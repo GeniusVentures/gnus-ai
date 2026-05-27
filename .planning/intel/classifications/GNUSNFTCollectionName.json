@@ -1,0 +1,13 @@
+{
+  "source_path": "docs/GNUSNFTCollectionName.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "GNUSNFTCollectionName",
+  "summary": "Documents the GNUSNFTCollectionName contract which holds the constant string name for the Genius NFT Collection.",
+  "scope": ["GNUSNFTCollectionName", "Genius NFT Collection", "NFT naming"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/GNUSBridge.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "GNUSBridge",
+  "summary": "API reference documentation for the GNUSBridge contract managing bridging, minting, burning, and token transfers across chains for the GNUS ecosystem.",
+  "scope": ["GNUSBridge", "cross-chain bridging", "ERC20", "ERC1155", "minting", "burning", "token transfers"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

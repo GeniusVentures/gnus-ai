@@ -1,0 +1,13 @@
+{
+  "source_path": "docs/GNUSControl.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "GNUSControl",
+  "summary": "Documents the GNUSControl contract for managing protocol-level security including blacklists, bridge fees, and chain configuration.",
+  "scope": ["GNUSControl", "blacklist management", "bridge fees", "protocol versioning", "chain ID", "GeniusAccessControl"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

@@ -1,0 +1,24 @@
+{
+  "source_path": ".devcontainer/project/prd/vault-persistence-cli-prd.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Product Requirements Document: HashiCorp Vault Persistence & CLI Installation",
+  "summary": "Defines requirements for adding file-based persistence and Vault CLI installation to the HashiCorp Vault integration in the Diamonds DevContainer.",
+  "scope": ["HashiCorp Vault", "persistence", "Raft storage", "Vault CLI", "DevContainer", "secrets management", "seal/unseal", "migration", "template system"],
+  "cross_refs": [
+    ".devcontainer/data/vault-data/",
+    ".devcontainer/config/vault-persistent.hcl",
+    ".devcontainer/docker-compose.dev.yml",
+    ".devcontainer/Dockerfile",
+    ".devcontainer/scripts/post-create.sh",
+    ".devcontainer/scripts/post-start.sh",
+    ".devcontainer/scripts/setup/vault-setup-wizard.sh",
+    ".devcontainer/scripts/validate-vault-setup.sh",
+    "VAULT_SETUP.md",
+    "VAULT_CLI.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

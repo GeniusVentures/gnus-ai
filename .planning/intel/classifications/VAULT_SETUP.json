@@ -1,0 +1,11 @@
+{
+  "path": ".devcontainer/docs/VAULT_SETUP.md",
+  "type": "DOC",
+  "title": "HashiCorp Vault Setup Guide for Diamonds Project DevContainer",
+  "scope_summary": "Comprehensive guide for setting up HashiCorp Vault in the DevContainer, covering ephemeral and persistent storage modes, mode switching with secret migration, seal/unseal management, auto-unseal, team templates, backup/restore procedures, and CI/CD integration.",
+  "cross_refs": [
+    "../../SECURITY.md",
+    "VAULT_TROUBLESHOOTING.md",
+    "../../docs/CI-PIPELINE.md"
+  ]
+}

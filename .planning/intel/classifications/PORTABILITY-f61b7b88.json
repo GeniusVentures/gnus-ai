@@ -1,0 +1,19 @@
+{
+  "source_path": ".devcontainer/docs/PORTABILITY.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "DevContainer Portability Implementation",
+  "summary": "Describes changes made to make the DevContainer configuration portable and reusable across multiple projects via environment variables.",
+  "scope": ["DevContainer", "portability", "Dockerfile", "docker-compose.yml", "devcontainer.json", "WORKSPACE_NAME", "template system"],
+  "cross_refs": [
+    ".devcontainer/Dockerfile",
+    ".devcontainer/docker-compose.yml",
+    ".devcontainer/devcontainer.json",
+    "./README.md",
+    "./.env.example"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

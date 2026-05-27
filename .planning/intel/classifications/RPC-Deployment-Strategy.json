@@ -1,0 +1,7 @@
+{
+  "path": "docs/RPC-Deployment-Strategy.md",
+  "type": "DOC",
+  "title": "RPC Deployment Strategy for GNUS.AI Diamond Project",
+  "scope_summary": "Direct RPC-based deployment capabilities for GNUS.AI Diamond contracts, covering deploy, upgrade, status, and verify scripts with retry logic, configuration validation, and CI/CD integration using TypeScript-based RPC communication.",
+  "cross_refs": []
+}

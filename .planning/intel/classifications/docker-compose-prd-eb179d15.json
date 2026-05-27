@@ -1,0 +1,24 @@
+{
+  "source_path": ".devcontainer/project/prd/docker-compose-prd.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "PRD: DevContainer Docker-Compose and HashiCorp Vault Integration",
+  "summary": "Defines requirements for migrating the DevContainer to docker-compose with proper environment variable loading and HashiCorp Vault integration for secure secret management.",
+  "scope": ["DevContainer", "Docker Compose", "HashiCorp Vault", "WORKSPACE_NAME", "environment variables", "secret migration", "Vault setup wizard", "authentication"],
+  "cross_refs": [
+    ".devcontainer/docker-compose.dev.yml",
+    ".devcontainer/devcontainer.json",
+    ".devcontainer/scripts/vault-init.sh",
+    ".devcontainer/scripts/vault-fetch-secrets.sh",
+    ".devcontainer/scripts/validate-vault-setup.sh",
+    "scripts/setup/VaultSecretManager.ts",
+    "scripts/setup/migrate-secrets-to-vault.sh",
+    "scripts/setup/vault-setup-wizard.sh",
+    "docs/devs/VAULT_SETUP.md",
+    "docs/devs/VAULT_TROUBLESHOOTING.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

@@ -1,0 +1,7 @@
+{
+  "path": ".devcontainer/docs/ARCHITECTURE.md",
+  "type": "DOC",
+  "title": "DevContainer Architecture: Build-Time vs Runtime",
+  "scope_summary": "Explains the fundamental constraint that .env files cannot be used for Docker build arguments, classifying variables as build-time versus runtime, and documenting the correct workflow for setting WORKSPACE_NAME and DIAMOND_NAME.",
+  "cross_refs": []
+}

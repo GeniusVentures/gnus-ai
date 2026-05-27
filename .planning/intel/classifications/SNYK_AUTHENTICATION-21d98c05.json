@@ -1,0 +1,15 @@
+{
+  "source_path": ".devcontainer/docs/SNYK_AUTHENTICATION.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Snyk Authentication in DevContainers",
+  "summary": "Guide for authenticating Snyk CLI in devcontainers using token-based auth instead of OAuth.",
+  "scope": ["Snyk", "DevContainer", "authentication", "SNYK_TOKEN", "OAuth"],
+  "cross_refs": [
+    ".devcontainer/scripts/vault-fetch-secrets.sh"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

@@ -1,0 +1,7 @@
+{
+  "path": "docs/GNUSNFTFactoryStorage.md",
+  "type": "DOC",
+  "title": "GNUSNFTFactoryStorage",
+  "scope_summary": "Solidity library defining the Diamond storage layout and layout retrieval function for the GNUS NFT Factory, using inline assembly to access a unique storage slot.",
+  "cross_refs": []
+}

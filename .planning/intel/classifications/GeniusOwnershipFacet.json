@@ -1,0 +1,13 @@
+{
+  "source_path": "docs/GeniusOwnershipFacet.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "GeniusOwnershipFacet",
+  "summary": "Documents the GeniusOwnershipFacet contract providing EIP-173 ownership management with role-based permissions integrated into the Diamond Standard.",
+  "scope": ["GeniusOwnershipFacet", "IERC173", "ownership management", "DEFAULT_ADMIN_ROLE", "UPGRADER_ROLE", "Diamond Standard"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/GNUSContractAssets.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "GNUSContractAssets",
+  "summary": "API reference documentation for the GNUSContractAssets contract providing functionality to manage and withdraw external assets sent to the contract.",
+  "scope": ["GNUSContractAssets", "token withdrawal", "asset recovery", "GNUS tokens", "GeniusAccessControl"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

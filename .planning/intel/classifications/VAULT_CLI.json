@@ -1,0 +1,9 @@
+{
+  "path": ".devcontainer/docs/VAULT_CLI.md",
+  "type": "DOC",
+  "title": "Vault CLI Installation",
+  "scope_summary": "Installation, verification, and usage guide for the HashiCorp Vault CLI in the DevContainer, covering secret read/write/list/delete operations, authentication, seal/unseal management, shell completion, and integration with jq and scripts.",
+  "cross_refs": [
+    ".devcontainer/scripts/install-vault-cli.sh"
+  ]
+}

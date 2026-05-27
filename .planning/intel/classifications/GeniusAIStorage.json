@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/GeniusAIStorage.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "GeniusAIStorage",
+  "summary": "API reference documentation for the GeniusAIStorage library managing Genius AI-specific storage layout with diamond storage pattern.",
+  "scope": ["GeniusAIStorage", "storage layout", "AI processing jobs", "escrow", "diamond storage pattern", "Solidity library"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

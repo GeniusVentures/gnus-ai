@@ -1,0 +1,12 @@
+{
+  "source_path": "docs/GeniusAI.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "GeniusAI",
+  "summary": "API reference documentation for the GeniusAI contract providing escrow functionality for AI processing jobs in the Genius AI system.",
+  "scope": ["GeniusAI", "escrow", "AI processing jobs", "GNUS tokens", "GeniusAccessControl"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

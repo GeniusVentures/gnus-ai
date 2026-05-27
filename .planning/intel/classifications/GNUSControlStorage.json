@@ -1,0 +1,7 @@
+{
+  "path": "docs/GNUSControlStorage.md",
+  "type": "DOC",
+  "title": "GNUSControlStorage",
+  "scope_summary": "Solidity library defining the Diamond storage layout and utility functions for managing GNUS control data, including banned transferor mappings, bridge fee, protocol version, and chain ID, plus a facet delegate call helper.",
+  "cross_refs": []
+}

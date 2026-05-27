@@ -1,0 +1,17 @@
+{
+  "source_path": ".devcontainer/docs/QUICK_REFERENCE.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Quick Reference: DevContainer Environment Variables",
+  "summary": "Concise reference for DevContainer environment variables, build-time vs runtime distinction, and common troubleshooting.",
+  "scope": ["DevContainer", "environment variables", "WORKSPACE_NAME", "DIAMOND_NAME", "Docker build"],
+  "cross_refs": [
+    ".devcontainer/set-host-env.sh",
+    "ENV_VARS.md",
+    "devcontainer.json"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

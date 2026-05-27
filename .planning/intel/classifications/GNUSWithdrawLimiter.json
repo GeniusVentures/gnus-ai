@@ -1,0 +1,14 @@
+{
+  "path": "docs/GNUSWithdrawLimiter.md",
+  "type": "DOC",
+  "title": "GNUSWithdrawLimiter Documentation",
+  "scope_summary": "Rate-limiting security feature for GNUS token withdrawals using bin-based aggregation, covering the GNUSBridge, ERC20TransferBatch, and GNUSERC1155MaxSupply transfer paths with per-account configuration, Sybil attack prevention, and Diamond storage pattern integration.",
+  "cross_refs": [
+    "docs/Smart-Contracts-Overview.md",
+    "docs/GeniusAccessControl.md",
+    "docs/GNUSBridge.md",
+    "reports/withdraw-limiter-gas-benchmarks.md",
+    "reports/withdraw-limiter-fr-verification.md",
+    "project/prd-withdraw-limiter.md"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "source_path": ".devcontainer/docs/VAULT_TROUBLESHOOTING.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Vault Troubleshooting Guide for Diamonds Project",
+  "summary": "Step-by-step solutions for common HashiCorp Vault integration issues in the Diamonds Project development environment.",
+  "scope": ["HashiCorp Vault", "DevContainer", "Docker Compose", "troubleshooting", "secrets", "GitHub authentication"],
+  "cross_refs": [
+    ".devcontainer/scripts/validate-vault-setup.sh",
+    ".devcontainer/scripts/test-env.sh",
+    ".devcontainer/scripts/vault-fetch-secrets.sh",
+    ".devcontainer/scripts/post-create.sh",
+    ".devcontainer/scripts/post-start.sh",
+    "VAULT_SETUP.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

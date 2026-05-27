@@ -1,0 +1,20 @@
+{
+  "source_path": ".devcontainer/docs/ENV_VARIABLE_PROPAGATION.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Environment Variable Propagation Guide",
+  "summary": "Explains how environment variables configure Vault modes and propagate through Docker Compose and DevContainer setup.",
+  "scope": ["Vault", "Docker Compose", "DevContainer", "environment variables", "VAULT_COMMAND", "VAULT_ADDR"],
+  "cross_refs": [
+    ".devcontainer/.env",
+    ".devcontainer/.env.example",
+    ".devcontainer/docker-compose.dev.yml",
+    ".devcontainer/devcontainer.json",
+    ".devcontainer/scripts/verify-env-propagation.sh",
+    "TESTING_VAULT_MODES.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

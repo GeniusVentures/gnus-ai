@@ -1,0 +1,10 @@
+{
+  "path": ".devcontainer/docs/Git-Authentication-Setup.md",
+  "type": "DOC",
+  "title": "Git Authentication Setup with GitHub CLI",
+  "scope_summary": "Guide for configuring Git authentication using GitHub CLI as a credential helper in DevContainer and CI/CD environments, eliminating manual password prompts for HTTPS remotes.",
+  "cross_refs": [
+    ".devcontainer/scripts/setup-security.sh",
+    ".husky/pre-push"
+  ]
+}

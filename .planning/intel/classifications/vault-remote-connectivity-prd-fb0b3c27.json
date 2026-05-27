@@ -1,0 +1,23 @@
+{
+  "source_path": ".devcontainer/project/prd/vault-remote-connectivity-prd.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Product Requirements Document: HashiCorp Vault Remote Connectivity",
+  "summary": "Defines requirements for connecting the DevContainer to remote Vault instances (HCP, AWS, GCP, self-hosted) with failover to local Vault.",
+  "scope": ["HashiCorp Vault", "remote connectivity", "HCP Vault", "failover", "DevContainer", "authentication", "secret migration", "Vault CLI"],
+  "cross_refs": [
+    ".devcontainer/data/vault-remote.conf",
+    ".devcontainer/data/vault-remote.conf.template",
+    ".devcontainer/scripts/setup/vault-setup-wizard.sh",
+    ".devcontainer/scripts/vault-failover.sh",
+    ".devcontainer/scripts/vault-migrate.sh",
+    ".devcontainer/scripts/validate-vault-setup.sh",
+    "VAULT_SETUP.md",
+    "VAULT_REMOTE.md",
+    "docs/VAULT_REMOTE.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}
