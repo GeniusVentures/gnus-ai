@@ -50,8 +50,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Refactor DiamondInitFacet: GeniusAccessControl inheritance, deduplicate roles, add ERC-165
-- [ ] 02-02-PLAN.md — Remove GeniusAI facet: delete contracts, update configs, regenerate types
+- [x] 02-01-PLAN.md — Refactor DiamondInitFacet: GeniusAccessControl inheritance, deduplicate roles, add ERC-165
+- [x] 02-02-PLAN.md — Remove GeniusAI facet: delete contracts, update configs, regenerate types
 
 ---
 
