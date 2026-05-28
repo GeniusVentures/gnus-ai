@@ -49,14 +49,6 @@
         }
       }
     },
-    "GeniusAI": {
-      "priority": 70,
-      "versions": {
-        "0.0": {
-          "deployInit": "GeniusAI_Initialize()"
-        }
-      }
-    },
     "ERC20TransferBatch": {
       "priority": 90,
       "versions": {
