@@ -47,6 +47,12 @@ Plans:
 
 **Requirements:** DEBT-01, DEBT-04, DEBT-05, QUAL-01
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Refactor DiamondInitFacet: GeniusAccessControl inheritance, deduplicate roles, add ERC-165
+- [ ] 02-02-PLAN.md — Remove GeniusAI facet: delete contracts, update configs, regenerate types
+
 ---
 
 ### Phase 3: Input Validation
