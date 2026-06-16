@@ -2,8 +2,7 @@
   "runtime": "opencode",
   "mode": "interactive",
   "granularity": "standard",
-  "parallelization": false,
-  "commit_docs": true,
+  "parallelization": true,
   "model_profile": "inherit",
   "workflow": {
     "research": true,

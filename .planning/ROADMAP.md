@@ -23,7 +23,7 @@
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
-| 8 | Bridge Recipient | Add destination address to bridgeOut() | BRIDGE-01 | 3 |
+| 8 | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut() | BRIDGE-01 | 3 |
 | 9 | Treasury/Reserve | Per-child GNUS reserve backing model | TREASURY-01, TREASURY-02, TREASURY-03 | 6 |
 | 10 | Bridge Vault | Lock/release vaults, state machine, replay protection | BRIDGE-02, BRIDGE-03, BRIDGE-04 | 6 |
 | 11 | Proxy Hardening | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03 | 6 |
@@ -153,12 +153,13 @@ Plans:
 
 ## Phase 8: Bridge Recipient Parameter
 
-**Goal:** Add destination address parameter to `bridgeOut()` to unblock cross-chain testing.
+**Goal:** Add SuperGenius destination public key parameter (`bytes calldata sgnsDestination`) to `bridgeOut()` to unblock cross-chain testing.
 
 **Success Criteria:**
-1. `bridgeOut()` accepts `address recipient` parameter. Emits recipient in `BridgeSourceBurned` event.
-2. `recipient != address(0)` validation in place.
-3. Existing tests updated for new signature. Bridge-out with explicit recipient tested.
+1. `bridgeOut()` accepts `bytes calldata sgnsDestination` — a 64-byte SuperGenius public key.
+2. `require(sgnsDestination.length == 64, "Invalid destination key length")` validation in place.
+3. `BridgeSourceBurned` event includes `bytes sgnsDestination` field.
+4. Existing tests updated for new signature. Bridge-out with valid 64-byte key tested. Wrong-length key revert tested.
 
 **Requirements:** BRIDGE-01
 **Priority:** P0 (unblocks testing)
