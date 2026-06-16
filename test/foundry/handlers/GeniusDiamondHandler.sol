@@ -268,10 +268,11 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         amount = _boundUint256(amount, 1 ether, balance);
 
         bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256)",
+            "bridgeOut(uint256,uint256,uint256,bytes)",
             amount,
             GNUS_TOKEN_ID,
-            1 // destination chain
+            1, // destination chain
+            TEST_SGNS_DEST
         );
 
         vm.prank(currentActor);

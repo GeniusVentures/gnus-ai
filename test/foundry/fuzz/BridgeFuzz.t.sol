@@ -35,10 +35,11 @@ contract BridgeFuzz is GeniusDiamondTestBase {
 
         // Try bridge deposit (function signature may vary)
         bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256)",
+            "bridgeOut(uint256,uint256,uint256,bytes)",
             amount,
             GNUS_TOKEN_ID,
-            1 // destination chain ID
+            1, // destination chain ID
+            TEST_SGNS_DEST
         );
 
         (bool success, ) = diamond.call(callData);
@@ -59,10 +60,11 @@ contract BridgeFuzz is GeniusDiamondTestBase {
         vm.assume(excessAmount > balance && excessAmount < type(uint256).max - 1000 ether);
 
         bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256)",
+            "bridgeOut(uint256,uint256,uint256,bytes)",
             excessAmount,
             GNUS_TOKEN_ID,
-            1
+            1,
+            TEST_SGNS_DEST
         );
 
         (bool success, ) = diamond.call(callData);
@@ -91,10 +93,11 @@ contract BridgeFuzz is GeniusDiamondTestBase {
 
         if (amount > 0) {
             bytes memory callData = abi.encodeWithSignature(
-                "bridgeOut(uint256,uint256,uint256)",
+                "bridgeOut(uint256,uint256,uint256,bytes)",
                 amount,
                 GNUS_TOKEN_ID,
-                1
+                1,
+                TEST_SGNS_DEST
             );
 
             // Attempt bridge
@@ -103,5 +106,41 @@ contract BridgeFuzz is GeniusDiamondTestBase {
         }
 
         console.log("[OK] Edge case tested");
+    }
+
+    /**
+     * @notice Test: bridgeOut reverts with wrong-length destination key
+     */
+    function test_RevertWhen_InvalidDestinationKeyLength() public {
+        uint256 amount = 100 ether;
+        uint256 balance = _getGNUSBalance(address(this));
+        if (balance < amount) {
+            _mintGNUS(address(this), amount - balance + 100 ether);
+        }
+
+        // 32-byte key (too short)
+        bytes memory shortKey = hex"0000000000000000000000000000000000000000000000000000000000000000";
+        bytes memory callData = abi.encodeWithSignature(
+            "bridgeOut(uint256,uint256,uint256,bytes)",
+            amount,
+            GNUS_TOKEN_ID,
+            1,
+            shortKey
+        );
+        (bool success, ) = diamond.call(callData);
+        assertFalse(success, "Should revert with 32-byte key");
+
+        // empty key
+        callData = abi.encodeWithSignature(
+            "bridgeOut(uint256,uint256,uint256,bytes)",
+            amount,
+            GNUS_TOKEN_ID,
+            1,
+            new bytes(0)
+        );
+        (success, ) = diamond.call(callData);
+        assertFalse(success, "Should revert with empty key");
+
+        console.log("[OK] Invalid destination key length rejected");
     }
 }

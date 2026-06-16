@@ -14,6 +14,9 @@ import {console} from "forge-std/console.sol";
  * @dev All test contracts should inherit from this base
  */
 abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
+    // 64-byte SuperGenius destination key (zero key for testing)
+    bytes public constant TEST_SGNS_DEST = hex"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
     // ========================================
     // Role Constants (from GeniusAccessControl)
     // ========================================
