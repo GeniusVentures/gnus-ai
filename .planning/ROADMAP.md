@@ -1,10 +1,13 @@
 # Roadmap: Gnus.ai Tech Debt & Security Remediation
 
 **Created:** 2026-05-26
-**Granularity:** Standard (7 phases)
-**Core Value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
+**Updated:** 2026-06-15
+**Granularity:** Standard (12 phases)
+**Core Value:** Production-ready smart contracts with reserve-backed token economics, lock/release cross-chain bridging, and standard-compliant ERC-20 proxy — all reviewed and safe for mainnet deployment.
 
 ## Phase Summary
+
+### Phases 1-7: Tech Debt & Security Remediation
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
@@ -16,7 +19,19 @@
 | 6 | Test Coverage | Real fuzz tests, complete assertions, verification | TEST-01, TEST-02, TEST-03 | 3 |
 | 7 | Dependency Hardening | Pin contracts-starter, final verification | DEP-01 | 2 |
 
+### Phases 8-12: Architecture Transformation
+
+| # | Phase | Goal | Requirements | Success Criteria |
+|---|-------|------|--------------|------------------|
+| 8 | Bridge Recipient | Add destination address to bridgeOut() | BRIDGE-01 | 3 |
+| 9 | Treasury/Reserve | Per-child GNUS reserve backing model | TREASURY-01, TREASURY-02, TREASURY-03 | 6 |
+| 10 | Bridge Vault | Lock/release vaults, state machine, replay protection | BRIDGE-02, BRIDGE-03, BRIDGE-04 | 6 |
+| 11 | Proxy Hardening | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03 | 6 |
+| 12 | Supply Ledger | Per-token per-chain supply accounting | LEDGER-01, LEDGER-02 | 5 |
+
 ## Phase Details
+
+### Tech Debt & Security Remediation (Phases 1-7)
 
 ### Phase 1: Preliminary Cleanup
 **Goal:** Remove development-only imports, standardize Solidity pragmas, and clean up stale configuration. No diamond upgrade required — safe surface-level changes.
@@ -121,15 +136,125 @@ Plans:
 
 ---
 
+
 ## Investigation Items (Post-Remediation)
 
-These items are acknowledged but not committed to a phase. They require further research before entering the Active requirements set.
+~~These items are acknowledged but not committed to a phase. They require further research before entering the Active requirements set.~~
 
-- **NFT-01**: Child NFT treasury GNUS tokens — can child NFTs (2nd+ generation) hold GNUS token treasuries for token swap operations? Requires research on ERC-1155 token economics and swap integration patterns.
-- **NFT-02**: ChildToken/grandchild NFT-to-GNUS swap mechanism — allow child NFT holders to swap their tokens for GNUS from treasury.
-- **NFT-03**: GNUS token transfer to external swap contracts — pipe treasury GNUS to designated swap/liquidity contract.
+~~- **NFT-01**: Child NFT treasury GNUS tokens~~
+~~- **NFT-02**: ChildToken/grandchild NFT-to-GNUS swap mechanism~~
+~~- **NFT-03**: GNUS token transfer to external swap contracts~~
 
-_These appear in `.planning/REQUIREMENTS.md` v2 section. Sponsor should validate feasibility before adding to roadmap._
+> **Resolved 2026-06-15:** Research completed in [Update-Smart-Contracts-Architecture.md](https://github.com/GeniusVentures/TokenContracts/blob/develop/.planning/Update-Smart-Contracts-Architecture.md). Items promoted to phases 8-12 below.
 
 ---
+
+### Architecture Transformation (Phases 8-12)
+
+## Phase 8: Bridge Recipient Parameter
+
+**Goal:** Add destination address parameter to `bridgeOut()` to unblock cross-chain testing.
+
+**Success Criteria:**
+1. `bridgeOut()` accepts `address recipient` parameter. Emits recipient in `BridgeSourceBurned` event.
+2. `recipient != address(0)` validation in place.
+3. Existing tests updated for new signature. Bridge-out with explicit recipient tested.
+
+**Requirements:** BRIDGE-01
+**Priority:** P0 (unblocks testing)
+**Reviewer:** @Super-Genius
+**Assignee:** @Am0rfu5
+
+**GitHub:** [gnus-ai#60](https://github.com/GeniusVentures/gnus-ai/issues/60)
+
+---
+
+## Phase 9: Per-Child GNUS Treasury/Reserve
+
+**Goal:** Replace implicit burn/mint backing with explicit per-child GNUS treasury accounting. Fix the asymmetric backing invariant (CONCERNS #1) — descendants can no longer be minted without GNUS and later redeemed for GNUS.
+
+**Success Criteria:**
+1. `gnusReserve[id]`, `redeemableSupply[id]`, `redeemable[id]` added to storage.
+2. `mintBackedChild()` requires GNUS deposit into reserve before mint.
+3. `redeem()` burns child tokens and transfers GNUS from reserve — no mint.
+4. Descendant tokens are non-redeemable unless separately configured and collateralized.
+5. Exchange rate math is consistent (CONCERNS #2): same formula both directions, fixed-point convention.
+6. Invariant tests: `reserve[id] >= quoteRedeem(id, totalRedeemableSupply[id])`.
+
+**Requirements:** TREASURY-01, TREASURY-02, TREASURY-03
+**Priority:** P0 (security-critical)
+**Reviewer:** @Super-Genius
+**Assignee:** @Am0rfu5
+
+**GitHub:** [gnus-ai#58](https://github.com/GeniusVentures/gnus-ai/issues/58)
+**Concerns addressed:** #1 Asymmetric burn/mint, #2 Exchange rate math, #3 No treasury tracking, #4 ID collision, #7 Rate enforcement, #10 mint semantics, #21 Descendant tests, #30 No solvency views
+
+---
+
+## Phase 10: Lock/Release Bridge Vault
+
+**Goal:** Replace burn-on-bridge-out with lock-in-vault. Add bridge state machine with replay protection.
+
+**Success Criteria:**
+1. EVM source vault: `lockTokens()` emits canonical `BridgeLocked` event with full transfer identity.
+2. EVM destination vault: `releaseTokens()` verifies signatures, checks `!processed[transferId]`.
+3. `mapping(bytes32 => bool) public processedMessages` for replay protection.
+4. `TransferStatus` state machine: NONE to LOCK_CONFIRMED to RELEASED.
+5. Per-chain vault liquidity checks. No mint on any chain.
+6. Separate from redemption reserve — bridging and redemption are distinct actions.
+
+**Requirements:** BRIDGE-02, BRIDGE-03, BRIDGE-04
+**Priority:** P0 (security-critical)
+**Reviewer:** @Super-Genius
+**Assignee:** @Am0rfu5
+
+**GitHub:** [gnus-ai#59](https://github.com/GeniusVentures/gnus-ai/issues/59)
+**Concerns addressed:** #6 Burn/mint bridge, #28 No state machine, #29 No emergency pause, #22 Bridge tests, #13 No withdraw events
+
+---
+
+## Phase 11: ERC-20 Proxy Hardening
+
+**Goal:** Fix ERC-20 proxy approval/allowance semantics, make child token ID immutable, add redeem adapter.
+
+**Success Criteria:**
+1. Real `_allowances` mapping replaces `setApprovalForAll()` — amount-specific ERC-20 approvals.
+2. `approve(spender, amount)` sets a real allowance, not an ERC-1155 operator approval.
+3. `transferFrom()` uses real allowance with `_spendAllowance()`.
+4. Child token ID is immutable after initialization.
+5. `redeem()` added for single-transaction proxied-child to GNUS via reserve.
+6. DEX-style approve then transferFrom flow tested.
+
+**Requirements:** PROXY-01, PROXY-02, PROXY-03
+**Priority:** P0 (security-critical)
+**Reviewer:** @Super-Genius
+**Assignee:** @Am0rfu5
+
+**GitHub:** [erc20-gnus-proxy#9](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/9), [erc20-gnus-proxy#10](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/10)
+**Concerns addressed:** #5 All-or-nothing approval, #23 Proxy tests
+
+---
+
+## Phase 12: Cross-Chain Supply Ledger
+
+**Goal:** Implement per-token, per-chain supply tracking with bridge-aware view functions.
+
+**Success Criteria:**
+1. `ChainSupply` struct: `circulating, escrowed, pendingOutbound, pendingInbound`.
+2. Per-token per-chain mapping with enumeration support.
+3. View functions: `globalAccountedSupply()`, `chainCirculatingSupply()`, `chainEscrowedSupply()`.
+4. Updated atomically on lock and release operations.
+5. Does NOT override ERC-20/1155 `totalSupply()` — wallets expect local supply.
+
+**Requirements:** LEDGER-01, LEDGER-02
+**Priority:** P1
+**Reviewer:** @Super-Genius
+**Assignee:** @Am0rfu5
+
+**GitHub:** [gnus-ai#57](https://github.com/GeniusVentures/gnus-ai/issues/57)
+**Concerns addressed:** #24 Diamond selector overlap, #26 Dependency tracking
+
+---
+
 *Roadmap created: 2026-05-26*
+*Phases 8-12 added: 2026-06-15*
