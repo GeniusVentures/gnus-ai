@@ -1,15 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {GeniusDiamondTestBase} from "../base/GeniusDiamondTestBase.sol";
+import {GeniusDiamondTestBase, IGNUSBridgeOut} from "../base/GeniusDiamondTestBase.sol";
 import {console} from "forge-std/console.sol";
 
 /**
  * @title BridgeFuzz
  * @notice Fuzz tests for bridge operations
- * @dev Tests bridge deposits and withdrawals with random parameters
+ * @dev Exercises the current bridgeOut(uint256,uint256,uint256,bytes32,bool) signature via a
+ *      typed interface so assertions check real on-chain effects and specific revert reasons.
  */
 contract BridgeFuzz is GeniusDiamondTestBase {
+    /// @dev Mirror of GNUSBridge.BridgeOutInitiated for vm.expectEmit.
+    event BridgeOutInitiated(
+        address indexed sender,
+        uint256 id,
+        uint256 amount,
+        uint256 srcChainID,
+        uint256 destChainID,
+        bytes32 sgnsDestination,
+        bool destinationYOdd
+    );
+
     /**
      * @notice Setup for Bridge fuzz tests
      */
@@ -22,7 +34,7 @@ contract BridgeFuzz is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Fuzz test: Bridge deposit with random amounts
+     * @notice Fuzz test: a valid bridgeOut burns the sender's balance and emits BridgeOutInitiated.
      * @param amount Amount to bridge
      */
     function testFuzz_bridgeDeposit(uint256 amount) public {
@@ -33,114 +45,76 @@ contract BridgeFuzz is GeniusDiamondTestBase {
             _mintGNUS(address(this), amount - balance + 100 ether);
         }
 
-        // Try bridge deposit (function signature may vary)
-        bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256,bytes)",
+        uint256 balanceBefore = _getGNUSBalance(address(this));
+
+        // Expect the bridge-out event (check indexed sender topic; full arg matching is M1-E1).
+        vm.expectEmit(true, false, false, false, diamond);
+        emit BridgeOutInitiated(
+            address(this),
+            GNUS_TOKEN_ID,
+            amount,
+            0, // srcChainID (configured chainID defaults to 0 in tests)
+            DEST_CHAIN_ID,
+            SGNS_DESTINATION,
+            SGNS_DESTINATION_Y_ODD
+        );
+        IGNUSBridgeOut(diamond).bridgeOut(
             amount,
             GNUS_TOKEN_ID,
-            1, // destination chain ID
-            TEST_SGNS_DEST
+            DEST_CHAIN_ID,
+            SGNS_DESTINATION,
+            SGNS_DESTINATION_Y_ODD
         );
 
-        (bool success, ) = diamond.call(callData);
-
-        if (success) {
-            console.log("[OK] Bridge deposit succeeded");
-        } else {
-            console.log("[OK] Bridge deposit tested");
-        }
+        // The bridged amount must be burned from the sender (bridgeFee defaults to 0).
+        assertEq(
+            _getGNUSBalance(address(this)),
+            balanceBefore - amount,
+            "bridgeOut must burn the bridged amount"
+        );
     }
 
     /**
-     * @notice Fuzz test: Bridge with insufficient balance
+     * @notice Fuzz test: bridging more than the balance reverts with "Insufficient tokens.".
      * @param excessAmount Amount exceeding balance
      */
     function testFuzz_RevertWhen_depositExceedsBalance(uint256 excessAmount) public {
         uint256 balance = _getGNUSBalance(address(this));
         vm.assume(excessAmount > balance && excessAmount < type(uint256).max - 1000 ether);
 
-        bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256,bytes)",
+        vm.expectRevert("Insufficient tokens.");
+        IGNUSBridgeOut(diamond).bridgeOut(
             excessAmount,
             GNUS_TOKEN_ID,
-            1,
-            TEST_SGNS_DEST
+            DEST_CHAIN_ID,
+            SGNS_DESTINATION,
+            SGNS_DESTINATION_Y_ODD
         );
 
-        (bool success, ) = diamond.call(callData);
-        assertFalse(success, "Excess bridge should fail");
-
-        console.log("[OK] Excess bridge deposit rejected");
+        console.log("[OK] Excess bridge deposit rejected with the expected reason");
     }
 
     /**
-     * @notice Fuzz test: Bridge amount edge cases
-     * @param amount Random amount including zero and max
+     * @notice Fuzz test: any valid bounded amount (with sufficient balance) bridges successfully.
+     * @param amount Random amount
      */
     function testFuzz_bridgeAmountEdgeCases(uint256 amount) public {
-        // Test with various amounts
-        if (amount == 0) {
-            console.log("[OK] Zero amount tested");
-            return;
-        }
-
         amount = _boundUint256(amount, 1, 10000 ether);
 
+        // Ensure the sender holds at least `amount` so the bridge can succeed.
         uint256 balance = _getGNUSBalance(address(this));
         if (balance < amount) {
-            amount = balance;
+            _mintGNUS(address(this), amount - balance);
         }
 
-        if (amount > 0) {
-            bytes memory callData = abi.encodeWithSignature(
-                "bridgeOut(uint256,uint256,uint256,bytes)",
-                amount,
-                GNUS_TOKEN_ID,
-                1,
-                TEST_SGNS_DEST
-            );
-
-            // Attempt bridge
-            (bool success, ) = diamond.call(callData);
-            assertTrue(success, "Bridge should succeed for valid amount");
-        }
-
-        console.log("[OK] Edge case tested");
-    }
-
-    /**
-     * @notice Test: bridgeOut reverts with wrong-length destination key
-     */
-    function test_RevertWhen_InvalidDestinationKeyLength() public {
-        uint256 amount = 100 ether;
-        uint256 balance = _getGNUSBalance(address(this));
-        if (balance < amount) {
-            _mintGNUS(address(this), amount - balance + 100 ether);
-        }
-
-        // 32-byte key (too short)
-        bytes memory shortKey = hex"0000000000000000000000000000000000000000000000000000000000000000";
-        bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256,bytes)",
+        IGNUSBridgeOut(diamond).bridgeOut(
             amount,
             GNUS_TOKEN_ID,
-            1,
-            shortKey
+            DEST_CHAIN_ID,
+            SGNS_DESTINATION,
+            SGNS_DESTINATION_Y_ODD
         );
-        (bool success, ) = diamond.call(callData);
-        assertFalse(success, "Should revert with 32-byte key");
 
-        // empty key
-        callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256,bytes)",
-            amount,
-            GNUS_TOKEN_ID,
-            1,
-            new bytes(0)
-        );
-        (success, ) = diamond.call(callData);
-        assertFalse(success, "Should revert with empty key");
-
-        console.log("[OK] Invalid destination key length rejected");
+        console.log("[OK] Edge case bridged successfully");
     }
 }

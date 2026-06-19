@@ -6,6 +6,18 @@ import {DiamondDeployment} from "../helpers/DiamondDeployment.sol";
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 
+/// @notice Minimal typed view of the diamond's current bridgeOut for Foundry tests,
+/// so calls can use vm.expectRevert / vm.expectEmit instead of low-level diamond.call.
+interface IGNUSBridgeOut {
+    function bridgeOut(
+        uint256 amount,
+        uint256 id,
+        uint256 destChainID,
+        bytes32 sgnsDestination,
+        bool destinationYOdd
+    ) external;
+}
+
 /**
  * @title GeniusDiamondTestBase
  * @notice Base contract for all GeniusDiamond fuzz and invariant tests
@@ -14,8 +26,17 @@ import {console} from "forge-std/console.sol";
  * @dev All test contracts should inherit from this base
  */
 abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
-    // 64-byte SuperGenius destination key (zero key for testing)
-    bytes public constant TEST_SGNS_DEST = hex"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    // ========================================
+    // Bridge Constants (paired with test/utils/bridge-fixtures.ts — keep in lockstep)
+    // ========================================
+    // 32-byte X component of the SuperGenius destination public key (0x1234 padded).
+    // Mirrors `SGNS_DESTINATION` in test/utils/bridge-fixtures.ts.
+    bytes32 public constant SGNS_DESTINATION = bytes32(uint256(0x1234));
+    // Parity of the destination key's Y component (false = even). Mirrors SGNS_DESTINATION_Y_ODD.
+    bool public constant SGNS_DESTINATION_Y_ODD = false;
+    // Canonical destination chain id (Polygon). Mirrors DEST_CHAIN_ID in bridge-fixtures.ts.
+    // The diamond's configured chainID defaults to 0 in tests, so 137 passes the same-chain guard.
+    uint256 public constant DEST_CHAIN_ID = 137;
 
     // ========================================
     // Role Constants (from GeniusAccessControl)
