@@ -7,6 +7,11 @@ import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import {
+	SGNS_DESTINATION,
+	SGNS_DESTINATION_Y_ODD,
+	DEST_CHAIN_ID,
+} from '../utils/bridge-fixtures';
 
 describe('GNUSBridge Enhanced Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -16,11 +21,6 @@ describe('GNUSBridge Enhanced Tests', function () {
 	let user3: SignerWithAddress;
 	let initialSnapshotId: string;
 	let snapshotId: string;
-
-	// 32-byte X component of the SuperGenius destination public key (not an Ethereum address)
-	const SGNS_DESTINATION = ethers.zeroPadValue('0x1234', 32);
-	// Y-component parity for SGNS_DESTINATION (false = even)
-	const SGNS_DESTINATION_Y_ODD = false;
 
 	before(async function () {
 		const config = {
@@ -410,12 +410,22 @@ describe('GNUSBridge Enhanced Tests', function () {
 			await geniusDiamond.setChainID(1); // Ethereum mainnet
 
 			// Bridge out to chain 137 (Polygon)
-			const tx = await geniusDiamond.connect(user1).bridgeOut(50, 1, 137, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD);
+			const tx = await geniusDiamond
+				.connect(user1)
+				.bridgeOut(50, 1, DEST_CHAIN_ID, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD);
 
 			// Check event
 			await expect(tx)
 				.to.emit(geniusDiamond, 'BridgeOutInitiated')
-				.withArgs(user1.address, 1, 50, 1, 137, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD);
+				.withArgs(
+					user1.address,
+					1,
+					50,
+					1,
+					DEST_CHAIN_ID,
+					SGNS_DESTINATION,
+					SGNS_DESTINATION_Y_ODD,
+				);
 
 			// Check balance decreased
 			const balance = await geniusDiamond['balanceOf(address,uint256)'](user1.address, 1);
@@ -424,7 +434,15 @@ describe('GNUSBridge Enhanced Tests', function () {
 
 		it('should revert bridgeOut if token not created', async function () {
 			await expect(
-				geniusDiamond.connect(user1).bridgeOut(100, toWei(999), 137, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD),
+				geniusDiamond
+					.connect(user1)
+					.bridgeOut(
+						100,
+						toWei(999),
+						DEST_CHAIN_ID,
+						SGNS_DESTINATION,
+						SGNS_DESTINATION_Y_ODD,
+					),
 			).to.be.revertedWith('Token not created.');
 		});
 
@@ -441,10 +459,10 @@ describe('GNUSBridge Enhanced Tests', function () {
 
 			// Try to bridge without having any tokens
 			await expect(
-				geniusDiamond.connect(user1).bridgeOut(100, 1, 137, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD),
-			).to.be.revertedWith(
-				'Insufficient tokens.',
-			);
+				geniusDiamond
+					.connect(user1)
+					.bridgeOut(100, 1, DEST_CHAIN_ID, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD),
+			).to.be.revertedWith('Insufficient tokens.');
 		});
 
 		it('should handle bridgeOut for GNUS tokens', async function () {
@@ -457,7 +475,13 @@ describe('GNUSBridge Enhanced Tests', function () {
 			// Bridge out GNUS tokens
 			const tx = await geniusDiamond
 				.connect(user1)
-				.bridgeOut(toWei(500), toWei(0), 137, SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD);
+				.bridgeOut(
+					toWei(500),
+					toWei(0),
+					DEST_CHAIN_ID,
+					SGNS_DESTINATION,
+					SGNS_DESTINATION_Y_ODD,
+				);
 
 			// Check event
 			await expect(tx).to.emit(geniusDiamond, 'BridgeOutInitiated');
