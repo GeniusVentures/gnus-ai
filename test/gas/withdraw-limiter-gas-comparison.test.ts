@@ -19,6 +19,11 @@ import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import hre, { ethers } from 'hardhat';
 import type { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import {
+	SGNS_DESTINATION,
+	SGNS_DESTINATION_Y_ODD,
+	DEST_CHAIN_ID,
+} from '../utils/bridge-fixtures';
 
 interface GasResult {
 	binCount: number;
@@ -202,7 +207,13 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 						// Note: bridgeOut doesn't trigger limiter, but we measure it for comparison
 						const tx = await geniusDiamond
 							.connect(user1)
-							.bridgeOut(gnusAmount, GNUS_TOKEN_ID, 137);
+							.bridgeOut(
+								gnusAmount,
+								GNUS_TOKEN_ID,
+								DEST_CHAIN_ID,
+								SGNS_DESTINATION,
+								SGNS_DESTINATION_Y_ODD,
+							);
 						const receipt = await tx.wait();
 
 						recordGas(
