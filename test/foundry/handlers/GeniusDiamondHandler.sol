@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {GeniusDiamondTestBase} from "../base/GeniusDiamondTestBase.sol";
+import {GeniusDiamondTestBase, IGNUSBridgeOut} from "../base/GeniusDiamondTestBase.sol";
 import {console} from "forge-std/console.sol";
 
 /**
@@ -267,21 +267,20 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
 
         amount = _boundUint256(amount, 1 ether, balance);
 
-        bytes memory callData = abi.encodeWithSignature(
-            "bridgeOut(uint256,uint256,uint256,bytes)",
-            amount,
-            GNUS_TOKEN_ID,
-            1, // destination chain
-            TEST_SGNS_DEST
-        );
-
+        // Typed bridgeOut; success-gated ghost-counter semantics preserved via try/catch.
         vm.prank(currentActor);
-        (bool success, ) = diamond.call(callData);
-
-        if (success) {
+        try
+            IGNUSBridgeOut(diamond).bridgeOut(
+                amount,
+                GNUS_TOKEN_ID,
+                DEST_CHAIN_ID,
+                SGNS_DESTINATION,
+                SGNS_DESTINATION_Y_ODD
+            )
+        {
             ghost_totalBridgeDeposits++;
             calls_bridgeDeposit++;
-        }
+        } catch {}
 
         console.log("[HANDLER] Bridge Deposit:", amount);
     }
