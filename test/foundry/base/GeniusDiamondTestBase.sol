@@ -14,7 +14,17 @@ import {console} from "forge-std/console.sol";
  * @dev All test contracts should inherit from this base
  */
 abstract contract GeniusDiamondTestBase is DiamondFuzzBase {
-    // 64-byte SuperGenius destination key (zero key for testing)
+    // ========================================
+    // Bridge Constants (paired with test/utils/bridge-fixtures.ts — keep in lockstep)
+    // ========================================
+    // 32-byte X component of the SuperGenius destination public key (0x1234 padded).
+    // Mirrors `SGNS_DESTINATION` in test/utils/bridge-fixtures.ts.
+    bytes32 public constant SGNS_DESTINATION = bytes32(uint256(0x1234));
+    // Parity of the destination key's Y component (false = even). Mirrors SGNS_DESTINATION_Y_ODD.
+    bool public constant SGNS_DESTINATION_Y_ODD = false;
+
+    // DEPRECATED: 64-byte `bytes` destination from the interim bridgeOut(...,bytes) signature.
+    // TODO(M0-E4): remove once BridgeFuzz.t.sol is migrated to the bytes32+bool selector.
     bytes public constant TEST_SGNS_DEST = hex"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
     // ========================================
