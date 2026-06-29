@@ -1,0 +1,103 @@
+/**
+ * Safe SDK proposal helper.
+ *
+ * Builds, signs, and submits a Safe transaction to the Safe Transaction Service.
+ * Does **not** perform any network I/O at module load — all RPC and HTTP calls
+ * happen inside the function body when invoked.
+ *
+ * @module scripts/safe/proposeSafeTransaction
+ */
+
+import SafeApiKit from '@safe-global/api-kit';
+import Safe from '@safe-global/protocol-kit';
+import { OperationType } from '@safe-global/types-kit';
+import type { MetaTransactionData } from '@safe-global/types-kit';
+import { ethers } from 'ethers';
+
+import type {
+    ProposeSafeTransactionInput,
+    ProposeSafeTransactionResult,
+} from './safeProposalTypes';
+
+/**
+ * Build a Safe transaction, compute its hash, sign it with the proposer's
+ * private key, and submit the proposal to the Safe Transaction Service.
+ *
+ * The caller must ensure:
+ *  - The proposer EOA has been added as a **Proposer** in the Safe UI
+ *    (Settings -> Proposers) for the target Safe.
+ *  - The Safe Transaction Service is available for `chainId`
+ *    (see https://docs.safe.global/api-kit/available-services).
+ *
+ * @param input - Fully populated proposal parameters.
+ * @returns The result metadata including `safeTxHash` for tracking.
+ */
+export async function proposeSafeTransaction(
+    input: ProposeSafeTransactionInput,
+): Promise<ProposeSafeTransactionResult> {
+    // -- 1. Provider and signer ------------------------------------------------
+    const provider = new ethers.JsonRpcProvider(input.rpcUrl);
+    const proposer = new ethers.Wallet(input.proposerPrivateKey, provider);
+    const proposerAddress = await proposer.getAddress();
+
+    // -- 2. API Kit (Safe Transaction Service client) --------------------------
+    const apiKit = new SafeApiKit({
+        chainId: input.chainId,
+        ...(input.safeTxServiceUrl ? { txServiceUrl: input.safeTxServiceUrl } : {}),
+        ...(input.safeApiKey ? { apiKey: input.safeApiKey } : {}),
+    });
+
+    // -- 3. Protocol Kit (Safe contract interface) -----------------------------
+    //
+    // protocol-kit@8.0.1 accepts provider as Eip1193Provider | HttpTransport |
+    // SocketTransport. HttpTransport = string, so passing the RPC URL directly
+    // is valid and avoids type compatibility issues with JsonRpcProvider.
+    const protocolKit = await Safe.init({
+        provider: input.rpcUrl,
+        signer: input.proposerPrivateKey,
+        safeAddress: input.safeAddress,
+    });
+
+    // -- 4. Build the Safe transaction data ------------------------------------
+    const safeTransactionData: MetaTransactionData = {
+        to: input.to,
+        value: input.value || '0',
+        data: input.data,
+        operation: input.operation ?? OperationType.Call,
+    };
+
+    const safeTransaction = await protocolKit.createTransaction({
+        transactions: [safeTransactionData],
+    });
+
+    // -- 5. Compute and sign the Safe transaction hash -------------------------
+    const safeTxHash = await protocolKit.getTransactionHash(safeTransaction);
+
+    // protocol-kit@8.0.1: signHash returns SafeSignature whose `.data`
+    // property is the hex-encoded signature bytes.
+    const senderSignature = await protocolKit.signHash(safeTxHash);
+
+    // -- 6. Submit the proposal to the Safe Transaction Service ----------------
+    //
+    // safeTransaction.data is typed as SafeTransactionData, which satisfies the
+    // `safeTransactionData` field of ProposeTransactionProps.
+    await apiKit.proposeTransaction({
+        safeAddress: input.safeAddress,
+        safeTransactionData: safeTransaction.data,
+        safeTxHash,
+        senderAddress: proposerAddress,
+        senderSignature: senderSignature.data,
+        origin: input.origin || 'gnus-ai-rpc-upgrade',
+    });
+
+    // -- 7. Return result metadata ---------------------------------------------
+    return {
+        safeAddress: input.safeAddress,
+        safeTxHash,
+        proposerAddress,
+        to: input.to,
+        value: input.value || '0',
+        data: input.data,
+        operation: input.operation ?? OperationType.Call,
+    };
+}
