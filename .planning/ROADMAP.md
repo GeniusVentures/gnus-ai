@@ -170,6 +170,34 @@ Plans:
 
 ---
 
+
+## Phase 08.1: Safe Wallet Proposer Retrofit for DiamondCut Proposals
+
+**Goal:** Retrofit the existing RPC Diamond deployment flow so privileged diamondCut/admin transactions are proposed to a Safe wallet for signer review, instead of executed directly by the deployer EOA. Default behavior unchanged; mainnet direct privileged upgrades blocked; local proposal artifact written as manual fallback.
+
+**Success Criteria:**
+1. With `SAFE_PROPOSE=false` (or unset), existing direct deploy/upgrade behavior is byte-for-byte unchanged.
+2. With `SAFE_PROPOSE=true` and a valid `SAFE_ADDRESS`, the diamondCut transaction is proposed to the Safe Transaction Service instead of sent directly; the proposal is visible in the Safe UI.
+3. Normal facet/contract deployments still execute directly via the existing RPC flow (only the privileged diamondCut is intercepted).
+4. `RPCDiamondDeployer` constructs `SafeProposerRPCDeploymentStrategy` when `safePropose=true` and `RPCDeploymentStrategy` otherwise.
+5. A local proposal artifact is written under `diamonds/<diamondName>/safe-proposals/<network>-<chainId>-<timestamp>-<safeTxHash>.json` containing target, calldata (selector `0x1f931c1c`), value, operation, safeTxHash, proposer, chainId.
+6. Mainnet direct privileged diamondCut upgrades are blocked unless `SAFE_PROPOSE=true`; Sepolia direct upgrades warn loudly.
+7. Unit tests cover config validation, env loading, strategy selection, and the performDiamondCutTasks intercept (with mocked Safe SDK — no real network calls).
+8. The canonical deployed-diamond state is NOT marked as upgraded when only a proposal has been created.
+
+**Requirements:** SWP-01 (Safe SDK deps), SWP-02 (config extension + validation), SWP-03 (CLI options + env wiring), SWP-04 (Safe proposal helper), SWP-05 (artifact writer), SWP-06 (SafeProposerRPCDeploymentStrategy), SWP-07 (strategy wiring), SWP-08 (.env.example), SWP-09 (mainnet guard), SWP-10 (unit tests), SWP-11 (Sepolia smoke test)
+**Priority:** P0 (security-critical — mainnet safety)
+**Reviewer:** @Super-Genius
+
+**Plans:** 3 plans
+
+Plans:
+- [x] 08.1-01-PLAN.md — Install Safe SDK deps, write proposeSafeTransaction helper, writeSafeProposalArtifact, extend .env.example
+- [ ] 08.1-02-PLAN.md — Implement SafeProposerRPCDeploymentStrategy, extend config/CLI/env, wire strategy branch, add mainnet guard
+- [ ] 08.1-03-PLAN.md — Unit tests (config, validation, strategy selection, intercept) + Sepolia smoke-test doc
+
+---
+
 ## Phase 9: Per-Child GNUS Treasury/Reserve
 
 **Goal:** Replace implicit burn/mint backing with explicit per-child GNUS treasury accounting. Fix the asymmetric backing invariant (CONCERNS #1) — descendants can no longer be minted without GNUS and later redeemed for GNUS.

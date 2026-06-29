@@ -44,6 +44,20 @@
 
 - [ ] **DEP-01**: Pin `contracts-starter` to a specific commit hash in `package.json` — currently pointed at `https://github.com/mudgen/diamond-2-hardhat.git` without a commit reference.
 
+### Safe Wallet Proposer
+
+- [x] **SWP-01**: Install Safe SDK dependencies — @safe-global/api-kit, @safe-global/protocol-kit, @safe-global/types-kit as exact-pinned devDependencies.
+- [ ] **SWP-02**: Extend config/CLI/environment validation for Safe proposal mode.
+- [ ] **SWP-03**: Wire CLI options (--safe-propose, --safe-address, etc.) and env loading.
+- [x] **SWP-04**: Implement proposeSafeTransaction() helper using Safe SDK — builds, signs, and submits Safe transaction proposals.
+- [x] **SWP-05**: Implement writeSafeProposalArtifact() — writes local JSON fallback artifact with calldata, selector, metadata.
+- [ ] **SWP-06**: Implement SafeProposerRPCDeploymentStrategy — intercepts diamondCut transactions for Safe proposal instead of direct send.
+- [ ] **SWP-07**: Wire strategy selection in RPCDiamondDeployer — SafeProposerRPCDeploymentStrategy when safePropose=true, RPCDeploymentStrategy otherwise.
+- [x] **SWP-08**: Extend .env.example with Safe proposal section (SAFE_PROPOSE, SAFE_ADDRESS, SAFE_PROPOSER_PRIVATE_KEY, SAFE_TX_SERVICE_URL, SAFE_API_KEY, SAFE_ORIGIN).
+- [ ] **SWP-09**: Add mainnet guard — block direct privileged upgrades on mainnet unless SAFE_PROPOSE=true.
+- [ ] **SWP-10**: Unit tests covering config validation, env loading, strategy selection, diamondCut intercept.
+- [ ] **SWP-11**: Sepolia smoke test — manual verification that Safe proposal appears in Safe UI.
+
 ## v2 Requirements
 
 ### NFT Token Economics
@@ -90,10 +104,22 @@ _These are investigation items only — no implementation committed until resear
 | TEST-03 | Phase 6 | Pending |
 | QUAL-01 | Phase 2 | Pending |
 | DEP-01 | Phase 7 | Pending |
+| SWP-01 | Phase 08.1 | Complete |
+| SWP-02 | Phase 08.1 | Pending |
+| SWP-03 | Phase 08.1 | Pending |
+| SWP-04 | Phase 08.1 | Complete |
+| SWP-05 | Phase 08.1 | Complete |
+| SWP-06 | Phase 08.1 | Pending |
+| SWP-07 | Phase 08.1 | Pending |
+| SWP-08 | Phase 08.1 | Complete |
+| SWP-09 | Phase 08.1 | Pending |
+| SWP-10 | Phase 08.1 | Pending |
+| SWP-11 | Phase 08.1 | Pending |
 
 **Coverage:**
 - v1 requirements: 22 total
-- Mapped to phases: 22
+- v2 requirements (SWP): 11 total
+- Mapped to phases: 33
 - Unmapped: 0
 
 ---
