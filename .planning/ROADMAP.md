@@ -170,6 +170,16 @@ Plans:
 
 ---
 
+### Phase 08.1: Safe Wallet Proposer retrofit for diamondCut proposals (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 08.1 to break down)
+
 ## Phase 9: Per-Child GNUS Treasury/Reserve
 
 **Goal:** Replace implicit burn/mint backing with explicit per-child GNUS treasury accounting. Fix the asymmetric backing invariant (CONCERNS #1) — descendants can no longer be minted without GNUS and later redeemed for GNUS.
