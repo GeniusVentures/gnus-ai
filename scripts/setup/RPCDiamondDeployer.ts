@@ -553,6 +553,9 @@ export class RPCDiamondDeployer {
 
 		// Safe proposal mode validation
 		if (config.safePropose) {
+			if (!config.chainId || config.chainId <= 0) {
+				errors.push('A valid chainId is required when SAFE_PROPOSE=true');
+			}
 			if (!config.safeAddress) {
 				errors.push('SAFE_ADDRESS is required when SAFE_PROPOSE=true');
 			} else if (!ethers.isAddress(config.safeAddress)) {
