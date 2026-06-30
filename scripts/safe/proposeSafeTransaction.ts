@@ -70,8 +70,16 @@ export async function proposeSafeTransaction(
         transactions: [safeTransactionData],
     });
 
-    // -- 5. Compute and sign the Safe transaction hash -------------------------
-    const safeTxHash = await protocolKit.getTransactionHash(safeTransaction);
+    // -- 5. Sign the Safe transaction so the proposer's signature is embedded --
+    //
+    // The canonical protocol-kit pattern signs the SafeTransaction object
+    // *before* submitting, so the proposer's signature is part of the encoded
+    // payload. Relying on `signHash` alone leaves the SafeTransaction unsigned,
+    // which can cause the Safe Transaction Service to either silently discard
+    // the signature or reject the proposal with an HTTP 422.
+    const signedSafeTransaction = await protocolKit.signTransaction(safeTransaction);
+
+    const safeTxHash = await protocolKit.getTransactionHash(signedSafeTransaction);
 
     // protocol-kit@8.0.1: signHash returns SafeSignature whose `.data`
     // property is the hex-encoded signature bytes.
@@ -79,11 +87,12 @@ export async function proposeSafeTransaction(
 
     // -- 6. Submit the proposal to the Safe Transaction Service ----------------
     //
-    // safeTransaction.data is typed as SafeTransactionData, which satisfies the
-    // `safeTransactionData` field of ProposeTransactionProps.
+    // signedSafeTransaction.data is typed as SafeTransactionData, which satisfies
+    // the `safeTransactionData` field of ProposeTransactionProps and carries the
+    // proposer's embedded signature.
     await apiKit.proposeTransaction({
         safeAddress: input.safeAddress,
-        safeTransactionData: safeTransaction.data,
+        safeTransactionData: signedSafeTransaction.data,
         safeTxHash,
         senderAddress: proposerAddress,
         senderSignature: senderSignature.data,

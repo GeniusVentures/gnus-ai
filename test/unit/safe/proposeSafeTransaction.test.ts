@@ -83,6 +83,10 @@ describe('proposeSafeTransaction', function () {
                     operation: 0,
                 },
             }),
+            // CR-01: signTransaction embeds the proposer signature on the
+            // returned SafeTransaction. Stub resolves to the same shape the
+            // real SDK returns so downstream .data access works.
+            signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
             getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
             signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
         };
@@ -119,6 +123,10 @@ describe('proposeSafeTransaction', function () {
                     operation: 0,
                 },
             }),
+            // CR-01: signTransaction embeds the proposer signature on the
+            // returned SafeTransaction. Stub resolves to the same shape the
+            // real SDK returns so downstream .data access works.
+            signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
             getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
             signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
         };
@@ -146,6 +154,10 @@ describe('proposeSafeTransaction', function () {
                     operation: 0,
                 },
             }),
+            // CR-01: signTransaction embeds the proposer signature on the
+            // returned SafeTransaction. Stub resolves to the same shape the
+            // real SDK returns so downstream .data access works.
+            signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
             getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
             signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
         };
@@ -177,6 +189,10 @@ describe('proposeSafeTransaction', function () {
                     operation: 0,
                 },
             }),
+            // CR-01: signTransaction embeds the proposer signature on the
+            // returned SafeTransaction. Stub resolves to the same shape the
+            // real SDK returns so downstream .data access works.
+            signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
             getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
             signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
         };
@@ -209,6 +225,10 @@ describe('proposeSafeTransaction', function () {
                     operation: 0,
                 },
             }),
+            // CR-01: signTransaction embeds the proposer signature on the
+            // returned SafeTransaction. Stub resolves to the same shape the
+            // real SDK returns so downstream .data access works.
+            signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
             getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
             signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
         };
@@ -239,6 +259,10 @@ describe('proposeSafeTransaction', function () {
                     operation: 0,
                 },
             }),
+            // CR-01: signTransaction embeds the proposer signature on the
+            // returned SafeTransaction. Stub resolves to the same shape the
+            // real SDK returns so downstream .data access works.
+            signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
             getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
             signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
         };
