@@ -168,13 +168,26 @@ describe('proposeSafeTransaction', function () {
         };
         sandbox.stub(ethers, 'JsonRpcProvider').returns(mockProvider as any);
 
-        await proposeSafeTransaction(makeInput());
+        const input = makeInput();
+        await proposeSafeTransaction(input);
 
         expect(proposeTxStub.calledOnce).to.be.true;
         // The proposer's EOA address derived from the test private key
         const callArgs = proposeTxStub.firstCall.args[0];
         // Wallet.getAddress() returns checksummed; compare case-insensitively
         expect(callArgs.senderAddress.toLowerCase()).to.equal(PROPOSER_ADDRESS.toLowerCase());
+
+        // WR-08: assert the full proposeTransaction argument shape so a
+        // regression that passed `{}` or dropped a field would fail the suite.
+        expect(callArgs).to.deep.include({
+            safeAddress: VALID_SAFE_ADDRESS,
+            safeTxHash: SAFE_TX_HASH,
+            origin: 'test-suite',
+        });
+        expect(callArgs.safeTransactionData).to.have.property('to', TARGET_ADDRESS);
+        expect(callArgs.safeTransactionData).to.have.property('data', input.data);
+        // senderSignature is hex-encoded signature bytes from signHash stub.
+        expect(callArgs.senderSignature).to.match(/^0x[0-9a-f]*$/);
     });
 
     it('should call Safe.init with the expected configuration', async function () {
