@@ -175,12 +175,12 @@ Plans:
 **Goal:** [Urgent work - to be planned]
 **Requirements**: TBD
 **Depends on:** Phase 8
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 08.1-01 — Safe helper scripts (proposeSafeTransaction, writeSafeProposalArtifact)
 - [x] 08.1-02 — Safe proposal wiring (CLI flags, strategy, config, validation)
-- [ ] 08.1-03 — TBD
+- [x] 08.1-03 — TBD
 
 ## Phase 9: Per-Child GNUS Treasury/Reserve
 

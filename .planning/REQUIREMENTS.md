@@ -55,8 +55,8 @@
 - [ ] **SWP-07**: Wire strategy selection in RPCDiamondDeployer — SafeProposerRPCDeploymentStrategy when safePropose=true, RPCDeploymentStrategy otherwise.
 - [x] **SWP-08**: Extend .env.example with Safe proposal section (SAFE_PROPOSE, SAFE_ADDRESS, SAFE_PROPOSER_PRIVATE_KEY, SAFE_TX_SERVICE_URL, SAFE_API_KEY, SAFE_ORIGIN).
 - [ ] **SWP-09**: Add mainnet guard — block direct privileged upgrades on mainnet unless SAFE_PROPOSE=true.
-- [ ] **SWP-10**: Unit tests covering config validation, env loading, strategy selection, diamondCut intercept.
-- [ ] **SWP-11**: Sepolia smoke test — manual verification that Safe proposal appears in Safe UI.
+- [x] **SWP-10**: Unit tests covering config validation, env loading, strategy selection, diamondCut intercept.
+- [x] **SWP-11**: Sepolia smoke test — manual verification that Safe proposal appears in Safe UI.
 
 ## v2 Requirements
 
@@ -113,8 +113,8 @@ _These are investigation items only — no implementation committed until resear
 | SWP-07 | Phase 08.1 | Pending |
 | SWP-08 | Phase 08.1 | Complete |
 | SWP-09 | Phase 08.1 | Pending |
-| SWP-10 | Phase 08.1 | Pending |
-| SWP-11 | Phase 08.1 | Pending |
+| SWP-10 | Phase 08.1 | Complete |
+| SWP-11 | Phase 08.1 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total
