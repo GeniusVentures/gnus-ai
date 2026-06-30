@@ -9,6 +9,7 @@ import {
 	SupportedProvider,
 	cutKey,
 } from '@diamondslab/diamonds';
+import { SafeProposerRPCDeploymentStrategy } from './strategies/SafeProposerRPCDeploymentStrategy';
 import '@diamondslab/hardhat-diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import chalk from 'chalk';
@@ -78,6 +79,18 @@ export interface RPCDiamondDeployerConfig extends DiamondConfig {
 	verbose?: boolean;
 	/** Unique key for this deployer instance */
 	rpcDiamondDeployerKey?: string;
+	/** Enable Safe proposal mode for diamondCut/admin upgrades */
+	safePropose?: boolean;
+	/** Safe multisig wallet address */
+	safeAddress?: string;
+	/** Proposer EOA private key (defaults to privateKey) */
+	safeProposerPrivateKey?: string;
+	/** Custom Safe Transaction Service URL */
+	safeTxServiceUrl?: string;
+	/** Safe API key if required */
+	safeApiKey?: string;
+	/** Origin string for Safe proposal */
+	safeOrigin?: string;
 }
 
 /**
@@ -168,15 +181,34 @@ export class RPCDiamondDeployer {
 		this.provider = new JsonRpcProvider(config.rpcUrl);
 		this.signer = new ethers.Wallet(config.privateKey, this.provider) as any;
 
-		// Create RPC deployment strategy
-		this.strategy = new RPCDeploymentStrategy(
-			config.rpcUrl,
-			config.privateKey,
-			config.gasLimitMultiplier || 1.2,
-			config.maxRetries || 3,
-			config.retryDelayMs || 2000,
-			this.verbose,
-		);
+		// Create deployment strategy — branch on safePropose
+		if (config.safePropose) {
+			this.strategy = new SafeProposerRPCDeploymentStrategy({
+				rpcUrl: config.rpcUrl,
+				privateKey: config.privateKey,
+				proposerPrivateKey: config.safeProposerPrivateKey || config.privateKey,
+				safeAddress: config.safeAddress!,
+				chainId: config.chainId,
+				gasLimitMultiplier: config.gasLimitMultiplier || 1.2,
+				maxRetries: config.maxRetries || 3,
+				retryDelayMs: config.retryDelayMs || 2000,
+				verbose: this.verbose,
+				safeTxServiceUrl: config.safeTxServiceUrl,
+				safeApiKey: config.safeApiKey,
+				safeOrigin: config.safeOrigin || 'gnus-ai-rpc-upgrade',
+				diamondName: config.diamondName,
+				networkName: config.networkName,
+			});
+		} else {
+			this.strategy = new RPCDeploymentStrategy(
+				config.rpcUrl,
+				config.privateKey,
+				config.gasLimitMultiplier || 1.2,
+				config.maxRetries || 3,
+				config.retryDelayMs || 2000,
+				this.verbose,
+			);
+		}
 
 		// Initialize diamond with strategy
 		this.diamond = new Diamond(this.config, repository);
@@ -452,6 +484,12 @@ export class RPCDiamondDeployer {
 			contractsPath: process.env.CONTRACTS_PATH,
 			configFilePath: process.env.DIAMOND_CONFIG_PATH,
 			writeDeployedDiamondData: process.env.WRITE_DEPLOYED_DIAMOND_DATA !== 'false', // Default to true
+			safePropose: process.env.SAFE_PROPOSE === 'true',
+			safeAddress: process.env.SAFE_ADDRESS,
+			safeProposerPrivateKey: process.env.SAFE_PROPOSER_PRIVATE_KEY,
+			safeTxServiceUrl: process.env.SAFE_TX_SERVICE_URL,
+			safeApiKey: process.env.SAFE_API_KEY,
+			safeOrigin: process.env.SAFE_ORIGIN || 'gnus-ai-rpc-upgrade',
 			...overrides,
 		};
 
@@ -491,6 +529,28 @@ export class RPCDiamondDeployer {
 
 		if (config.retryDelayMs && (config.retryDelayMs < 100 || config.retryDelayMs > 30000)) {
 			errors.push('Retry delay must be between 100ms and 30000ms');
+		}
+
+		// Safe proposal mode validation
+		if (config.safePropose) {
+			if (!config.safeAddress) {
+				errors.push('SAFE_ADDRESS is required when SAFE_PROPOSE=true');
+			} else if (!ethers.isAddress(config.safeAddress)) {
+				errors.push('SAFE_ADDRESS must be a valid address');
+			}
+			const proposerKey = config.safeProposerPrivateKey || config.privateKey;
+			if (!proposerKey) {
+				errors.push('A proposer private key is required when SAFE_PROPOSE=true');
+			} else if (!proposerKey.match(/^0x[a-fA-F0-9]{64}$/)) {
+				errors.push('Safe proposer private key must be 64 hex characters with 0x prefix');
+			}
+		}
+
+		// Mainnet guard: refuse direct privileged diamondCut on mainnet
+		if (config.networkName === 'mainnet' && !config.safePropose) {
+			errors.push(
+				'Mainnet privileged Diamond cut/admin upgrades require SAFE_PROPOSE=true — refusing to deploy directly',
+			);
 		}
 
 		if (errors.length > 0) {
@@ -541,6 +601,15 @@ export class RPCDiamondDeployer {
 		}
 
 		this.deployInProgress = true;
+
+		// Sepolia direct-upgrade advisory
+		if (this.networkName === 'sepolia' && !this.config.safePropose) {
+			console.warn(
+				chalk.yellow(
+					'⚠️  Direct privileged upgrade on sepolia without Safe proposal — this is allowed but not recommended. Set SAFE_PROPOSE=true for the safe path.',
+				),
+			);
+		}
 
 		try {
 			if (this.verbose) {
