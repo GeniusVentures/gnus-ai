@@ -101,7 +101,7 @@ describe('RPCDiamondDeployer', function () {
 			const invalidConfig = { ...config, privateKey: 'invalid-key' };
 
 			expect(() => (RPCDiamondDeployer as any).validateConfig(invalidConfig)).to.throw(
-				'Private key must be 64 hex characters with 0x prefix',
+				'Private key must be 64 hex characters (0x prefix optional)',
 			);
 		});
 

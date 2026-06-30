@@ -209,7 +209,7 @@ describe('RPCDiamondDeployer Safe Proposal Mode', function () {
             });
 
             expect(() => (RPCDiamondDeployer as any).validateConfig(config)).to.throw(
-                'Safe proposer private key must be 64 hex characters with 0x prefix',
+                'Safe proposer private key must be 64 hex characters (0x prefix optional)',
             );
         });
 
