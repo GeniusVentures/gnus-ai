@@ -175,10 +175,12 @@ Plans:
 **Goal:** [Urgent work - to be planned]
 **Requirements**: TBD
 **Depends on:** Phase 8
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 08.1 to break down)
+- [x] 08.1-01 — Safe helper scripts (proposeSafeTransaction, writeSafeProposalArtifact)
+- [x] 08.1-02 — Safe proposal wiring (CLI flags, strategy, config, validation)
+- [ ] 08.1-03 — TBD
 
 ## Phase 9: Per-Child GNUS Treasury/Reserve
 
