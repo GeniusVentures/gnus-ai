@@ -171,6 +171,19 @@ export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
         // Validate no orphaned selectors before proceeding
         await this.validateNoOrphanedSelectors(facetCuts);
 
+        // Short-circuit on empty facet cuts — matches the OZ Defender strategy.
+        // Without this, a no-op re-run or idempotent re-proposal would create a
+        // Safe proposal containing diamondCut([], ZeroAddress, '0x'), wasting
+        // signer attention and producing a misleading artifact.
+        if (facetCuts.length === 0) {
+            console.log(
+                chalk.yellow(
+                    '⏩ No DiamondCut operations needed — no Safe proposal will be created.',
+                ),
+            );
+            return;
+        }
+
         // -- 4. Build the FacetCut[] argument ------------------------------
         const facetSelectorCutMap = facetCuts.map((fc) => ({
             facetAddress: fc.facetAddress,
