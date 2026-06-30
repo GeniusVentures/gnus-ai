@@ -25,6 +25,26 @@ import '@diamondslab/hardhat-diamonds';
 dotenv.config();
 
 /**
+ * Strip query-string parameters from an RPC URL before logging.
+ *
+ * RPC URLs routinely embed Infura/Alchemy project IDs as query-string
+ * parameters (e.g. `?api_key=...`). Verbose logging would otherwise leak these
+ * into CI logs. If the input is not a parseable URL, it is returned unchanged.
+ *
+ * @param url - The raw RPC URL.
+ * @returns The URL with its query string removed.
+ */
+function redactRpcUrl(url: string): string {
+	try {
+		const parsed = new URL(url);
+		parsed.search = '';
+		return parsed.toString();
+	} catch {
+		return url;
+	}
+}
+
+/**
  * Network configuration interface matching hardhat.config.ts chainManager
  */
 export interface HardhatNetworkConfig {
@@ -623,7 +643,7 @@ export class RPCDiamondDeployer {
 				console.log(
 					chalk.blue(`🌐 Network: ${this.networkName} (Chain ID: ${this.chainId})`),
 				);
-				console.log(chalk.blue(`🔗 RPC URL: ${this.config.rpcUrl}`));
+				console.log(chalk.blue(`🔗 RPC URL: ${redactRpcUrl(this.config.rpcUrl)}`));
 				console.log(chalk.blue('='.repeat(50)));
 			}
 
