@@ -45,6 +45,14 @@ function redactRpcUrl(url: string): string {
 }
 
 /**
+ * Private-key validation regex. Accepts 64 hex characters with an OPTIONAL
+ * `0x` prefix and any hex casing, mirroring the leniency of ethers' Wallet /
+ * computeAddress. The previous mandatory-`0x` form rejected valid keys pasted
+ * from wallet exports that omit the prefix.
+ */
+const PRIVATE_KEY_RE = /^(0x)?[a-fA-F0-9]{64}$/;
+
+/**
  * Network configuration interface matching hardhat.config.ts chainManager
  */
 export interface HardhatNetworkConfig {
@@ -538,8 +546,8 @@ export class RPCDiamondDeployer {
 
 		if (!config.privateKey) {
 			errors.push('Private key is required');
-		} else if (!config.privateKey.match(/^0x[a-fA-F0-9]{64}$/)) {
-			errors.push('Private key must be 64 hex characters with 0x prefix');
+		} else if (!config.privateKey.match(PRIVATE_KEY_RE)) {
+			errors.push('Private key must be 64 hex characters (0x prefix optional)');
 		}
 
 		if (
@@ -570,8 +578,8 @@ export class RPCDiamondDeployer {
 			const proposerKey = config.safeProposerPrivateKey || config.privateKey;
 			if (!proposerKey) {
 				errors.push('A proposer private key is required when SAFE_PROPOSE=true');
-			} else if (!proposerKey.match(/^0x[a-fA-F0-9]{64}$/)) {
-				errors.push('Safe proposer private key must be 64 hex characters with 0x prefix');
+			} else if (!proposerKey.match(PRIVATE_KEY_RE)) {
+				errors.push('Safe proposer private key must be 64 hex characters (0x prefix optional)');
 			}
 		}
 
