@@ -2,14 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-last_updated: "2026-06-30T01:05:42.719Z"
+status: ready_to_plan
+last_updated: 2026-06-30T17:58:56.979Z
 progress:
   total_phases: 13
   completed_phases: 5
   total_plans: 10
   completed_plans: 10
   percent: 38
+stopped_at: Phase 08.1 complete (3/3) — ready to discuss Phase 9
 ---
 
 # Project State
@@ -22,7 +23,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-26 after initialization)
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 08.1 — Safe Wallet Proposer retrofit for diamondCut proposals
+**Current focus:** Phase 9 — per child gnus treasury/reserve
 
 ## Phase Status
 
