@@ -150,12 +150,14 @@ export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
         try {
             const diamondCutArtifact = await getContractArtifact('IDiamondCut', diamond);
             diamondCutAbi = diamondCutArtifact.abi;
-        } catch {
-            // Fall through — use the local ABI fragment
+        } catch (error) {
+            // Fall through — use the local ABI fragment. Bind the error so
+            // verbose mode can distinguish "Hardhat not available" (expected)
+            // from "artifact file corrupted" (actionable).
             if (this.verbose) {
                 console.log(
                     chalk.gray(
-                        'ℹ️  IDiamondCut artifact not resolved via Hardhat; using local ABI fragment.',
+                        `ℹ️  IDiamondCut artifact not resolved via Hardhat (${(error as Error).message}); using local ABI fragment.`,
                     ),
                 );
             }
