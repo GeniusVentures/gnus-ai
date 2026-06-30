@@ -77,7 +77,9 @@ const kIDiamondCutAbi: ethers.InterfaceAbi = [
 
 export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
     // Safe-specific fields (parent fields rpcUrl, privateKey, etc. are private
-    // so we store our own copies)
+    // so we store our own copies). `safeRpcUrl` mirrors the parent's private
+    // `rpcUrl` so this subclass does not depend on getConfig() to recover it.
+    private readonly safeRpcUrl: string;
     private readonly safeAddress: string;
     private readonly proposerPrivateKey: string;
     private readonly chainId: number;
@@ -102,6 +104,7 @@ export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
             config.verbose ?? false,
         );
 
+        this.safeRpcUrl = config.rpcUrl;
         this.safeAddress = config.safeAddress;
         this.proposerPrivateKey = config.proposerPrivateKey;
         this.chainId = config.chainId;
@@ -201,7 +204,7 @@ export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
         // -- 6. Propose the transaction to the Safe ------------------------
         const result = await proposeSafeTransaction({
             chainId: BigInt(this.chainId),
-            rpcUrl: this.getConfig().rpcUrl,
+            rpcUrl: this.safeRpcUrl,
             safeAddress: this.safeAddress,
             proposerPrivateKey: this.proposerPrivateKey,
             safeTxServiceUrl: this.safeTxServiceUrl,
