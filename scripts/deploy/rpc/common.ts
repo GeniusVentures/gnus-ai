@@ -26,6 +26,12 @@ export interface BaseRPCOptions {
 	maxRetries?: number;
 	retryDelayMs?: number;
 	useHardhatConfig?: boolean;
+	safePropose?: boolean;
+	safeAddress?: string;
+	safeProposerPrivateKey?: string;
+	safeTxServiceUrl?: string;
+	safeApiKey?: string;
+	safeOrigin?: string;
 }
 
 /**
@@ -124,6 +130,51 @@ export function addCommonOptions(command: Command): Command {
 		)
 		.option('--no-use-hardhat-config', 'Disable hardhat configuration')
 		.option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true');
+
+	// Safe proposal options are composed here so all RPC commands pick them up
+	// without changes to deploy-rpc.ts or upgrade-rpc.ts. addSafeOptions modifies
+	// the same Command object in-place via .option() chain and returns it.
+	addSafeOptions(command);
+	return command;
+}
+
+/**
+ * Adds Safe proposal CLI options to a Commander command.
+ * Composed into addCommonOptions so all RPC commands expose Safe flags
+ * without changes to deploy-rpc.ts or upgrade-rpc.ts.
+ */
+export function addSafeOptions(command: Command): Command {
+	return command
+		.option(
+			'--safe-propose',
+			'Create a Safe proposal instead of directly executing privileged Diamond cut/admin tx',
+			process.env.SAFE_PROPOSE === 'true',
+		)
+		.option(
+			'--safe-address <address>',
+			'Safe wallet address that owns/administers the Diamond',
+			process.env.SAFE_ADDRESS,
+		)
+		.option(
+			'--safe-proposer-private-key <key>',
+			'Optional proposer key. Defaults to PRIVATE_KEY.',
+			process.env.SAFE_PROPOSER_PRIVATE_KEY,
+		)
+		.option(
+			'--safe-tx-service-url <url>',
+			'Optional custom Safe Transaction Service URL',
+			process.env.SAFE_TX_SERVICE_URL,
+		)
+		.option(
+			'--safe-api-key <key>',
+			'Optional Safe API key if required by the configured Safe service',
+			process.env.SAFE_API_KEY,
+		)
+		.option(
+			'--safe-origin <origin>',
+			'Origin string shown/stored with the Safe proposal',
+			process.env.SAFE_ORIGIN || 'gnus-ai-rpc-upgrade',
+		);
 }
 
 /**
@@ -312,6 +363,12 @@ export function createRPCConfig(options: BaseRPCOptions): RPCDiamondDeployerConf
 					retryDelayMs: options.retryDelayMs,
 					configFilePath: options.configPath,
 					deploymentsPath: options.deploymentsPath,
+					safePropose: options.safePropose,
+					safeAddress: options.safeAddress,
+					safeProposerPrivateKey: options.safeProposerPrivateKey,
+					safeTxServiceUrl: options.safeTxServiceUrl,
+					safeApiKey: options.safeApiKey,
+					safeOrigin: options.safeOrigin,
 				},
 			);
 		} catch (error) {
@@ -345,6 +402,12 @@ export function createRPCConfig(options: BaseRPCOptions): RPCDiamondDeployerConf
 		configFilePath: options.configPath,
 		deploymentsPath: options.deploymentsPath,
 		writeDeployedDiamondData: true,
+		safePropose: options.safePropose,
+		safeAddress: options.safeAddress,
+		safeProposerPrivateKey: options.safeProposerPrivateKey,
+		safeTxServiceUrl: options.safeTxServiceUrl,
+		safeApiKey: options.safeApiKey,
+		safeOrigin: options.safeOrigin,
 	};
 }
 
