@@ -7,6 +7,7 @@
  */
 
 import { OperationType } from '@safe-global/types-kit';
+import { ethers } from 'ethers';
 import { dirname, join } from 'path';
 import { mkdirSync, writeFileSync } from 'fs';
 
@@ -54,6 +55,29 @@ export interface WriteSafeProposalArtifactParams {
 export function writeSafeProposalArtifact(
     params: WriteSafeProposalArtifactParams,
 ): string {
+    // -- 0. Validate inputs — the artifact is the source of truth once written,
+    //       so unvalidated input must not be persisted.
+    if (!ethers.isAddress(params.safeAddress)) {
+        throw new Error(
+            `writeSafeProposalArtifact: invalid 'safeAddress': ${params.safeAddress}`,
+        );
+    }
+    if (!ethers.isAddress(params.proposerAddress)) {
+        throw new Error(
+            `writeSafeProposalArtifact: invalid 'proposerAddress': ${params.proposerAddress}`,
+        );
+    }
+    if (!ethers.isAddress(params.target)) {
+        throw new Error(
+            `writeSafeProposalArtifact: invalid 'target': ${params.target}`,
+        );
+    }
+    if (!/^0x[0-9a-fA-F]*$/.test(params.calldata)) {
+        throw new Error(
+            "writeSafeProposalArtifact: 'calldata' must be 0x-prefixed hex",
+        );
+    }
+
     // -- 1. Compute calldata selector (first 4 bytes = 10 hex chars incl. 0x)
     const calldataSelector = params.calldata.slice(0, 10);
 

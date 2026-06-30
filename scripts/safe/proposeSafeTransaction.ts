@@ -35,6 +35,34 @@ import type {
 export async function proposeSafeTransaction(
     input: ProposeSafeTransactionInput,
 ): Promise<ProposeSafeTransactionResult> {
+    // -- 0. Validate inputs before any network I/O ----------------------------
+    //
+    // The canonical deployment data file is intentionally NOT updated when a
+    // Safe proposal is created, so the local artifact becomes the only source
+    // of truth. A malformed `to`, `safeAddress`, `value`, or `data` baked into
+    // that artifact is a silent failure that signers may not catch until
+    // execution. Validate here to fail fast.
+    if (!ethers.isAddress(input.to)) {
+        throw new Error(`proposeSafeTransaction: invalid 'to' address: ${input.to}`);
+    }
+    if (!ethers.isAddress(input.safeAddress)) {
+        throw new Error(
+            `proposeSafeTransaction: invalid 'safeAddress': ${input.safeAddress}`,
+        );
+    }
+    if (!/^0x[0-9a-fA-F]*$/.test(input.data)) {
+        throw new Error("proposeSafeTransaction: 'data' must be 0x-prefixed hex");
+    }
+    if (input.value !== undefined) {
+        try {
+            BigInt(input.value);
+        } catch {
+            throw new Error(
+                `proposeSafeTransaction: 'value' must be a wei integer: ${input.value}`,
+            );
+        }
+    }
+
     // -- 1. Provider and signer ------------------------------------------------
     const provider = new ethers.JsonRpcProvider(input.rpcUrl);
     const proposer = new ethers.Wallet(input.proposerPrivateKey, provider);
