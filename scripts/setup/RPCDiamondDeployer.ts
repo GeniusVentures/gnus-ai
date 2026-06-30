@@ -546,8 +546,11 @@ export class RPCDiamondDeployer {
 			}
 		}
 
-		// Mainnet guard: refuse direct privileged diamondCut on mainnet
-		if (config.networkName === 'mainnet' && !config.safePropose) {
+		// Mainnet guard: refuse direct privileged diamondCut on mainnet.
+		// Normalize (trim + lowercase) so casing/whitespace variants like
+		// "Mainnet", " mainnet ", or "MAINNET" cannot bypass the guard.
+		const normalizedNetwork = (config.networkName || '').trim().toLowerCase();
+		if (normalizedNetwork === 'mainnet' && !config.safePropose) {
 			errors.push(
 				'Mainnet privileged Diamond cut/admin upgrades require SAFE_PROPOSE=true — refusing to deploy directly',
 			);
@@ -602,8 +605,9 @@ export class RPCDiamondDeployer {
 
 		this.deployInProgress = true;
 
-		// Sepolia direct-upgrade advisory
-		if (this.networkName === 'sepolia' && !this.config.safePropose) {
+		// Sepolia direct-upgrade advisory.
+		// Normalize (trim + lowercase) to match the mainnet guard's robustness.
+		if (this.networkName.trim().toLowerCase() === 'sepolia' && !this.config.safePropose) {
 			console.warn(
 				chalk.yellow(
 					'⚠️  Direct privileged upgrade on sepolia without Safe proposal — this is allowed but not recommended. Set SAFE_PROPOSE=true for the safe path.',

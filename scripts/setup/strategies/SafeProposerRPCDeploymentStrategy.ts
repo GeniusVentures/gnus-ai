@@ -128,7 +128,9 @@ export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
      */
     protected async performDiamondCutTasks(diamond: Diamond): Promise<void> {
         // -- Mainnet defensive check (belt-and-suspenders) ------------------
-        if (this.networkName === 'mainnet') {
+        // Normalize (trim + lowercase) so casing/whitespace variants cannot
+        // bypass the guard. Mirrors RPCDiamondDeployer.validateConfig.
+        if (this.networkName.trim().toLowerCase() === 'mainnet') {
             console.warn(
                 chalk.yellow(
                     '🛡️  DIAMOND CUT VIA SAFE: A Safe proposal will be created for this mainnet diamondCut.',
