@@ -63,10 +63,13 @@ export async function proposeSafeTransaction(
         }
     }
 
-    // -- 1. Provider and signer ------------------------------------------------
-    const provider = new ethers.JsonRpcProvider(input.rpcUrl);
-    const proposer = new ethers.Wallet(input.proposerPrivateKey, provider);
-    const proposerAddress = await proposer.getAddress();
+    // -- 1. Derive proposer address -------------------------------------------
+    //
+    // Derive the proposer EOA address directly from the private key with no
+    // network I/O. The actual signing is delegated to protocolKit via
+    // Safe.init({ signer }) below, so a second provider+wallet here would be
+    // dead weight that doubles the connection-failure surface.
+    const proposerAddress = ethers.computeAddress(input.proposerPrivateKey);
 
     // -- 2. API Kit (Safe Transaction Service client) --------------------------
     const apiKit = new SafeApiKit({
