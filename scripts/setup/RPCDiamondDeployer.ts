@@ -474,14 +474,20 @@ export class RPCDiamondDeployer {
 	): RPCDiamondDeployerConfig {
 		const requiredEnvVars = ['RPC_URL', 'PRIVATE_KEY', 'DIAMOND_NAME'];
 
-		// Check required environment variables
+		// Explicit env-var -> config-key map. The previous implementation used
+		// `envVar.toLowerCase().replace('_', '')`, which only strips the FIRST
+		// underscore (e.g. 'RPC_URL' -> 'rpcurl', not 'rpcUrl'), so the override
+		// branch never matched the real config keys and was effectively dead.
+		const envToConfigKey: Record<string, keyof RPCDiamondDeployerConfig> = {
+			RPC_URL: 'rpcUrl',
+			PRIVATE_KEY: 'privateKey',
+			DIAMOND_NAME: 'diamondName',
+		};
+
+		// Check required environment variables, acknowledging overrides
 		for (const envVar of requiredEnvVars) {
-			if (
-				!process.env[envVar] &&
-				!overrides?.[
-					envVar.toLowerCase().replace('_', '') as keyof RPCDiamondDeployerConfig
-				]
-			) {
+			const configKey = envToConfigKey[envVar];
+			if (!process.env[envVar] && !overrides?.[configKey]) {
 				throw new Error(`Missing required environment variable: ${envVar}`);
 			}
 		}
