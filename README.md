@@ -8,17 +8,17 @@ The architecture uses facet-based modularization to separate contract logic, fac
 
 ## Features
 
-* **ERC-20 Compatible GNUS Token**: Supports standard transfer, approval, minting, and burning.
-* **ERC-1155 Hierarchical NFTs**: Nested NFT creation and minting, including factory-controlled child NFTs.
-* **Access-Controlled Mint/Burn**: Uses `MINTER_ROLE`, `CREATOR_ROLE`, and `NFT_PROXY_OPERATOR_ROLE` for secure permissions.
-* **Burn-on-Mint Conversion**: GNUS tokens are burned to mint NFTs based on defined exchange rates.
-* **Diamond Deployment System**: Fully upgradeable contracts using Diamond pattern and facet registration.
-* **Multichain Test Framework**: Automated test suites span across multiple EVM-compatible networks.
+- **ERC-20 Compatible GNUS Token**: Supports standard transfer, approval, minting, and burning.
+- **ERC-1155 Hierarchical NFTs**: Nested NFT creation and minting, including factory-controlled child NFTs.
+- **Access-Controlled Mint/Burn**: Uses `MINTER_ROLE`, `CREATOR_ROLE`, and `NFT_PROXY_OPERATOR_ROLE` for secure permissions.
+- **Burn-on-Mint Conversion**: GNUS tokens are burned to mint NFTs based on defined exchange rates.
+- **Diamond Deployment System**: Fully upgradeable contracts using Diamond pattern and facet registration.
+- **Multichain Test Framework**: Automated test suites span across multiple EVM-compatible networks.
 
 ## Requirements
 
-* **Solidity Version**: ^0.8.4 or later
-* **Node Version**: v18 (use `nvm` to manage)
+- **Solidity Version**: ^0.8.4 or later
+- **Node Version**: v18 (use `nvm` to manage)
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
@@ -44,13 +44,14 @@ cp .env.example .env
 vim .env
 ```
 
-4. Install the node dependencies in the local node_modules folder. 
-```bash
-yarn install
-``` 
+4. Install the node dependencies in the local node_modules folder.
 
 ```bash
-yarn compile 
+yarn install
+```
+
+```bash
+yarn compile
 ```
 
 ### 4. Run Tests
@@ -60,6 +61,7 @@ yarn test
 ```
 
 7. Testing Multichain Forks for Sepolia and Polygon Amoy
+
 ```bash
 yarn hardhat test-multichain ./test/integration/multichain/tests/* --chains sepolia,polygon_amoy --logs logs
 ```

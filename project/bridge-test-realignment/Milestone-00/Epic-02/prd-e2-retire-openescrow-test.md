@@ -13,8 +13,8 @@ ownership transfer," used `OpenEscrow` to create on-contract state, then checked
 survived a `transferOwnership`. With `OpenEscrow` gone, the test was **commented out** to
 keep the suite green — leaving an undocumented commented block.
 
-This feature **rewrites that test escrow-free** so the original intent — *contract state
-persists across an ownership transfer* — is still verified, without depending on the
+This feature **rewrites that test escrow-free** so the original intent — _contract state
+persists across an ownership transfer_ — is still verified, without depending on the
 removed escrow feature. It is a test-only change.
 
 ## 2. Goals
@@ -61,8 +61,8 @@ removed escrow feature. It is a test-only change.
 - **State vehicle:** prefer a GNUS balance (`mint` then `balanceOf`) and/or a role
   (`grantRole` then `hasRole`) as the persisted state, since those clearly survive an
   ownership transfer and use existing facets.
-- **Intent fidelity:** keep the assertion focused on *state persistence across ownership
-  transfer*; only the mechanism for creating state changes (no escrow).
+- **Intent fidelity:** keep the assertion focused on _state persistence across ownership
+  transfer_; only the mechanism for creating state changes (no escrow).
 - **Existing patterns:** neighboring tests in the same file already use
   `transferOwnership`, `owner()`, and signer connections — follow their style.
 
@@ -74,5 +74,5 @@ removed escrow feature. It is a test-only change.
 
 ## 8. Open Questions
 
-- Which state vehicle to assert — balance, role, or both? *Default: assert both a minted
-  GNUS balance and a granted role for stronger coverage.* Resolve during `/generate-tasks`.
+- Which state vehicle to assert — balance, role, or both? _Default: assert both a minted
+  GNUS balance and a granted role for stronger coverage._ Resolve during `/generate-tasks`.

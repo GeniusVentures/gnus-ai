@@ -4,14 +4,14 @@ This directory contains comprehensive deployment, upgrade, and verification tool
 
 ## 📁 Contents
 
-| Script | Purpose | Description |
-|--------|---------|-------------|
-| `deploy-rpc.ts` | **Main Deployment** | Primary script for deploying Diamond contracts |
-| `upgrade-rpc.ts` | **Upgrade Management** | Handles Diamond contract upgrades with analysis |
-| `verify-rpc.ts` | **Verification** | Validates deployment integrity and contract verification |
-| `status-rpc.ts` | **Status Monitoring** | Shows deployment status and configuration details |
-| `deploy-rpc-manual.ts` | **Interactive Deployment** | Step-by-step manual deployment with confirmations |
-| `common.ts` | **Shared Infrastructure** | Common utilities and configuration management |
+| Script                 | Purpose                    | Description                                              |
+| ---------------------- | -------------------------- | -------------------------------------------------------- |
+| `deploy-rpc.ts`        | **Main Deployment**        | Primary script for deploying Diamond contracts           |
+| `upgrade-rpc.ts`       | **Upgrade Management**     | Handles Diamond contract upgrades with analysis          |
+| `verify-rpc.ts`        | **Verification**           | Validates deployment integrity and contract verification |
+| `status-rpc.ts`        | **Status Monitoring**      | Shows deployment status and configuration details        |
+| `deploy-rpc-manual.ts` | **Interactive Deployment** | Step-by-step manual deployment with confirmations        |
+| `common.ts`            | **Shared Infrastructure**  | Common utilities and configuration management            |
 
 ## 🚀 Quick Start
 
@@ -203,38 +203,38 @@ npx ts-node scripts/deploy/rpc/verify-rpc.ts GeniusDiamond sepolia \
 
 ### Common Options (All Scripts)
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--rpc-url` | Custom RPC endpoint | From .env |
-| `--private-key` | Deployment private key | From .env |
-| `--verbose` | Detailed logging | false |
-| `--config-path` | Custom config file path | Auto-detected |
-| `--deployments-path` | Deployment records path | ./diamonds |
-| `--gas-multiplier` | Gas limit multiplier | 1.2 |
-| `--max-retries` | Maximum retry attempts | 3 |
-| `--retry-delay` | Retry delay in ms | 2000 |
+| Option               | Description             | Default       |
+| -------------------- | ----------------------- | ------------- |
+| `--rpc-url`          | Custom RPC endpoint     | From .env     |
+| `--private-key`      | Deployment private key  | From .env     |
+| `--verbose`          | Detailed logging        | false         |
+| `--config-path`      | Custom config file path | Auto-detected |
+| `--deployments-path` | Deployment records path | ./diamonds    |
+| `--gas-multiplier`   | Gas limit multiplier    | 1.2           |
+| `--max-retries`      | Maximum retry attempts  | 3             |
+| `--retry-delay`      | Retry delay in ms       | 2000          |
 
 ### Deployment-Specific Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--force` | Force deployment even if exists | false |
-| `--skip-verification` | Skip post-deployment verification | false |
+| Option                | Description                       | Default |
+| --------------------- | --------------------------------- | ------- |
+| `--force`             | Force deployment even if exists   | false   |
+| `--skip-verification` | Skip post-deployment verification | false   |
 
 ### Upgrade-Specific Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--dry-run` | Analyze without executing | false |
-| `--target-version` | Specific version to upgrade to | Latest |
-| `--skip-analysis` | Skip pre-upgrade analysis | false |
+| Option             | Description                    | Default |
+| ------------------ | ------------------------------ | ------- |
+| `--dry-run`        | Analyze without executing      | false   |
+| `--target-version` | Specific version to upgrade to | Latest  |
+| `--skip-analysis`  | Skip pre-upgrade analysis      | false   |
 
 ### Verification-Specific Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--etherscan` | Verify contracts on Etherscan | false |
-| `--check-all` | Perform comprehensive checks | false |
+| Option        | Description                   | Default |
+| ------------- | ----------------------------- | ------- |
+| `--etherscan` | Verify contracts on Etherscan | false   |
+| `--check-all` | Perform comprehensive checks  | false   |
 
 ## 📋 Deployment Procedures
 

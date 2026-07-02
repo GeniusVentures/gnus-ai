@@ -70,58 +70,60 @@ _These are investigation items only — no implementation committed until resear
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Escrow release/closing/dispute | Moved to SuperGenius chain, different contracts handle this |
-| New feature development | This is a remediation pass — no greenfield features |
-| Mainnet deployment | Gated on audit completion and remediation verification |
-| Real-time chat / video NFTs | Not part of the GNUS token ecosystem |
-| GNUSNFTCollectionName facet consolidation | Low-priority refactor, defer to future cleanup |
-| Multisig/timelock for super admin | Defer to governance phase |
+| Feature                                   | Reason                                                      |
+| ----------------------------------------- | ----------------------------------------------------------- |
+| Escrow release/closing/dispute            | Moved to SuperGenius chain, different contracts handle this |
+| New feature development                   | This is a remediation pass — no greenfield features         |
+| Mainnet deployment                        | Gated on audit completion and remediation verification      |
+| Real-time chat / video NFTs               | Not part of the GNUS token ecosystem                        |
+| GNUSNFTCollectionName facet consolidation | Low-priority refactor, defer to future cleanup              |
+| Multisig/timelock for super admin         | Defer to governance phase                                   |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| DEBT-01 | Phase 2 | Pending |
-| DEBT-02 | Phase 1 | Complete |
-| DEBT-03 | Phase 1 | Complete |
-| DEBT-04 | Phase 2 | Pending |
-| DEBT-05 | Phase 2 | Pending |
-| DEBT-06 | Phase 1 | Pending |
-| SEC-01 | Phase 3 | Pending |
-| SEC-02 | Phase 3 | Pending |
-| SEC-03 | Phase 3 | Pending |
-| SEC-04 | Phase 3 | Pending |
-| SEC-05 | Phase 4 | Pending |
-| SEC-06 | Phase 4 | Pending |
-| SEC-07 | Phase 4 | Pending |
-| SEC-08 | Phase 5 | Pending |
-| PERF-01 | Phase 5 | Pending |
-| PERF-02 | Phase 5 | Pending |
-| TEST-01 | Phase 6 | Pending |
-| TEST-02 | Phase 6 | Pending |
-| TEST-03 | Phase 6 | Pending |
-| QUAL-01 | Phase 2 | Pending |
-| DEP-01 | Phase 7 | Pending |
-| SWP-01 | Phase 08.1 | Complete |
-| SWP-02 | Phase 08.1 | Pending |
-| SWP-03 | Phase 08.1 | Pending |
-| SWP-04 | Phase 08.1 | Complete |
-| SWP-05 | Phase 08.1 | Complete |
-| SWP-06 | Phase 08.1 | Pending |
-| SWP-07 | Phase 08.1 | Pending |
-| SWP-08 | Phase 08.1 | Complete |
-| SWP-09 | Phase 08.1 | Pending |
-| SWP-10 | Phase 08.1 | Complete |
-| SWP-11 | Phase 08.1 | Complete |
+| Requirement | Phase      | Status   |
+| ----------- | ---------- | -------- |
+| DEBT-01     | Phase 2    | Pending  |
+| DEBT-02     | Phase 1    | Complete |
+| DEBT-03     | Phase 1    | Complete |
+| DEBT-04     | Phase 2    | Pending  |
+| DEBT-05     | Phase 2    | Pending  |
+| DEBT-06     | Phase 1    | Pending  |
+| SEC-01      | Phase 3    | Pending  |
+| SEC-02      | Phase 3    | Pending  |
+| SEC-03      | Phase 3    | Pending  |
+| SEC-04      | Phase 3    | Pending  |
+| SEC-05      | Phase 4    | Pending  |
+| SEC-06      | Phase 4    | Pending  |
+| SEC-07      | Phase 4    | Pending  |
+| SEC-08      | Phase 5    | Pending  |
+| PERF-01     | Phase 5    | Pending  |
+| PERF-02     | Phase 5    | Pending  |
+| TEST-01     | Phase 6    | Pending  |
+| TEST-02     | Phase 6    | Pending  |
+| TEST-03     | Phase 6    | Pending  |
+| QUAL-01     | Phase 2    | Pending  |
+| DEP-01      | Phase 7    | Pending  |
+| SWP-01      | Phase 08.1 | Complete |
+| SWP-02      | Phase 08.1 | Pending  |
+| SWP-03      | Phase 08.1 | Pending  |
+| SWP-04      | Phase 08.1 | Complete |
+| SWP-05      | Phase 08.1 | Complete |
+| SWP-06      | Phase 08.1 | Pending  |
+| SWP-07      | Phase 08.1 | Pending  |
+| SWP-08      | Phase 08.1 | Complete |
+| SWP-09      | Phase 08.1 | Pending  |
+| SWP-10      | Phase 08.1 | Complete |
+| SWP-11      | Phase 08.1 | Complete |
 
 **Coverage:**
+
 - v1 requirements: 22 total
 - v2 requirements (SWP): 11 total
 - Mapped to phases: 33
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-05-26*
-*Last updated: 2026-05-26 after initial definition*
+
+_Requirements defined: 2026-05-26_
+_Last updated: 2026-05-26 after initial definition_

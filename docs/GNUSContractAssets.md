@@ -13,6 +13,7 @@ Provides functionality to manage and withdraw external assets sent to the contra
 Allows withdrawal of tokens mistakenly sent to the contract, with safeguards for GNUS tokens.
 
 security-contact: support@gnus.ai
+
 ## Events info
 
 ### WithdrawToken
@@ -23,14 +24,13 @@ event WithdrawToken(address indexed token, address to, uint256 amount)
 
 Emitted when tokens are withdrawn from the contract.
 
-
 Parameters:
 
-| Name   | Type    | Description                                  |
-| :----- | :------ | :------------------------------------------- |
-| token  | address | The address of the token being withdrawn.    |
-| to     | address | The destination address for the withdrawal.  |
-| amount | uint256 | The amount of tokens withdrawn.              |
+| Name   | Type    | Description                                 |
+| :----- | :------ | :------------------------------------------ |
+| token  | address | The address of the token being withdrawn.   |
+| to     | address | The destination address for the withdrawal. |
+| amount | uint256 | The amount of tokens withdrawn.             |
 
 ## Errors info
 
@@ -41,6 +41,7 @@ error ErrorWithdrawingEther()
 ```
 
 Reverts when an error occurs while withdrawing Ether.
+
 ### CannotWithdrawGNUS
 
 ```solidity
@@ -48,6 +49,7 @@ error CannotWithdrawGNUS()
 ```
 
 Reverts when attempting to withdraw the GNUS token.
+
 ## Functions info
 
 ### withdrawToken (0x01e33667)
@@ -64,7 +66,6 @@ Withdraw external tokens mistakenly sent to the contract.
 
 This function allows the super admin to withdraw tokens mistakenly sent to the contract,
 but it does not allow withdrawing GNUS tokens.
-
 
 Parameters:
 

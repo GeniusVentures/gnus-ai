@@ -2,7 +2,7 @@
 
 > **Status:** 🧭 design of record (read this before the project plan)
 > **Author:** Am0rfu5 · **Date:** 2026-06-19
-> **Scope:** Captures the *already-decided* contract design that the test suite must
+> **Scope:** Captures the _already-decided_ contract design that the test suite must
 > conform to. This is descriptive (the target the tests verify), not a proposal.
 
 This document records the contract-level design decisions introduced on
@@ -17,10 +17,10 @@ The cross-chain bridge-out entrypoint expanded from a 3-argument call (which car
 only routing) to a 5-argument call that carries the **destination recipient identity**
 on the SuperGenius (SGNS) chain.
 
-| | Old (main) | New (`feature/bridge-out-initiated`) |
-|---|---|---|
-| Signature | `bridgeOut(uint256 amount, uint256 id, uint256 destChainID)` | `bridgeOut(uint256 amount, uint256 id, uint256 destChainID, bytes32 sgnsDestination, bool destinationYOdd)` |
-| Event | (prior name) | `BridgeOutInitiated(address indexed sender, uint256 id, uint256 amount, uint256 srcChainID, uint256 destChainID, bytes32 sgnsDestination, bool destinationYOdd)` |
+|           | Old (main)                                                   | New (`feature/bridge-out-initiated`)                                                                                                                             |
+| --------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Signature | `bridgeOut(uint256 amount, uint256 id, uint256 destChainID)` | `bridgeOut(uint256 amount, uint256 id, uint256 destChainID, bytes32 sgnsDestination, bool destinationYOdd)`                                                      |
+| Event     | (prior name)                                                 | `BridgeOutInitiated(address indexed sender, uint256 id, uint256 amount, uint256 srcChainID, uint256 destChainID, bytes32 sgnsDestination, bool destinationYOdd)` |
 
 Reference: [GNUSBridge.sol:187-209](../../contracts/gnus-ai/GNUSBridge.sol#L187-L209).
 
@@ -52,8 +52,8 @@ Together these reconstruct the full public key on the destination side (standard
 compressed-point reconstruction). Test fixtures model this as:
 
 ```ts
-const SGNS_DESTINATION = ethers.zeroPadValue('0x1234', 32); // 32-byte X component
-const SGNS_DESTINATION_Y_ODD = false;                       // Y parity (even)
+const SGNS_DESTINATION = ethers.zeroPadValue("0x1234", 32); // 32-byte X component
+const SGNS_DESTINATION_Y_ODD = false; // Y parity (even)
 ```
 
 Reference: [GNUSBridgeEnhanced.test.ts:21-23](../../test/unit/GNUSBridgeEnhanced.test.ts#L21-L23).
@@ -121,7 +121,7 @@ contains all three forms — this is the source of the drift:
 1. `bridgeOut(uint256,uint256,uint256)` — original, no destination. (Hardhat gas test.)
 2. `bridgeOut(uint256,uint256,uint256,bytes)` — interim `bytes`-encoded destination key.
    Still used by the **Foundry** suite (`BridgeFuzz.t.sol` + the 64-byte `bytes
-   TEST_SGNS_DEST` in `GeniusDiamondTestBase.sol`). This selector no longer exists on the
+TEST_SGNS_DEST` in `GeniusDiamondTestBase.sol`). This selector no longer exists on the
    diamond, so every Foundry `bridgeOut` call silently reverts — failing one test and
    producing **false-greens** in the negative tests.
 3. `bridgeOut(uint256,uint256,uint256,bytes32,bool)` — **current** (X + Y-parity). Only
@@ -140,10 +140,10 @@ this is a prerequisite for every Foundry-touching change and for the final green
 
 ## 6. Decision log
 
-| Decision | Rationale |
-|---|---|
+| Decision                                                           | Rationale                                                                                                             |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | Carry destination as compressed pubkey (X + Y-parity), not address | SGNS recipients are EC keys, not EVM addresses; compressed form fits `bytes32 + bool` and is relayer-reconstructable. |
-| `srcChainID` read from storage, not passed in | Prevents caller spoofing of source chain in the emitted event. |
-| Remove GeniusAI/`OpenEscrow` from diamond | Escrow feature retired; removing the facet shrinks attack surface and selector table. |
-| Add negative test for absent `OpenEscrow` selector | Guards against accidental facet re-introduction. |
-| Centralize bridge test fixtures | Root-causes the per-file constant drift that caused these failures. |
+| `srcChainID` read from storage, not passed in                      | Prevents caller spoofing of source chain in the emitted event.                                                        |
+| Remove GeniusAI/`OpenEscrow` from diamond                          | Escrow feature retired; removing the facet shrinks attack surface and selector table.                                 |
+| Add negative test for absent `OpenEscrow` selector                 | Guards against accidental facet re-introduction.                                                                      |
+| Centralize bridge test fixtures                                    | Root-causes the per-file constant drift that caused these failures.                                                   |

@@ -18,17 +18,20 @@ The limiter tracks transfer amounts using a **bin-based aggregation system** and
 ## User Stories
 
 ### As a Token Holder
+
 - I want to withdraw my NFTs back to GNUS tokens without unnecessary friction
 - I want to be protected from unauthorized withdrawals if my account is compromised
 - I want clear error messages if my withdrawal is blocked so I understand why
 
 ### As a Super Administrator
+
 - I want to configure different withdrawal limits for different user types (e.g., verified accounts, new accounts)
 - I want to bypass throttle limits for emergency situations or administrative operations
 - I want to disable throttling globally if needed during system maintenance or upgrades
 - I want to monitor withdrawal patterns across accounts to detect suspicious behavior
 
 ### As a Security Auditor
+
 - I want withdrawal limits to be enforced at the smart contract level, not just UI
 - I want a transparent, auditable record of all throttle configurations and bypass events
 - I want the system to be resilient against attempts to circumvent rate limits
@@ -154,23 +157,23 @@ The implementation uses the Diamond Storage pattern with bin-based aggregation t
 ```solidity
 library GNUSWithdrawLimiterStorage {
     bytes32 constant STORAGE_POSITION = keccak256("gnus.ai.withdraw.limiter.storage");
-    
+
     struct WithdrawBin {
         uint128 timestamp;    // Timestamp of the bin
         uint128 totalAmount;  // Accumulated total for this bin
     }
-    
+
     struct AccountConfig {
         uint32 binCount;          // Number of bins (0 = use default)
         uint64 windowSeconds;     // Window duration (0 = use default)
         uint256 limitAmount;      // Withdrawal limit (0 = use default)
     }
-    
+
     struct AccountState {
         uint128 baseTimestamp;    // First withdrawal timestamp
         WithdrawBin[] bins;       // Fixed-size array of bins
     }
-    
+
     struct Layout {
         mapping(address => AccountState) accountStates;
         mapping(address => AccountConfig) accountConfigs;
@@ -200,6 +203,7 @@ library GNUSWithdrawLimiterStorage {
 ### Access Control Integration
 
 The feature integrates with the existing `GeniusAccessControl` system:
+
 - Uses `onlySuperAdminRole` modifier for administrative functions
 - Super admin bypass implemented via role check in limiter validation
 - Consistent with existing security patterns in GNUS.AI
@@ -243,7 +247,7 @@ The facet should be added at priority 115 (between GNUSControl at 110 and GNUSBr
 This is a new feature, so initial deployment will:
 
 1. Add `initializeGNUSWithdrawLimiter()` function to `DiamondInitFacet.sol` to set default values:
-   - `defaultLimitAmount` = 100,000 GNUS (100000 * 10^18)
+   - `defaultLimitAmount` = 100,000 GNUS (100000 \* 10^18)
    - `defaultWindowSeconds` = 86,400 seconds (1 day)
    - `defaultBinCount` = 24 bins
    - `limiterEnabled` = true
@@ -272,6 +276,7 @@ This is a new feature, so initial deployment will:
 - **Gas Benchmarks**: Measure gas costs with varying bin counts and active bins
 
 **Coverage Requirements:**
+
 - Minimum 95% code coverage across all facets and storage libraries
 - 100% coverage for bin calculation logic
 - All error conditions must have corresponding test cases
@@ -281,7 +286,7 @@ This is a new feature, so initial deployment will:
 1. **Security**: Zero successful circumventions of limiter limits in production
 2. **Detection Rate**: Limiter triggers on 100% of withdrawals exceeding configured limits
 3. **False Positive Rate**: <1% of legitimate withdrawals blocked (indicates proper limit configuration)
-4. **Gas Efficiency**: 
+4. **Gas Efficiency**:
    - Average gas overhead <30k gas for limiter check with 24 bins
    - Gas costs remain constant regardless of account activity level
 5. **Storage Efficiency**: Maximum storage per account = `binCount * 32 bytes` (predictable and bounded)
@@ -303,26 +308,26 @@ This is a new feature, so initial deployment will:
 
 **Note**: All implementation must follow Test-Driven Development (TDD) - tests written before code.
 
-- **Phase 1** (Week 1): 
+- **Phase 1** (Week 1):
   - Write test specifications for all bin calculation logic
   - Implement storage library with bin structures
   - Implement facet contract following TDD
-- **Phase 2** (Week 1-2): 
+- **Phase 2** (Week 1-2):
   - Write integration tests for GNUSBridge interaction
   - Integrate limiter check with GNUSBridge
   - Test locally across multiple chains
-- **Phase 3** (Week 2): 
+- **Phase 3** (Week 2):
   - Write comprehensive test suite (Hardhat + Foundry)
   - Fuzz tests for bin calculations
   - Gas benchmarking with various configurations
   - Achieve 95%+ code coverage
-- **Phase 4** (Week 3): 
+- **Phase 4** (Week 3):
   - Security audit and gas optimization
   - Address any findings from audit
-- **Phase 5** (Week 3): 
+- **Phase 5** (Week 3):
   - Deploy to testnet and validate
   - Run extended soak tests
-- **Phase 6** (Week 4): 
+- **Phase 6** (Week 4):
   - Deploy to production networks
   - Monitor initial deployment
 

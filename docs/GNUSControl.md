@@ -14,6 +14,7 @@ update protocol parameters, and handle bridge fees.
 Manages protocol-level security and controls, including blacklists and bridge fees.
 
 security-contact: support@gnus.ai
+
 ## Events info
 
 ### AddToBlackList
@@ -23,6 +24,7 @@ event AddToBlackList(uint256[] tokenIds, address[] addresses)
 ```
 
 Emitted when addresses or token IDs are added to the blacklist.
+
 ### RemoveFromBlackList
 
 ```solidity
@@ -30,6 +32,7 @@ event RemoveFromBlackList(uint256[] tokenIds, address[] addresses)
 ```
 
 Emitted when addresses or token IDs are removed from the blacklist.
+
 ### AddToGlobalBlackList
 
 ```solidity
@@ -37,6 +40,7 @@ event AddToGlobalBlackList(address bannedAddress)
 ```
 
 Emitted when an address is added to the global blacklist.
+
 ### RemoveFromGlobalBlackList
 
 ```solidity
@@ -44,6 +48,7 @@ event RemoveFromGlobalBlackList(address bannedAddress)
 ```
 
 Emitted when an address is removed from the global blacklist.
+
 ### UpdateBridgeFee
 
 ```solidity
@@ -51,7 +56,6 @@ event UpdateBridgeFee(uint256 indexed newFee)
 ```
 
 Emitted when the bridge fee is updated.
-
 
 Parameters:
 
@@ -71,6 +75,7 @@ Initializes the protocol to version 2.30.
 
 Ensures the protocol version is not already initialized to 2.30 or greater.
 Sets the protocol version to 230.
+
 ### banTransferorForAll (0x1307a4be)
 
 ```solidity
@@ -78,7 +83,6 @@ function banTransferorForAll(address bannedAddress) external onlySuperAdminRole
 ```
 
 Adds an address to the global transfer ban list.
-
 
 Parameters:
 
@@ -95,7 +99,6 @@ function allowTransferorForAll(
 ```
 
 Removes an address from the global transfer ban list.
-
 
 Parameters:
 
@@ -114,7 +117,6 @@ function banTransferorBatch(
 
 Adds a batch of addresses and token IDs to the blacklist.
 
-
 Parameters:
 
 | Name            | Type      | Description                                               |
@@ -132,7 +134,6 @@ function allowTransferorBatch(
 ```
 
 Removes a batch of addresses and token IDs from the blacklist.
-
 
 Parameters:
 
@@ -153,9 +154,9 @@ Ensures the new fee does not exceed the maximum allowed fee.
 
 Parameters:
 
-| Name   | Type    | Description                |
-| :----- | :------ | :------------------------- |
-| newFee | uint256 | The new bridge fee value.  |
+| Name   | Type    | Description               |
+| :----- | :------ | :------------------------ |
+| newFee | uint256 | The new bridge fee value. |
 
 ### setChainID (0xed8d47e6)
 
@@ -164,7 +165,6 @@ function setChainID(uint256 chainID) external onlySuperAdminRole
 ```
 
 Sets the chain ID for the protocol.
-
 
 Parameters:
 
@@ -183,14 +183,13 @@ function protocolInfo()
 
 Retrieves protocol information.
 
-
 Return values:
 
-| Name            | Type    | Description                    |
-| :-------------- | :------ | :----------------------------- |
-| bridgeFee       | uint256 | The current bridge fee.        |
-| protocolVersion | uint256 | The current protocol version.  |
-| chainID         | uint256 | The current chain ID.          |
+| Name            | Type    | Description                   |
+| :-------------- | :------ | :---------------------------- |
+| bridgeFee       | uint256 | The current bridge fee.       |
+| protocolVersion | uint256 | The current protocol version. |
+| chainID         | uint256 | The current chain ID.         |
 
 ### setProtocolVersion (0xceba5598)
 
@@ -201,7 +200,6 @@ function setProtocolVersion(
 ```
 
 Sets the protocol version.
-
 
 Parameters:
 

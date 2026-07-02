@@ -1,3 +1,14 @@
+// Load the Hardhat Runtime Environment FIRST. @diamondslab/diamonds transitively
+// requires @nomicfoundation/hardhat-ethers, which calls extendEnvironment() at
+// module load — and that needs a Hardhat context to already exist. Importing
+// hardhat before the diamonds library creates that context, so these RPC scripts
+// load cleanly under plain `npx ts-node` (not only via `npx hardhat run`).
+// Hardhat is NOT used to broadcast transactions — all deployment/upgrade traffic
+// is signed and sent directly via ethers over the configured RPC URL.
+import hre, { ethers } from 'hardhat';
+import '@diamondslab/hardhat-diamonds';
+import 'hardhat-multichain';
+
 import {
 	DeploymentRepository,
 	Diamond,
@@ -6,21 +17,19 @@ import {
 	DiamondPathsConfig,
 	FileDeploymentRepository,
 	RPCDeploymentStrategy,
+	RegistryFacetCutAction,
 	SupportedProvider,
 	cutKey,
 } from '@diamondslab/diamonds';
 import { SafeProposerRPCDeploymentStrategy } from './strategies/SafeProposerRPCDeploymentStrategy';
-import '@diamondslab/hardhat-diamonds';
+import { EncodeOnlyRPCDeploymentStrategy } from './strategies/EncodeOnlyRPCDeploymentStrategy';
+import { GnusDeployedDiamondDataSchema } from '../schemas/deployedDiamondDataSchema';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from 'ethers';
-import { existsSync } from 'fs';
-import hre, { ethers } from 'hardhat';
-import 'hardhat-multichain';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-
-import '@diamondslab/hardhat-diamonds';
 
 dotenv.config();
 
@@ -119,6 +128,8 @@ export interface RPCDiamondDeployerConfig extends DiamondConfig {
 	safeApiKey?: string;
 	/** Origin string for Safe proposal */
 	safeOrigin?: string;
+	/** Encode the diamondCut to a local artifact without proposing/executing (dry run) */
+	encodeOnly?: boolean;
 }
 
 /**
@@ -209,7 +220,9 @@ export class RPCDiamondDeployer {
 		this.provider = new JsonRpcProvider(config.rpcUrl);
 		this.signer = new ethers.Wallet(config.privateKey, this.provider) as any;
 
-		// Create deployment strategy — branch on safePropose
+		// Create deployment strategy — branch on safePropose, then encodeOnly.
+		// safePropose takes precedence when both are set: it is the committed
+		// path, while encodeOnly is the local dry-run alternative.
 		if (config.safePropose) {
 			this.strategy = new SafeProposerRPCDeploymentStrategy({
 				rpcUrl: config.rpcUrl,
@@ -224,6 +237,18 @@ export class RPCDiamondDeployer {
 				safeTxServiceUrl: config.safeTxServiceUrl,
 				safeApiKey: config.safeApiKey,
 				safeOrigin: config.safeOrigin || 'gnus-ai-rpc-upgrade',
+				diamondName: config.diamondName,
+				networkName: config.networkName,
+			});
+		} else if (config.encodeOnly) {
+			this.strategy = new EncodeOnlyRPCDeploymentStrategy({
+				rpcUrl: config.rpcUrl,
+				privateKey: config.privateKey,
+				chainId: config.chainId,
+				gasLimitMultiplier: config.gasLimitMultiplier || 1.2,
+				maxRetries: config.maxRetries || 3,
+				retryDelayMs: config.retryDelayMs || 2000,
+				verbose: this.verbose,
 				diamondName: config.diamondName,
 				networkName: config.networkName,
 			});
@@ -243,6 +268,87 @@ export class RPCDiamondDeployer {
 		this.diamond.setProvider(this.provider as any);
 		this.diamond.setSigner(this.signer);
 
+		// gnus-ai records store facet history under `.FacetDeployedInfo`
+		// (scripts/common.ts), but @diamondslab/diamonds seeds its selector
+		// registry from `.DeployedFacets`, and its DeployedDiamondDataSchema has
+		// FacetDeployedInfo commented out — so readDeployFile()'s Zod parse strips
+		// it and this.diamond.getDeployedDiamondData() can never surface it.
+		// Validate the raw canonical file with GnusDeployedDiamondDataSchema
+		// (which declares FacetDeployedInfo) so the history survives to seed the
+		// registry; the upgrade diff then emits Replace/Add/Remove instead of
+		// all-Add, which reverts on-chain with "Cannot add function that already
+		// exists".
+		const facetFilePath = this.config.deployedDiamondDataFilePath;
+		let facetHistory:
+			| Record<string, { address?: string; funcSelectors?: string[] }>
+			| undefined;
+		let hasLegacyDeployedFacets = false;
+		if (facetFilePath && existsSync(facetFilePath)) {
+			const parsed = GnusDeployedDiamondDataSchema.safeParse(
+				JSON.parse(readFileSync(facetFilePath, 'utf8')),
+			);
+			if (parsed.success) {
+				facetHistory = parsed.data.FacetDeployedInfo;
+				hasLegacyDeployedFacets = !!parsed.data.DeployedFacets;
+			} else if (this.verbose) {
+				console.log(chalk.yellow('⚠️  Facet history parse failed; skipping registry seed'));
+			}
+		}
+		if (facetHistory && !hasLegacyDeployedFacets) {
+			const facets = (this.diamond.getDeployConfig().facets ?? {}) as Record<
+				string,
+				{ priority?: number }
+			>;
+			const seeded: Record<
+				string,
+				{
+					facetName: string;
+					priority: number;
+					address: string;
+					action: RegistryFacetCutAction;
+				}
+			> = {};
+			for (const [facetName, { address, funcSelectors }] of Object.entries(facetHistory)) {
+				if (!address || !funcSelectors) {
+					continue;
+				}
+				const priority = facets[facetName]?.priority ?? 1000;
+				for (const selector of funcSelectors) {
+					seeded[selector] = {
+						facetName,
+						priority,
+						address,
+						action: RegistryFacetCutAction.Deployed,
+					};
+				}
+			}
+			this.diamond.registerFunctionSelectors(seeded);
+		}
+
+		// Mirror FacetDeployedInfo into deployedDiamondData.DeployedFacets
+		// so the analysis step (upgrade-rpc.ts) and the library's deploy
+		// loop see the existing facets. Without this, both read
+		// DeployedFacets (always {} after Zod strips FacetDeployedInfo)
+		// and treat every facet as new, triggering wasteful re-deploys
+		// and Replace cuts for unchanged facets.
+		if (facetHistory) {
+			const mirror = this.diamond.getDeployedDiamondData();
+			mirror.DeployedFacets = {};
+			for (const [
+				name,
+				{ address, funcSelectors, version, tx_hash, verified },
+			] of Object.entries(facetHistory)) {
+				if (address && funcSelectors) {
+					mirror.DeployedFacets[name] = {
+						address,
+						funcSelectors,
+						version,
+						tx_hash,
+						verified,
+					};
+				}
+			}
+		}
 		if (this.verbose) {
 			console.log(
 				chalk.blue(
@@ -271,7 +377,7 @@ export class RPCDiamondDeployer {
 	 */
 	public static getDiamondConfigFromHardhat(diamondName: string): DiamondPathsConfig {
 		try {
-			return (hre as any).diamonds.getDiamondConfig(diamondName);
+			return hre.diamonds.getDiamondConfig(diamondName);
 		} catch (error) {
 			throw new Error(
 				`Failed to load diamond configuration for "${diamondName}": ${(error as Error).message}`,
@@ -394,7 +500,7 @@ export class RPCDiamondDeployer {
 		// Return existing instance or create new one
 		if (!this.instances.has(key)) {
 			// Get Hardhat diamonds configuration if available
-			const hardhatDiamonds: DiamondPathsConfig = (hre as any).diamonds?.getDiamondConfig(
+			const hardhatDiamonds: DiamondPathsConfig = hre.diamonds?.getDiamondConfig(
 				config.diamondName,
 			);
 
@@ -579,7 +685,9 @@ export class RPCDiamondDeployer {
 			if (!proposerKey) {
 				errors.push('A proposer private key is required when SAFE_PROPOSE=true');
 			} else if (!proposerKey.match(PRIVATE_KEY_RE)) {
-				errors.push('Safe proposer private key must be 64 hex characters (0x prefix optional)');
+				errors.push(
+					'Safe proposer private key must be 64 hex characters (0x prefix optional)',
+				);
 			}
 		}
 
@@ -912,12 +1020,14 @@ export class RPCDiamondDeployer {
 			console.log(chalk.blue(`📋 Protocol Version: ${deployedData.protocolVersion}`));
 		}
 
-		if (deployedData?.DeployedFacets) {
-			const facetCount = Object.keys(deployedData.DeployedFacets).length;
+		const facetHistorySummary =
+			(deployedData as any)?.FacetDeployedInfo ?? (deployedData as any)?.DeployedFacets;
+		if (facetHistorySummary) {
+			const facetCount = Object.keys(facetHistorySummary).length;
 			console.log(chalk.blue(`🔧 Deployed Facets: ${facetCount}`));
 
-			Object.entries(deployedData.DeployedFacets).forEach(([name, facet]) => {
-				console.log(chalk.gray(`   ${name}: ${facet.address}`));
+			Object.entries(facetHistorySummary).forEach(([name, facet]) => {
+				console.log(chalk.gray(`   ${name}: ${(facet as any).address}`));
 			});
 		}
 

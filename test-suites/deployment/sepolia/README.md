@@ -6,7 +6,7 @@ The Sepolia version 2.4 deployment contains some problems that require a specifi
 
 ## Running this test suite
 
->> NOTE: The deployment records need to be reset after each run. This can be done by running the following command:
+> > NOTE: The deployment records need to be reset after each run. This can be done by running the following command:
 
 ```bash
 git checkout diamonds/GeniusDiamond/deployments/geniusdiamond-v2.4-sepolia-31337.json

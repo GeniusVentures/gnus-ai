@@ -47,18 +47,23 @@ completed: 2026-05-28
 Code: `52ad47d` (submodule) / `7b1596d` (parent)
 
 ### Changes
+
 - **ERC20TransferBatch.sol** — `require(msg.value == 0, "ETH not accepted")` in `mintBatch()`
 - **GNUSControl.sol** — `require(tokenIds.length == bannedAddresses.length)` in both `banTransferorBatch()` and `allowTransferorBatch()`
 
 ### Verification
+
 - Compilation: PASS (2 Solidity files)
 - Guard count: 3 guards added across 2 files
 
 ### Threat Mitigation
+
 - T-03-01 (ETH locking): Resolved — mintBatch rejects ETH
 - T-03-02/03 (misaligned arrays): Resolved — batch functions validate parity
 
 ## Self-Check: PASSED
+
 ---
-*Phase: 03-input-validation*
-*Completed: 2026-05-28*
+
+_Phase: 03-input-validation_
+_Completed: 2026-05-28_

@@ -9,6 +9,7 @@ library GNUSNFTFactoryStorage
 ```
 
 security-contact: support@gnus.ai
+
 ## Structs info
 
 ### Layout
@@ -18,7 +19,6 @@ struct Layout {
 	mapping(uint256 => NFT) NFTs;
 }
 ```
-
 
 ## Functions info
 
@@ -34,7 +34,6 @@ function layout()
 Retrieves the storage layout for the GNUS NFT Factory.
 
 This function uses inline assembly to access the storage slot for the GNUS NFT Factory storage.
-
 
 Return values:
 

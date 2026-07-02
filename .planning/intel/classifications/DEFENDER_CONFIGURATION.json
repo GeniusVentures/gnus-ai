@@ -5,7 +5,14 @@
   "manifest_override": false,
   "title": "OpenZeppelin Defender Configuration Reference",
   "summary": "Comprehensive configuration reference for the DefenderDiamondDeployer covering environment variables, network configurations, and deployment settings for GNUS.AI diamond contracts.",
-  "scope": ["DefenderDiamondDeployer", "OpenZeppelin Defender", "configuration", "environment variables", "network configs", "diamond deployment"],
+  "scope": [
+    "DefenderDiamondDeployer",
+    "OpenZeppelin Defender",
+    "configuration",
+    "environment variables",
+    "network configs",
+    "diamond deployment"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null

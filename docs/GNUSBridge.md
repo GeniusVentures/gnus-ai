@@ -13,6 +13,7 @@ Manages bridging, minting, burning, and token transfers for the GNUS ecosystem.
 Supports both ERC20 and ERC1155 token standards, with additional functionality for bridging tokens across chains.
 
 security-contact: support@gnus.ai
+
 ## Events info
 
 ### BridgeSourceBurned
@@ -27,13 +28,13 @@ Emitted when token holder wants to bridge to another chain
 
 Parameters:
 
-| Name        | Type    | Description                               |
-| :---------- | :------ | :---------------------------------------- |
-| sender      | address | Address initiating the bridge operation.  |
-| id          | uint256 | Token ID being burned.                    |
-| amount      | uint256 | Amount of tokens burned.                  |
-| srcChainID  | uint256 | Source chain ID.                          |
-| destChainID | uint256 | Destination chain ID.                     |
+| Name        | Type    | Description                              |
+| :---------- | :------ | :--------------------------------------- |
+| sender      | address | Address initiating the bridge operation. |
+| id          | uint256 | Token ID being burned.                   |
+| amount      | uint256 | Amount of tokens burned.                 |
+| srcChainID  | uint256 | Source chain ID.                         |
+| destChainID | uint256 | Destination chain ID.                    |
 
 ## Constants info
 
@@ -43,13 +44,11 @@ Parameters:
 bytes32 constant MINTER_ROLE = keccak256("MINTER_ROLE")
 ```
 
-
 ### name (0x06fdde03)
 
 ```solidity
 string constant name = "Genius Token & NFT Collections"
 ```
-
 
 ### symbol (0x95d89b41)
 
@@ -57,13 +56,11 @@ string constant name = "Genius Token & NFT Collections"
 string constant symbol = "GNUS"
 ```
 
-
 ### decimals (0x313ce567)
 
 ```solidity
 uint8 constant decimals = 18
 ```
-
 
 ## Functions info
 
@@ -77,6 +74,7 @@ Initializes the GNUSBridge contract.
 
 Grants the `MINTER_ROLE` to the deploying address and registers ERC20 support in the Diamond Storage.
 Only callable by the Super Admin.
+
 ### supportsInterface (0x01ffc9a7)
 
 ```solidity
@@ -91,6 +89,7 @@ https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section
 to learn more about how these ids are created.
 
 This function call must use less than 30 000 gas.
+
 ### mint (0x40c10f19)
 
 ```solidity
@@ -103,10 +102,10 @@ Callable only by addresses with the `MINTER_ROLE`.
 
 Parameters:
 
-| Name   | Type    | Description                           |
-| :----- | :------ | :------------------------------------ |
-| user   | address | Address receiving the minted tokens.  |
-| amount | uint256 | Amount of tokens to mint.             |
+| Name   | Type    | Description                          |
+| :----- | :------ | :----------------------------------- |
+| user   | address | Address receiving the minted tokens. |
+| amount | uint256 | Amount of tokens to mint.            |
 
 ### mint (0x156e29f6)
 
@@ -124,11 +123,11 @@ Callable only by addresses with the `MINTER_ROLE`.
 
 Parameters:
 
-| Name    | Type    | Description                           |
-| :------ | :------ | :------------------------------------ |
-| user    | address | Address receiving the minted tokens.  |
-| tokenID | uint256 | Token ID to mint.                     |
-| amount  | uint256 | Amount of tokens to mint.             |
+| Name    | Type    | Description                          |
+| :------ | :------ | :----------------------------------- |
+| user    | address | Address receiving the minted tokens. |
+| tokenID | uint256 | Token ID to mint.                    |
+| amount  | uint256 | Amount of tokens to mint.            |
 
 ### burn (0x9dc29fac)
 
@@ -142,10 +141,10 @@ Callable only by addresses with the `MINTER_ROLE`.
 
 Parameters:
 
-| Name   | Type    | Description                           |
-| :----- | :------ | :------------------------------------ |
-| user   | address | Address whose tokens will be burned.  |
-| amount | uint256 | Amount of tokens to burn.             |
+| Name   | Type    | Description                          |
+| :----- | :------ | :----------------------------------- |
+| user   | address | Address whose tokens will be burned. |
+| amount | uint256 | Amount of tokens to burn.            |
 
 ### withdraw (0x441a3e70)
 
@@ -155,13 +154,12 @@ function withdraw(uint256 amount, uint256 id) external
 
 Withdraw a child token to GNUS ERC20 on the current network.
 
-
 Parameters:
 
-| Name   | Type    | Description                          |
-| :----- | :------ | :----------------------------------- |
-| amount | uint256 | Amount of child tokens to withdraw.  |
-| id     | uint256 | Token ID being withdrawn.            |
+| Name   | Type    | Description                         |
+| :----- | :------ | :---------------------------------- |
+| amount | uint256 | Amount of child tokens to withdraw. |
+| id     | uint256 | Token ID being withdrawn.           |
 
 ### bridgeOut (0xe26d65a6)
 
@@ -171,14 +169,13 @@ function bridgeOut(uint256 amount, uint256 id, uint256 destChainID) external
 
 Burn tokens and emit an event for bridging to another chain.
 
-
 Parameters:
 
-| Name        | Type    | Description                  |
-| :---------- | :------ | :--------------------------- |
-| amount      | uint256 | Amount of tokens to bridge.  |
-| id          | uint256 | Token ID being bridged.      |
-| destChainID | uint256 | Destination chain ID.        |
+| Name        | Type    | Description                 |
+| :---------- | :------ | :-------------------------- |
+| amount      | uint256 | Amount of tokens to bridge. |
+| id          | uint256 | Token ID being bridged.     |
+| destChainID | uint256 | Destination chain ID.       |
 
 ### totalSupply (0x18160ddd)
 
@@ -190,7 +187,6 @@ Retrieves the total supply of tokens in existence for the specified token ID.
 
 This function overrides the `totalSupply` function from the parent contract.
 It calls an internal function to get the total supply of tokens for the GNUS token ID.
-
 
 Return values:
 
@@ -208,13 +204,11 @@ Retrieves the balance of GNUS tokens for a specified account.
 
 This function overrides the balanceOf function from the inherited contract.
 
-
 Parameters:
 
-| Name    | Type    | Description                                                       |
-| :------ | :------ | :---------------------------------------------------------------- |
-| account | address | The address of the account whose token balance is being queried.  |
-
+| Name    | Type    | Description                                                      |
+| :------ | :------ | :--------------------------------------------------------------- |
+| account | address | The address of the account whose token balance is being queried. |
 
 Return values:
 
@@ -249,6 +243,7 @@ allowed to spend on behalf of `owner` through {transferFrom}. This is
 zero by default.
 
 This value changes when {approve} or {transferFrom} are called.
+
 ### decreaseAllowance (0xa457c2d7)
 
 ```solidity
@@ -264,21 +259,18 @@ Sets `amount` as the allowance of `spender` over the caller's tokens.
 
 Emits an {Approval} event indicating the updated allowance.
 
-
-
 Parameters:
 
-| Name            | Type    | Description                                         |
-| :-------------- | :------ | :-------------------------------------------------- |
-| spender         | address | The address which will spend the funds.             |
-| subtractedValue | uint256 | The amount of tokens to decrease the allowance by.  |
-
+| Name            | Type    | Description                                        |
+| :-------------- | :------ | :------------------------------------------------- |
+| spender         | address | The address which will spend the funds.            |
+| subtractedValue | uint256 | The amount of tokens to decrease the allowance by. |
 
 Return values:
 
-| Name | Type | Description                                                   |
-| :--- | :--- | :------------------------------------------------------------ |
-| [0]  | bool | A boolean value indicating whether the operation succeeded.   |
+| Name | Type | Description                                                 |
+| :--- | :--- | :---------------------------------------------------------- |
+| [0]  | bool | A boolean value indicating whether the operation succeeded. |
 
 ### transferFrom (0x23b872dd)
 
@@ -297,6 +289,7 @@ allowance.
 Returns a boolean value indicating whether the operation succeeded.
 
 Emits a {Transfer} event.
+
 ### approve (0x095ea7b3)
 
 ```solidity

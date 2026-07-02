@@ -38,7 +38,7 @@ intended outcome. It is a test-only change.
 
 - **As a developer,** I want the fuzz suite to call the real bridge, so a passing run
   actually means the bridge accepted/rejected the input — not that a selector was missing.
-- **As a reviewer,** I want negative tests to assert *why* a call failed, so a future
+- **As a reviewer,** I want negative tests to assert _why_ a call failed, so a future
   signature change can't turn them back into false-greens.
 
 ## 4. Functional Requirements
@@ -103,7 +103,7 @@ intended outcome. It is a test-only change.
 ## 7. Success Metrics
 
 - Foundry suite: 0 failing; the prior 1 failing fuzz test now green for the right reason.
-- The two former false-greens now fail if the *intended* revert reason changes (verified by
+- The two former false-greens now fail if the _intended_ revert reason changes (verified by
   the specificity of `vm.expectRevert`).
 - `testFuzz_bridgeDeposit` fails if the balance isn't burned or the event isn't emitted
   (no silent-pass path remains).
@@ -112,5 +112,5 @@ intended outcome. It is a test-only change.
 ## 8. Open Questions
 
 - Where to declare the typed `bridgeOut` interface — a shared test interface file vs inline
-  in the base? *Default: add it to the Foundry base/test interfaces alongside existing
-  helpers.* Resolve during `/generate-tasks`.
+  in the base? _Default: add it to the Foundry base/test interfaces alongside existing
+  helpers._ Resolve during `/generate-tasks`.

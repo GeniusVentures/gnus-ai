@@ -23,6 +23,14 @@ cat diamonds/GeniusDiamond/deployments/geniusdiamond-sepolia-11155111.json | jq 
 
 ## 2. Dry-Run Command
 
+> **How these scripts run:** The `@diamondslab/diamonds` library loads Hardhat's plugin
+> context at import time, so every `*-rpc.ts` entry script imports `hardhat` first (so it
+> runs under plain `npx ts-node`, not only `npx hardhat run`). Pass `--transpile-only`
+> because the library's Hardhat type-augmentations don't merge under ts-node's full
+> type-check — Hardhat's own `run` uses the same transpile-only behavior. **Hardhat is not
+> used to broadcast anything**: all transactions are signed and sent directly via ethers over
+> the configured RPC URL; Safe proposals go through the Safe Transaction Service.
+
 Verifies that the configuration loads correctly, the upgrade is analyzed,
 but **no transaction is sent and no Safe proposal is created**.
 
@@ -33,10 +41,11 @@ PRIVATE_KEY=0xYourDeployerPrivateKeyHere \
 RPC_URL=https://sepolia.infura.io/v3/your-project-id \
 NETWORK_NAME=sepolia \
 CHAIN_ID=11155111 \
-npx ts-node scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia --dry-run
+npx ts-node --transpile-only scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia --dry-run
 ```
 
 **Expected output:**
+
 - The upgrade analysis prints (current version, target version, facet changes)
 - The script exits with "DRY RUN COMPLETE — no transactions were sent"
 - No Safe proposal is visible in the Safe UI
@@ -59,7 +68,7 @@ PRIVATE_KEY=0xYourDeployerPrivateKeyHere \
 RPC_URL=https://sepolia.infura.io/v3/your-project-id \
 NETWORK_NAME=sepolia \
 CHAIN_ID=11155111 \
-npx ts-node scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia
+npx ts-node --transpile-only scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia
 ```
 
 **Expected console output:**
@@ -90,7 +99,7 @@ npx ts-node scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia
 If you prefer CLI flags over env vars:
 
 ```bash
-npx ts-node scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia \
+npx ts-node --transpile-only scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia \
   --safe-propose \
   --safe-address 0xYourSafeAddressHere \
   --private-key 0xYourDeployerPrivateKeyHere
@@ -156,7 +165,7 @@ Before running the full smoke test, verify the CLI loads correctly:
 ```bash
 SAFE_PROPOSE=true \
 SAFE_ADDRESS=0x0000000000000000000000000000000000000000 \
-npx ts-node scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia --dry-run 2>&1 | head -5
+npx ts-node --transpile-only scripts/deploy/rpc/upgrade-rpc.ts upgrade GeniusDiamond sepolia --dry-run 2>&1 | head -5
 ```
 
 Should print the upgrade analysis (with the diamond address) and exit without error.

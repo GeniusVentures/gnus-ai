@@ -24,6 +24,7 @@ together). Stable IDs used across the whole pipeline:
 - **Slugs:** short kebab-case.
 
 **Roles referenced:**
+
 - **Engineer** — writes/edits test code (the bulk of this work; agent-executable).
 - **Owner (Am0rfu5)** — approves the plan, owns the `diamonds/GeniusDiamond` **submodule
   pointer commit**, and any merge/push to `feature/bridge-out-initiated` or `main`.
@@ -33,15 +34,15 @@ together). Stable IDs used across the whole pipeline:
 
 ## 2. Objectives & success criteria
 
-| # | Objective | Measurable definition of done |
-|---|---|---|
-| O1 | Green test suites | `npx hardhat test` **and** `yarn forge:test` (with a running `anvil`) both report **0 failing**; the 6 Hardhat failures and the 1 Foundry fuzz failure are gone. |
-| O1b | No false-greens | No test passes because a stale/missing selector reverts; negative tests assert the *intended* revert reason. |
-| O2 | Tests reflect new bridge design | Every `bridgeOut` call site uses the 5-arg form; `BridgeOutInitiated` is asserted with all 7 fields including `sgnsDestination` + `destinationYOdd`. |
-| O3 | Removal coverage | No test references `OpenEscrow`/`GeniusAI`; a negative test asserts the `OpenEscrow` selector is absent from the diamond. |
-| O4 | Submodule conformance | Diamond-init tests assert the current facet set (WithdrawLimiter present, GeniusAI absent); stale submodule pointer fails a test rather than passing silently. |
-| O5 | No undocumented debt | **0** pending/`skip`/`xit`/commented tests remain without a tracked, written decision; ideally **0** pending tests. |
-| O6 | Drift prevention | Bridge test constants live in **one** shared fixture imported by all bridge specs. |
+| #   | Objective                       | Measurable definition of done                                                                                                                                    |
+| --- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| O1  | Green test suites               | `npx hardhat test` **and** `yarn forge:test` (with a running `anvil`) both report **0 failing**; the 6 Hardhat failures and the 1 Foundry fuzz failure are gone. |
+| O1b | No false-greens                 | No test passes because a stale/missing selector reverts; negative tests assert the _intended_ revert reason.                                                     |
+| O2  | Tests reflect new bridge design | Every `bridgeOut` call site uses the 5-arg form; `BridgeOutInitiated` is asserted with all 7 fields including `sgnsDestination` + `destinationYOdd`.             |
+| O3  | Removal coverage                | No test references `OpenEscrow`/`GeniusAI`; a negative test asserts the `OpenEscrow` selector is absent from the diamond.                                        |
+| O4  | Submodule conformance           | Diamond-init tests assert the current facet set (WithdrawLimiter present, GeniusAI absent); stale submodule pointer fails a test rather than passing silently.   |
+| O5  | No undocumented debt            | **0** pending/`skip`/`xit`/commented tests remain without a tracked, written decision; ideally **0** pending tests.                                              |
+| O6  | Drift prevention                | Bridge test constants live in **one** shared fixture imported by all bridge specs.                                                                               |
 
 **Overarching acceptance gate:** `npx hardhat test` green (0 failing) **and** O2–O6
 verified by review, on `feature/bridge-out-initiated`.
@@ -50,7 +51,7 @@ verified by review, on `feature/bridge-out-initiated`.
 
 ## 3. Guiding execution principles
 
-- **Tests follow contracts, never the reverse.** If a test failure reveals a *contract*
+- **Tests follow contracts, never the reverse.** If a test failure reveals a _contract_
   bug, stop and escalate to the Owner — do not "fix" by weakening the test.
 - **One behavior per test; assert the full event.** Prefer complete `withArgs` matching
   over partial/`emit`-only checks for `BridgeOutInitiated`.
@@ -67,12 +68,12 @@ verified by review, on `feature/bridge-out-initiated`.
 
 ## 4. Milestone map (at a glance)
 
-| Milestone | Title | Outcome | Impact / Risk | Realizes design § |
-|---|---|---|---|---|
-| **M0** | Green baseline | 6 Hardhat + 1 Foundry failures fixed; Foundry false-greens repaired; shared fixtures established | High value / Low risk | §1, §5 |
-| **M1** | Bridge-design conformance | Suite asserts new signature, event, destination-key semantics | High value / Low risk | §1, §2 |
-| **M2** | Removal & submodule coverage | GeniusAI/OpenEscrow removal + DiamondInit facet set covered | Medium value / Medium risk (submodule) | §3, §4 |
-| **M3** | Zero-debt green gate | Pending tests resolved; final full-suite gate + CI | Medium value / Low risk | all |
+| Milestone | Title                        | Outcome                                                                                          | Impact / Risk                          | Realizes design § |
+| --------- | ---------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------- | ----------------- |
+| **M0**    | Green baseline               | 6 Hardhat + 1 Foundry failures fixed; Foundry false-greens repaired; shared fixtures established | High value / Low risk                  | §1, §5            |
+| **M1**    | Bridge-design conformance    | Suite asserts new signature, event, destination-key semantics                                    | High value / Low risk                  | §1, §2            |
+| **M2**    | Removal & submodule coverage | GeniusAI/OpenEscrow removal + DiamondInit facet set covered                                      | Medium value / Medium risk (submodule) | §3, §4            |
+| **M3**    | Zero-debt green gate         | Pending tests resolved; final full-suite gate + CI                                               | Medium value / Low risk                | all               |
 
 **Critical path:** `M0 → M1 → M3`. `M2` depends on `M0` and can run **in parallel with
 M1**. `M3` is the final gate and depends on M1 + M2.
@@ -101,26 +102,26 @@ both `npx hardhat test` and `yarn forge:test` at 0 failing.
 Foundry false-green negative tests fail-for-the-right-reason; bridge constants come from
 one shared module per runner; both suites green (Foundry run against a live `anvil`).
 
-| Epic | Title | Summary | Owner | Impact |
-|---|---|---|---|---|
-| M0-E1 | `fix-gas-test-bridgeout` | Update `test/gas/withdraw-limiter-gas-comparison.test.ts:205` (the 5 failing bin-count cases) to the 5-arg `bridgeOut(amount, id, destChainID, sgnsDestination, destinationYOdd)` form. | Engineer | High |
-| M0-E2 | `retire-openescrow-test` | Replace the commented-out `GeniusOwnershipFacet` "maintain state across ownership transfer" test with an escrow-free state-persistence assertion (or delete with a written reason). No commented test left behind. | Engineer | High |
-| M0-E3 | `shared-bridge-fixtures` | Hoist `SGNS_DESTINATION`, `SGNS_DESTINATION_Y_ODD`, canonical `destChainID`, `GNUS_TOKEN_ID` into a shared test helper; refactor `GNUSBridgeEnhanced.test.ts` + gas test to import it. (Foundry mirror: replace the 64-byte `bytes TEST_SGNS_DEST` in `GeniusDiamondTestBase.sol` with a `bytes32` X + `bool` Y-parity.) | Engineer | High |
-| M0-E4 | `fix-foundry-fuzz-bridgeout` | Migrate `test/foundry/fuzz/BridgeFuzz.t.sol` from the obsolete `bridgeOut(uint256,uint256,uint256,bytes)` selector to `bridgeOut(uint256,uint256,uint256,bytes32,bool)`. Fixes the `testFuzz_bridgeAmountEdgeCases` failure, repairs the two **false-green** negative tests (currently revert only because the selector is missing), and removes the now-obsolete `test_RevertWhen_InvalidDestinationKeyLength` (`bytes32` is fixed-length). | Engineer | High |
+| Epic  | Title                        | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                      | Owner    | Impact |
+| ----- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
+| M0-E1 | `fix-gas-test-bridgeout`     | Update `test/gas/withdraw-limiter-gas-comparison.test.ts:205` (the 5 failing bin-count cases) to the 5-arg `bridgeOut(amount, id, destChainID, sgnsDestination, destinationYOdd)` form.                                                                                                                                                                                                                                                      | Engineer | High   |
+| M0-E2 | `retire-openescrow-test`     | Replace the commented-out `GeniusOwnershipFacet` "maintain state across ownership transfer" test with an escrow-free state-persistence assertion (or delete with a written reason). No commented test left behind.                                                                                                                                                                                                                           | Engineer | High   |
+| M0-E3 | `shared-bridge-fixtures`     | Hoist `SGNS_DESTINATION`, `SGNS_DESTINATION_Y_ODD`, canonical `destChainID`, `GNUS_TOKEN_ID` into a shared test helper; refactor `GNUSBridgeEnhanced.test.ts` + gas test to import it. (Foundry mirror: replace the 64-byte `bytes TEST_SGNS_DEST` in `GeniusDiamondTestBase.sol` with a `bytes32` X + `bool` Y-parity.)                                                                                                                     | Engineer | High   |
+| M0-E4 | `fix-foundry-fuzz-bridgeout` | Migrate `test/foundry/fuzz/BridgeFuzz.t.sol` from the obsolete `bridgeOut(uint256,uint256,uint256,bytes)` selector to `bridgeOut(uint256,uint256,uint256,bytes32,bool)`. Fixes the `testFuzz_bridgeAmountEdgeCases` failure, repairs the two **false-green** negative tests (currently revert only because the selector is missing), and removes the now-obsolete `test_RevertWhen_InvalidDestinationKeyLength` (`bytes32` is fixed-length). | Engineer | High   |
 
 ### M1 — Bridge-design conformance (`bridge-conformance`)
 
-**Goal:** Ensure the suite *verifies* the new contract semantics, not merely that calls
+**Goal:** Ensure the suite _verifies_ the new contract semantics, not merely that calls
 compile.
 
 **Exit criteria:** Full-field `BridgeOutInitiated` assertions; destination-key edge cases
 covered; guard reverts covered.
 
-| Epic | Title | Summary | Owner | Impact |
-|---|---|---|---|---|
-| M1-E1 | `event-arg-assertions` | Audit all `bridgeOut` specs (Hardhat **and** Foundry); assert `BridgeOutInitiated` with all 7 args incl. `srcChainID` from storage, `sgnsDestination`, `destinationYOdd`. Upgrade `emit`-only checks to `withArgs`; in Foundry use `vm.expectEmit`. | Engineer | High |
-| M1-E2 | `destination-key-coverage` | Add cases for X = zero, X = max `bytes32`, and both Y-parity values; assert the contract forwards the opaque key faithfully (no on-chain curve validation). | Engineer | Medium |
-| M1-E3 | `bridge-guard-coverage` | Cover the three reverts (`Token not created.`, `Insufficient tokens.`, `Cannot bridge to same chain`) and burn-then-emit ordering — asserting the **specific** revert reason (closes the Foundry false-green class where a missing selector masqueraded as a guard rejection). | Engineer | Medium |
+| Epic  | Title                      | Summary                                                                                                                                                                                                                                                                        | Owner    | Impact |
+| ----- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------ |
+| M1-E1 | `event-arg-assertions`     | Audit all `bridgeOut` specs (Hardhat **and** Foundry); assert `BridgeOutInitiated` with all 7 args incl. `srcChainID` from storage, `sgnsDestination`, `destinationYOdd`. Upgrade `emit`-only checks to `withArgs`; in Foundry use `vm.expectEmit`.                            | Engineer | High   |
+| M1-E2 | `destination-key-coverage` | Add cases for X = zero, X = max `bytes32`, and both Y-parity values; assert the contract forwards the opaque key faithfully (no on-chain curve validation).                                                                                                                    | Engineer | Medium |
+| M1-E3 | `bridge-guard-coverage`    | Cover the three reverts (`Token not created.`, `Insufficient tokens.`, `Cannot bridge to same chain`) and burn-then-emit ordering — asserting the **specific** revert reason (closes the Foundry false-green class where a missing selector masqueraded as a guard rejection). | Engineer | Medium |
 
 ### M2 — Removal & submodule coverage (`removal-submodule`)
 
@@ -130,10 +131,10 @@ with positive and negative coverage.
 **Exit criteria:** Negative test for absent `OpenEscrow` selector; diamond-init tests
 reflect the current facet set (WithdrawLimiter present, GeniusAI absent).
 
-| Epic | Title | Summary | Owner | Impact |
-|---|---|---|---|---|
-| M2-E1 | `openescrow-removal-coverage` | Assert no `OpenEscrow`/GeniusAI selector is wired into the diamond (guards re-introduction). Remove any dangling references. | Engineer | Medium |
-| M2-E2 | `diamond-init-coverage` | Verify `DiamondInitFacet` init wiring against the new submodule config (WithdrawLimiter registered; `chainID`/`bridgeFee` defaults). Confirm submodule pointer (`diamonds/GeniusDiamond`) is intentional. | Engineer + **Owner** (pointer) | Medium |
+| Epic  | Title                         | Summary                                                                                                                                                                                                   | Owner                          | Impact |
+| ----- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------ |
+| M2-E1 | `openescrow-removal-coverage` | Assert no `OpenEscrow`/GeniusAI selector is wired into the diamond (guards re-introduction). Remove any dangling references.                                                                              | Engineer                       | Medium |
+| M2-E2 | `diamond-init-coverage`       | Verify `DiamondInitFacet` init wiring against the new submodule config (WithdrawLimiter registered; `chainID`/`bridgeFee` defaults). Confirm submodule pointer (`diamonds/GeniusDiamond`) is intentional. | Engineer + **Owner** (pointer) | Medium |
 
 ### M3 — Zero-debt green gate (`green-gate`)
 
@@ -141,11 +142,11 @@ reflect the current facet set (WithdrawLimiter present, GeniusAI absent).
 
 **Exit criteria:** 0 failing, 0 undocumented pending; final full-suite run recorded.
 
-| Epic | Title | Summary | Owner | Impact |
-|---|---|---|---|---|
-| M3-E1 | `resolve-rpc-pending` | Resolve `test/integration/rpc/rpc-deployment.test.ts` skips (`this.skip()` @19, `it.skip` @71): rewrite to run, or delete with a written reason. | Engineer | Medium |
-| M3-E2 | `resolve-template-skip` | Resolve the `it.skip` in `test/utils/test-template.ts:163` (template placeholder — likely keep with documented reason or remove from active runs). | Engineer | Low |
-| M3-E3 | `full-suite-green-gate` | Final `npx hardhat test` **and** `yarn clean-compile && yarn forge:test` (against a running `anvil`) both at 0 failing; record pass counts; confirm CI runs **both** runners (with `anvil` provisioned). | Engineer + **Owner** (merge) | High |
+| Epic  | Title                   | Summary                                                                                                                                                                                                  | Owner                        | Impact |
+| ----- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ------ |
+| M3-E1 | `resolve-rpc-pending`   | Resolve `test/integration/rpc/rpc-deployment.test.ts` skips (`this.skip()` @19, `it.skip` @71): rewrite to run, or delete with a written reason.                                                         | Engineer                     | Medium |
+| M3-E2 | `resolve-template-skip` | Resolve the `it.skip` in `test/utils/test-template.ts:163` (template placeholder — likely keep with documented reason or remove from active runs).                                                       | Engineer                     | Low    |
+| M3-E3 | `full-suite-green-gate` | Final `npx hardhat test` **and** `yarn clean-compile && yarn forge:test` (against a running `anvil`) both at 0 failing; record pass counts; confirm CI runs **both** runners (with `anvil` provisioned). | Engineer + **Owner** (merge) | High   |
 
 ---
 
@@ -178,26 +179,26 @@ reflect the current facet set (WithdrawLimiter present, GeniusAI absent).
 
 ## 8. Risk register (plan-level)
 
-| Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|
-| A failure actually signals a contract bug, not a test gap | Low | High | Escalation rule (§6); never weaken a test to pass | Owner |
-| Submodule pointer drifts / not committed | Medium | Medium | M2-E2 asserts facet set; Owner commits pointer explicitly | Owner |
-| Constant drift recurs across files | Medium | Medium | M0-E3 single shared fixture | Engineer |
-| Partial event assertions hide field regressions | Medium | Medium | M1-E1 enforces full `withArgs` | Engineer |
-| False-greens: tests pass only because a stale selector reverts (Foundry `assertFalse(success)`) | High (already present) | High | M0-E4 + M1-E3 assert the *specific* revert reason, not bare failure | Engineer |
-| Foundry suite skipped/misreported because `anvil` isn't running | Medium | Medium | Document the `anvil` + `clean-compile` prerequisite; wire it into CI (M3-E3) | Engineer + Owner |
-| Pending tests silently re-accumulate | Low | Low | O5 zero-debt gate; documented reasons required | Engineer |
+| Risk                                                                                            | Likelihood             | Impact | Mitigation                                                                   | Owner            |
+| ----------------------------------------------------------------------------------------------- | ---------------------- | ------ | ---------------------------------------------------------------------------- | ---------------- |
+| A failure actually signals a contract bug, not a test gap                                       | Low                    | High   | Escalation rule (§6); never weaken a test to pass                            | Owner            |
+| Submodule pointer drifts / not committed                                                        | Medium                 | Medium | M2-E2 asserts facet set; Owner commits pointer explicitly                    | Owner            |
+| Constant drift recurs across files                                                              | Medium                 | Medium | M0-E3 single shared fixture                                                  | Engineer         |
+| Partial event assertions hide field regressions                                                 | Medium                 | Medium | M1-E1 enforces full `withArgs`                                               | Engineer         |
+| False-greens: tests pass only because a stale selector reverts (Foundry `assertFalse(success)`) | High (already present) | High   | M0-E4 + M1-E3 assert the _specific_ revert reason, not bare failure          | Engineer         |
+| Foundry suite skipped/misreported because `anvil` isn't running                                 | Medium                 | Medium | Document the `anvil` + `clean-compile` prerequisite; wire it into CI (M3-E3) | Engineer + Owner |
+| Pending tests silently re-accumulate                                                            | Low                    | Low    | O5 zero-debt gate; documented reasons required                               | Engineer         |
 
 ---
 
 ## 9. Rollback posture per milestone
 
-| Milestone | Primary rollback lever |
-|---|---|
-| M0 | Revert test-file commits; suite returns to known 6-failing baseline. |
-| M1 | Revert conformance commits; M0 green state retained. |
-| M2 | Revert coverage commits; **do not** revert submodule pointer (Owner-controlled). |
-| M3 | Revert pending-test edits; suite remains green from M1/M2. |
+| Milestone | Primary rollback lever                                                           |
+| --------- | -------------------------------------------------------------------------------- |
+| M0        | Revert test-file commits; suite returns to known 6-failing baseline.             |
+| M1        | Revert conformance commits; M0 green state retained.                             |
+| M2        | Revert coverage commits; **do not** revert submodule pointer (Owner-controlled). |
+| M3        | Revert pending-test edits; suite remains green from M1/M2.                       |
 
 All milestones are test-only and fully revertible via git; no system/state changes occur.
 

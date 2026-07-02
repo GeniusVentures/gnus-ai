@@ -155,7 +155,8 @@
     "typechain": "8.3.2",
     "typescript": "5.9.3",
     "uint32": "0.2.1",
-    "winston": "3.19.0"
+    "winston": "3.19.0",
+    "zod": "3.25.76"
   },
   "dependencies": {
     "ts-node": "10.9.2",

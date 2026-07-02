@@ -10,7 +10,15 @@ provides:
   - Console-free DiamondInitFacet.sol with event-based init observability
   - Consistent ^0.8.19 pragma across all 20 production contract files
   - TDD verification script for pragma/console compliance
-affects: [02-dead-code-removal, 03-input-validation, 04-access-control, 05-circuit-breaker, 06-test-coverage, 07-dependency-hardening]
+affects:
+  [
+    02-dead-code-removal,
+    03-input-validation,
+    04-access-control,
+    05-circuit-breaker,
+    06-test-coverage,
+    07-dependency-hardening,
+  ]
 
 # Tech tracking
 tech-stack:
@@ -71,6 +79,7 @@ completed: 2026-05-27
 - **Files modified:** 19 (18 .sol + 1 test script)
 
 ## Accomplishments
+
 - Removed `import "hardhat/console.sol"` and `console.log()` call from DiamondInitFacet.sol (DEBT-02)
 - Standardized all 18 production contracts from `^0.8.0`/`^0.8.2` to `^0.8.19` (DEBT-03)
 - Verified InitLog event provides sufficient initialization observability — no replacement logic needed
@@ -81,19 +90,21 @@ completed: 2026-05-27
 
 Each phase committed atomically (contracts in submodule `contracts/gnus-ai/`):
 
-| Phase | Commit (parent) | Commit (submodule) | Type |
-|-------|-----------------|-------------------|------|
-| RED | `1030610` | — | test: add failing test for console removal and pragma standardization |
-| GREEN | — | `caf559b` | feat: remove console.log and standardize pragmas to ^0.8.19 |
+| Phase | Commit (parent) | Commit (submodule) | Type                                                                  |
+| ----- | --------------- | ------------------ | --------------------------------------------------------------------- |
+| RED   | `1030610`       | —                  | test: add failing test for console removal and pragma standardization |
+| GREEN | —               | `caf559b`          | feat: remove console.log and standardize pragmas to ^0.8.19           |
 
 **Plan metadata:** pending final commit with SUMMARY.md, STATE.md, ROADMAP.md
 
 ## Files Created/Modified
 
 **Created:**
+
 - `test/unit/cleanup-01-01.test.sh` — TDD verification: 4 tests for console presence and pragma compliance
 
 **Modified (all pragma `^0.8.19`, DiamondInitFacet.sol also has console removed):**
+
 - `contracts/gnus-ai/DiamondInitFacet.sol` — Removed console import (line 4), console.log call (line 46), pragma ^0.8.2→^0.8.19
 - `contracts/gnus-ai/GeniusOwnershipFacet.sol` — Pragma ^0.8.0→^0.8.19
 - `contracts/gnus-ai/ERC1155ProxyOperator.sol` — Pragma ^0.8.2→^0.8.19
@@ -114,6 +125,7 @@ Each phase committed atomically (contracts in submodule `contracts/gnus-ai/`):
 - `contracts/gnus-ai/libraries/TransferHelper.sol` — Pragma ^0.8.2→^0.8.19
 
 **Unchanged (already ^0.8.19):**
+
 - `contracts/gnus-ai/GeniusAccessControl.sol`
 - `contracts/gnus-ai/GNUSWithdrawLimiter.sol`
 
@@ -121,22 +133,23 @@ Each phase committed atomically (contracts in submodule `contracts/gnus-ai/`):
 
 All criteria from the plan verified:
 
-| # | Criterion | Result |
-|---|-----------|--------|
-| 1 | `grep -c "console" contracts/gnus-ai/DiamondInitFacet.sol` returns 0 | PASS |
-| 2 | All 20 pragma lines show `^0.8.19;` | PASS |
-| 3 | `yarn hardhat compile` exits 0 (62 files, evm paris) | PASS |
-| 4 | GeniusAccessControl.sol and GNUSWithdrawLimiter.sol unchanged | PASS |
+| #   | Criterion                                                            | Result |
+| --- | -------------------------------------------------------------------- | ------ |
+| 1   | `grep -c "console" contracts/gnus-ai/DiamondInitFacet.sol` returns 0 | PASS   |
+| 2   | All 20 pragma lines show `^0.8.19;`                                  | PASS   |
+| 3   | `yarn hardhat compile` exits 0 (62 files, evm paris)                 | PASS   |
+| 4   | GeniusAccessControl.sol and GNUSWithdrawLimiter.sol unchanged        | PASS   |
 
 ## Threat Mitigation
 
-| Threat ID | Disposition | Status |
-|-----------|-------------|--------|
+| Threat ID                 | Disposition          | Status                                                          |
+| ------------------------- | -------------------- | --------------------------------------------------------------- |
 | T-01-01 (Info Disclosure) | Remove console.log() | Resolved — InitLog event provides proper on-chain observability |
-| T-01-02 (Tampering) | Verify compilation | Resolved — 62 files compile cleanly with ^0.8.19 |
-| T-01-03 (DoS) | Compilation gate | Resolved — `yarn hardhat compile` passes with zero errors |
+| T-01-02 (Tampering)       | Verify compilation   | Resolved — 62 files compile cleanly with ^0.8.19                |
+| T-01-03 (DoS)             | Compilation gate     | Resolved — `yarn hardhat compile` passes with zero errors       |
 
 ## Decisions Made
+
 - Used TDD approach (RED/GREEN) for this plan — test script written first, then implementation. Confirmed RED failure, GREEN pass, no REFACTOR needed.
 - No replacement event needed for removed console.log — the existing `InitLog` event emitted at line 46 of the modified file provides equivalent observability with proper on-chain semantics.
 - GeniusAccessControl.sol and GNUSWithdrawLimiter.sol left untouched per plan — they are already at ^0.8.19.
@@ -146,6 +159,7 @@ All criteria from the plan verified:
 ### Pre-existing Environment Issues Resolved
 
 **1. [Rule 3 - Blocking] Yarn node_modules state file missing**
+
 - **Found during:** Task 1 (Hardhat compile verification)
 - **Issue:** `yarn hardhat compile` failed with "Couldn't find the node_modules state file"
 - **Fix:** Ran `yarn install` to restore node_modules (pre-existing environment issue, not caused by plan changes)
@@ -158,13 +172,16 @@ All criteria from the plan verified:
 **Impact on plan:** Environment issue resolved; no changes to plan execution needed.
 
 ## Issues Encountered
+
 - `contracts/gnus-ai` is a git submodule — changes committed at submodule level (`caf559b`). Parent repo tracks submodule pointer update.
 - Yarn install required to restore node_modules before compilation verification (pre-existing environment state).
 
 ## User Setup Required
+
 None — no external service configuration required.
 
 ## Next Phase Readiness
+
 - Console removal and pragma standardization complete. Ready for Plan 01-02 (commented-out network blocks in hardhat.config.ts).
 - All subsequent phases benefit from consistent ^0.8.19 compiler target.
 
@@ -177,5 +194,6 @@ None — no external service configuration required.
 - All acceptance criteria verified: console count 0, all pragmas ^0.8.19, compilation passes
 
 ---
-*Phase: 01-preliminary-cleanup*
-*Completed: 2026-05-27*
+
+_Phase: 01-preliminary-cleanup_
+_Completed: 2026-05-27_

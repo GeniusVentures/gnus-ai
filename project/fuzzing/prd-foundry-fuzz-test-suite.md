@@ -5,6 +5,7 @@
 This document outlines the requirements for a comprehensive Foundry fuzz test suite targeting the GeniusDiamond ERC-2535 Diamond Proxy contract. The test suite will provide robust property-based testing with randomized inputs to discover edge cases, security vulnerabilities, and ensure contract invariants hold under all conditions.
 
 The GeniusDiamond is a complex multi-facet smart contract system that implements:
+
 - ERC20/ERC1155 hybrid token functionality (GNUS token)
 - NFT Factory for creating and managing NFT collections
 - Cross-chain bridge functionality
@@ -31,16 +32,19 @@ The GeniusDiamond is a complex multi-facet smart contract system that implements
 ## 3. User Stories
 
 ### As a Smart Contract Developer
+
 - I want fuzz tests that automatically discover edge cases so that I can fix bugs before deployment
 - I want invariant tests that verify contract state consistency so that I can be confident in contract correctness
 - I want clear test failure messages so that I can quickly identify and fix issues
 
 ### As a Security Auditor
+
 - I want comprehensive access control tests so that I can verify role-based permissions work correctly
 - I want attack vector tests so that I can verify the contract resists common exploit patterns
 - I want economic invariant tests so that I can verify token economics cannot be manipulated
 
 ### As a DevOps Engineer
+
 - I want tests that integrate with the existing deployment tooling so that I can run them in CI/CD
 - I want tests that run quickly and reliably so that they don't block deployments
 - I want clear coverage reports so that I can track test quality over time
@@ -228,6 +232,7 @@ forge-std/=lib/forge-std/src/
 ### 7.4 Handler Contract
 
 A `GeniusDiamondHandler` contract will be used for invariant testing to:
+
 - Bound fuzz inputs to valid ranges
 - Track ghost variables for invariant assertions
 - Provide weighted action selection
@@ -243,28 +248,28 @@ A `GeniusDiamondHandler` contract will be used for invariant testing to:
 
 ## 8. Success Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Code Coverage | ≥85% | `forge coverage --report summary` |
-| Test Pass Rate | 100% | All tests pass with 10,000 fuzz runs |
-| Invariant Stability | 100% | No invariant failures in 1,000 runs |
-| CI Integration | ✓ | Tests run in GitHub Actions |
-| Execution Time | <10 min | Full suite completes in CI |
+| Metric              | Target  | Measurement                          |
+| ------------------- | ------- | ------------------------------------ |
+| Code Coverage       | ≥85%    | `forge coverage --report summary`    |
+| Test Pass Rate      | 100%    | All tests pass with 10,000 fuzz runs |
+| Invariant Stability | 100%    | No invariant failures in 1,000 runs  |
+| CI Integration      | ✓       | Tests run in GitHub Actions          |
+| Execution Time      | <10 min | Full suite completes in CI           |
 
 ### 8.1 Coverage Breakdown Targets
 
-| Facet | Target Coverage |
-|-------|-----------------|
-| DiamondCutFacet | 90% |
-| DiamondLoupeFacet | 85% |
-| GeniusOwnershipFacet | 90% |
-| GeniusAccessControl | 90% |
-| GeniusAI (ERC20) | 85% |
-| ERC1155ProxyOperator | 85% |
-| GNUSNFTFactory | 85% |
-| GNUSBridge | 80% |
-| ERC20TransferBatch | 85% |
-| GNUSControl | 85% |
+| Facet                | Target Coverage |
+| -------------------- | --------------- |
+| DiamondCutFacet      | 90%             |
+| DiamondLoupeFacet    | 85%             |
+| GeniusOwnershipFacet | 90%             |
+| GeniusAccessControl  | 90%             |
+| GeniusAI (ERC20)     | 85%             |
+| ERC1155ProxyOperator | 85%             |
+| GNUSNFTFactory       | 85%             |
+| GNUSBridge           | 80%             |
+| ERC20TransferBatch   | 85%             |
+| GNUSControl          | 85%             |
 
 ---
 
@@ -299,17 +304,17 @@ A `GeniusDiamondHandler` contract will be used for invariant testing to:
 
 Based on `DiamondDeployment.sol`, the following facets are deployed:
 
-| Facet | Address Constant | Primary Functions |
-|-------|-----------------|-------------------|
-| DiamondCutFacet | `DIAMOND_CUT_FACET` | `diamondCut` |
-| DiamondLoupeFacet | `DIAMOND_LOUPE_FACET` | `facets`, `facetAddresses`, `facetFunctionSelectors` |
-| GeniusOwnershipFacet | `GENIUS_OWNERSHIP_FACET` | `transferOwnership`, `owner` |
-| GNUSNFTFactory | `G_N_U_S_N_F_T_FACTORY_FACET` | NFT collection creation |
-| ERC1155ProxyOperator | `E_R_C1155_PROXY_OPERATOR_FACET` | Proxy operator management |
-| GeniusAI | `GENIUS_A_I_FACET` | ERC20 functions (transfer, approve, etc.) |
-| GNUSNFTCollectionName | `G_N_U_S_N_F_T_COLLECTION_NAME_FACET` | Collection naming |
-| ERC20TransferBatch | `E_R_C20_TRANSFER_BATCH_FACET` | Batch transfers |
-| GNUSContractAssets | `G_N_U_S_CONTRACT_ASSETS_FACET` | Asset management |
-| GNUSControl | `G_N_U_S_CONTROL_FACET` | Control functions |
-| GNUSBridge | `G_N_U_S_BRIDGE_FACET` | Cross-chain bridge |
-| DiamondInitFacet | `DIAMOND_INIT_FACET` | Initialization |
+| Facet                 | Address Constant                      | Primary Functions                                    |
+| --------------------- | ------------------------------------- | ---------------------------------------------------- |
+| DiamondCutFacet       | `DIAMOND_CUT_FACET`                   | `diamondCut`                                         |
+| DiamondLoupeFacet     | `DIAMOND_LOUPE_FACET`                 | `facets`, `facetAddresses`, `facetFunctionSelectors` |
+| GeniusOwnershipFacet  | `GENIUS_OWNERSHIP_FACET`              | `transferOwnership`, `owner`                         |
+| GNUSNFTFactory        | `G_N_U_S_N_F_T_FACTORY_FACET`         | NFT collection creation                              |
+| ERC1155ProxyOperator  | `E_R_C1155_PROXY_OPERATOR_FACET`      | Proxy operator management                            |
+| GeniusAI              | `GENIUS_A_I_FACET`                    | ERC20 functions (transfer, approve, etc.)            |
+| GNUSNFTCollectionName | `G_N_U_S_N_F_T_COLLECTION_NAME_FACET` | Collection naming                                    |
+| ERC20TransferBatch    | `E_R_C20_TRANSFER_BATCH_FACET`        | Batch transfers                                      |
+| GNUSContractAssets    | `G_N_U_S_CONTRACT_ASSETS_FACET`       | Asset management                                     |
+| GNUSControl           | `G_N_U_S_CONTROL_FACET`               | Control functions                                    |
+| GNUSBridge            | `G_N_U_S_BRIDGE_FACET`                | Cross-chain bridge                                   |
+| DiamondInitFacet      | `DIAMOND_INIT_FACET`                  | Initialization                                       |

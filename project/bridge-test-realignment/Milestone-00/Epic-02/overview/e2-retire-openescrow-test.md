@@ -23,12 +23,12 @@ commented-out block remains.
 
 ## Tasks
 
-| # | Task | Owner | Done when |
-|---|---|---|---|
-| 1 | Decide rewrite-vs-delete (default: rewrite escrow-free to preserve intent) | Engineer (Owner if ambiguous) | decision recorded |
-| 2 | If rewrite: implement an escrow-free state-persistence assertion across `transferOwnership` | Engineer | test runs and passes |
-| 3 | If delete: remove the block and record the reason | Engineer | no orphaned comment remains |
-| 4 | grep the file (and suite) for residual `OpenEscrow`/`GeniusAI` text | Engineer | none remain |
+| #   | Task                                                                                        | Owner                         | Done when                   |
+| --- | ------------------------------------------------------------------------------------------- | ----------------------------- | --------------------------- |
+| 1   | Decide rewrite-vs-delete (default: rewrite escrow-free to preserve intent)                  | Engineer (Owner if ambiguous) | decision recorded           |
+| 2   | If rewrite: implement an escrow-free state-persistence assertion across `transferOwnership` | Engineer                      | test runs and passes        |
+| 3   | If delete: remove the block and record the reason                                           | Engineer                      | no orphaned comment remains |
+| 4   | grep the file (and suite) for residual `OpenEscrow`/`GeniusAI` text                         | Engineer                      | none remain                 |
 
 ## Dependencies & owner gates
 
@@ -40,13 +40,13 @@ commented-out block remains.
 
 ## Risks
 
-| Risk | Mitigation |
-|---|---|
-| Rewrite changes what's being verified vs original intent | Keep the assertion about *state persistence across ownership transfer*; only swap the state-creation vehicle |
-| Residual `OpenEscrow` text left in a comment | grep sweep as exit check |
+| Risk                                                     | Mitigation                                                                                                   |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Rewrite changes what's being verified vs original intent | Keep the assertion about _state persistence across ownership transfer_; only swap the state-creation vehicle |
+| Residual `OpenEscrow` text left in a comment             | grep sweep as exit check                                                                                     |
 
 ## Notes
 
 - Reversible: test-only, single file.
-- Scope boundary: this epic removes the *reference*; proving the *selector is gone from the
-  diamond* belongs to M2-E1.
+- Scope boundary: this epic removes the _reference_; proving the _selector is gone from the
+  diamond_ belongs to M2-E1.

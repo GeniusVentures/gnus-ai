@@ -3,6 +3,7 @@
 ## Relevant Files
 
 ### Contracts Under Test (Zero Coverage - Phase 1)
+
 - `contracts/gnus-ai/GNUSContractAssets.sol` - Contract asset management functionality (0% coverage)
 - `contracts/gnus-ai/GeniusAI.sol` - AI-related functionality (0% coverage)
 - `contracts/gnus-ai/GeniusAIStorage.sol` - Storage for AI-related data (0% coverage)
@@ -10,6 +11,7 @@
 - `contracts/gnus-ai/libraries/TransferHelper.sol` - Safe ERC20 transfer utilities (0% coverage)
 
 ### Test Files to Create (Phase 1)
+
 - `test/unit/GNUSContractAssets.test.ts` - Unit tests for contract asset management
 - `test/unit/GeniusAI.test.ts` - Unit tests for AI functionality
 - `test/unit/GeniusAIStorage.test.ts` - Unit tests for AI storage
@@ -17,16 +19,19 @@
 - `test/unit/TransferHelper.test.ts` - Unit tests for transfer helper library
 
 ### Contracts Under Test (Low Coverage - Phase 2)
+
 - `contracts/gnus-ai/ERC1155ProxyOperator.sol` - Proxy operator for ERC1155 (20% coverage)
 - `contracts/gnus-ai/ERC20TransferBatch.sol` - Batch ERC20 transfers (47.73% coverage)
 - `contracts/gnus-ai/GNUSControlStorage.sol` - Storage for control parameters (50% coverage)
 
 ### Test Files to Create (Phase 2)
+
 - `test/unit/ERC1155ProxyOperator.test.ts` - Unit tests for proxy operator
 - `test/unit/ERC20TransferBatch.test.ts` - Unit tests for batch transfers
 - `test/unit/GNUSControlStorage.test.ts` - Unit tests for control storage
 
 ### Contracts to Improve (Phase 3)
+
 - `contracts/gnus-ai/GNUSBridge.sol` - Bridge functionality (73.68% coverage - needs improvement)
 - `contracts/gnus-ai/GNUSControl.sol` - Control functions (68% coverage - needs improvement)
 - `contracts/gnus-ai/GNUSNFTFactory.sol` - NFT factory (77.97% coverage - needs improvement)
@@ -34,6 +39,7 @@
 - `contracts/gnus-ai/DiamondInitFacet.sol` - Initialization (83.33% coverage - needs improvement)
 
 ### Test Files to Enhance (Phase 3)
+
 - `test/unit/GNUSBridge.test.ts` - Enhanced tests for bridge (may need to create if doesn't exist)
 - `test/unit/GNUSControl.test.ts` - Enhanced tests for control functions
 - `test/unit/NFTFactory.test.ts` - Enhanced tests for NFT factory (already exists, needs additions)
@@ -41,6 +47,7 @@
 - `test/unit/DiamondInitFacet.test.ts` - Enhanced tests for initialization
 
 ### Supporting Files
+
 - `scripts/utils/loadDiamondArtifact.ts` - Utility for loading Diamond contracts (already exists)
 - `scripts/utils/helpers.ts` - Helper utilities including `toWei()`, `toBN()` (already exists)
 - `scripts/common.ts` - Common constants like `GNUS_TOKEN_ID` (already exists)
@@ -60,6 +67,7 @@
 **IMPORTANT:** As you complete each task, you must check it off in this markdown file by changing `- [ ]` to `- [x]`. This helps track progress and ensures you don't skip any steps.
 
 Example:
+
 - `- [ ] 1.1 Read file` → `- [x] 1.1 Read file` (after completing)
 
 Update the file after completing each sub-task, not just after completing an entire parent task.

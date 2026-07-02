@@ -5,7 +5,7 @@
   "attributes": [
     { "trait_type": "Base", "value": "Human" },
     { "trait_type": "Eyes", "value": "Big" },
-    { "trait_type": "Mouth","value": "Angry" },
-    { "trait_type": "Clothes","value": "Suite of Armour" }
+    { "trait_type": "Mouth", "value": "Angry" },
+    { "trait_type": "Clothes", "value": "Suite of Armour" }
   ]
 }

@@ -246,33 +246,36 @@ npx ts-node scripts/deploy/status-defender.ts GeniusDiamond polygon --watch
 ### Verify Configuration
 
 ```typescript
-import { DefenderDiamondDeployer } from './scripts/setup/DefenderDiamondDeployer';
+import { DefenderDiamondDeployer } from "./scripts/setup/DefenderDiamondDeployer";
 
 // Test configuration loading
 try {
-  const config = DefenderDiamondDeployer.createConfigFromEnv('TestDiamond', 'polygon');
-  console.log('Configuration valid:', config);
+  const config = DefenderDiamondDeployer.createConfigFromEnv(
+    "TestDiamond",
+    "polygon",
+  );
+  console.log("Configuration valid:", config);
 } catch (error) {
-  console.error('Configuration error:', error.message);
+  console.error("Configuration error:", error.message);
 }
 ```
 
 ### Test Network Connectivity
 
 ```typescript
-import { ethers } from 'hardhat';
+import { ethers } from "hardhat";
 
 async function testNetwork() {
   try {
     const provider = ethers.provider;
     const network = await provider.getNetwork();
     const blockNumber = await provider.getBlockNumber();
-    
-    console.log('Network:', network.name);
-    console.log('Chain ID:', network.chainId);
-    console.log('Latest block:', blockNumber);
+
+    console.log("Network:", network.name);
+    console.log("Chain ID:", network.chainId);
+    console.log("Latest block:", blockNumber);
   } catch (error) {
-    console.error('Network test failed:', error.message);
+    console.error("Network test failed:", error.message);
   }
 }
 ```

@@ -13,6 +13,7 @@ This library defines the storage layout and utility functions for managing GNUS 
 Utilizes the diamond storage pattern to manage control-related state.
 
 security-contact: support@gnus.ai
+
 ## Structs info
 
 ### Layout
@@ -27,7 +28,6 @@ struct Layout {
 }
 ```
 
-
 ## Functions info
 
 ### layout
@@ -37,7 +37,6 @@ function layout() internal pure returns (GNUSControlStorage.Layout storage l)
 ```
 
 Accesses the GNUS control storage layout.
-
 
 Return values:
 
@@ -56,14 +55,12 @@ function isBannedTransferor(
 
 Checks if a transferor is banned for a specific token ID.
 
-
 Parameters:
 
-| Name    | Type    | Description                     |
-| :------ | :------ | :------------------------------ |
-| tokenId | uint256 | The ID of the token.            |
-| sender  | address | The address of the transferor.  |
-
+| Name    | Type    | Description                    |
+| :------ | :------ | :----------------------------- |
+| tokenId | uint256 | The ID of the token.           |
+| sender  | address | The address of the transferor. |
 
 Return values:
 
@@ -86,15 +83,14 @@ Reverts if the facet address is not found.
 
 Parameters:
 
-| Name              | Type   | Description                                 |
-| :---------------- | :----- | :------------------------------------------ |
-| facetSelector     | bytes4 | The function selector of the target facet.  |
-| encodedParameters | bytes  | The encoded function parameters.            |
-
+| Name              | Type   | Description                                |
+| :---------------- | :----- | :----------------------------------------- |
+| facetSelector     | bytes4 | The function selector of the target facet. |
+| encodedParameters | bytes  | The encoded function parameters.           |
 
 Return values:
 
-| Name    | Type  | Description                                           |
-| :------ | :---- | :---------------------------------------------------- |
-| success | bool  | True if the delegate call succeeds, otherwise false.  |
-| data    | bytes | The returned data from the delegate call.             |
+| Name    | Type  | Description                                          |
+| :------ | :---- | :--------------------------------------------------- |
+| success | bool  | True if the delegate call succeeds, otherwise false. |
+| data    | bytes | The returned data from the delegate call.            |

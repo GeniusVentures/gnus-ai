@@ -15,7 +15,7 @@
 
 ### Notes
 
-- Prefer asserting the *specific* revert reason (`vm.expectRevert`) over bare `success == false`, so the tests can't regress into false-greens again.
+- Prefer asserting the _specific_ revert reason (`vm.expectRevert`) over bare `success == false`, so the tests can't regress into false-greens again.
 - `yarn forge:test` needs a running `anvil` AND a fresh `yarn clean-compile` first (else HH701 "multiple artifacts for GeniusDiamond").
 - Baseline to beat: Foundry **216 passed / 1 failed / 1 skipped**; this epic should make it **0 failed**. Hardhat (371/2/0) must stay unregressed.
 - `TEST_SGNS_DEST` may only be deleted after BOTH `BridgeFuzz.t.sol` and `GeniusDiamondHandler.sol` no longer reference it.

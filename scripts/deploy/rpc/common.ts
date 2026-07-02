@@ -32,6 +32,7 @@ export interface BaseRPCOptions {
 	safeTxServiceUrl?: string;
 	safeApiKey?: string;
 	safeOrigin?: string;
+	encodeOnly?: boolean;
 }
 
 /**
@@ -218,6 +219,11 @@ export function addUpgradeOptions(command: Command): Command {
 			'--skip-analysis',
 			'Skip upgrade analysis',
 			process.env.SKIP_ANALYSIS === 'true',
+		)
+		.option(
+			'--encode-only',
+			'Deploy facets via RPC and encode the diamondCut to a local artifact without proposing/executing (local anvil dry run)',
+			process.env.ENCODE_ONLY === 'true',
 		);
 }
 
@@ -369,6 +375,7 @@ export function createRPCConfig(options: BaseRPCOptions): RPCDiamondDeployerConf
 					safeTxServiceUrl: options.safeTxServiceUrl,
 					safeApiKey: options.safeApiKey,
 					safeOrigin: options.safeOrigin,
+					encodeOnly: options.encodeOnly,
 				},
 			);
 		} catch (error) {
@@ -408,6 +415,7 @@ export function createRPCConfig(options: BaseRPCOptions): RPCDiamondDeployerConf
 		safeTxServiceUrl: options.safeTxServiceUrl,
 		safeApiKey: options.safeApiKey,
 		safeOrigin: options.safeOrigin,
+		encodeOnly: options.encodeOnly,
 	};
 }
 

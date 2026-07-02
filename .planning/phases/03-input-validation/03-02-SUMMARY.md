@@ -45,18 +45,23 @@ completed: 2026-05-28
 Code: `4c1ce30` (submodule) / `eda3733` (parent)
 
 ### Changes
+
 - **GNUSBridge.withdraw()** — `require(exchangeRate > 0)` + `require(amount >= exchangeRate)`, hoisted to local var
 - **GNUSBridge.bridgeOut()** — `require(destChainID != GNUSControlStorage.layout().chainID)`
 
 ### Verification
+
 - Compilation: PASS (2 Solidity files)
 - Guard count: 3 guards added in 1 file
 
 ### Threat Mitigation
+
 - T-03-04 (division truncation): Resolved — exchangeRate validated before division
 - T-03-05 (self-bridging): Resolved — same-chain guard prevents fake bridge events
 
 ## Self-Check: PASSED
+
 ---
-*Phase: 03-input-validation*
-*Completed: 2026-05-28*
+
+_Phase: 03-input-validation_
+_Completed: 2026-05-28_

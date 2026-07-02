@@ -23,12 +23,12 @@ M1).
 
 ## Tasks
 
-| # | Task | Owner | Done when |
-|---|---|---|---|
-| 1 | Import `SGNS_DESTINATION`, `SGNS_DESTINATION_Y_ODD`, `GNUS_TOKEN_ID`, canonical `destChainID` from the shared fixture (E3) | Engineer | imports resolve; no inline duplicates |
-| 2 | Update the `bridgeOut(...)` call at line ~205 to the 5-arg form | Engineer | call matches contract ABI |
-| 3 | Run the gas suite for all bin counts | Engineer | 5 cases green, gas recorded |
-| 4 | Grep the file for any other stale 3-arg `bridgeOut` references | Engineer | none remain |
+| #   | Task                                                                                                                       | Owner    | Done when                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------- |
+| 1   | Import `SGNS_DESTINATION`, `SGNS_DESTINATION_Y_ODD`, `GNUS_TOKEN_ID`, canonical `destChainID` from the shared fixture (E3) | Engineer | imports resolve; no inline duplicates |
+| 2   | Update the `bridgeOut(...)` call at line ~205 to the 5-arg form                                                            | Engineer | call matches contract ABI             |
+| 3   | Run the gas suite for all bin counts                                                                                       | Engineer | 5 cases green, gas recorded           |
+| 4   | Grep the file for any other stale 3-arg `bridgeOut` references                                                             | Engineer | none remain                           |
 
 ## Dependencies & owner gates
 
@@ -39,9 +39,9 @@ M1).
 
 ## Risks
 
-| Risk | Mitigation |
-|---|---|
-| Inline literals re-introduced, re-creating drift | Pull from E3 fixture; grep for stray literals |
+| Risk                                               | Mitigation                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------- |
+| Inline literals re-introduced, re-creating drift   | Pull from E3 fixture; grep for stray literals                               |
 | Gas value shifts vs prior baseline confuse readers | This is a signature fix; note that the 5-arg call's gas is the new baseline |
 
 ## Notes

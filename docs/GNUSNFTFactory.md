@@ -22,6 +22,7 @@ bytes32 constant CREATOR_ROLE = keccak256("CREATOR_ROLE")
 ```
 
 Role identifier for creators.
+
 ## Functions info
 
 ### GNUSNFTFactory_Initialize (0x101521f8)
@@ -33,6 +34,7 @@ function GNUSNFTFactory_Initialize() public onlySuperAdminRole
 Initializes the GNUSNFTFactory contract.
 
 This function is called only once and subsequent calls are ignored due to the initializer modifier.
+
 ### GNUSNFTFactory_Initialize230 (0x52dbff7a)
 
 ```solidity
@@ -42,6 +44,7 @@ function GNUSNFTFactory_Initialize230() public onlySuperAdminRole
 Initializes the GNUSNFTFactory contract for version 2.3.0.
 
 This function ensures that the GNUS token is created if it hasn't been already.
+
 ### setURI (0x02fe5305)
 
 ```solidity
@@ -51,7 +54,6 @@ function setURI(string memory newuri) public onlyRole(DEFAULT_ADMIN_ROLE)
 Sets the top-level URI for the GNUS Token NFT.
 
 This function can only be called by an account with the DEFAULT_ADMIN_ROLE.
-
 
 Parameters:
 
@@ -68,7 +70,6 @@ function setURI(uint256 id, string memory newuri) public
 Sets the URI for a specific NFT.
 
 This function can only be called by the creator of the NFT or an account with the DEFAULT_ADMIN_ROLE.
-
 
 Parameters:
 
@@ -87,13 +88,11 @@ Retrieves the URI for a specific NFT.
 
 This function overrides the uri function from ERC1155Upgradeable.
 
-
 Parameters:
 
-| Name | Type    | Description         |
-| :--- | :------ | :------------------ |
-| id   | uint256 | The ID of the NFT.  |
-
+| Name | Type    | Description        |
+| :--- | :------ | :----------------- |
+| id   | uint256 | The ID of the NFT. |
 
 Return values:
 
@@ -110,6 +109,7 @@ function pause() public onlyRole(DEFAULT_ADMIN_ROLE)
 Pauses all token transfers.
 
 This function can only be called by an account with the DEFAULT_ADMIN_ROLE.
+
 ### unpause (0x3f4ba83a)
 
 ```solidity
@@ -119,6 +119,7 @@ function unpause() public onlyRole(DEFAULT_ADMIN_ROLE)
 Unpauses all token transfers.
 
 This function can only be called by an account with the DEFAULT_ADMIN_ROLE.
+
 ### mint (0x731133e9)
 
 ```solidity
@@ -133,7 +134,6 @@ function mint(
 Mints a new NFT.
 
 This function mints a new NFT to the specified address.
-
 
 Parameters:
 
@@ -159,7 +159,6 @@ Mints a batch of new NFTs.
 
 This function mints a batch of new NFTs to the specified address.
 
-
 Parameters:
 
 | Name    | Type      | Description                               |
@@ -181,13 +180,11 @@ Checks if the contract supports a specific interface.
 
 This function overrides the supportsInterface function from ERC1155Upgradeable and AccessControlEnumerableUpgradeable.
 
-
 Parameters:
 
-| Name        | Type   | Description                        |
-| :---------- | :----- | :--------------------------------- |
-| interfaceId | bytes4 | The ID of the interface to check.  |
-
+| Name        | Type   | Description                       |
+| :---------- | :----- | :-------------------------------- |
+| interfaceId | bytes4 | The ID of the interface to check. |
 
 Return values:
 
@@ -212,17 +209,16 @@ Creates a new NFT.
 
 This function creates a new NFT with the specified parameters.
 
-
 Parameters:
 
-| Name       | Type    | Description                     |
-| :--------- | :------ | :------------------------------ |
-| parentID   | uint256 | The ID of the parent NFT.       |
-| name       | string  | The name of the NFT.            |
-| symbol     | string  | The symbol of the NFT.          |
-| exchRate   | uint256 | The exchange rate of the NFT.   |
-| max_supply | uint256 | The maximum supply of the NFT.  |
-| newuri     | string  | The URI of the NFT.             |
+| Name       | Type    | Description                    |
+| :--------- | :------ | :----------------------------- |
+| parentID   | uint256 | The ID of the parent NFT.      |
+| name       | string  | The name of the NFT.           |
+| symbol     | string  | The symbol of the NFT.         |
+| exchRate   | uint256 | The exchange rate of the NFT.  |
+| max_supply | uint256 | The maximum supply of the NFT. |
+| newuri     | string  | The URI of the NFT.            |
 
 ### createNFTs (0x1a9d2360)
 
@@ -241,17 +237,16 @@ Creates multiple new NFTs.
 
 This function creates multiple new NFTs with the specified parameters.
 
-
 Parameters:
 
-| Name         | Type      | Description                        |
-| :----------- | :-------- | :--------------------------------- |
-| parentID     | uint256   | The ID of the parent NFT.          |
-| names        | string[]  | The names of the NFTs.             |
-| symbols      | string[]  | The symbols of the NFTs.           |
-| exchRates    | uint256[] | The exchange rates of the NFTs.    |
-| max_supplies | uint256[] | The maximum supplies of the NFTs.  |
-| newuris      | string[]  | The URIs of the NFTs.              |
+| Name         | Type      | Description                       |
+| :----------- | :-------- | :-------------------------------- |
+| parentID     | uint256   | The ID of the parent NFT.         |
+| names        | string[]  | The names of the NFTs.            |
+| symbols      | string[]  | The symbols of the NFTs.          |
+| exchRates    | uint256[] | The exchange rates of the NFTs.   |
+| max_supplies | uint256[] | The maximum supplies of the NFTs. |
+| newuris      | string[]  | The URIs of the NFTs.             |
 
 ### getNFTInfo (0xd188929f)
 
@@ -263,13 +258,11 @@ Retrieves information about a specific NFT.
 
 This function returns the NFT storage object for the specified ID.
 
-
 Parameters:
 
-| Name | Type    | Description         |
-| :--- | :------ | :------------------ |
-| id   | uint256 | The ID of the NFT.  |
-
+| Name | Type    | Description        |
+| :--- | :------ | :----------------- |
+| id   | uint256 | The ID of the NFT. |
 
 Return values:
 

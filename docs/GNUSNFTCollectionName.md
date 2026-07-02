@@ -11,6 +11,7 @@ contract GNUSNFTCollectionName
 This contract defines the name of the Genius NFT Collection.
 
 This contract contains a single constant string variable that holds the name of the NFT collection.
+
 ## Constants info
 
 ### name (0x06fdde03)
