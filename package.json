@@ -43,6 +43,7 @@
     "slither:check": "slither . --config-file slither.config.json --checklist",
     "git-secrets:scan": "git secrets --scan",
     "commitlint": "commitlint --edit",
+    "check:safe-executed": "npx ts-node --transpile-only scripts/safe/checkSafeExecuted.ts",
     "perf-monitor": "npx ts-node scripts/devops/perf-monitor.ts",
     "ci-perf-monitor": "node scripts/devops/ci-perf-monitor.js",
     "sign-artifacts": "npx ts-node scripts/devops/sign-artifacts.ts",
@@ -107,6 +108,9 @@
     "@nomicfoundation/ignition-core": "0.15.15",
     "@openzeppelin/defender-sdk": "2.7.0",
     "@openzeppelin/defender-sdk-proposal-client": "2.7.0",
+    "@safe-global/api-kit": "5.0.1",
+    "@safe-global/protocol-kit": "8.0.1",
+    "@safe-global/types-kit": "4.0.1",
     "@socketsecurity/cli": "1.1.51",
     "@typechain/ethers-v6": "0.5.1",
     "@typechain/hardhat": "9.1.0",
@@ -152,7 +156,8 @@
     "typechain": "8.3.2",
     "typescript": "5.9.3",
     "uint32": "0.2.1",
-    "winston": "3.19.0"
+    "winston": "3.19.0",
+    "zod": "3.25.76"
   },
   "dependencies": {
     "ts-node": "10.9.2",

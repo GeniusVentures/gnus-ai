@@ -5,7 +5,14 @@
   "manifest_override": true,
   "title": "GeniusDiamond",
   "summary": "Documents the GeniusDiamond contract implementing the EIP-2535 Diamond Standard for modular upgradeable contracts with ERC165 and ERC1155 compatibility.",
-  "scope": ["GeniusDiamond", "EIP-2535 Diamond Standard", "ERC165", "ERC1155", "DiamondCutFacet", "ownership management"],
+  "scope": [
+    "GeniusDiamond",
+    "EIP-2535 Diamond Standard",
+    "ERC165",
+    "ERC1155",
+    "DiamondCutFacet",
+    "ownership management"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null,

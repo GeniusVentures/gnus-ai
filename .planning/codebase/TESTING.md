@@ -15,11 +15,13 @@ This project runs **two independent test frameworks** — Hardhat (TypeScript/Mo
 **Config:** `hardhat.config.ts` (no separate mocha config)
 
 **Assertion Library:**
+
 - `chai` v4.5.0 with `chai-as-promised` v7.1.2
 - `@nomicfoundation/hardhat-chai-matchers` v2.1.2
 - `sinon` v21.0.1 available but not widely used
 
 **Run Commands:**
+
 ```bash
 yarn test                                    # Run all Hardhat tests
 yarn test-multichain --chains hardhat        # Run multichain tests
@@ -30,6 +32,7 @@ npx hardhat test test/unit/GNUSWithdrawLimiter.test.ts  # Run specific file
 ### Test File Organization
 
 **Location:**
+
 - Unit tests: `test/unit/` — one file per facet/contract
 - Integration tests: `test/integration/` — cross-contract interaction tests
 - Deployment tests: `test/deployment/` — deployment validation
@@ -38,11 +41,13 @@ npx hardhat test test/unit/GNUSWithdrawLimiter.test.ts  # Run specific file
 - Utils: `test/utils/` — test template and network utilities
 
 **Naming:**
+
 - Test files: `{ContractName}.test.ts` or `{ContractName}Enhanced.test.ts`
 - Example: `GNUSWithdrawLimiter.test.ts`, `GNUSBridgeEnhanced.test.ts`, `NFTFactory.test.ts`
 - Integration files: `{feature}-integration.test.ts`
 
 **Structure:**
+
 ```
 test/
 ├── unit/
@@ -87,86 +92,100 @@ test/
 **Suite Organization (standard pattern from `test/utils/test-template.ts`):**
 
 ```typescript
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { Diamond } from '@diamondslab/diamonds';
-import { loadDiamondContract, LocalDiamondDeployer, LocalDiamondDeployerConfig } from '@diamondslab/hardhat-diamonds/dist/utils';
-import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
-import { expect } from 'chai';
-import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
-import { GeniusDiamond } from '../../diamond-typechain-types';
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { Diamond } from "@diamondslab/diamonds";
+import {
+  loadDiamondContract,
+  LocalDiamondDeployer,
+  LocalDiamondDeployerConfig,
+} from "@diamondslab/hardhat-diamonds/dist/utils";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import { expect } from "chai";
+import hre, { ethers } from "hardhat";
+import { multichain } from "hardhat-multichain";
+import { GeniusDiamond } from "../../diamond-typechain-types";
 
 chai.use(chaiAsPromised);
 
-describe('ContractName Tests', async function () {
-    const diamondName = 'GeniusDiamond';
-    this.timeout(0); // Extended for diamond deployment
+describe("ContractName Tests", async function () {
+  const diamondName = "GeniusDiamond";
+  this.timeout(0); // Extended for diamond deployment
 
-    const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
+  const networkProviders =
+    multichain.getProviders() || new Map<string, JsonRpcProvider>();
 
-    // Setup network providers (multichain or single)
-    if (process.argv.includes('test-multichain')) {
-        // ... multichain setup
-    } else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-        networkProviders.set('hardhat', hre.ethers.provider as any);
-    }
+  // Setup network providers (multichain or single)
+  if (process.argv.includes("test-multichain")) {
+    // ... multichain setup
+  } else if (
+    process.argv.includes("test") ||
+    process.argv.includes("coverage")
+  ) {
+    networkProviders.set("hardhat", hre.ethers.provider as any);
+  }
 
-    for (const [networkName, provider] of networkProviders.entries()) {
-        describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
-            let diamond: Diamond;
-            let signers: SignerWithAddress[];
-            let geniusDiamond: GeniusDiamond;
-            let ownerDiamond: GeniusDiamond;
-            let snapshotId: string;
+  for (const [networkName, provider] of networkProviders.entries()) {
+    describe(`🔗 Chain: ${networkName}  Diamond: ${diamondName}`, function () {
+      let diamond: Diamond;
+      let signers: SignerWithAddress[];
+      let geniusDiamond: GeniusDiamond;
+      let ownerDiamond: GeniusDiamond;
+      let snapshotId: string;
 
-            // === LIFECYCLE HOOKS ===
-            before(async function () {
-                const config = {
-                    diamondName: diamondName,
-                    networkName: networkName,
-                    provider: provider,
-                    chainId: (await provider.getNetwork()).chainId,
-                    writeDeployedDiamondData: false,
-                    configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
-                } as LocalDiamondDeployerConfig;
+      // === LIFECYCLE HOOKS ===
+      before(async function () {
+        const config = {
+          diamondName: diamondName,
+          networkName: networkName,
+          provider: provider,
+          chainId: (await provider.getNetwork()).chainId,
+          writeDeployedDiamondData: false,
+          configFilePath: `diamonds/GeniusDiamond/geniusdiamond.config.json`,
+        } as LocalDiamondDeployerConfig;
 
-                const diamondDeployer = await LocalDiamondDeployer.getInstance(hre, config);
-                diamond = await diamondDeployer.getDiamondDeployed();
-                const deployedData = diamond.getDeployedDiamondData();
+        const diamondDeployer = await LocalDiamondDeployer.getInstance(
+          hre,
+          config,
+        );
+        diamond = await diamondDeployer.getDiamondDeployed();
+        const deployedData = diamond.getDeployedDiamondData();
 
-                geniusDiamond = await loadDiamondContract<GeniusDiamond>(
-                    diamond, deployedData.DiamondAddress!, hre.ethers
-                );
+        geniusDiamond = await loadDiamondContract<GeniusDiamond>(
+          diamond,
+          deployedData.DiamondAddress!,
+          hre.ethers,
+        );
 
-                signers = await ethers.getSigners();
-                ownerDiamond = geniusDiamond.connect(signers[0]);
-            });
+        signers = await ethers.getSigners();
+        ownerDiamond = geniusDiamond.connect(signers[0]);
+      });
 
-            beforeEach(async function () {
-                snapshotId = await provider.send('evm_snapshot', []);
-            });
+      beforeEach(async function () {
+        snapshotId = await provider.send("evm_snapshot", []);
+      });
 
-            afterEach(async function () {
-                await provider.send('evm_revert', [snapshotId]);
-            });
+      afterEach(async function () {
+        await provider.send("evm_revert", [snapshotId]);
+      });
 
-            // === TEST CASES ===
-            describe('Feature Group', function () {
-                it('should handle happy path', async () => {
-                    // Arrange / Act / Assert
-                });
-
-                it('should reject invalid input', async () => {
-                    await expect(badCall).to.be.rejectedWith(/Expected error/);
-                });
-            });
+      // === TEST CASES ===
+      describe("Feature Group", function () {
+        it("should handle happy path", async () => {
+          // Arrange / Act / Assert
         });
-    }
+
+        it("should reject invalid input", async () => {
+          await expect(badCall).to.be.rejectedWith(/Expected error/);
+        });
+      });
+    });
+  }
 });
 ```
 
 **Key patterns:**
+
 - **Diamond deployment:** `LocalDiamondDeployer.getInstance()` + `loadDiamondContract<GeniusDiamond>()` — deployed once in `before`, reused across tests
 - **Test isolation:** EVM snapshots via `evm_snapshot`/`evm_revert` in `beforeEach`/`afterEach` — each test starts with clean state
 - **Signer management:** Multiple diamond instances connected to different signers (`ownerDiamond`, `signer0Diamond`, `signer1Diamond`)
@@ -177,6 +196,7 @@ describe('ContractName Tests', async function () {
 ### Mocking
 
 **Framework:** Not applicable in blockchain context. Instead:
+
 - `contracts/mocks/` contains test-only Solidity contracts: `MockERC20.sol`, `MockBadERC20.sol`, `MockNonPayable.sol`, `TransferHelperWrapper.sol`
 - Hardhat local network provides isolated blockchain environment
 - `vm.prank()` in Foundry tests simulates calls from specific addresses
@@ -185,6 +205,7 @@ describe('ContractName Tests', async function () {
 ### Fixtures and Factories
 
 **Test Data:**
+
 - `toWei()` helper in `scripts/utils/helpers.ts` converts human-readable amounts to wei: `toWei('100000')`
 - Constants defined at test level: `GNUS_TOKEN_ID = 0n`, `INITIAL_GNUS_SUPPLY = 1000000 ether`
 - Test actors created via `makeAddr("user1")` in Foundry, `signers[0].address` in Hardhat
@@ -194,6 +215,7 @@ describe('ContractName Tests', async function () {
 **Tool:** `solidity-coverage` v0.8.17
 **Requirements:** No enforced minimum
 **View Coverage:**
+
 ```bash
 yarn coverage        # Runs hardhat coverage (sets HARDHAT_NETWORK=hardhat)
 forge coverage       # Runs Foundry coverage
@@ -208,10 +230,12 @@ forge coverage       # Runs Foundry coverage
 **Solidity Version:** `0.8.19` (matches contracts)
 
 **Assertion Library:**
+
 - `forge-std/Test.sol` — `assertTrue`, `assertEq`, `assertNotEq`, `assertGt`, `assertFalse`
 - Custom assertion helpers in `GeniusDiamondTestBase`: `assertHasRole()`, `assertGNUSBalance()`, `assertAllSelectorsValid()`
 
 **Run Commands:**
+
 ```bash
 yarn forge:test                    # Run Foundry tests via hardhat bridge
 yarn forge:test:verbose            # forge test -vvv (verbose output)
@@ -224,10 +248,12 @@ forge test --match-test testFuzz_  # Run specific fuzz tests
 ### Test File Organization
 
 **Location:**
+
 - All Foundry tests under `test/foundry/`
 - Organized by test type: `base/`, `unit/`, `fuzz/`, `invariant/`, `integration/`, `security/`, `poc/`, `handlers/`, `helpers/`
 
 **Naming:**
+
 - Test contracts: `{ContractName}{TestType}.t.sol` — `.t.sol` extension
 - Fuzz: `{ContractName}Fuzz.t.sol` (e.g., `DiamondCoreFuzz.t.sol`, `BridgeFuzz.t.sol`)
 - Invariant: `{ContractName}Invariant.t.sol` (e.g., `DiamondCoreInvariant.t.sol`, `EconomicInvariant.t.sol`)
@@ -235,6 +261,7 @@ forge test --match-test testFuzz_  # Run specific fuzz tests
 - Unit: `{ContractName}Unit.t.sol`
 
 **Structure:**
+
 ```
 test/foundry/
 ├── base/
@@ -289,6 +316,7 @@ test/foundry/
 ### Test Structure
 
 **Unit Test Pattern:**
+
 ```solidity
 contract GNUSUnitTest is Test {
     using DiamondForgeHelpers for address;
@@ -312,6 +340,7 @@ contract GNUSUnitTest is Test {
 ```
 
 **Fuzz Test Pattern (inherits `GeniusDiamondTestBase`):**
+
 ```solidity
 contract DiamondCoreFuzz is GeniusDiamondTestBase {
     function setUp() public override {
@@ -336,6 +365,7 @@ contract DiamondCoreFuzz is GeniusDiamondTestBase {
 ```
 
 **Invariant Test Pattern (uses handler + targetContract):**
+
 ```solidity
 contract DiamondCoreInvariant is GeniusDiamondTestBase {
     GeniusDiamondHandler public handler;
@@ -355,6 +385,7 @@ contract DiamondCoreInvariant is GeniusDiamondTestBase {
 ```
 
 **Fuzz Configuration (`foundry.toml`):**
+
 ```toml
 [profile.default]
 fuzz = { runs = 256, max_test_rejects = 65536, seed = "0x1234" }
@@ -371,6 +402,7 @@ fuzz = { runs = 50000 }
 ### Test Lifecycle
 
 **Base contract (`GeniusDiamondTestBase.sol`):**
+
 1. `setUp()` (virtual, called before each test):
    - `super.setUp()` — loads diamond and ABI via `DiamondFuzzBase`
    - Loads deployer/owner from deployment data
@@ -379,6 +411,7 @@ fuzz = { runs = 50000 }
    - Sets up initial GNUS balances via `_setupInitialBalances()`
 
 **Test contracts override `setUp()`:**
+
 - Call `super.setUp()` first
 - Add test-specific initialization
 
@@ -391,6 +424,7 @@ fuzz = { runs = 50000 }
 ### Fixtures and Factories
 
 **Test Data:**
+
 - Constants in base contract: `GNUS_TOKEN_ID = 0`, `INITIAL_GNUS_SUPPLY = 1000000 ether`
 - Role constants: `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE`, `PAUSER_ROLE`, `UPGRADER_ROLE`
 - Actors created via `makeAddr("name")` pattern
@@ -401,6 +435,7 @@ fuzz = { runs = 50000 }
 **Tool:** `forge coverage`
 **Requirements:** No enforced minimum
 **Run:**
+
 ```bash
 yarn forge:coverage
 ```
@@ -408,25 +443,31 @@ yarn forge:coverage
 ## Common Patterns Across Both Frameworks
 
 ### Test Isolation
+
 - **Hardhat:** EVM snapshots (`evm_snapshot`/`evm_revert`) in `beforeEach`/`afterEach`
 - **Foundry:** Fresh contract state per test (forge deploys new instances); `vm.prank()` for isolation
 - **Invariant tests:** Handler contract created fresh in `setUp()`
 
 ### Async Testing (TypeScript)
+
 ```typescript
 // Standard async test
-it('should initialize with correct values', async function () {
-    const config = await ownerDiamond.getWithdrawLimiterConfig();
-    expect(config.defaultLimitAmount).to.equal(toWei('100000'));
+it("should initialize with correct values", async function () {
+  const config = await ownerDiamond.getWithdrawLimiterConfig();
+  expect(config.defaultLimitAmount).to.equal(toWei("100000"));
 });
 
 // Rejection testing
-await expect(signer1Diamond.setLimiterEnabled(true))
-    .to.be.rejectedWith(Error, /Only SuperAdmin allowed/);
+await expect(signer1Diamond.setLimiterEnabled(true)).to.be.rejectedWith(
+  Error,
+  /Only SuperAdmin allowed/,
+);
 ```
 
 ### Error Testing
+
 **Solidity (Foundry):**
+
 ```solidity
 // Expect revert - use try/call pattern
 vm.prank(attacker);
@@ -435,6 +476,7 @@ assertFalse(success, "Non-owner should not be able to transfer ownership");
 ```
 
 **TypeScript (Hardhat):**
+
 ```typescript
 // Using chai-as-promised
 await expect(signer1Diamond.pause()).to.be.rejected;
@@ -444,7 +486,9 @@ await expect(badCall).to.be.rejectedWith(/Only SuperAdmin allowed/);
 ```
 
 ### Diamond Contract Testing Pattern
+
 Both frameworks follow the same high-level workflow:
+
 1. Diamond is deployed once (via `LocalDiamondDeployer` for Hardhat, `DiamondDeployment` helper for Foundry)
 2. Test contract loads diamond address and full ABI
 3. Test contract connects to diamond as different signers/roles
@@ -452,6 +496,7 @@ Both frameworks follow the same high-level workflow:
 5. Lifecycle hooks manage test isolation
 
 ## Run All Tests
+
 ```bash
 yarn test:all          # Runs both Hardhat and Foundry tests
 yarn test              # Hardhat only
@@ -463,4 +508,4 @@ FOUNDRY_PROFILE=ci forge test
 
 ---
 
-*Testing analysis: 2026-05-26*
+_Testing analysis: 2026-05-26_

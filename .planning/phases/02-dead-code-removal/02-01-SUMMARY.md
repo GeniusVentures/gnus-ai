@@ -60,64 +60,72 @@ completed: 2026-05-28
 ## Accomplishments
 
 ### Task 1: Inheritance Change (DEBT-05)
+
 - Replaced `AccessControlEnumerableUpgradeable` with `GeniusAccessControl` in contract declaration
 - Added `import "./GeniusAccessControl.sol"`
 - Removed local `onlySuperAdminRole` modifier (now inherited from GeniusAccessControl — byte-identical check)
 - Removed `UPGRADER_ROLE` constant (now inherited from GeniusAccessControl)
 
 ### Task 2: Deduplicate Role Assignment (DEBT-04)
+
 - Removed 3 redundant `_grantRole()` calls from `diamondInitialize250()`
 - `_setupRole()` already calls `_grantRole()` internally AND sets the role's admin — the standalone calls were redundant
 
 ### Task 3: ERC-165 Support (QUAL-01)
+
 - Added `supportsInterface()` override following the GNUSBridge/GNUSNFTFactory pattern
 - Checks both `super.supportsInterface(interfaceId)` and `LibDiamond.diamondStorage().supportedInterfaces[interfaceId]`
 - Used `virtual override` since there is only one parent with `supportsInterface`
 
 ## Task Commits
 
-| Commit (parent) | Commit (submodule) | Task |
-|-----------------|-------------------|------|
-| `41de1e1` | `de09bba` | Tasks 1-3: inheritance, dedup, supportsInterface |
+| Commit (parent) | Commit (submodule) | Task                                             |
+| --------------- | ------------------ | ------------------------------------------------ |
+| `41de1e1`       | `de09bba`          | Tasks 1-3: inheritance, dedup, supportsInterface |
 
 ## Files Created/Modified
 
 **Modified:**
+
 - `contracts/gnus-ai/DiamondInitFacet.sol` — 9 insertions, 18 deletions
 
 **Created:**
+
 - `test/unit/cleanup-02-01.test.sh` — 8 tests verifying DEBT-04, DEBT-05, QUAL-01 compliance
 
 ## Acceptance Criteria Verification
 
-| # | Criterion | Result |
-|---|-----------|--------|
-| 1 | No local `onlySuperAdminRole` modifier | PASS |
-| 2 | `contract DiamondInitFacet is ContextUpgradeable, GeniusAccessControl` | PASS |
-| 3 | Zero `_grantRole` calls in DiamondInitFacet.sol | PASS |
-| 4 | 3 `_setupRole` calls preserved | PASS |
-| 5 | `supportsInterface()` override present | PASS |
-| 6 | LibDiamond.diamondStorage().supportedInterfaces check | PASS |
-| 7 | `super.supportsInterface(interfaceId)` call | PASS |
-| 8 | `yarn hardhat compile` exits 0 | PASS |
+| #   | Criterion                                                              | Result |
+| --- | ---------------------------------------------------------------------- | ------ |
+| 1   | No local `onlySuperAdminRole` modifier                                 | PASS   |
+| 2   | `contract DiamondInitFacet is ContextUpgradeable, GeniusAccessControl` | PASS   |
+| 3   | Zero `_grantRole` calls in DiamondInitFacet.sol                        | PASS   |
+| 4   | 3 `_setupRole` calls preserved                                         | PASS   |
+| 5   | `supportsInterface()` override present                                 | PASS   |
+| 6   | LibDiamond.diamondStorage().supportedInterfaces check                  | PASS   |
+| 7   | `super.supportsInterface(interfaceId)` call                            | PASS   |
+| 8   | `yarn hardhat compile` exits 0                                         | PASS   |
 
 ## Threat Mitigation
 
-| Threat ID | Status |
-|-----------|--------|
-| T-02-01 (Tampering — inheritance change) | Resolved — GeniusAccessControl modifier is byte-identical to removed local modifier |
-| T-02-02 (Elevation — role assignment change) | Resolved — `_setupRole` internally calls `_grantRole`, no access control change |
+| Threat ID                                    | Status                                                                              |
+| -------------------------------------------- | ----------------------------------------------------------------------------------- |
+| T-02-01 (Tampering — inheritance change)     | Resolved — GeniusAccessControl modifier is byte-identical to removed local modifier |
+| T-02-02 (Elevation — role assignment change) | Resolved — `_setupRole` internally calls `_grantRole`, no access control change     |
 
 ## Deviations from Plan
+
 - All 3 tasks committed atomically (single commit in submodule + parent) — all changes affect same file, separating would create unnecessary intermediate compilation states
 - TDD script created and verified — 8/8 tests pass
 - `npx`→`yarn` in test script due to npm config incompatibility
 
 ## Issues Encountered
+
 - `((PASS++))` bashism with `set -e` causes script exit when PASS=0 — fixed with helper functions
 - `npx hardhat compile` fails due to npm `before` config value — switched to `yarn hardhat compile`
 
 ## Next Phase Readiness
+
 - DiamondInitFacet.sol is now properly structured with inherited access control and ERC-165 support
 - Ready for Plan 02-02: GeniusAI facet removal
 
@@ -129,5 +137,6 @@ completed: 2026-05-28
 - TDD script: 8/8 tests pass
 
 ---
-*Phase: 02-dead-code-removal*
-*Completed: 2026-05-28*
+
+_Phase: 02-dead-code-removal_
+_Completed: 2026-05-28_

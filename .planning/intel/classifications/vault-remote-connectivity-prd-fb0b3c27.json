@@ -5,7 +5,16 @@
   "manifest_override": true,
   "title": "Product Requirements Document: HashiCorp Vault Remote Connectivity",
   "summary": "Defines requirements for connecting the DevContainer to remote Vault instances (HCP, AWS, GCP, self-hosted) with failover to local Vault.",
-  "scope": ["HashiCorp Vault", "remote connectivity", "HCP Vault", "failover", "DevContainer", "authentication", "secret migration", "Vault CLI"],
+  "scope": [
+    "HashiCorp Vault",
+    "remote connectivity",
+    "HCP Vault",
+    "failover",
+    "DevContainer",
+    "authentication",
+    "secret migration",
+    "Vault CLI"
+  ],
   "cross_refs": [
     ".devcontainer/data/vault-remote.conf",
     ".devcontainer/data/vault-remote.conf.template",

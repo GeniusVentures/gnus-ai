@@ -5,6 +5,7 @@
 The GNUS AI smart contract system currently has 63.98% test coverage, which is below the industry standard for production-ready smart contracts. This initiative aims to systematically increase test coverage to over 90% by focusing on contracts with low coverage (<50%) and implementing comprehensive unit tests that cover happy paths and major error conditions.
 
 The current testing framework uses:
+
 - **ERC-2535 Diamond Proxy Standard** via `@diamondslab/diamonds` management system
 - **Multi-chain testing** capability via `hardhat-multichain`
 - **Deployment utilities** including `LocalDiamondDeployer` from `@diamondslab/hardhat-diamonds` (part of the Diamonds ecosystem) and `loadDiamondContract`
@@ -14,7 +15,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 ## Goals
 
 1. **Primary Goal**: Achieve >90% test coverage across all Solidity contracts
-2. **Coverage Milestones**: 
+2. **Coverage Milestones**:
    - Phase 1: Reach 75% coverage (focusing on 0% coverage contracts)
    - Phase 2: Reach 85% coverage (addressing <50% coverage contracts)
    - Phase 3: Reach 90%+ coverage (comprehensive coverage for remaining gaps)
@@ -37,6 +38,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 ### Phase 1: Zero-Coverage Contracts (Target: 75% Overall Coverage)
 
 #### 1. GNUSContractAssets.sol (Currently 0%)
+
 - **1.1** Test `setContractAsset()` function with valid parameters
 - **1.2** Test `setContractAsset()` access control (should reject non-authorized callers)
 - **1.3** Test `getContractAsset()` retrieval for stored assets
@@ -44,6 +46,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 - **1.5** Test asset update scenarios (overwriting existing assets)
 
 #### 2. GeniusAI.sol (Currently 0%)
+
 - **2.1** Test AI-related state initialization
 - **2.2** Test AI function calls with valid inputs
 - **2.3** Test AI function access control restrictions
@@ -51,12 +54,14 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 - **2.5** Test interaction with GeniusAIStorage
 
 #### 3. GeniusAIStorage.sol (Currently 0%)
+
 - **3.1** Test storage initialization for AI-related data
 - **3.2** Test storage read/write operations
 - **3.3** Test storage access control
 - **3.4** Test storage state persistence across transactions
 
 #### 4. GeniusOwnershipFacet.sol (Currently 12.5% lines)
+
 - **4.1** Test `transferOwnership()` with valid new owner
 - **4.2** Test `transferOwnership()` rejects non-owner callers
 - **4.3** Test `transferOwnership()` rejects zero address
@@ -64,6 +69,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 - **4.5** Test ownership transfer events emission
 
 #### 5. TransferHelper.sol (Currently 0%)
+
 - **5.1** Test safe ERC20 transfer functionality
 - **5.2** Test safe ERC20 transferFrom functionality
 - **5.3** Test safe ERC20 approve functionality
@@ -73,6 +79,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 ### Phase 2: Low-Coverage Contracts (Target: 85% Overall Coverage)
 
 #### 6. ERC1155ProxyOperator.sol (Currently 20%)
+
 - **6.1** Test proxy operator approval functionality
 - **6.2** Test proxy operator transfer operations
 - **6.3** Test proxy operator access control
@@ -80,6 +87,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 - **6.5** Test batch operations via proxy
 
 #### 7. ERC20TransferBatch.sol (Currently 47.73% lines)
+
 - **7.1** Test batch transfer functionality with multiple recipients
 - **7.2** Test batch transfer with insufficient balance
 - **7.3** Test batch transfer with mismatched array lengths
@@ -88,6 +96,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 - **7.6** Test edge cases (empty arrays, single recipient, max recipients)
 
 #### 8. GNUSControlStorage.sol (Currently 50% lines)
+
 - **8.1** Test all storage slot initialization
 - **8.2** Test storage read operations for control parameters
 - **8.3** Test storage write operations with access control
@@ -96,30 +105,35 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 ### Phase 3: Comprehensive Coverage (Target: 90%+ Overall Coverage)
 
 #### 9. GNUSBridge.sol (Currently 73.68% lines)
+
 - **9.1** Test uncovered branch conditions in bridge operations
 - **9.2** Test bridge security checks that are currently uncovered
 - **9.3** Test bridge error handling paths (lines 231-252)
 - **9.4** Test edge cases in cross-chain messaging
 
 #### 10. GNUSControl.sol (Currently 68% lines)
+
 - **10.1** Test uncovered control functions (lines 139-148)
 - **10.2** Test control parameter boundary conditions
 - **10.3** Test control access restrictions
 - **10.4** Test control state transitions
 
 #### 11. GNUSNFTFactory.sol (Currently 77.97% lines)
+
 - **11.1** Test uncovered NFT creation edge cases (lines 75, 81, 87, 141)
 - **11.2** Test NFT factory boundary conditions
 - **11.3** Test complex multi-NFT creation scenarios
 - **11.4** Test NFT factory error recovery
 
 #### 12. GeniusAccessControl.sol (Currently 63.64% lines)
+
 - **12.1** Test uncovered role management functions (lines 47, 51, 62, 66)
 - **12.2** Test role hierarchy and permissions
 - **12.3** Test role revocation scenarios
 - **12.4** Test access control edge cases
 
 #### 13. DiamondInitFacet.sol (Currently 83.33% lines)
+
 - **13.1** Test uncovered initialization paths (lines 34, 35)
 - **13.2** Test re-initialization prevention
 - **13.3** Test initialization with edge case parameters
@@ -127,6 +141,7 @@ This PRD outlines a phased approach to incrementally improve coverage while main
 ### Technical Test Requirements
 
 All tests must:
+
 - **TR1**: Use the `LocalDiamondDeployer` pattern for Diamond contract deployment
 - **TR2**: Utilize `loadDiamondContract` utility for contract instance loading
 - **TR3**: Support `hardhat-multichain` provider structure (even if testing on single chain)
@@ -151,12 +166,14 @@ All tests must:
 ## Design Considerations
 
 ### Test File Organization
+
 - Create separate test files for each contract or logical grouping
 - Follow naming convention: `[ContractName].test.ts`
 - Place tests in `/test/unit/` directory
 - Group related tests using nested `describe` blocks
 
 ### Test Structure Pattern
+
 ```typescript
 describe('Contract Name Tests', function () {
     // Diamond deployment setup
@@ -178,6 +195,7 @@ describe('Contract Name Tests', function () {
 ```
 
 ### Code Coverage Analysis Tools
+
 - Use `yarn coverage` to generate Istanbul coverage reports
 - Review `coverage/index.html` for detailed line-by-line coverage
 - Track uncovered lines from coverage reports
@@ -186,30 +204,35 @@ describe('Contract Name Tests', function () {
 ## Technical Considerations
 
 ### Diamond Proxy Architecture
+
 - All contracts are facets of the GeniusDiamond proxy
 - Tests must load the complete Diamond ABI to access all functions
 - Function selectors must be unique across all facets
 - Storage layout must follow Diamond storage pattern
 
 ### Multi-chain Provider Setup
+
 - Tests use `hardhat-multichain` provider map
 - Default to 'hardhat' network for coverage tests
 - Provider setup required even for single-chain tests
 - Snapshot functionality via provider's `send()` method
 
 ### TypeScript Type Safety
+
 - Use generated TypeScript types from `diamond-typechain-types`
 - Import `GeniusDiamond` type for full contract interface
 - Maintain type safety for all contract interactions
 - Use `SignerWithAddress` for signer typing
 
 ### Access Control Testing
+
 - Test role-based access with `CREATOR_ROLE`, `ADMIN_ROLE`, etc.
 - Use `utils.id('ROLE_NAME')` for role identifiers
 - Test both authorized and unauthorized access scenarios
 - Verify role granting and revocation
 
 ### Helper Utilities Required
+
 - `toWei()`: Convert numbers to wei (BigInt with 18 decimals)
 - `toBN()`: Convert to BigInt for large numbers
 - `formatEther()`: Format wei to readable ether strings
@@ -219,6 +242,7 @@ describe('Contract Name Tests', function () {
 ## Success Metrics
 
 ### Coverage Metrics
+
 - **Phase 1 Complete**: Overall coverage reaches 75%+ (Zero-coverage contracts at 80%+)
 - **Phase 2 Complete**: Overall coverage reaches 85%+ (All contracts at 50%+)
 - **Phase 3 Complete**: Overall coverage reaches 90%+ (Target achieved)
@@ -228,6 +252,7 @@ describe('Contract Name Tests', function () {
 - **Line Coverage**: >90%
 
 ### Quality Metrics
+
 - All tests pass consistently
 - No flaky tests (inconsistent pass/fail)
 - Test execution time remains reasonable (<5 minutes for full suite)
@@ -235,6 +260,7 @@ describe('Contract Name Tests', function () {
 - All new tests follow established patterns
 
 ### Tracking Metrics
+
 - Coverage reports generated after each phase
 - Uncovered lines tracked in coverage reports
 - Test file count increases systematically
@@ -243,6 +269,7 @@ describe('Contract Name Tests', function () {
 ## Implementation Plan
 
 ### Phase 1: Zero-Coverage Contracts (Week 1-2)
+
 1. Analyze zero-coverage contracts to understand functionality
 2. Create test files for each contract
 3. Implement happy path tests
@@ -251,6 +278,7 @@ describe('Contract Name Tests', function () {
 6. Review and refactor tests for consistency
 
 ### Phase 2: Low-Coverage Contracts (Week 3-4)
+
 1. Analyze coverage gaps in <50% coverage contracts
 2. Identify uncovered lines and branches
 3. Create additional test cases targeting gaps
@@ -259,6 +287,7 @@ describe('Contract Name Tests', function () {
 6. Review test quality and completeness
 
 ### Phase 3: Final Coverage Push (Week 5-6)
+
 1. Analyze remaining coverage gaps across all contracts
 2. Prioritize high-impact uncovered lines
 3. Create targeted test cases for each gap
@@ -267,6 +296,7 @@ describe('Contract Name Tests', function () {
 6. Conduct comprehensive test suite review
 
 ### Continuous Activities
+
 - Run `yarn coverage` after each test file creation
 - Document test patterns and learnings
 - Update this PRD with insights and adjustments

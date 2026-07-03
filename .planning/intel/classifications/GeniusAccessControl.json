@@ -5,7 +5,14 @@
   "manifest_override": true,
   "title": "GeniusAccessControl",
   "summary": "Documents the GeniusAccessControl abstract contract providing role-based access control with super admin constraints and upgradeable role management.",
-  "scope": ["GeniusAccessControl", "role-based access control", "DEFAULT_ADMIN_ROLE", "UPGRADER_ROLE", "super admin", "AccessControlEnumerable"],
+  "scope": [
+    "GeniusAccessControl",
+    "role-based access control",
+    "DEFAULT_ADMIN_ROLE",
+    "UPGRADER_ROLE",
+    "super admin",
+    "AccessControlEnumerable"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null,

@@ -24,29 +24,29 @@ change is a single-file edit, not a scavenger hunt.
 
 ## Tasks
 
-| # | Task | Owner | Done when |
-|---|---|---|---|
-| 1 | Choose fixture locations (e.g. `test/utils/` for TS; constants on the Foundry base) consistent with repo conventions | Engineer | paths agreed, conventions matched |
-| 2 | Create the TS fixture exporting the four constants | Engineer | module compiles, exports resolve |
-| 3 | Replace `bytes TEST_SGNS_DEST` in the Foundry base with `bytes32` X + `bool` Y-parity | Engineer | base compiles; consumers updated |
-| 4 | Refactor `GNUSBridgeEnhanced.test.ts` to import the TS fixture | Engineer | no inline literals; test green |
-| 5 | grep sweep across `test/` for residual literals | Engineer | none outside fixtures |
-| 6 | Run both suites to confirm no regression | Engineer | counts ≥ pre-refactor pass counts |
+| #   | Task                                                                                                                 | Owner    | Done when                         |
+| --- | -------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------- |
+| 1   | Choose fixture locations (e.g. `test/utils/` for TS; constants on the Foundry base) consistent with repo conventions | Engineer | paths agreed, conventions matched |
+| 2   | Create the TS fixture exporting the four constants                                                                   | Engineer | module compiles, exports resolve  |
+| 3   | Replace `bytes TEST_SGNS_DEST` in the Foundry base with `bytes32` X + `bool` Y-parity                                | Engineer | base compiles; consumers updated  |
+| 4   | Refactor `GNUSBridgeEnhanced.test.ts` to import the TS fixture                                                       | Engineer | no inline literals; test green    |
+| 5   | grep sweep across `test/` for residual literals                                                                      | Engineer | none outside fixtures             |
+| 6   | Run both suites to confirm no regression                                                                             | Engineer | counts ≥ pre-refactor pass counts |
 
 ## Dependencies & owner gates
 
 - **Upstream:** none. **This epic should land first within M0** so E1 and E4 import from it.
 - **Downstream:** E1 (Hardhat gas) and E4 (Foundry fuzz) consume these fixtures.
-- **Owner gates:** none. Agent-executable. (Foundry steps still need `anvil` to *verify*
+- **Owner gates:** none. Agent-executable. (Foundry steps still need `anvil` to _verify_
   via E4, but E3 itself is just compile + refactor.)
 
 ## Risks
 
-| Risk | Mitigation |
-|---|---|
-| A copied value differs subtly and breaks a passing test | Copy verbatim from `GNUSBridgeEnhanced.test.ts`; diff pass counts before/after |
-| TS and Foundry fixtures drift from each other | Keep the X value identical across both; document the pairing in the fixture comment |
-| Over-refactoring unrelated constants | Scope strictly to the four bridge constants |
+| Risk                                                    | Mitigation                                                                          |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| A copied value differs subtly and breaks a passing test | Copy verbatim from `GNUSBridgeEnhanced.test.ts`; diff pass counts before/after      |
+| TS and Foundry fixtures drift from each other           | Keep the X value identical across both; document the pairing in the fixture comment |
+| Over-refactoring unrelated constants                    | Scope strictly to the four bridge constants                                         |
 
 ## Notes
 

@@ -280,31 +280,11 @@ const config: HardhatUserConfig = {
 		currency: 'USD',
 	},
 	etherscan: {
-		apiKey: {
-			goerli:
-				process.env.ETHERSCAN_API_KEY !== undefined ? process.env.ETHERSCAN_API_KEY : '',
-			polygonMumbai:
-				process.env.POLYGONSCAN_API_KEY !== undefined
-					? process.env.POLYGONSCAN_API_KEY
-					: '',
-			polygon:
-				process.env.POLYGONSCAN_API_KEY !== undefined
-					? process.env.POLYGONSCAN_API_KEY
-					: '',
-			polygon_amoy:
-				process.env.POLYGONSCAN_API_KEY !== undefined
-					? process.env.POLYGONSCAN_API_KEY
-					: '',
-			sepolia: process.env.ETHERSCAN_API_KEY || '',
-			mainnet: process.env.ETHERSCAN_API_KEY || '',
-			bsc: process.env.BSCSCAN_API_KEY || '',
-			bsc_testnet: process.env.BSCSCAN_API_KEY || '',
-			arbitrum_sepolia: process.env.ARBITRUM_API_KEY || '',
-			base_sepolia: process.env.BASESCAN_API_KEY || '',
-			base: process.env.BASESCAN_API_KEY || '',
-		},
+		// Etherscan V2 — single universal API key works across all
+		// supported networks. Obtain at https://etherscan.io/myapikey.
+		apiKey: process.env.ETHERSCAN_API_KEY || '',
+
 		customChains: [
-			// additional etherscan config
 			{
 				network: 'arbitrum_sepolia',
 				chainId: 421614,

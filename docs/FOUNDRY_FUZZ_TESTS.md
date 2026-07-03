@@ -33,26 +33,31 @@ test/foundry/
 ## Running Tests
 
 ### Run All Fuzz Tests
+
 ```bash
 forge test --match-path "test/foundry/fuzz/**/*.sol" -vv
 ```
 
 ### Run All Invariant Tests
+
 ```bash
 forge test --match-path "test/foundry/invariant/**/*.sol" -vv
 ```
 
 ### Run Specific Test Contract
+
 ```bash
 forge test --match-contract ERC20Fuzz -vvv
 ```
 
 ### Run with Coverage
+
 ```bash
 forge coverage --match-path "test/foundry/**/*.sol"
 ```
 
 ### Generate Coverage Report
+
 ```bash
 forge coverage --report summary --match-path "test/foundry/**/*.sol"
 forge coverage --report lcov --match-path "test/foundry/**/*.sol"
@@ -61,7 +66,9 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 ## Test Categories
 
 ### 1. Diamond Core Tests
+
 **Invariants (8):**
+
 - Owner never zero address
 - All selectors route to valid facets
 - No selector overlap between facets
@@ -72,6 +79,7 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Owner function callable by owner
 
 **Fuzz Tests (10):**
+
 - Ownership transfer with random addresses
 - Non-owner transfer attempts (revert tests)
 - Non-owner diamondCut attempts (revert tests)
@@ -82,7 +90,9 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Selector collision prevention
 
 ### 2. Access Control Tests
+
 **Invariants (8):**
+
 - DEFAULT_ADMIN_ROLE can grant all roles
 - Role consistency with tracked state
 - Owner has DEFAULT_ADMIN_ROLE
@@ -93,6 +103,7 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Safe role revocation
 
 **Fuzz Tests (10):**
+
 - Grant role with random addresses
 - Revoke role operations
 - Renounce role self-operations
@@ -105,7 +116,9 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Multiple roles per address
 
 ### 3. ERC20 (GNUS Token) Tests
+
 **Invariants (8):**
+
 - Total supply never exceeds 10B max
 - Balances sum to total supply
 - Balance conservation via ghost tracking
@@ -116,6 +129,7 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Total supply query consistency
 
 **Fuzz Tests (11):**
+
 - Transfer with random amounts
 - Approve with random amounts
 - TransferFrom with allowances
@@ -129,13 +143,16 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Batch transfer operations
 
 ### 4. ERC1155 (Multi-Token) Tests
+
 **Invariants (4):**
+
 - Token supplies within max bounds
 - Balance query consistency
 - Zero address has zero balance
 - Individual balances valid
 
 **Fuzz Tests (5):**
+
 - SafeTransferFrom with random amounts
 - SetApprovalForAll operations
 - Transfer without approval (revert)
@@ -143,31 +160,40 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 - Operator approvals
 
 ### 5. NFT Factory Tests
+
 **Invariants (2):**
+
 - Collection IDs are unique
 - GNUS burned on collection creation
 
 **Fuzz Tests (2):**
+
 - Create NFT collection with random parameters
 - Insufficient GNUS for collection (revert)
 
 ### 6. Bridge Tests
+
 **Invariants (2):**
+
 - Total supply consistent across bridge operations
 - Bridge operations are atomic
 
 **Fuzz Tests (3):**
+
 - Bridge deposit with random amounts
 - Deposit exceeding balance (revert)
 - Bridge amount edge cases (zero, max)
 
 ### 7. Economic Invariants
+
 **Invariants (3):**
+
 - No free token creation
 - Burn mechanics reduce supply correctly
 - Token economics internally consistent
 
 ### 8. Security Fuzz Tests (10)
+
 - Access control bypass attempts
 - DiamondCut bypass attempts
 - Self as recipient edge cases
@@ -182,6 +208,7 @@ forge coverage --report lcov --match-path "test/foundry/**/*.sol"
 ## Configuration
 
 ### foundry.toml Settings
+
 ```toml
 fuzz = { runs = 10000, max_test_rejects = 65536, seed = "0x1234" }
 invariant = { runs = 1000, depth = 50, fail_on_revert = false }
@@ -195,7 +222,9 @@ invariant = { runs = 1000, depth = 50, fail_on_revert = false }
 ## Test Infrastructure
 
 ### GeniusDiamondTestBase
+
 Shared base contract providing:
+
 - Diamond deployment via DiamondDeployment.sol
 - Test actor setup (user1, user2, user3, attacker)
 - Role management helpers
@@ -204,7 +233,9 @@ Shared base contract providing:
 - Assertion helpers
 
 ### GeniusDiamondHandler
+
 Stateful invariant handler with:
+
 - Ghost variables for state tracking
 - Bounded action handlers (transfer, approve, mint, burn, createCollection, bridgeDeposit)
 - Actor management
@@ -236,10 +267,11 @@ As per PRD Section 8.1:
 ## CI/CD Integration
 
 Tests are designed to run in GitHub Actions workflow:
+
 ```yaml
 - name: Run Foundry Tests
   run: forge test --match-path "test/foundry/**/*.sol" -vv
-  
+
 - name: Generate Coverage
   run: forge coverage --match-path "test/foundry/**/*.sol" --report summary
 ```
@@ -247,24 +279,31 @@ Tests are designed to run in GitHub Actions workflow:
 ## Debugging Tips
 
 ### Verbose Output
+
 Use `-vvvv` for trace-level output:
+
 ```bash
 forge test --match-test testFuzz_transfer -vvvv
 ```
 
 ### Specific Failure Reproduction
+
 Use the seed from failed test:
+
 ```bash
 forge test --match-test testFuzz_transfer --fuzz-seed 0xdeadbeef
 ```
 
 ### Gas Profiling
+
 ```bash
 forge test --gas-report --match-path "test/foundry/**/*.sol"
 ```
 
 ### Console Logs
+
 Tests include console.log statements for debugging:
+
 - `[OK]` prefix indicates successful operation verification
 - `[HANDLER]` prefix shows handler actions
 - `[ERR]` prefix indicates expected revert conditions
@@ -272,6 +311,7 @@ Tests include console.log statements for debugging:
 ## Adding New Tests
 
 ### Adding a Fuzz Test
+
 1. Extend GeniusDiamondTestBase
 2. Use `testFuzz_` prefix for test functions
 3. Bound inputs with `_boundAddress()` and `_boundUint256()`
@@ -279,23 +319,26 @@ Tests include console.log statements for debugging:
 5. Add assertions to verify properties
 
 Example:
+
 ```solidity
 function testFuzz_myOperation(address user, uint256 amount) public {
     user = _boundAddress(user);
     amount = _boundUint256(amount, 1, 1000 ether);
-    
+
     // Execute operation
     // Assert expected behavior
 }
 ```
 
 ### Adding an Invariant Test
+
 1. Extend GeniusDiamondTestBase
 2. Use `invariant_` prefix for test functions
 3. Test properties that must ALWAYS hold
 4. No parameters needed (called repeatedly by fuzzer)
 
 Example:
+
 ```solidity
 function invariant_myProperty() public view {
     uint256 value = _getContractState();

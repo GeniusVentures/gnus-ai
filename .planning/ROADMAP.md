@@ -9,34 +9,36 @@
 
 ### Phases 1-7: Tech Debt & Security Remediation
 
-| # | Phase | Goal | Requirements | Success Criteria |
-|---|-------|------|--------------|------------------|
-| 1 | Preliminary Cleanup | Remove development-only imports and standardize tooling | DEBT-02, DEBT-03, DEBT-06 | 3 |
-| 2 | Dead Code Removal | Remove GeniusAI facet, deduplicate code | DEBT-01, DEBT-04, DEBT-05, QUAL-01 | 4 |
-| 3 | Input Validation | Fix missing guards and validation | SEC-01, SEC-02, SEC-03, SEC-04 | 4 |
-| 4 | Access Control & Observability | Harden admin paths and enable Slither | SEC-05, SEC-06, SEC-07 | 3 |
-| 5 | Circuit Breaker & Performance | Emergency pause, loop and gas optimization | SEC-08, PERF-01, PERF-02 | 3 |
-| 6 | Test Coverage | Real fuzz tests, complete assertions, verification | TEST-01, TEST-02, TEST-03 | 3 |
-| 7 | Dependency Hardening | Pin contracts-starter, final verification | DEP-01 | 2 |
+| #   | Phase                          | Goal                                                    | Requirements                       | Success Criteria |
+| --- | ------------------------------ | ------------------------------------------------------- | ---------------------------------- | ---------------- |
+| 1   | Preliminary Cleanup            | Remove development-only imports and standardize tooling | DEBT-02, DEBT-03, DEBT-06          | 3                |
+| 2   | Dead Code Removal              | Remove GeniusAI facet, deduplicate code                 | DEBT-01, DEBT-04, DEBT-05, QUAL-01 | 4                |
+| 3   | Input Validation               | Fix missing guards and validation                       | SEC-01, SEC-02, SEC-03, SEC-04     | 4                |
+| 4   | Access Control & Observability | Harden admin paths and enable Slither                   | SEC-05, SEC-06, SEC-07             | 3                |
+| 5   | Circuit Breaker & Performance  | Emergency pause, loop and gas optimization              | SEC-08, PERF-01, PERF-02           | 3                |
+| 6   | Test Coverage                  | Real fuzz tests, complete assertions, verification      | TEST-01, TEST-02, TEST-03          | 3                |
+| 7   | Dependency Hardening           | Pin contracts-starter, final verification               | DEP-01                             | 2                |
 
 ### Phases 8-12: Architecture Transformation
 
-| # | Phase | Goal | Requirements | Success Criteria |
-|---|-------|------|--------------|------------------|
-| 8 | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut() | BRIDGE-01 | 3 |
-| 9 | Treasury/Reserve | Per-child GNUS reserve backing model | TREASURY-01, TREASURY-02, TREASURY-03 | 6 |
-| 10 | Bridge Vault | Lock/release vaults, state machine, replay protection | BRIDGE-02, BRIDGE-03, BRIDGE-04 | 6 |
-| 11 | Proxy Hardening | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03 | 6 |
-| 12 | Supply Ledger | Per-token per-chain supply accounting | LEDGER-01, LEDGER-02 | 5 |
+| #   | Phase            | Goal                                                     | Requirements                          | Success Criteria |
+| --- | ---------------- | -------------------------------------------------------- | ------------------------------------- | ---------------- |
+| 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
+| 9   | Treasury/Reserve | Per-child GNUS reserve backing model                     | TREASURY-01, TREASURY-02, TREASURY-03 | 6                |
+| 10  | Bridge Vault     | Lock/release vaults, state machine, replay protection    | BRIDGE-02, BRIDGE-03, BRIDGE-04       | 6                |
+| 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
+| 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
 
 ## Phase Details
 
 ### Tech Debt & Security Remediation (Phases 1-7)
 
 ### Phase 1: Preliminary Cleanup
+
 **Goal:** Remove development-only imports, standardize Solidity pragmas, and clean up stale configuration. No diamond upgrade required — safe surface-level changes.
 
 **Success Criteria:**
+
 1. `DiamondInitFacet.sol` no longer imports `hardhat/console.sol` or calls `console.log()`. Events are emitted for init observability instead.
 2. All production contracts in `contracts/gnus-ai/` use `pragma solidity ^0.8.19;`. Compiler warnings for mismatched pragmas are resolved.
 3. `hardhat.config.ts` contains no commented-out network configuration blocks. Only active networks remain.
@@ -46,15 +48,18 @@
 **Plans:** 2 plans
 
 Plans:
+
 - [x] 01-01-PLAN.md — Remove console.log from DiamondInitFacet.sol, standardize all pragmas to ^0.8.19
 - [x] 01-02-PLAN.md — Remove commented-out network blocks from hardhat.config.ts
 
 ---
 
 ### Phase 2: Dead Code Removal
+
 **Goal:** Remove the GeniusAI facet (escrow moved to SuperGenius chain), eliminate duplicated access control code, and add missing ERC-165 support. Requires diamond upgrade on testnet.
 
 **Success Criteria:**
+
 1. `contracts/gnus-ai/GeniusAI.sol` and `contracts/gnus-ai/GeniusAIStorage.sol` are deleted. GeniusAI is removed from `diamonds/GeniusDiamond/geniusdiamond.config.json`. ABI and typechain types regenerated.
 2. `DiamondInitFacet.sol` uses inherited `onlySuperAdminRole` from `GeniusAccessControl` — no duplicate modifier definition.
 3. `diamondInitialize250()` calls either `_setupRole()` or `_grantRole()` but not both for the same roles.
@@ -65,15 +70,18 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
+
 - [x] 02-01-PLAN.md — Refactor DiamondInitFacet: GeniusAccessControl inheritance, deduplicate roles, add ERC-165
 - [x] 02-02-PLAN.md — Remove GeniusAI facet: delete contracts, update configs, regenerate types
 
 ---
 
 ### Phase 3: Input Validation
+
 **Goal:** Add missing input validation guards across bridge, batch transfer, and control operations. Fix the `payable` gap in `mintBatch()`.
 
 **Success Criteria:**
+
 1. `ERC20TransferBatch.mintBatch()` is no longer `payable` or includes `require(msg.value == 0, "ETH not accepted")`.
 2. `GNUSBridge.withdraw()` validates `amount >= exchangeRate` and `exchangeRate > 0` — no value-destroying partial withdrawals.
 3. `GNUSBridge.bridgeOut()` validates `destChainID != chainID` — cannot bridge to same chain.
@@ -84,15 +92,18 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
+
 - [x] 03-01-PLAN.md — Fix mintBatch() payable gap (SEC-01) and add array length validation to banTransferorBatch/allowTransferorBatch (SEC-04)
 - [x] 03-02-PLAN.md — Add exchangeRate/amount validation to withdraw() (SEC-02) and same-chain guard to bridgeOut() (SEC-03)
 
 ---
 
 ### Phase 4: Access Control & Observability
+
 **Goal:** Harden admin-only code paths with proper modifiers, add event emissions for super-admin bypass paths, and enable Slither static analysis on all production contracts.
 
 **Success Criteria:**
+
 1. `DiamondInitFacet.diamondInitialize250()` is protected by `onlySuperAdminRole` modifier.
 2. All three super-admin withdrawal limiter bypass paths (`GNUSBridge.sol:159`, `GNUSERC1155MaxSupply.sol:57`, `ERC20TransferBatch.sol:155`) emit events when bypassed.
 3. `slither.config.json` no longer excludes `contracts/gnus-ai/`. `yarn slither:scan` runs successfully and any findings are triaged.
@@ -102,9 +113,11 @@ Plans:
 ---
 
 ### Phase 5: Circuit Breaker & Performance
+
 **Goal:** Implement a diamond-level emergency pause mechanism and optimize gas-heavy loops in the withdrawal limiter and token transfer paths.
 
 **Success Criteria:**
+
 1. A diamond-level emergency pause halts all state-changing operations. Admin can pause/unpause via a dedicated function. All mutative facet functions check the pause flag.
 2. `GNUSERC1155MaxSupply._beforeTokenTransfer()` uses a single loop instead of two — GNUS aggregation and transferor validation happen in one pass.
 3. `GNUSWithdrawLimiterStorage.setDefaultBinCount()` has a maximum cap (e.g., 256). Type consistency between default (`uint256`) and per-account (`uint32`) `binCount` is fixed.
@@ -114,9 +127,11 @@ Plans:
 ---
 
 ### Phase 6: Test Coverage
+
 **Goal:** Replace stub fuzz tests with real coverage, complete NFT factory 2nd-gen child token assertions, and add the missing banned transferor getter.
 
 **Success Criteria:**
+
 1. `test/foundry/fuzz/ExampleFuzz.t.sol` is either replaced with real fuzz tests covering diamond functions or removed entirely. Zero placeholder assertions remain.
 2. `test/unit/NFTFactory.test.ts` has uncommented assertions for 2nd-gen child token minting and GNUS burn logic (lines 371, 375, 522-525).
 3. `GNUSControlStorage.sol` exposes a `getBannedTransferor(tokenId, address)` getter with corresponding unit tests.
@@ -126,16 +141,17 @@ Plans:
 ---
 
 ### Phase 7: Dependency Hardening
+
 **Goal:** Pin the `contracts-starter` GitHub dependency to a specific commit hash for deterministic builds. Run final audit and verification pass.
 
 **Success Criteria:**
+
 1. `package.json` `contracts-starter` dependency includes a concrete commit hash (e.g., `#<sha>`). Yarn install produces a consistent lockfile entry.
 2. Full test suite passes (`yarn test` and `yarn forge:test`). All 22 requirements are verified complete.
 
 **Requirements:** DEP-01
 
 ---
-
 
 ## Investigation Items (Post-Remediation)
 
@@ -156,6 +172,7 @@ Plans:
 **Goal:** Add SuperGenius destination public key parameter (`bytes calldata sgnsDestination`) to `bridgeOut()` to unblock cross-chain testing.
 
 **Success Criteria:**
+
 1. `bridgeOut()` accepts `bytes calldata sgnsDestination` — a 64-byte SuperGenius public key.
 2. `require(sgnsDestination.length == 64, "Invalid destination key length")` validation in place.
 3. `BridgeSourceBurned` event includes `bytes sgnsDestination` field.
@@ -170,11 +187,40 @@ Plans:
 
 ---
 
+### Phase 08.1: Safe Wallet Proposer retrofit for diamondCut proposals (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 3/3 plans complete
+
+Plans:
+
+- [x] 08.1-01 — Safe helper scripts (proposeSafeTransaction, writeSafeProposalArtifact)
+- [x] 08.1-02 — Safe proposal wiring (CLI flags, strategy, config, validation)
+- [x] 08.1-03 — TBD
+
+---
+
+### Phase 08.2: Deploy-Verify Pipeline Fixes (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 08.1
+**Plans:** 0/3 plans complete
+
+Plans:
+
+- [ ] 08.2-01 — Fix proposeSafeTransaction for delegate proposers (non-owner signing)
+- [ ] 08.2-02 — New confirmDeployment script (Safe exec → update deployed-data)
+- [ ] 08.2-03 — New verifyFacets script (forge verify-contract + V2 API)
+
 ## Phase 9: Per-Child GNUS Treasury/Reserve
 
 **Goal:** Replace implicit burn/mint backing with explicit per-child GNUS treasury accounting. Fix the asymmetric backing invariant (CONCERNS #1) — descendants can no longer be minted without GNUS and later redeemed for GNUS.
 
 **Success Criteria:**
+
 1. `gnusReserve[id]`, `redeemableSupply[id]`, `redeemable[id]` added to storage.
 2. `mintBackedChild()` requires GNUS deposit into reserve before mint.
 3. `redeem()` burns child tokens and transfers GNUS from reserve — no mint.
@@ -197,6 +243,7 @@ Plans:
 **Goal:** Replace burn-on-bridge-out with lock-in-vault. Add bridge state machine with replay protection.
 
 **Success Criteria:**
+
 1. EVM source vault: `lockTokens()` emits canonical `BridgeLocked` event with full transfer identity.
 2. EVM destination vault: `releaseTokens()` verifies signatures, checks `!processed[transferId]`.
 3. `mapping(bytes32 => bool) public processedMessages` for replay protection.
@@ -219,6 +266,7 @@ Plans:
 **Goal:** Fix ERC-20 proxy approval/allowance semantics, make child token ID immutable, add redeem adapter.
 
 **Success Criteria:**
+
 1. Real `_allowances` mapping replaces `setApprovalForAll()` — amount-specific ERC-20 approvals.
 2. `approve(spender, amount)` sets a real allowance, not an ERC-1155 operator approval.
 3. `transferFrom()` uses real allowance with `_spendAllowance()`.
@@ -241,6 +289,7 @@ Plans:
 **Goal:** Implement per-token, per-chain supply tracking with bridge-aware view functions.
 
 **Success Criteria:**
+
 1. `ChainSupply` struct: `circulating, escrowed, pendingOutbound, pendingInbound`.
 2. Per-token per-chain mapping with enumeration support.
 3. View functions: `globalAccountedSupply()`, `chainCirculatingSupply()`, `chainEscrowedSupply()`.
@@ -257,5 +306,5 @@ Plans:
 
 ---
 
-*Roadmap created: 2026-05-26*
-*Phases 8-12 added: 2026-06-15*
+_Roadmap created: 2026-05-26_
+_Phases 8-12 added: 2026-06-15_

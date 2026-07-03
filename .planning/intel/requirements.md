@@ -29,4 +29,4 @@ These PRDs concern the development environment tooling, not the production smart
 
 ---
 
-*Source: synthesis of 35 classification files in `.planning/intel/classifications/`*
+_Source: synthesis of 35 classification files in `.planning/intel/classifications/`_

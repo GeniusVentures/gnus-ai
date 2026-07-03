@@ -78,8 +78,8 @@ changes no test's behavior — only where its constants come from.
 10. The scope of refactor is the **three known bridge sites only**: the gas test
     (`test/gas/withdraw-limiter-gas-comparison.test.ts`), `GNUSBridgeEnhanced.test.ts`, and
     the Foundry suite (`BridgeFuzz.t.sol` + base). Unrelated files must not be touched.
-    *(Wiring the gas test and Foundry fuzz to the fixtures is completed in M0-E1 and M0-E4
-    respectively; this epic must leave the fixtures ready and migrate `GNUSBridgeEnhanced`.)*
+    _(Wiring the gas test and Foundry fuzz to the fixtures is completed in M0-E1 and M0-E4
+    respectively; this epic must leave the fixtures ready and migrate `GNUSBridgeEnhanced`.)_
 
 **Verification**
 
@@ -128,8 +128,8 @@ changes no test's behavior — only where its constants come from.
 ## 8. Open Questions
 
 - Exact export style for the TS module (named consts vs a single `BRIDGE_FIXTURES` object)?
-  *Default: individual named exports, matching how the constants are consumed today.* —
+  _Default: individual named exports, matching how the constants are consumed today._ —
   defer to `/generate-tasks`.
 - Should `DEST_CHAIN_ID` be typed as `number` or `bigint` for ethers v6 call ergonomics?
-  *Default: match what the existing passing call sites pass (number literal `137`).* —
+  _Default: match what the existing passing call sites pass (number literal `137`)._ —
   resolve during implementation.

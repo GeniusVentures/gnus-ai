@@ -26,14 +26,14 @@ the input). This epic makes the suite test the real bridge.
 
 ## Tasks
 
-| # | Task | Owner | Done when |
-|---|---|---|---|
-| 1 | Adopt the E3 Foundry `bytes32` X + `bool` Y-parity constants in place of `TEST_SGNS_DEST` | Engineer | base + suite compile |
-| 2 | Migrate every `encodeWithSignature("bridgeOut(...)")` to the 5-param selector | Engineer | calls hit a real facet |
-| 3 | Rewrite `testFuzz_RevertWhen_depositExceedsBalance` to assert the specific revert reason | Engineer | passes for the right reason |
-| 4 | Add a real assertion to `testFuzz_bridgeDeposit` (e.g. balance burned / event emitted) | Engineer | no silent-pass path |
-| 5 | Delete `test_RevertWhen_InvalidDestinationKeyLength` | Engineer | gone; no dead bytes-length logic |
-| 6 | Run `yarn clean-compile && yarn forge:test` against `anvil` | Engineer | 0 failing |
+| #   | Task                                                                                      | Owner    | Done when                        |
+| --- | ----------------------------------------------------------------------------------------- | -------- | -------------------------------- |
+| 1   | Adopt the E3 Foundry `bytes32` X + `bool` Y-parity constants in place of `TEST_SGNS_DEST` | Engineer | base + suite compile             |
+| 2   | Migrate every `encodeWithSignature("bridgeOut(...)")` to the 5-param selector             | Engineer | calls hit a real facet           |
+| 3   | Rewrite `testFuzz_RevertWhen_depositExceedsBalance` to assert the specific revert reason  | Engineer | passes for the right reason      |
+| 4   | Add a real assertion to `testFuzz_bridgeDeposit` (e.g. balance burned / event emitted)    | Engineer | no silent-pass path              |
+| 5   | Delete `test_RevertWhen_InvalidDestinationKeyLength`                                      | Engineer | gone; no dead bytes-length logic |
+| 6   | Run `yarn clean-compile && yarn forge:test` against `anvil`                               | Engineer | 0 failing                        |
 
 ## Dependencies & owner gates
 
@@ -46,12 +46,12 @@ the input). This epic makes the suite test the real bridge.
 
 ## Risks
 
-| Risk | Mitigation |
-|---|---|
-| Negative tests re-pass for the wrong reason after migration | Assert the *specific* revert string/selector, not `success == false` |
-| `anvil` not running → suite skipped/misreported as pass | OP-1 gate; document the prerequisite; wire into CI (M3) |
-| `_boundUint256` / balance setup interacts badly with the real burn path | Verify against actual balances; mint as needed before bridging |
-| Removing the length test loses a real coverage intent | Confirm intent is obsolete — `bytes32` cannot vary in length; superseded by destination-key edge cases in M1-E2 |
+| Risk                                                                    | Mitigation                                                                                                      |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Negative tests re-pass for the wrong reason after migration             | Assert the _specific_ revert string/selector, not `success == false`                                            |
+| `anvil` not running → suite skipped/misreported as pass                 | OP-1 gate; document the prerequisite; wire into CI (M3)                                                         |
+| `_boundUint256` / balance setup interacts badly with the real burn path | Verify against actual balances; mint as needed before bridging                                                  |
+| Removing the length test loses a real coverage intent                   | Confirm intent is obsolete — `bytes32` cannot vary in length; superseded by destination-key edge cases in M1-E2 |
 
 ## Notes
 

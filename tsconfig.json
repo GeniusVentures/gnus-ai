@@ -6,29 +6,15 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "rootDirs": [
-      "./scripts",
-      "./test",
-      "./test-suites",
-      "./typechain-types"
-    ],
+    "rootDirs": ["./scripts", "./test", "./test-suites", "./typechain-types"],
     "outDir": "dist",
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
-    "typeRoots": [
-      "node_modules/@types",
-    ],
+    "typeRoots": ["node_modules/@types"]
   },
-  "include": [
-    "./scripts",
-    "./test",
-    "./test-suites",
-    "./typechain-types"
-  ],
-  "files": [
-    "./hardhat.config.ts"
-  ],
+  "include": ["./scripts", "./test", "./test-suites", "./typechain-types"],
+  "files": ["./hardhat.config.ts"],
   "exclude": [
     "./notes/**/*",
     "./node_modules",
@@ -42,6 +28,6 @@
     "./.git",
     "./.vscode",
     "./.idea",
-    "./reports",
-  ],
+    "./reports"
+  ]
 }

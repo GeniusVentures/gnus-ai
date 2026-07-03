@@ -9,8 +9,8 @@
 - `contracts/gnus-ai/DiamondInitFacet.sol` - ✅ COMPLETE - Initialization with defaults (Task 2.0)
 - `diamonds/GeniusDiamond/geniusdiamond.config.json` - ✅ COMPLETE - Diamond configuration with priority 115 (Task 2.0, partial Task 7.0)
 - `contracts/gnus-ai/GNUSBridge.sol` - Modified to integrate limiter checks into withdraw() function
-- `contracts/gnus-ai/ERC20TransferBatch.sol` - Modified to integrate limiter checks into _transferBatch() to prevent Sybil attacks
-- `contracts/gnus-ai/GNUSERC1155MaxSupply.sol` - Modified to integrate limiter checks into _beforeTokenTransfer() hook
+- `contracts/gnus-ai/ERC20TransferBatch.sol` - Modified to integrate limiter checks into \_transferBatch() to prevent Sybil attacks
+- `contracts/gnus-ai/GNUSERC1155MaxSupply.sol` - Modified to integrate limiter checks into \_beforeTokenTransfer() hook
 - `contracts/gnus-ai/DiamondInitFacet.sol` - Modified to add initializeGNUSWithdrawLimiter() function
 - `diamonds/GeniusDiamond/geniusdiamond.config.json` - Diamond configuration with GNUSWithdrawLimiter facet entry
 - `test/unit/GNUSWithdrawLimiter.test.ts` - Hardhat unit tests for limiter configuration and bin calculations
@@ -36,6 +36,7 @@
 **IMPORTANT:** As you complete each task, you must check it off in this markdown file by changing `- [ ]` to `- [x]`. This helps track progress and ensures you don't skip any steps.
 
 Example:
+
 - `- [ ] 1.1 Read file` → `- [x] 1.1 Read file` (after completing)
 
 Update the file after completing each sub-task, not just after completing an entire parent task.
@@ -107,10 +108,10 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 3.5 Write integration test: "GNUSBridge.withdraw() should revert with clear message when limit exceeded" (FR-41, FR-51)
   - [x] 3.6 Read current `GNUSBridge.sol` withdraw() function implementation
   - [x] 3.7 Import GNUSWithdrawLimiterStorage at top of file
-  - [x] 3.8 Add limiter check after amount validation, before _burn(): calculate gnusAmount from exchange rate (FR-33)
+  - [x] 3.8 Add limiter check after amount validation, before \_burn(): calculate gnusAmount from exchange rate (FR-33)
   - [x] 3.9 Add super admin bypass: only call limiter if `!hasRole(SUPER_ADMIN_ROLE, sender)` (FR-18)
   - [x] 3.10 Call `GNUSWithdrawLimiterStorage.layout().checkAndRecordWithdraw(sender, gnusAmount)` (FR-31, FR-32, FR-36)
-  - [x] 3.11 Verify limiter check occurs BEFORE _burn() operation (FR-32)
+  - [x] 3.11 Verify limiter check occurs BEFORE \_burn() operation (FR-32)
   - [x] 3.12 Add error message for limiter trigger: "Withdrawal limit exceeded for time window"
   - [x] 3.13 Run integration tests: `yarn test test/integration/withdraw-limiter-integration.test.ts`
   - [x] 3.14 Verify limiter blocks excessive withdrawals and allows normal ones
@@ -121,9 +122,9 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 4.3 Write test: "transferBatch() should prevent Sybil attack by checking sender limit" (FR-67, FR-68)
   - [x] 4.4 Write test: "transferOrBurnBatch() should also trigger limiter" (FR-45)
   - [x] 4.5 Write test: "transferBatch() should emit WithdrawRecorded with total amount" (FR-48, FR-53)
-  - [x] 4.6 Read current `ERC20TransferBatch.sol` _transferBatch() function implementation
+  - [x] 4.6 Read current `ERC20TransferBatch.sol` \_transferBatch() function implementation
   - [x] 4.7 Import GNUSWithdrawLimiterStorage at top of file
-  - [x] 4.8 Add limiter check at start of _transferBatch(), after parameter validation (FR-39)
+  - [x] 4.8 Add limiter check at start of \_transferBatch(), after parameter validation (FR-39)
   - [x] 4.9 Implement super admin bypass: `if (!hasRole(SUPER_ADMIN_ROLE, operator))` (FR-40)
   - [x] 4.10 Aggregate total amount across all destinations in loop: `totalAmount += amounts[i]` (FR-38)
   - [x] 4.11 Call `GNUSWithdrawLimiterStorage.layout().checkAndRecordWithdraw(operator, totalAmount)` (FR-37)
@@ -138,9 +139,9 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 5.3 Write test: "transfer hook should skip burning operations (to==0)" (FR-44)
   - [x] 5.4 Write test: "transfer hook should allow super admin bypass" (FR-40)
   - [x] 5.5 Write test: "mixed-token batch should only count GNUS tokens" (FR-46, FR-70)
-  - [x] 5.6 Read current `GNUSERC1155MaxSupply.sol` _beforeTokenTransfer() hook implementation
+  - [x] 5.6 Read current `GNUSERC1155MaxSupply.sol` \_beforeTokenTransfer() hook implementation
   - [x] 5.7 Import GNUSWithdrawLimiterStorage and GNUSConstants (for GNUS_TOKEN_ID)
-  - [x] 5.8 Add limiter check after super._beforeTokenTransfer() call in _beforeTokenTransfer() hook (FR-41)
+  - [x] 5.8 Add limiter check after super.\_beforeTokenTransfer() call in \_beforeTokenTransfer() hook (FR-41)
   - [x] 5.9 Add condition checks: skip if from==0 (minting) or to==0 (burning) (FR-43, FR-44)
   - [x] 5.10 Add super admin bypass: `!hasRole(SUPER_ADMIN_ROLE, operator)` (FR-40)
   - [x] 5.11 Loop through ids array and accumulate amounts where `ids[i] == GNUS_TOKEN_ID` (FR-42, FR-46)
@@ -230,4 +231,3 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 11.12 Document methodology and test conditions in report
   - [x] 11.13 Run tests and verify all measurements are accurate and reproducible
   - [x] 11.14 Commit report with conventional commit format
-  

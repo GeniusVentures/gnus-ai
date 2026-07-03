@@ -1,11 +1,7 @@
 {
-  "*.{ts,js}": [
-    "timeout 30 prettier --write --cache"
-  ],
+  "*.{ts,js}": ["timeout 30 prettier --write --cache"],
   "*.{ts,js,json,md}": [
     "bash -c 'if [[ \"$1\" != scripts/devops/signed-artifacts* ]]; then git secrets --scan \"$1\"; fi' --"
   ],
-  "*.sol": [
-    "semgrep scan --config .semgrep.yml --error"
-  ]
+  "*.sol": ["semgrep scan --config .semgrep.yml --error"]
 }

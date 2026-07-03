@@ -1,6 +1,6 @@
 import {
-    LocalDiamondDeployer,
-    loadDiamondContract,
+	LocalDiamondDeployer,
+	loadDiamondContract,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';

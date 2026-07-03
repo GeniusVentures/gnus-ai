@@ -5,7 +5,15 @@
   "manifest_override": true,
   "title": "GNUS.AI OpenZeppelin Defender Deployment Guide",
   "summary": "Production-ready deployment guide for GNUS.AI Diamond contracts using OpenZeppelin Defender, covering setup, configuration, deployment, monitoring, and troubleshooting.",
-  "scope": ["OpenZeppelin Defender", "GeniusDiamond", "deployment", "Safe multi-signature", "CI/CD", "contract verification", "Diamond Standard"],
+  "scope": [
+    "OpenZeppelin Defender",
+    "GeniusDiamond",
+    "deployment",
+    "Safe multi-signature",
+    "CI/CD",
+    "contract verification",
+    "Diamond Standard"
+  ],
   "cross_refs": ["./DEFENDER_TROUBLESHOOTING.md", "../README.md"],
   "locked": false,
   "precedence": null,

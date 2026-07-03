@@ -10,16 +10,17 @@
 
 ### Requirement Breakdown
 
-| ID | Requirement | Type |
-|----|-------------|------|
-| DEBT-01 | Remove GeniusAI facet — delete `GeniusAI.sol`, `GeniusAIStorage.sol`, and remove from diamond config | Dead code removal |
-| DEBT-04 | Remove duplicate `_setupRole`/`_grantRole` calls in `DiamondInitFacet.diamondInitialize250()` | Code deduplication |
-| DEBT-05 | Remove duplicated `onlySuperAdminRole` modifier from `DiamondInitFacet.sol` | Code deduplication |
-| QUAL-01 | Add `supportsInterface()` override to `DiamondInitFacet.sol` | ERC-165 compliance |
+| ID      | Requirement                                                                                          | Type               |
+| ------- | ---------------------------------------------------------------------------------------------------- | ------------------ |
+| DEBT-01 | Remove GeniusAI facet — delete `GeniusAI.sol`, `GeniusAIStorage.sol`, and remove from diamond config | Dead code removal  |
+| DEBT-04 | Remove duplicate `_setupRole`/`_grantRole` calls in `DiamondInitFacet.diamondInitialize250()`        | Code deduplication |
+| DEBT-05 | Remove duplicated `onlySuperAdminRole` modifier from `DiamondInitFacet.sol`                          | Code deduplication |
+| QUAL-01 | Add `supportsInterface()` override to `DiamondInitFacet.sol`                                         | ERC-165 compliance |
 
 ### Current State
 
 **DEBT-01 — GeniusAI facet removal:**
+
 - `contracts/gnus-ai/GeniusAI.sol` (40 lines): Escrow contract for AI processing jobs. Uses `GeniusAIStorage` library and extends `GeniusAccessControl`.
 - `contracts/gnus-ai/GeniusAIStorage.sol` (39 lines): Diamond storage library with `AIProcessingJob` struct and storage layout.
 - Active in `diamonds/GeniusDiamond/geniusdiamond.config.json` at priority 70 with deployInit `GeniusAI_Initialize()`.
@@ -32,6 +33,7 @@
 
 **DEBT-04 — Duplicate role calls:**
 In `DiamondInitFacet.diamondInitialize250()` (lines 48-55):
+
 ```solidity
 _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());   // line 49
 _setupRole(MINTER_ROLE, _msgSender());           // line 50
@@ -41,22 +43,26 @@ _grantRole(DEFAULT_ADMIN_ROLE, sender);          // line 53
 _grantRole(MINTER_ROLE, sender);                // line 54
 _grantRole(UPGRADER_ROLE, sender);              // line 55
 ```
+
 `_setupRole` internally calls `_grantRole` AND sets the role's admin role. Calling both for the same role/sender pair is redundant. The `_grantRole` calls on lines 53-55 are duplicates since `_setupRole` already grants.
 
 **DEBT-05 — Duplicate modifier:**
 `DiamondInitFacet.sol` lines 33-39 define its own `onlySuperAdminRole` modifier:
+
 ```solidity
 modifier onlySuperAdminRole() {
     require(LibDiamond.diamondStorage().contractOwner == _msgSender(), "Only SuperAdmin allowed");
     _;
 }
 ```
+
 `GeniusAccessControl.sol` line 73 defines the identical modifier. DiamondInitFacet does NOT currently import or inherit from `GeniusAccessControl` — it inherits directly from `ContextUpgradeable, AccessControlEnumerableUpgradeable`.
 
 **QUAL-01 — Missing supportsInterface:**
 `DiamondInitFacet.sol` has no `supportsInterface()` override. Other facets implement this:
 
-*GNUSBridge pattern (lines 49-59):*
+_GNUSBridge pattern (lines 49-59):_
+
 ```solidity
 function supportsInterface(bytes4 interfaceId)
     public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable)
@@ -68,7 +74,8 @@ function supportsInterface(bytes4 interfaceId)
 }
 ```
 
-*GNUSNFTFactory pattern (lines 140-142):*
+_GNUSNFTFactory pattern (lines 140-142):_
+
 ```solidity
 function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlEnumerableUpgradeable) returns (bool) {
     return (ERC1155Upgradeable.supportsInterface(interfaceId) || AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
@@ -76,7 +83,8 @@ function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1
 }
 ```
 
-*GNUSWithdrawLimiter pattern (lines 238-239):*
+_GNUSWithdrawLimiter pattern (lines 238-239):_
+
 ```solidity
 function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
     return super.supportsInterface(interfaceId);
@@ -84,12 +92,14 @@ function supportsInterface(bytes4 interfaceId) public view virtual override retu
 ```
 
 For DiamondInitFacet (inherits `ContextUpgradeable, AccessControlEnumerableUpgradeable`), the pattern should be:
+
 ```solidity
 function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
     return super.supportsInterface(interfaceId) ||
         (LibDiamond.diamondStorage().supportedInterfaces[interfaceId] == true);
 }
 ```
+
 Only one parent contract (`AccessControlEnumerableUpgradeable`) has `supportsInterface`, so it uses `super` rather than explicit parent references. The `LibDiamond.diamondStorage().supportedInterfaces` check matches the pattern from GNUSBridge/GNUSNFTFactory.
 
 ---
@@ -102,6 +112,7 @@ Only one parent contract (`AccessControlEnumerableUpgradeable`) has `supportsInt
 **Upgradeable libs:** @gnus.ai/contracts-upgradeable-diamond (local fork)
 
 **Phase 1 established patterns:**
+
 - TDD bash verification scripts in `test/unit/` for contract property checks
 - Commit format: `{type}({phase}): {description}`
 - Artifact cleanup after file deletion (artifacts, cache, typechain)
@@ -131,6 +142,7 @@ contract DiamondInitFacet is ContextUpgradeable, GeniusAccessControl {
 ```
 
 **Rationale:**
+
 - `GeniusAccessControl` is `abstract contract GeniusAccessControl is Initializable, AccessControlEnumerableUpgradeable`
 - DiamondInitFacet already imports `Initializable` and uses `InitializableStorage`
 - The modifier in GeniusAccessControl is byte-for-byte identical (both check `LibDiamond.diamondStorage().contractOwner`)
@@ -142,6 +154,7 @@ contract DiamondInitFacet is ContextUpgradeable, GeniusAccessControl {
 ### DEBT-01: GeniusAI Removal Scope
 
 **Files to delete:**
+
 1. `contracts/gnus-ai/GeniusAI.sol`
 2. `contracts/gnus-ai/GeniusAIStorage.sol`
 3. `test/unit/GeniusAI.test.ts`
@@ -150,16 +163,19 @@ contract DiamondInitFacet is ContextUpgradeable, GeniusAccessControl {
 6. `docs/GeniusAIStorage.md`
 
 **Configs to update (remove GeniusAI facet entry):**
+
 1. `diamonds/GeniusDiamond/geniusdiamond.config.json` — primary config (lines 62-69)
 2. `diamonds/GeniusDiamond/geniusdiamond-erc1155override.config.json` — override variant (lines 58-64)
 3. `test-assets/test-diamonds/GeniusDiamond/geniusdiamond.config.json` — test config (lines 52-58)
 
 **Configs intentionally NOT modified:**
+
 - `diamonds/GeniusDiamond/archive/` — historical archives, preserved as-is
 - `diamonds/GeniusDiamond/deployments/` — deployment state files, updated on redeploy only
 - All `deployments/*.json` files — runtime-only, reflect live state
 
 **Artifacts regenerated by `npx hardhat compile`:**
+
 - `artifacts/contracts/gnus-ai/GeniusAI.sol/` and `GeniusAIStorage.sol/` — removed
 - `cache/solidity-files-cache.json` — GeniusAI entry removed
 - `typechain-types/contracts/gnus-ai/GeniusAI.ts` — removed
@@ -173,6 +189,7 @@ contract DiamondInitFacet is ContextUpgradeable, GeniusAccessControl {
 **Pattern to follow:** GNUSBridge/GNUSNFTFactory pattern with `LibDiamond.diamondStorage().supportedInterfaces` check.
 
 The implementation for DiamondInitFacet:
+
 ```solidity
 function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
     return super.supportsInterface(interfaceId) ||
@@ -197,10 +214,12 @@ Must import `LibDiamond` (already imported at line 7).
 ## Dependency Analysis
 
 **In-phase dependencies:**
-- DEBT-05 (change inheritance) must be done BEFORE DEBT-04 (remove duplicate _grantRole calls), since the new inheritance chain may affect which role functions are available.
+
+- DEBT-05 (change inheritance) must be done BEFORE DEBT-04 (remove duplicate \_grantRole calls), since the new inheritance chain may affect which role functions are available.
 - QUAL-01 (add supportsInterface) is independent of DEBT-01/DEBT-04/DEBT-05.
 
 **Cross-phase dependencies:**
+
 - Phase 3 (Input Validation) touches GNUSBridge and ERC20TransferBatch — no direct dependency on Phase 2 changes.
 - Phase 4 (Access Control) touches DiamondInitFacet.diamondInitialize250() — Phase 2 must leave the function correctly protected with onlySuperAdminRole.
 - Phase 5 (Circuit Breaker) adds pause mechanism — independent.
@@ -212,12 +231,12 @@ Must import `LibDiamond` (already imported at line 7).
 
 ### Nyquist Sampling Strategy
 
-| Requirement | Verification Method | Critical Path |
-|-------------|-------------------|---------------|
-| DEBT-01 | File existence grep + config grep + compile | Delete .sol files → remove from config → compile → verify |
-| DEBT-04 | Source grep for `_grantRole` in DiamondInitFacet | Remove lines → compile → verify |
-| DEBT-05 | Source grep for local `onlySuperAdminRole` in DiamondInitFacet | Change inheritance → remove modifier → compile → verify |
-| QUAL-01 | Source grep for `supportsInterface` in DiamondInitFacet | Add override → compile → verify |
+| Requirement | Verification Method                                            | Critical Path                                             |
+| ----------- | -------------------------------------------------------------- | --------------------------------------------------------- |
+| DEBT-01     | File existence grep + config grep + compile                    | Delete .sol files → remove from config → compile → verify |
+| DEBT-04     | Source grep for `_grantRole` in DiamondInitFacet               | Remove lines → compile → verify                           |
+| DEBT-05     | Source grep for local `onlySuperAdminRole` in DiamondInitFacet | Change inheritance → remove modifier → compile → verify   |
+| QUAL-01     | Source grep for `supportsInterface` in DiamondInitFacet        | Add override → compile → verify                           |
 
 ### Verification Commands
 

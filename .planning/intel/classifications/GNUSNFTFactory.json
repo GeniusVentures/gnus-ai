@@ -5,7 +5,14 @@
   "manifest_override": false,
   "title": "GNUSNFTFactory",
   "summary": "API reference documentation for the GNUSNFTFactory contract managing creation, minting, and management of NFTs within the GNUS ecosystem.",
-  "scope": ["GNUSNFTFactory", "NFT creation", "ERC1155", "minting", "hierarchical NFTs", "GeniusAccessControl"],
+  "scope": [
+    "GNUSNFTFactory",
+    "NFT creation",
+    "ERC1155",
+    "minting",
+    "hierarchical NFTs",
+    "GeniusAccessControl"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null

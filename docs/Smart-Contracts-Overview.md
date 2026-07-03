@@ -12,11 +12,9 @@
 
 ### What is GNUS.ai?
 
-GNUS.ai is a revolutionary blockchain platform that combines fungible cryptocurrency tokens with NFTs (Non-Fungible Tokens) in a unique hierarchical system across a variety L1 and L2 blockchains. These are utilized vis a vis the Genius blockchain for utility on ,   Think of it as a digital ecosystem where different types of digital assets can interact, transform, and evolve together.
+GNUS.ai is a revolutionary blockchain platform that combines fungible cryptocurrency tokens with NFTs (Non-Fungible Tokens) in a unique hierarchical system across a variety L1 and L2 blockchains. These are utilized vis a vis the Genius blockchain for utility on , Think of it as a digital ecosystem where different types of digital assets can interact, transform, and evolve together.
 
 ### GNUS.ai Smart Contracts
-
-
 
 ### Key Concepts Explained Simply
 
@@ -348,24 +346,24 @@ GNUS Token (ID: 0)
 
 ### Access Control Matrix
 
-| Role | Permissions |
-|------|------------|
-| Super Admin | All operations, ownership transfer |
-| DEFAULT_ADMIN_ROLE | Pause/unpause, URI updates, minting |
-| UPGRADER_ROLE | Add/remove facets, upgrade logic |
-| MINTER_ROLE | Mint tokens via bridge |
-| CREATOR_ROLE | Create child NFTs |
+| Role                    | Permissions                          |
+| ----------------------- | ------------------------------------ |
+| Super Admin             | All operations, ownership transfer   |
+| DEFAULT_ADMIN_ROLE      | Pause/unpause, URI updates, minting  |
+| UPGRADER_ROLE           | Add/remove facets, upgrade logic     |
+| MINTER_ROLE             | Mint tokens via bridge               |
+| CREATOR_ROLE            | Create child NFTs                    |
 | NFT_PROXY_OPERATOR_ROLE | Approve all transfers (marketplaces) |
 
 ### State Variables Summary
 
-| Contract | Key State | Purpose |
-|----------|-----------|---------|
-| GNUSNFTFactory | NFTs mapping | Token metadata storage |
-| GNUSBridge | Balance mappings | Token ownership tracking |
-| GNUSControl | Blacklists, fees | Security and protocol parameters |
-| GeniusAI | Escrow mappings | AI job payment tracking |
-| ERC20Storage | Allowances | ERC-20 approval system |
+| Contract       | Key State        | Purpose                          |
+| -------------- | ---------------- | -------------------------------- |
+| GNUSNFTFactory | NFTs mapping     | Token metadata storage           |
+| GNUSBridge     | Balance mappings | Token ownership tracking         |
+| GNUSControl    | Blacklists, fees | Security and protocol parameters |
+| GeniusAI       | Escrow mappings  | AI job payment tracking          |
+| ERC20Storage   | Allowances       | ERC-20 approval system           |
 
 ### Events Architecture
 

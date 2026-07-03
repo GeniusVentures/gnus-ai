@@ -13,32 +13,34 @@ The GeniusDiamond (`docs/GeniusDiamond.md`) implements EIP-2535 with ERC165 and 
 
 Full API reference documentation exists for every facet in the diamond:
 
-| Facet | Source Doc | Key Scope |
-|---|---|---|
-| GeniusDiamond | `docs/GeniusDiamond.md` | EIP-2535 Diamond, ERC165, ERC1155, DiamondCutFacet |
-| GeniusAccessControl | `docs/GeniusAccessControl.md` | RBAC: DEFAULT_ADMIN_ROLE, UPGRADER_ROLE, AccessControlEnumerable |
-| GeniusOwnershipFacet | `docs/GeniusOwnershipFacet.md` | EIP-173 ownership, role-based permissions |
-| GNUSBridge | `docs/GNUSBridge.md` | Cross-chain bridging, mint/burn, ERC20/ERC1155 transfers |
-| GNUSERC1155MaxSupply | `docs/GNUSERC1155MaxSupply.md` | Supply management, pausing, burning |
-| GNUSNFTFactory | `docs/GNUSNFTFactory.md` | NFT creation, hierarchical parent-child minting |
-| GNUSControl | `docs/GNUSControl.md` | Protocol security: blacklists, bridge fees, chain config |
-| GNUSWithdrawLimiter | `docs/GNUSWithdrawLimiter.md` | Rate-limiting, bin-based aggregation, Sybil prevention |
-| ERC20TransferBatch | `docs/ERC20TransferBatch.md` | Batch transfers, minting, burning with supply limits |
-| ERC1155ProxyOperator | `docs/ERC1155ProxyOperator.md` | ERC1155 proxy operator approvals, supply tracking |
-| GNUSContractAssets | `docs/GNUSContractAssets.md` | Non-GNUS token asset recovery |
-| GNUSNFTCollectionName | `docs/GNUSNFTCollectionName.md` | Genius NFT Collection name constant |
-| GeniusAI (DEAD CODE) | `docs/GeniusAI.md` | Escrow for AI processing jobs — marked for removal |
-| GeniusAIStorage (DEAD CODE) | `docs/GeniusAIStorage.md` | Storage layout for escrow — marked for removal |
+| Facet                       | Source Doc                      | Key Scope                                                        |
+| --------------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| GeniusDiamond               | `docs/GeniusDiamond.md`         | EIP-2535 Diamond, ERC165, ERC1155, DiamondCutFacet               |
+| GeniusAccessControl         | `docs/GeniusAccessControl.md`   | RBAC: DEFAULT_ADMIN_ROLE, UPGRADER_ROLE, AccessControlEnumerable |
+| GeniusOwnershipFacet        | `docs/GeniusOwnershipFacet.md`  | EIP-173 ownership, role-based permissions                        |
+| GNUSBridge                  | `docs/GNUSBridge.md`            | Cross-chain bridging, mint/burn, ERC20/ERC1155 transfers         |
+| GNUSERC1155MaxSupply        | `docs/GNUSERC1155MaxSupply.md`  | Supply management, pausing, burning                              |
+| GNUSNFTFactory              | `docs/GNUSNFTFactory.md`        | NFT creation, hierarchical parent-child minting                  |
+| GNUSControl                 | `docs/GNUSControl.md`           | Protocol security: blacklists, bridge fees, chain config         |
+| GNUSWithdrawLimiter         | `docs/GNUSWithdrawLimiter.md`   | Rate-limiting, bin-based aggregation, Sybil prevention           |
+| ERC20TransferBatch          | `docs/ERC20TransferBatch.md`    | Batch transfers, minting, burning with supply limits             |
+| ERC1155ProxyOperator        | `docs/ERC1155ProxyOperator.md`  | ERC1155 proxy operator approvals, supply tracking                |
+| GNUSContractAssets          | `docs/GNUSContractAssets.md`    | Non-GNUS token asset recovery                                    |
+| GNUSNFTCollectionName       | `docs/GNUSNFTCollectionName.md` | Genius NFT Collection name constant                              |
+| GeniusAI (DEAD CODE)        | `docs/GeniusAI.md`              | Escrow for AI processing jobs — marked for removal               |
+| GeniusAIStorage (DEAD CODE) | `docs/GeniusAIStorage.md`       | Storage layout for escrow — marked for removal                   |
 
 ### Storage Libraries
 
 Two diamond storage libraries are documented:
+
 - `GNUSControlStorage` (`docs/GNUSControlStorage.md`): Banned transferor mappings, bridge fee, protocol version, chain ID
 - `GNUSNFTFactoryStorage` (`docs/GNUSNFTFactoryStorage.md`): NFT Factory diamond storage layout
 
 ### Smart Contracts Overview
 
 `docs/Smart-Contracts-Overview.md` provides a non-technical explanation of the GNUS.ai ecosystem:
+
 - GNUS token is the base currency with 50M total supply cap
 - NFTs have exchange rates and can be burned for GNUS
 - Hierarchical NFT system: parent-child-grandchild relationships
@@ -56,6 +58,7 @@ The Smart-Contracts-Overview doc states: "Total supply is capped at 50 million t
 ### Foundry Fuzz Test Suite
 
 `docs/FOUNDRY_FUZZ_TESTS.md` documents a comprehensive Foundry test suite with:
+
 - **85% code coverage** achieved across 15 test files (per the doc's summary)
 - 12 fuzz test files in `test/foundry/fuzz/` (per codebase map)
 - 8 invariant test files in `test/foundry/invariant/`
@@ -77,6 +80,7 @@ Both Hardhat/Mocha (TypeScript) and Foundry (Solidity) test frameworks are confi
 ### RPC-Based Deployment
 
 `docs/RPC-Deployment-Strategy.md` documents the `RPCDiamondDeployer.ts` TypeScript deployer with:
+
 - Direct RPC communication to EVM-compatible nodes
 - Retry logic for transaction failures
 - Configuration validation
@@ -88,6 +92,7 @@ This is the deployment pipeline already validated in PROJECT.md.
 ### OpenZeppelin Defender Deployment
 
 `docs/DEFENDER_DEPLOYMENT.md` documents an ALTERNATIVE deployment path using `DefenderDiamondDeployer`:
+
 - Production-ready deployment via OpenZeppelin Defender
 - Supports EOA Relayer or Safe multi-signature wallet
 - Managed deployments with monitoring and status tracking
@@ -153,4 +158,4 @@ Three PRDs define DevContainer infrastructure requirements (see `.planning/intel
 
 ---
 
-*Source: synthesis of 35 classification files in `.planning/intel/classifications/`*
+_Source: synthesis of 35 classification files in `.planning/intel/classifications/`_

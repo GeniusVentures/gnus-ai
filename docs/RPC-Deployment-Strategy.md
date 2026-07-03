@@ -160,19 +160,19 @@ npx ts-node deploy-rpc-manual.ts interactive
 
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DIAMOND_NAME` | Yes | - | Name of the diamond contract |
-| `RPC_URL` | Yes | - | RPC endpoint URL |
-| `PRIVATE_KEY` | Yes | - | Deployer private key (0x prefixed) |
-| `NETWORK_NAME` | No | Auto-detect | Network identifier |
-| `CHAIN_ID` | No | Auto-detect | Blockchain chain ID |
-| `GAS_LIMIT_MULTIPLIER` | No | 1.2 | Gas limit multiplier (1.0-2.0) |
-| `MAX_RETRIES` | No | 3 | Maximum retry attempts (1-10) |
-| `RETRY_DELAY_MS` | No | 2000 | Retry delay in milliseconds |
-| `VERBOSE` | No | false | Enable verbose logging |
-| `DEPLOYMENTS_PATH` | No | diamonds | Deployments directory path |
-| `DIAMOND_CONFIG_PATH` | No | Auto-detect | Diamond configuration file path |
+| Variable               | Required | Default     | Description                        |
+| ---------------------- | -------- | ----------- | ---------------------------------- |
+| `DIAMOND_NAME`         | Yes      | -           | Name of the diamond contract       |
+| `RPC_URL`              | Yes      | -           | RPC endpoint URL                   |
+| `PRIVATE_KEY`          | Yes      | -           | Deployer private key (0x prefixed) |
+| `NETWORK_NAME`         | No       | Auto-detect | Network identifier                 |
+| `CHAIN_ID`             | No       | Auto-detect | Blockchain chain ID                |
+| `GAS_LIMIT_MULTIPLIER` | No       | 1.2         | Gas limit multiplier (1.0-2.0)     |
+| `MAX_RETRIES`          | No       | 3           | Maximum retry attempts (1-10)      |
+| `RETRY_DELAY_MS`       | No       | 2000        | Retry delay in milliseconds        |
+| `VERBOSE`              | No       | false       | Enable verbose logging             |
+| `DEPLOYMENTS_PATH`     | No       | diamonds    | Deployments directory path         |
+| `DIAMOND_CONFIG_PATH`  | No       | Auto-detect | Diamond configuration file path    |
 
 ### Network Examples
 

@@ -5,6 +5,11 @@
  * Deploys GNUS.AI Diamond contracts using RPCDiamondDeployer
  */
 
+// Load Hardhat FIRST so its Runtime Environment context exists before
+// @diamondslab/diamonds (which calls extendEnvironment at import time) loads.
+// Hardhat provides plugin/context plumbing only — no transactions are sent via it.
+import 'hardhat';
+
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
 import {
 	DeploymentOptions,

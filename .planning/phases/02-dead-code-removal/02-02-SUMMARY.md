@@ -66,6 +66,7 @@ completed: 2026-05-28
 ## Accomplishments
 
 ### Task 1: Delete GeniusAI Source Files
+
 - Deleted `contracts/gnus-ai/GeniusAI.sol` (40 lines — escrow facet)
 - Deleted `contracts/gnus-ai/GeniusAIStorage.sol` (39 lines — AI escrow storage)
 - Deleted `test/unit/GeniusAI.test.ts` and `test/unit/GeniusAIStorage.test.ts`
@@ -74,51 +75,56 @@ completed: 2026-05-28
 - Cleaned Hardhat cache with `yarn hardhat clean`
 
 ### Task 2: Remove from Diamond Configs
+
 - Removed GeniusAI facet entries from `diamonds/GeniusDiamond/geniusdiamond.config.json` (primary)
 - Removed GeniusAI facet entries from `diamonds/GeniusDiamond/geniusdiamond-erc1155override.config.json` (override)
 - Removed GeniusAI facet entries from `test-assets/test-diamonds/GeniusDiamond/geniusdiamond.config.json` (test)
 - All 3 configs validated as valid JSON after removal
 
 ### Task 3: Recompile and Verify
+
 - Full recompilation: 60 Solidity files compiled successfully
 - 128 TypeChain typings generated
 - Zero "GeniusAI" references in typechain-types/, artifacts/, or cache/
 
 ## Task Commits
 
-| Commit (parent) | Commit (gnus-ai) | Commit (diamond) | Task |
-|-----------------|-------------------|------------------|------|
-| `20d1b92` | `7261772` | `4bc74c3` | Tasks 1-3 |
+| Commit (parent) | Commit (gnus-ai) | Commit (diamond) | Task      |
+| --------------- | ---------------- | ---------------- | --------- |
+| `20d1b92`       | `7261772`        | `4bc74c3`        | Tasks 1-3 |
 
 ## Acceptance Criteria Verification
 
-| # | Criterion | Result |
-|---|-----------|--------|
-| 1 | GeniusAI.sol deleted | PASS |
-| 2 | GeniusAIStorage.sol deleted | PASS |
-| 3 | Test files deleted | PASS |
-| 4 | No "GeniusAI" in primary config | PASS |
-| 5 | No "GeniusAI" in override config | PASS |
-| 6 | No "GeniusAI" in test config | PASS |
-| 7 | All configs valid JSON | PASS |
-| 8 | `yarn hardhat compile` exits 0 | PASS |
-| 9 | No GeniusAI in typechain-types | PASS |
+| #   | Criterion                        | Result |
+| --- | -------------------------------- | ------ |
+| 1   | GeniusAI.sol deleted             | PASS   |
+| 2   | GeniusAIStorage.sol deleted      | PASS   |
+| 3   | Test files deleted               | PASS   |
+| 4   | No "GeniusAI" in primary config  | PASS   |
+| 5   | No "GeniusAI" in override config | PASS   |
+| 6   | No "GeniusAI" in test config     | PASS   |
+| 7   | All configs valid JSON           | PASS   |
+| 8   | `yarn hardhat compile` exits 0   | PASS   |
+| 9   | No GeniusAI in typechain-types   | PASS   |
 
 ## Threat Mitigation
 
-| Threat ID | Status |
-|-----------|--------|
-| T-02-03 (DoS — config JSON breakage) | Resolved — all 3 configs validated as valid JSON after removal |
-| T-02-04 (Info Disclosure — stale typechain) | Resolved — zero GeniusAI references in generated output |
+| Threat ID                                   | Status                                                         |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| T-02-03 (DoS — config JSON breakage)        | Resolved — all 3 configs validated as valid JSON after removal |
+| T-02-04 (Info Disclosure — stale typechain) | Resolved — zero GeniusAI references in generated output        |
 
 ## Decisions Made
+
 - Committed deletions atomically by submodule (gnus-ai, diamonds) with single parent commit
 - Used `yarn` instead of `npx` consistently due to npm `.npmrc` config issue
 
 ## Issues Encountered
+
 - `diamonds/GeniusDiamond` is a separate git submodule — config changes committed there separately from parent repo
 
 ## Next Phase Readiness
+
 - Phase 2 complete: DiamondInitFacet refactored, GeniusAI facet removed
 - All 4 requirements (DEBT-01, DEBT-04, DEBT-05, QUAL-01) satisfied
 - Ready for Phase 3: Input Validation
@@ -132,5 +138,6 @@ completed: 2026-05-28
 - TDD script: 9/9 tests pass
 
 ---
-*Phase: 02-dead-code-removal*
-*Completed: 2026-05-28*
+
+_Phase: 02-dead-code-removal_
+_Completed: 2026-05-28_

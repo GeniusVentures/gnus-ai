@@ -16,9 +16,9 @@ import chaiAsPromised from 'chai-as-promised';
 
 import { Diamond } from '@diamondslab/diamonds';
 import {
-    loadDiamondContract,
-    LocalDiamondDeployer,
-    LocalDiamondDeployerConfig,
+	loadDiamondContract,
+	LocalDiamondDeployer,
+	LocalDiamondDeployerConfig,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { assert } from 'chai';

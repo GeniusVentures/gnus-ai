@@ -12,6 +12,7 @@ Implements a modular and upgradeable diamond contract with ERC165 and ERC1155 co
 
 Leverages the EIP-2535 Diamond Standard for modularity and the ERC165 interface for introspection.
 Includes ERC1155 compatibility and ownership management through facets.
+
 ## Functions info
 
 ### constructor
@@ -30,10 +31,10 @@ It also ensures compatibility with ERC1155 and ERC165 interfaces.
 
 Parameters:
 
-| Name             | Type    | Description                                   |
-| :--------------- | :------ | :-------------------------------------------- |
-| _contractOwner   | address | The address of the contract owner.            |
-| _diamondCutFacet | address | The address of the DiamondCutFacet contract.  |
+| Name              | Type    | Description                                  |
+| :---------------- | :------ | :------------------------------------------- |
+| \_contractOwner   | address | The address of the contract owner.           |
+| \_diamondCutFacet | address | The address of the DiamondCutFacet contract. |
 
 ### supportsInterface (0x01ffc9a7)
 
@@ -49,13 +50,12 @@ Overrides the `supportsInterface` function to include diamond-specific interface
 
 Parameters:
 
-| Name        | Type   | Description                         |
-| :---------- | :----- | :---------------------------------- |
-| interfaceId | bytes4 | The interface identifier to check.  |
-
+| Name        | Type   | Description                        |
+| :---------- | :----- | :--------------------------------- |
+| interfaceId | bytes4 | The interface identifier to check. |
 
 Return values:
 
-| Name | Type | Description                                           |
-| :--- | :--- | :---------------------------------------------------- |
-| [0]  | bool | True if the interface is supported, otherwise false.  |
+| Name | Type | Description                                          |
+| :--- | :--- | :--------------------------------------------------- |
+| [0]  | bool | True if the interface is supported, otherwise false. |

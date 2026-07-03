@@ -103,16 +103,16 @@ PRIVATE_KEY=your_private_key_for_local_testing
 
 ### Configuration Options
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `DEFENDER_API_KEY` | OpenZeppelin Defender API key | Yes | - |
-| `DEFENDER_API_SECRET` | OpenZeppelin Defender API secret | Yes | - |
-| `DEFENDER_RELAYER_ADDRESS` | Relayer wallet address | Yes | - |
-| `DEFENDER_AUTO_APPROVE` | Auto-approve transactions | No | `false` |
-| `DEFENDER_VIA_TYPE` | Transaction method (EOA/Safe) | No | `EOA` |
-| `DEFENDER_SAFE_ADDRESS` | Safe multi-sig address | Conditional | - |
-| `DEFENDER_GAS_LIMIT` | Gas limit for transactions | No | `5000000` |
-| `DEFENDER_MAX_GAS_PRICE` | Maximum gas price in wei | No | Network default |
+| Variable                   | Description                      | Required    | Default         |
+| -------------------------- | -------------------------------- | ----------- | --------------- |
+| `DEFENDER_API_KEY`         | OpenZeppelin Defender API key    | Yes         | -               |
+| `DEFENDER_API_SECRET`      | OpenZeppelin Defender API secret | Yes         | -               |
+| `DEFENDER_RELAYER_ADDRESS` | Relayer wallet address           | Yes         | -               |
+| `DEFENDER_AUTO_APPROVE`    | Auto-approve transactions        | No          | `false`         |
+| `DEFENDER_VIA_TYPE`        | Transaction method (EOA/Safe)    | No          | `EOA`           |
+| `DEFENDER_SAFE_ADDRESS`    | Safe multi-sig address           | Conditional | -               |
+| `DEFENDER_GAS_LIMIT`       | Gas limit for transactions       | No          | `5000000`       |
+| `DEFENDER_MAX_GAS_PRICE`   | Maximum gas price in wei         | No          | Network default |
 
 ### Network Configuration Files
 
@@ -173,44 +173,47 @@ DEFENDER_VIA_TYPE=Safe DEFENDER_SAFE_ADDRESS=0x... npx ts-node scripts/deploy/de
 ### 1. Programmatic Deployment
 
 ```typescript
-import { DefenderDiamondDeployer } from './scripts/setup/DefenderDiamondDeployer';
+import { DefenderDiamondDeployer } from "./scripts/setup/DefenderDiamondDeployer";
 
 async function deployDiamond() {
   // Create configuration from environment
-  const config = DefenderDiamondDeployer.createConfigFromEnv('GeniusDiamond', 'polygon');
-  
+  const config = DefenderDiamondDeployer.createConfigFromEnv(
+    "GeniusDiamond",
+    "polygon",
+  );
+
   // Get deployer instance
   const deployer = await DefenderDiamondDeployer.getInstance(config);
-  
+
   // Enable verbose logging
   await deployer.setVerbose(true);
-  
+
   // Deploy diamond
   const diamond = await deployer.deployDiamond();
-  
+
   // Get deployment data
   const deployedData = diamond.getDeployedDiamondData();
-  console.log('Diamond deployed at:', deployedData.DiamondAddress);
+  console.log("Diamond deployed at:", deployedData.DiamondAddress);
 }
 ```
 
 ### 2. Custom Configuration
 
 ```typescript
-import { DefenderDiamondDeployerConfig } from './scripts/setup/DefenderDiamondDeployer';
+import { DefenderDiamondDeployerConfig } from "./scripts/setup/DefenderDiamondDeployer";
 
 const customConfig: DefenderDiamondDeployerConfig = {
-  diamondName: 'CustomDiamond',
-  networkName: 'arbitrum',
+  diamondName: "CustomDiamond",
+  networkName: "arbitrum",
   chainId: 42161,
   apiKey: process.env.DEFENDER_API_KEY!,
   apiSecret: process.env.DEFENDER_API_SECRET!,
   relayerAddress: process.env.DEFENDER_RELAYER_ADDRESS!,
   autoApprove: false,
-  viaType: 'Safe',
+  viaType: "Safe",
   safeAddress: process.env.DEFENDER_SAFE_ADDRESS!,
   gasLimit: 8000000,
-  maxGasPrice: '100000000000',
+  maxGasPrice: "100000000000",
 };
 
 const deployer = await DefenderDiamondDeployer.getInstance(customConfig);
@@ -257,7 +260,7 @@ npx ts-node scripts/deploy/status-defender.ts GeniusDiamond polygon --watch --in
 const deployer = await DefenderDiamondDeployer.getInstance(config);
 const status = deployer.getDeploymentStatus();
 
-console.log('Current status:', status);
+console.log("Current status:", status);
 // Possible values: NOT_STARTED, IN_PROGRESS, COMPLETED, FAILED, PAUSED
 ```
 
@@ -318,19 +321,19 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
+          node-version: "18"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Deploy to Polygon
         env:
           DEFENDER_API_KEY: ${{ secrets.DEFENDER_API_KEY }}
           DEFENDER_API_SECRET: ${{ secrets.DEFENDER_API_SECRET }}
           DEFENDER_RELAYER_ADDRESS: ${{ secrets.DEFENDER_RELAYER_ADDRESS }}
-          DEFENDER_AUTO_APPROVE: 'true'
+          DEFENDER_AUTO_APPROVE: "true"
         run: npx ts-node scripts/deploy/deploy-defender.ts GeniusDiamond polygon
-      
+
       - name: Verify contracts
         env:
           POLYGONSCAN_API_KEY: ${{ secrets.POLYGONSCAN_API_KEY }}

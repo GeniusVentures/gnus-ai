@@ -5,7 +5,16 @@
   "manifest_override": true,
   "title": "PRD: DevContainer Docker-Compose and HashiCorp Vault Integration",
   "summary": "Defines requirements for migrating the DevContainer to docker-compose with proper environment variable loading and HashiCorp Vault integration for secure secret management.",
-  "scope": ["DevContainer", "Docker Compose", "HashiCorp Vault", "WORKSPACE_NAME", "environment variables", "secret migration", "Vault setup wizard", "authentication"],
+  "scope": [
+    "DevContainer",
+    "Docker Compose",
+    "HashiCorp Vault",
+    "WORKSPACE_NAME",
+    "environment variables",
+    "secret migration",
+    "Vault setup wizard",
+    "authentication"
+  ],
   "cross_refs": [
     ".devcontainer/docker-compose.dev.yml",
     ".devcontainer/devcontainer.json",

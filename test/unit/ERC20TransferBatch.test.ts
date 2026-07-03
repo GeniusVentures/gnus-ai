@@ -112,10 +112,9 @@ describe('ERC20TransferBatch Tests', function () {
 			const destinations = [await user1.getAddress(), await user2.getAddress()];
 			const amounts = [hre.ethers.parseEther('100'), hre.ethers.parseEther('200')];
 
-			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts)).to.emit(
-				geniusDiamond,
-				'TransferBatch(address,address,address[],uint256[])',
-			);
+			await expect(
+				geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts),
+			).to.emit(geniusDiamond, 'TransferBatch(address,address,address[],uint256[])');
 		});
 
 		it("should revert if caller doesn't have DEFAULT_ADMIN_ROLE", async function () {
@@ -123,7 +122,9 @@ describe('ERC20TransferBatch Tests', function () {
 			const amounts = [hre.ethers.parseEther('100')];
 
 			await expect(
-				geniusDiamond.connect(user1)['mintBatch(address[],uint256[])'](destinations, amounts),
+				geniusDiamond
+					.connect(user1)
+					['mintBatch(address[],uint256[])'](destinations, amounts),
 			).to.be.revertedWith('Creator or Admin can only mint GNUS Tokens');
 		});
 
@@ -131,18 +132,18 @@ describe('ERC20TransferBatch Tests', function () {
 			const destinations = [await user1.getAddress(), await user2.getAddress()];
 			const amounts = [hre.ethers.parseEther('100')]; // Mismatched length
 
-			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts)).to.be.revertedWith(
-				'TransferBatch: to and amounts length mismatch',
-			);
+			await expect(
+				geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts),
+			).to.be.revertedWith('TransferBatch: to and amounts length mismatch');
 		});
 
 		it('should revert if trying to mint to zero address', async function () {
 			const destinations = [hre.ethers.ZeroAddress];
 			const amounts = [hre.ethers.parseEther('100')];
 
-			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts)).to.be.revertedWith(
-				'TransferBatch: mint to the zero address',
-			);
+			await expect(
+				geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts),
+			).to.be.revertedWith('TransferBatch: mint to the zero address');
 		});
 
 		it('should handle empty arrays', async function () {
@@ -150,7 +151,8 @@ describe('ERC20TransferBatch Tests', function () {
 			const amounts: bigint[] = [];
 
 			// Should not revert with empty arrays
-			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts)).to.not.be.reverted;
+			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts))
+				.to.not.be.reverted;
 		});
 
 		it('should handle minting zero amounts', async function () {
@@ -427,9 +429,9 @@ describe('ERC20TransferBatch Tests', function () {
 			const destinations = [await user1.getAddress()];
 			const amounts = [maxSupply + hre.ethers.parseEther('1')];
 
-			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts)).to.be.revertedWith(
-				'Max Supply for GNUS Token would be exceeded',
-			);
+			await expect(
+				geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts),
+			).to.be.revertedWith('Max Supply for GNUS Token would be exceeded');
 		});
 
 		it('should allow minting up to max supply', async function () {
@@ -443,7 +445,8 @@ describe('ERC20TransferBatch Tests', function () {
 			const amounts = [remainingSupply];
 
 			// Should not revert
-			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts)).to.not.be.reverted;
+			await expect(geniusDiamond['mintBatch(address[],uint256[])'](destinations, amounts))
+				.to.not.be.reverted;
 
 			const finalSupply = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 			expect(finalSupply).to.equal(maxSupply);
@@ -454,11 +457,17 @@ describe('ERC20TransferBatch Tests', function () {
 			const burnAmount = hre.ethers.parseEther('300');
 
 			// Mint
-			await geniusDiamond['mintBatch(address[],uint256[])']([await user1.getAddress()], [mintAmount]);
+			await geniusDiamond['mintBatch(address[],uint256[])'](
+				[await user1.getAddress()],
+				[mintAmount],
+			);
 			const supplyAfterMint = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 
 			// Transfer to user1 so they can burn
-			await geniusDiamond['mintBatch(address[],uint256[])']([await user1.getAddress()], [burnAmount]);
+			await geniusDiamond['mintBatch(address[],uint256[])'](
+				[await user1.getAddress()],
+				[burnAmount],
+			);
 			// Burn
 			await geniusDiamond
 				.connect(user1)

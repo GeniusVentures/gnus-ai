@@ -25,11 +25,7 @@
 
 - [x] 0.0 Create feature branch
   - [x] 0.1 Confirm the current branch is `feature/bridge-out-initiated`, then create and checkout a working branch off it: `git checkout -b chore/shared-bridge-fixtures`
-  - [x] 0.2 Confirm a clean baseline: run `yarn test` and (with `anvil` running) `yarn clean-compile && yarn forge:test`, and record the starting pass/fail/pending counts to compare against later
-        - **Baseline (2026-06-19, branch `chore/shared-bridge-fixtures`):**
-          - Hardhat (`yarn test`): **366 passing, 2 pending, 5 failing** (5 not 6 — E2's OpenEscrow test already commented out in the working tree).
-          - Foundry (`yarn forge:test`, anvil chain 31337): **216 passed, 1 failed, 1 skipped** (the 1 failure is `BridgeFuzz` — owned by M0-E4, not E3).
-        - **Gating note:** baseline is intentionally red (this milestone exists to fix it). E3 is gated on **no regression vs. these counts**, not all-green.
+  - [x] 0.2 Confirm a clean baseline: run `yarn test` and (with `anvil` running) `yarn clean-compile && yarn forge:test`, and record the starting pass/fail/pending counts to compare against later - **Baseline (2026-06-19, branch `chore/shared-bridge-fixtures`):** - Hardhat (`yarn test`): **366 passing, 2 pending, 5 failing** (5 not 6 — E2's OpenEscrow test already commented out in the working tree). - Foundry (`yarn forge:test`, anvil chain 31337): **216 passed, 1 failed, 1 skipped** (the 1 failure is `BridgeFuzz` — owned by M0-E4, not E3). - **Gating note:** baseline is intentionally red (this milestone exists to fix it). E3 is gated on **no regression vs. these counts**, not all-green.
 
 - [x] 1.0 Create the TypeScript bridge fixture module (`test/utils/bridge-fixtures.ts`)
   - [x] 1.1 Create `test/utils/bridge-fixtures.ts`
