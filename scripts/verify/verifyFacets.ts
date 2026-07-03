@@ -1,41 +1,56 @@
 /**
- * Verify deployed facets on Etherscan.
+ * Verify deployed facets on Etherscan (V2) via the hardhat-verify plugin.
  *
- * Reads a diamond deployed-data JSON file, finds facets marked
- * `verified: false`, and submits each one to Etherscan via
- * `forge verify-contract` (V2 API).
+ * Reads a diamond deployed-data JSON, finds facets where `verified !== true`,
+ * and submits each to Etherscan through `hre.run("verify:verify", ...)`. This
+ * restores the per-facet verify loop the repo used to have (commit 8d63437,
+ * `scripts/VerifyContracts.ts`) using the standard hardhat-verify plugin — no
+ * forge dependency.
  *
- * Usage:
- *   npx ts-node --transpile-only scripts/verify/verifyFacets.ts \
- *     --deployment diamonds/GeniusDiamond/deployments/geniusdiamond-sepolia-11155111.json \
- *     --chain-id 11155111
+ * Must run under hardhat so `verify:verify` uses the selected network's
+ * etherscan config (apiKey + apiURL from hardhat.config.ts):
  *
- * Requires: ETHERSCAN_API_KEY in .env, solc 0.8.19 available.
+ *   npx hardhat run scripts/verify/verifyFacets.ts --network sepolia
+ *
+ * Override the deployed-data file with DEPLOYMENT_DATA=<path>; otherwise it
+ * defaults to diamonds/GeniusDiamond/deployments/geniusdiamond-<network>-<chainId>.json.
+ *
+ * Requires: ETHERSCAN_API_KEY in .env (Etherscan V2 key), already wired into
+ * hardhat.config.ts `etherscan.apiKey`.
  *
  * @module scripts/verify/verifyFacets
  */
 
-import { execSync } from 'child_process';
+import hre from 'hardhat';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { config as dotenv } from 'dotenv';
-import { Command } from 'commander';
 dotenv();
 
 // ---------------------------------------------------------------------------
-// Contract-path resolver
+// Source resolver
 // ---------------------------------------------------------------------------
 
-/** Map a facet name to a forge-compatible contract path. */
-function resolveContractPath(facetName: string): string | null {
-    // Primary: contracts/gnus-ai/<Name>.sol:<Name>
-    const primary = `contracts/gnus-ai/${facetName}.sol:${facetName}`;
-    if (existsSync(primary)) return primary;
+/** Directory holding project-owned facet sources. */
+const kContractsDir = 'contracts/gnus-ai';
 
-    // contracts-starter fallback (external diamond base facets)
-    const starter = `contracts-starter/contracts/facets/${facetName}.sol:${facetName}`;
-    if (existsSync(starter)) return starter;
+/** Shape of a single FacetDeployedInfo entry in a deployed-data file. */
+interface FacetDeployedInfo {
+	address: string;
+	verified?: boolean;
+	tx_hash?: string;
+	version?: number;
+	funcSelectors?: string[];
+}
 
-    return null;
+/**
+ * Fully-qualified hardhat contract name for a facet, or null if its source is
+ * not found. The ':Name' suffix is hardhat/Foundry source-unit syntax and is
+ * only meaningful as the returned reference — it must NOT be passed to
+ * existsSync (a colon-form string is never a real file).
+ */
+function resolveFullyQualifiedName(facetName: string): string | null {
+	const sourceFile = `${kContractsDir}/${facetName}.sol`;
+	return existsSync(sourceFile) ? `${sourceFile}:${facetName}` : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,86 +58,81 @@ function resolveContractPath(facetName: string): string | null {
 // ---------------------------------------------------------------------------
 
 async function main() {
-    const program = new Command();
-    program
-        .requiredOption('--deployment <path>', 'Diamond deployed-data JSON')
-        .requiredOption('--chain-id <id>', 'Chain ID (e.g. 11155111)')
-        .option('--compiler-version <ver>', 'Solidity compiler version', '0.8.19')
-        .parse(process.argv);
+	const networkName = hre.network.name;
+	// Canonical deployed-data filename — must match the deployer's
+	// `${diamondName}-${networkName}-${chainId}.json` convention
+	// (scripts/setup/RPCDiamondDeployer.ts). The diamond name is fixed to
+	// GeniusDiamond, matching the hardcoded diamonds/GeniusDiamond path below.
+	const chainId = hre.network.config.chainId;
+	const deploymentPath =
+		process.env.DEPLOYMENT_DATA ||
+		`diamonds/GeniusDiamond/deployments/geniusdiamond-${networkName}-${chainId}.json`;
 
-    const opts = program.opts();
-    const etherscanKey = process.env.ETHERSCAN_API_KEY;
-    if (!etherscanKey) {
-        console.error('❌ ETHERSCAN_API_KEY env required');
-        process.exit(1);
-    }
+	// 1. Read deployed data
+	const data = JSON.parse(readFileSync(deploymentPath, 'utf8'));
+	const facets = (data.FacetDeployedInfo || {}) as Record<string, FacetDeployedInfo>;
 
-    // 1. Read deployed data
-    const data = JSON.parse(readFileSync(opts.deployment, 'utf8'));
-    const facets = data.FacetDeployedInfo || {};
+	// 2. Find unverified facets
+	const unverified = Object.entries(facets)
+		.filter(([, info]) => info.verified !== true)
+		.map(([name, info]) => ({ name, address: info.address }));
 
-    // 2. Find unverified facets
-    const unverified = Object.entries(facets)
-        .filter(([, info]: [string, any]) => info.verified !== true)
-        .map(([name, info]: [string, any]) => ({ name, address: info.address }));
+	if (unverified.length === 0) {
+		console.log('✅ All facets already verified.');
+		return;
+	}
 
-    if (unverified.length === 0) {
-        console.log('✅ All facets already verified.');
-        process.exit(0);
-    }
+	console.log(`🔍 [${networkName}] ${unverified.length} unverified facet(s):`);
+	for (const f of unverified) {
+		console.log(`   ${f.name} @ ${f.address}`);
+	}
 
-    console.log(`🔍 ${unverified.length} unverified facet(s):`);
-    for (const f of unverified) {
-        console.log(`   ${f.name} @ ${f.address}`);
-    }
+	// 3. Verify each via the hardhat-verify plugin
+	let updated = 0;
+	for (const { name, address } of unverified) {
+		const contract = resolveFullyQualifiedName(name);
+		if (!contract) {
+			console.log(`⚠️  ${name}: no source at ${kContractsDir}/${name}.sol — skipping`);
+			continue;
+		}
 
-    // 3. Verify each
-    let updated = 0;
-    for (const { name, address } of unverified) {
-        const contractPath = resolveContractPath(name);
-        if (!contractPath) {
-            console.log(`⚠️  ${name}: no contract file found — skipping`);
-            continue;
-        }
+		console.log(`\n📝 Verifying ${name} (${contract}) @ ${address}...`);
+		try {
+			// Facets in this project have no constructors (verified), so
+			// constructorArguments is empty. Passing `contract` (FQN) forces
+			// source detection so diamond facets that share storage patterns
+			// are not mis-attributed.
+			await hre.run('verify:verify', {
+				address,
+				contract,
+				constructorArguments: [],
+			});
+			facets[name].verified = true;
+			updated++;
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			if (msg.includes('Already Verified') || msg.includes('already verified')) {
+				console.log('   ℹ️  Already verified on Etherscan');
+				facets[name].verified = true;
+				updated++;
+			} else {
+				console.log(`   ❌ Verification failed: ${msg.slice(0, 200)}`);
+			}
+		}
+	}
 
-        console.log(`\n📝 Verifying ${name} (${contractPath}) @ ${address}...`);
-        try {
-            const cmd = [
-                'forge', 'verify-contract',
-                '--chain-id', opts.chainId,
-                '--etherscan-api-key', etherscanKey,
-                '--compiler-version', opts.compilerVersion,
-                address,
-                contractPath,
-            ].join(' ');
-            const output = execSync(cmd, { encoding: 'utf8', stdio: 'pipe' });
-            console.log(output.trim().split('\n').pop());
-
-            // Mark verified
-            facets[name].verified = true;
-            updated++;
-        } catch (err: any) {
-            const stderr = err.stderr || err.message || '';
-            if (stderr.includes('Already Verified') || stderr.includes('already verified')) {
-                console.log('   ℹ️  Already verified on Etherscan');
-                facets[name].verified = true;
-                updated++;
-            } else {
-                console.log(`   ❌ Verification failed: ${stderr.slice(0, 200)}`);
-            }
-        }
-    }
-
-    // 4. Write back
-    if (updated > 0) {
-        writeFileSync(opts.deployment, JSON.stringify(data, null, 2), 'utf8');
-        console.log(`\n✅ ${updated}/${unverified.length} facets verified. Deployed-data updated.`);
-    } else {
-        console.log('\n⚠️  0 facets verified.');
-    }
+	// 4. Write back
+	if (updated > 0) {
+		writeFileSync(deploymentPath, JSON.stringify(data, null, 2), 'utf8');
+		console.log(
+			`\n✅ ${updated}/${unverified.length} facets verified. Deployed-data updated.`,
+		);
+	} else {
+		console.log('\n⚠️  0 facets verified.');
+	}
 }
 
-main().catch(err => {
-    console.error('❌', err.message);
-    process.exit(1);
+main().catch((err) => {
+	console.error('❌', err.message);
+	process.exit(1);
 });
