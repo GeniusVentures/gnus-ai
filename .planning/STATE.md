@@ -3,14 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: 2026-07-02T00:20:00.000Z
+last_updated: "2026-07-03T19:18:47.547Z"
 progress:
   total_phases: 14
   completed_phases: 5
   total_plans: 10
   completed_plans: 10
   percent: 36
-stopped_at: Phase 08.2 inserted — deploy-verify pipeline fixes (pending)
 ---
 
 # Project State
@@ -23,7 +22,7 @@ stopped_at: Phase 08.2 inserted — deploy-verify pipeline fixes (pending)
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 08.2 — deploy-verify pipeline fixes
+**Current focus:** Bridge-out workstream (08.1 + 08.2) shipped — PR #62 (feature/bridge-out-initiated → develop). 08.2 verification: pass.
 
 ## Phase Status
 
