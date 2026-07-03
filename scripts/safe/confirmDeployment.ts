@@ -121,9 +121,19 @@ async function main() {
 
 	const safe = new ethers.Contract(safeAddr, kSafeAbi, provider);
 
-	// 3. Check Safe nonce — if advanced past the proposal nonce, executed
+	// 3. Check Safe nonce — if advanced past the proposal nonce, executed.
+	//    Artifacts from writeSafeProposalArtifact do not carry nonce; when
+	//    nonce is absent the Safe Transaction Service must be used instead
+	//    (see checkSafeExecuted.ts / yarn check:safe-executed).
+	if (proposal.nonce === undefined || proposal.nonce === null) {
+		console.log(
+			'⚠️  Proposal artifact missing nonce — cannot confirm via Safe nonce. ' +
+				'Use check:safe-executed (Safe Transaction Service) instead.',
+		);
+		process.exit(0);
+	}
 	const currentNonce = Number(await safe.nonce());
-	const proposalNonce = proposal.nonce ?? currentNonce;
+	const proposalNonce = proposal.nonce;
 	if (currentNonce <= proposalNonce) {
 		console.log(
 			`⏳ Safe nonce ${currentNonce} ≤ proposal nonce ${proposalNonce} — not executed yet.`,

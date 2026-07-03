@@ -71,7 +71,14 @@ export async function proposeSafeTransaction(
 	// network I/O. The actual signing is delegated to protocolKit via
 	// Safe.init({ signer }) below, so a second provider+wallet here would be
 	// dead weight that doubles the connection-failure surface.
-	const proposerAddress = ethers.computeAddress(input.proposerPrivateKey);
+	// Normalize the key to 0x-prefixed hex — ethers.computeAddress requires
+	// the full 0x-prefix form (66 chars) even when validateConfig accepts a
+	// 64-char unprefixed key.
+	const proposerAddress = ethers.computeAddress(
+		input.proposerPrivateKey.startsWith('0x')
+			? input.proposerPrivateKey
+			: `0x${input.proposerPrivateKey}`,
+	);
 
 	// -- 2. API Kit (Safe Transaction Service client) --------------------------
 	const apiKit = new SafeApiKit({
@@ -119,8 +126,7 @@ export async function proposeSafeTransaction(
 	if (isOwner) {
 		// Owner flow: sign via protocolKit so the Safe contract can verify
 		// the signature on-chain as a confirmation.
-		const signedSafeTransaction =
-			await protocolKit.signTransaction(safeTransaction);
+		const signedSafeTransaction = await protocolKit.signTransaction(safeTransaction);
 		const sig = await protocolKit.signHash(safeTxHash);
 		senderSignature = sig.data;
 		safeTransactionDataForProposal = signedSafeTransaction.data;

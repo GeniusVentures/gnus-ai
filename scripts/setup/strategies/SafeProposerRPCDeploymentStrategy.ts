@@ -12,7 +12,7 @@
  * @module scripts/setup/strategies/SafeProposerRPCDeploymentStrategy
  */
 
-import { RPCDeploymentStrategy, Diamond } from '@diamondslab/diamonds';
+import { RPCDeploymentStrategy, Diamond, type FacetCuts } from '@diamondslab/diamonds';
 import { OperationType } from '@safe-global/types-kit';
 import chalk from 'chalk';
 
@@ -83,6 +83,29 @@ export class SafeProposerRPCDeploymentStrategy extends RPCDeploymentStrategy {
 		this.safeOrigin = config.safeOrigin || 'gnus-ai-rpc-upgrade';
 		this.diamondName = config.diamondName;
 		this.networkName = config.networkName;
+	}
+
+	// -----------------------------------------------------------------------
+	// Override: validateNoOrphanedSelectors — permit Remove+Replace mix
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Overrides the library's orphaned-selector validation to permit Remove
+	 * cuts that share a facetName with Replace/Add cuts. The library's default
+	 * sees a "removed" facetName and treats all selectors for that name as
+	 * orphaned, even when a Replace cut in the same diamondCut points them at
+	 * a different address — but EIP-2535 allows removing some selectors while
+	 * replacing the facet address for others in a single diamondCut.
+	 *
+	 * Matches the identical override in EncodeOnlyRPCDeploymentStrategy so
+	 * upgrades that drop a function selector (e.g. GNUSBridge v2.5 drops
+	 * 0xe26d65a6) can be proposed through Safe without hitting the orphaned-
+	 * selector guard.
+	 */
+	async validateNoOrphanedSelectors(facetCuts: FacetCuts): Promise<void> {
+		const kFacetCutActionRemove = 2; // IDiamondCut.FacetCutAction.Remove
+		const nonRemoveCuts = facetCuts.filter((fc) => fc.action !== kFacetCutActionRemove);
+		return super.validateNoOrphanedSelectors(nonRemoveCuts);
 	}
 
 	// -----------------------------------------------------------------------
