@@ -203,8 +203,10 @@ async function main() {
 		}
 
 		if (!name) {
-			console.log(`⚠️  Unrecognised facet at ${facet.facetAddress} — skipping.`);
-			continue;
+			// New facet with no matching entry — keep it under a synthetic key
+			// so it isn't silently dropped from the canonical deployment data.
+			name = `Unknown-${facet.facetAddress.slice(2, 10)}`;
+			console.log(`⚠️  Unrecognised facet at ${facet.facetAddress} — recording as ${name}.`);
 		}
 
 		newDeployed[name] = {
