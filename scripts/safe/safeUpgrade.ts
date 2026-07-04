@@ -18,6 +18,7 @@
 
 import { execSync } from 'child_process';
 import { config as dotenv } from 'dotenv';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import chalk from 'chalk';
 
@@ -32,6 +33,19 @@ const kDefaultPollInterval = 15;
 
 // Paths relative to the project root (gnus-ai/)
 const kProjectRoot = resolve(__dirname, '..', '..');
+
+/** Read chainId from a Safe proposal artifact. */
+function artifactChainId(artifactPath: string): number {
+    const artifact = JSON.parse(readFileSync(artifactPath, 'utf8'));
+    if (!artifact.chainId) throw new Error(`Proposal artifact missing chainId: ${artifactPath}`);
+    return artifact.chainId;
+}
+
+/** Deployment file path from artifact chainId + diamond name + network. */
+function deploymentPathFromArtifact(artifactPath: string, diamond: string, network: string): string {
+    const chainId = artifactChainId(artifactPath);
+    return `diamonds/${diamond}/deployments/${diamond.toLowerCase()}-${network}-${chainId}.json`;
+}
 
 function runStep(cmd: string): { status: number; stdout: string; stderr: string } {
     const fullCmd = `npx ts-node --transpile-only ${cmd}`;
@@ -86,7 +100,7 @@ function parseArgs(): CliOptions {
         diamond: get('--diamond') ?? 'GeniusDiamond',
         network: get('--network') ?? 'sepolia',
         safeAddress: get('--safe-address') ?? '',
-        safeProposerPrivateKey: get('--safe-proposer-key'),
+        safeProposerPrivateKey: get('--safe-proposer-private-key'),
         timeOut: Number(get('--time-out') ?? kDefaultTimeoutSeconds),
         pollInterval: Number(get('--poll-interval') ?? kDefaultPollInterval),
         origin: get('--origin') ?? 'gnus-ai-upgrade',
@@ -153,12 +167,12 @@ async function step1Propose(opts: CliOptions): Promise<string> {
 async function step2WaitForExecution(artifactPath: string, opts: CliOptions): Promise<void> {
     logStep(2, `Wait for Safe execution (timeout ${opts.timeOut}s)`);
 
-    const deploymentPath = `diamonds/${opts.diamond}/deployments/geniusdiamond-${opts.network}-11155111.json`;
+    const depPath = deploymentPathFromArtifact(artifactPath, opts.diamond, opts.network);
 
     const cmd = [
         `scripts/safe/checkSafeExecuted.ts`,
         `--artifact ${artifactPath}`,
-        `--deployment ${deploymentPath}`,
+        `--deployment ${depPath}`,
         `--time-out ${opts.timeOut}`,
         `--poll-interval ${opts.pollInterval}`,
         opts.rpcUrl ? `--rpc-url ${opts.rpcUrl}` : '',
@@ -183,12 +197,12 @@ async function step2WaitForExecution(artifactPath: string, opts: CliOptions): Pr
 async function step3Confirm(artifactPath: string, opts: CliOptions): Promise<void> {
     logStep(3, 'Confirm deployment — update deployed-data');
 
-    const deploymentPath = `diamonds/${opts.diamond}/deployments/geniusdiamond-${opts.network}-11155111.json`;
+    const depPath = deploymentPathFromArtifact(artifactPath, opts.diamond, opts.network);
 
     const cmd = [
         `scripts/safe/confirmDeployment.ts`,
         `--artifact ${artifactPath}`,
-        `--deployment ${deploymentPath}`,
+        `--deployment ${depPath}`,
     ].join(' ');
 
     console.log(chalk.gray(`  ${cmd}`));
