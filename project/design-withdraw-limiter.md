@@ -7,6 +7,7 @@ The Withdraw Limiter is a rate-limiting mechanism that restricts the amount of G
 The system uses a **bin-based aggregation** approach where GNUS token transfers are accumulated into time bins rather than storing individual transactions, providing superior gas efficiency while maintaining accurate rate limiting.
 
 **Critical Security Scope**: The limiter applies to ALL outbound GNUS token transfers, not just NFT→GNUS conversions. This includes:
+
 - NFT withdrawals via `GNUSBridge.withdraw()`
 - Batch transfers via `ERC20TransferBatch.transferBatch()`
 - Batch burn/transfer via `ERC20TransferBatch.transferOrBurnBatch()`
@@ -33,19 +34,20 @@ Following the ERC-2535 Diamond pattern used in the GNUS.AI system, the implement
 
 **Data Structures:**
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `WithdrawBin` | struct | Stores bin timestamp and accumulated withdrawal amount |
-| `AccountConfig` | struct | Per-account configuration (binCount, windowSeconds, limitAmount) |
-| `AccountState` | struct | Per-account state (bins array, baseTimestamp) |
-| `accountStates` | mapping(address => AccountState) | Per-account withdrawal bins and base time |
-| `accountConfigs` | mapping(address => AccountConfig) | Per-account custom configurations |
-| `defaultBinCount` | uint256 | Default number of bins (e.g., 24 for hourly bins in 24-hour window) |
-| `defaultWindowSeconds` | uint256 | Default window duration in seconds (e.g., 86400 = 1 day) |
-| `defaultLimitAmount` | uint256 | Default max GNUS tokens withdrawable within the window |
-| `limiterEnabled` | bool | Toggle to enable/disable limiting |
+| Field                  | Type                              | Description                                                         |
+| ---------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| `WithdrawBin`          | struct                            | Stores bin timestamp and accumulated withdrawal amount              |
+| `AccountConfig`        | struct                            | Per-account configuration (binCount, windowSeconds, limitAmount)    |
+| `AccountState`         | struct                            | Per-account state (bins array, baseTimestamp)                       |
+| `accountStates`        | mapping(address => AccountState)  | Per-account withdrawal bins and base time                           |
+| `accountConfigs`       | mapping(address => AccountConfig) | Per-account custom configurations                                   |
+| `defaultBinCount`      | uint256                           | Default number of bins (e.g., 24 for hourly bins in 24-hour window) |
+| `defaultWindowSeconds` | uint256                           | Default window duration in seconds (e.g., 86400 = 1 day)            |
+| `defaultLimitAmount`   | uint256                           | Default max GNUS tokens withdrawable within the window              |
+| `limiterEnabled`       | bool                              | Toggle to enable/disable limiting                                   |
 
 **WithdrawBin Structure:**
+
 ```solidity
 struct WithdrawBin {
     uint128 timestamp;    // Timestamp of the bin
@@ -54,6 +56,7 @@ struct WithdrawBin {
 ```
 
 **AccountConfig Structure:**
+
 ```solidity
 struct AccountConfig {
     uint32 binCount;          // Number of bins for this account (0 = use default)
@@ -63,6 +66,7 @@ struct AccountConfig {
 ```
 
 **AccountState Structure:**
+
 ```solidity
 struct AccountState {
     uint128 baseTimestamp;     // First withdrawal timestamp (establishes bin timeline)
@@ -74,79 +78,79 @@ struct AccountState {
 
 **GNUSWithdrawLimiter.sol Functions:**
 
-| Function | Access | Description |
-|----------|--------|-------------|
-| `setDefaultLimitAmount(uint256)` | onlySuperAdminRole | Set default max withdrawable amount |
-| `setDefaultWindowSeconds(uint256)` | onlySuperAdminRole | Set default time window duration |
-| `setDefaultBinCount(uint256)` | onlySuperAdminRole | Set default number of bins |
-| `setAccountConfig(address, uint32, uint64, uint256)` | onlySuperAdminRole | Set per-account custom configuration |
-| `setLimiterEnabled(bool)` | onlySuperAdminRole | Enable/disable limiting |
-| `getWithdrawLimiterConfig()` | view | Get default configuration |
-| `getAccountConfig(address)` | view | Get account's configuration (custom or defaults) |
-| `getAccountWithdrawStatus(address)` | view | Get account's current usage and remaining capacity |
-| `checkWithdrawAllowed(address, uint256)` | internal | Core validation logic |
-| `recordWithdraw(address, uint256)` | internal | Add amount to current bin |
-| `calculateCurrentBin(address, uint256)` | internal | Determine which bin current time falls into |
-| `sumActiveBins(address, uint256)` | internal | Sum bins within active window |
+| Function                                             | Access             | Description                                        |
+| ---------------------------------------------------- | ------------------ | -------------------------------------------------- |
+| `setDefaultLimitAmount(uint256)`                     | onlySuperAdminRole | Set default max withdrawable amount                |
+| `setDefaultWindowSeconds(uint256)`                   | onlySuperAdminRole | Set default time window duration                   |
+| `setDefaultBinCount(uint256)`                        | onlySuperAdminRole | Set default number of bins                         |
+| `setAccountConfig(address, uint32, uint64, uint256)` | onlySuperAdminRole | Set per-account custom configuration               |
+| `setLimiterEnabled(bool)`                            | onlySuperAdminRole | Enable/disable limiting                            |
+| `getWithdrawLimiterConfig()`                         | view               | Get default configuration                          |
+| `getAccountConfig(address)`                          | view               | Get account's configuration (custom or defaults)   |
+| `getAccountWithdrawStatus(address)`                  | view               | Get account's current usage and remaining capacity |
+| `checkWithdrawAllowed(address, uint256)`             | internal           | Core validation logic                              |
+| `recordWithdraw(address, uint256)`                   | internal           | Add amount to current bin                          |
+| `calculateCurrentBin(address, uint256)`              | internal           | Determine which bin current time falls into        |
+| `sumActiveBins(address, uint256)`                    | internal           | Sum bins within active window                      |
 
 ### Core Algorithm
 
 ```
 function checkAndRecordWithdraw(account, amount) internal returns (bool):
     if (!limiterEnabled) return true
-    
+
     // Check if super admin - bypass limiter
     if (isSuperAdmin(account)) return true
-    
+
     // Get account configuration (custom or defaults)
     config = getAccountConfigOrDefaults(account)
     currentTime = block.timestamp
-    
+
     // Initialize account state on first withdrawal
     if (accountStates[account].baseTimestamp == 0):
         accountStates[account].baseTimestamp = currentTime
         // Initialize bins array with config.binCount entries
         for i from 0 to config.binCount:
             accountStates[account].bins.push(WithdrawBin(0, 0))
-    
+
     // Calculate which bin the current time falls into
     binIndex = calculateCurrentBin(account, currentTime, config)
-    
+
     // Zero out expired bins (outside the window)
     zeroExpiredBins(account, currentTime, config)
-    
+
     // Sum all active bins to get total withdrawals in window
     activeTotal = sumActiveBins(account, currentTime, config)
-    
+
     // Check against limit
     if (activeTotal + amount > config.limitAmount):
         emit WithdrawLimiterTriggered(account, amount, activeTotal, config.limitAmount)
         revert("Withdraw limit exceeded for time window")
-    
+
     // Add amount to current bin
     accountStates[account].bins[binIndex].totalAmount += amount
     accountStates[account].bins[binIndex].timestamp = currentTime
-    
+
     emit WithdrawRecorded(account, amount, currentTime, binIndex)
-    
+
     return true
 
 function calculateCurrentBin(account, currentTime, config) internal view returns (uint256):
     baseTime = accountStates[account].baseTimestamp
     binLength = config.windowSeconds / config.binCount
-    
+
     // Calculate elapsed time since base
     elapsed = currentTime - baseTime
-    
+
     // Calculate current bin index (wraps around)
     binIndex = (elapsed / binLength) % config.binCount
-    
+
     return binIndex
 
 function zeroExpiredBins(account, currentTime, config) internal:
     bins = accountStates[account].bins
     windowCutoff = currentTime - config.windowSeconds
-    
+
     for i from 0 to bins.length:
         // If bin timestamp is outside window, reset it
         if (bins[i].timestamp < windowCutoff):
@@ -157,17 +161,17 @@ function sumActiveBins(account, currentTime, config) internal view returns (uint
     bins = accountStates[account].bins
     windowCutoff = currentTime - config.windowSeconds
     total = 0
-    
+
     for i from 0 to bins.length:
         // Only sum bins within the active window
         if (bins[i].timestamp >= windowCutoff):
             total += bins[i].totalAmount
-    
+
     return total
 
 function getAccountConfigOrDefaults(account) internal view returns (AccountConfig):
     custom = accountConfigs[account]
-    
+
     return AccountConfig({
         binCount: custom.binCount > 0 ? custom.binCount : defaultBinCount,
         windowSeconds: custom.windowSeconds > 0 ? custom.windowSeconds : defaultWindowSeconds,
@@ -178,17 +182,20 @@ function getAccountConfigOrDefaults(account) internal view returns (AccountConfi
 ### Bin Calculation Mathematics
 
 **Bin Length Calculation:**
+
 ```
 binLengthSeconds = windowSeconds / binCount
 ```
 
 **Current Bin Index:**
+
 ```
 elapsedSeconds = currentTime - baseTimestamp
 binIndex = (elapsedSeconds / binLengthSeconds) % binCount
 ```
 
 **Example:**
+
 - Window: 86400 seconds (24 hours)
 - Bin Count: 24
 - Bin Length: 3600 seconds (1 hour per bin)
@@ -198,6 +205,7 @@ binIndex = (elapsedSeconds / binLengthSeconds) % binCount
 - Bin Index: (52200 / 3600) % 24 = 14.5 → 14
 
 **Window Expiration Check:**
+
 ```
 windowCutoff = currentTime - windowSeconds
 
@@ -218,11 +226,11 @@ function withdraw(uint256 amount, uint256 id) external {
     require(GNUSNFTFactoryStorage.layout().NFTs[id].nftCreated, "Token not created.");
     require(id != GNUS_TOKEN_ID, "Cannot withdraw GNUS tokens.");
     require(balanceOf(sender, id) >= amount, "Insufficient tokens.");
-    
+
     // ADD: Limiter check before proceeding
     uint256 gnusAmount = amount / GNUSNFTFactoryStorage.layout().NFTs[id].exchangeRate;
     GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(sender, gnusAmount);
-    
+
     _burn(sender, id, amount);
     _mintWithdrawFee(sender, GNUS_TOKEN_ID, gnusAmount);
 }
@@ -296,21 +304,21 @@ function _beforeTokenTransfer(
     bytes memory data
 ) internal virtual override {
     super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    
+
     // ADD: Limiter check for GNUS token transfers
     // Only check outbound transfers (from != address(0))
     // Skip burns (to == address(0)) as they're handled separately
     // Super admins bypass limiter checks
     if (from != address(0) && to != address(0) && !hasRole(SUPER_ADMIN_ROLE, operator)) {
         uint256 totalGnusAmount = 0;
-        
+
         // Accumulate GNUS token amounts (GNUS_TOKEN_ID = 1)
         for (uint256 i = 0; i < ids.length; i++) {
             if (ids[i] == GNUS_TOKEN_ID) {
                 totalGnusAmount += amounts[i];
             }
         }
-        
+
         // Check aggregate GNUS transfer amount against limiter
         if (totalGnusAmount > 0) {
             GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(from, totalGnusAmount);
@@ -321,27 +329,28 @@ function _beforeTokenTransfer(
 
 ### Configuration Parameters
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `defaultLimitAmount` | 100,000 GNUS (100000 * 10^18) | Default max GNUS withdrawable per window |
-| `defaultWindowSeconds` | 86400 (1 day) | Default window duration in seconds |
-| `defaultBinCount` | 24 | Default number of time bins (hourly bins for 24-hour window) |
-| `accountConfigs[address]` | {0, 0, 0} (uses defaults) | Per-account custom configurations |
-| `limiterEnabled` | true | Limiting active by default |
+| Parameter                 | Default                        | Description                                                  |
+| ------------------------- | ------------------------------ | ------------------------------------------------------------ |
+| `defaultLimitAmount`      | 100,000 GNUS (100000 \* 10^18) | Default max GNUS withdrawable per window                     |
+| `defaultWindowSeconds`    | 86400 (1 day)                  | Default window duration in seconds                           |
+| `defaultBinCount`         | 24                             | Default number of time bins (hourly bins for 24-hour window) |
+| `accountConfigs[address]` | {0, 0, 0} (uses defaults)      | Per-account custom configurations                            |
+| `limiterEnabled`          | true                           | Limiting active by default                                   |
 
 **Bin Length Calculation:**
+
 ```
 binLengthSeconds = windowSeconds / binCount
 ```
 
 **Example Configurations:**
 
-| Bin Count | Window (sec) | Window (hrs) | Bin Length | Use Case |
-|-----------|--------------|--------------|------------|----------|
-| 24 | 86400 | 24 hrs | 3600 sec (1 hr) | Standard daily limit |
-| 7 | 604800 | 168 hrs | 86400 sec (1 day) | Weekly limit with daily bins |
-| 48 | 86400 | 24 hrs | 1800 sec (30 min) | High-frequency trading |
-| 12 | 43200 | 12 hrs | 3600 sec (1 hr) | Half-day limit |
+| Bin Count | Window (sec) | Window (hrs) | Bin Length        | Use Case                     |
+| --------- | ------------ | ------------ | ----------------- | ---------------------------- |
+| 24        | 86400        | 24 hrs       | 3600 sec (1 hr)   | Standard daily limit         |
+| 7         | 604800       | 168 hrs      | 86400 sec (1 day) | Weekly limit with daily bins |
+| 48        | 86400        | 24 hrs       | 1800 sec (30 min) | High-frequency trading       |
+| 12        | 43200        | 12 hrs       | 3600 sec (1 hr)   | Half-day limit               |
 
 ### Events
 
@@ -368,12 +377,14 @@ event WithdrawRecorded(address indexed account, uint256 amount, uint256 timestam
 #### Sybil Attack Prevention
 
 **Attack Vector Identified**: An attacker could attempt to bypass per-account limits by:
+
 1. Converting NFTs to GNUS tokens (hits limiter)
 2. Using `transferBatch()` to distribute GNUS to N Sybil accounts (bypasses limiter if unchecked)
 3. Each Sybil account withdraws independently, each getting full withdrawal limit
 4. **Result**: N × limit can be extracted instead of 1 × limit
 
 **Mitigation Strategy**: The limiter is integrated into ALL GNUS token transfer paths:
+
 - **`GNUSBridge.withdraw()`**: Primary NFT→GNUS conversion point
 - **`ERC20TransferBatch._transferBatch()`**: Aggregates batch transfer amounts and checks against limiter BEFORE executing transfers
 - **`GNUSERC1155MaxSupply._beforeTokenTransfer()`**: Hook catches any ERC-1155 GNUS token transfers as fallback
@@ -381,6 +392,7 @@ event WithdrawRecorded(address indexed account, uint256 amount, uint256 timestam
 **Design Decision**: Batch transfers aggregate total amount across all destinations and check against the SENDER's limit, not individual recipient limits. This prevents distributing large amounts to Sybil accounts for later extraction.
 
 **Edge Cases Covered**:
+
 - Single transfers via `safeTransferFrom()` → caught by `_beforeTokenTransfer()` hook
 - Batch transfers via `safeBatchTransferFrom()` → caught by `_beforeTokenTransfer()` hook
 - Batch transfers via `transferBatch()` → caught by `_transferBatch()` modification
@@ -403,7 +415,8 @@ Add to geniusdiamond.config.json:
 ```
 
 **Initialization**: Handled by `DiamondInitFacet.sol` via `initializeGNUSWithdrawLimiter()` function called from the protocol initializer (e.g., `diamondInitialize250()`). Default values:
-- `defaultLimitAmount` = 100,000 GNUS (100000 * 10^18)
+
+- `defaultLimitAmount` = 100,000 GNUS (100000 \* 10^18)
 - `defaultWindowSeconds` = 86,400 seconds (1 day)
 - `defaultBinCount` = 24 bins
 - `limiterEnabled` = true
@@ -433,6 +446,7 @@ contracts/gnus-ai/
 2. **Base Timestamp**: Record the timestamp of the first withdrawal as the "base time" for calculating bin positions
 
 3. **Current Bin Calculation**: For each withdrawal, calculate which bin it falls into:
+
    ```
    elapsedTime = currentTime - baseTime
    binLength = windowSeconds / binCount
@@ -440,12 +454,14 @@ contracts/gnus-ai/
    ```
 
 4. **Accumulation**: Add the withdrawal amount to the calculated bin's total:
+
    ```
    bins[binIndex].totalAmount += withdrawalAmount
    bins[binIndex].timestamp = currentTime
    ```
 
 5. **Window Validation**: Sum all bins with timestamps within the window:
+
    ```
    windowCutoff = currentTime - windowSeconds
    for each bin:
@@ -475,13 +491,13 @@ Withdrawal at T0 + 25h (500 GNUS):
 
 **Benefits:**
 
-| Aspect | Individual Records | Bin-Based |
-|--------|-------------------|-----------|
-| Storage Growth | Unbounded (O(n)) | Fixed (O(binCount)) |
-| Write Cost | O(1) + cleanup | O(1) |
-| Read Cost | O(n) | O(binCount) |
-| Gas for Active Users | Increases over time | Constant |
-| Memory Per Account | ~32 bytes × transactions | ~32 bytes × binCount |
+| Aspect               | Individual Records       | Bin-Based            |
+| -------------------- | ------------------------ | -------------------- |
+| Storage Growth       | Unbounded (O(n))         | Fixed (O(binCount))  |
+| Write Cost           | O(1) + cleanup           | O(1)                 |
+| Read Cost            | O(n)                     | O(binCount)          |
+| Gas for Active Users | Increases over time      | Constant             |
+| Memory Per Account   | ~32 bytes × transactions | ~32 bytes × binCount |
 
 **Example Gas Savings:**
 
@@ -514,27 +530,28 @@ This feature **must** be implemented using Test-Driven Development (TDD) methodo
    - Bin calculation edge cases (wrap-around, expiration) must be tested
 
 4. **Example Test Structure**:
+
    ```typescript
    describe("GNUSWithdrawLimiter", () => {
      describe("Bin Calculation", () => {
-       it("should calculate correct bin index for first withdrawal")
-       it("should wrap around after binCount bins")
-       it("should handle withdrawals exactly on bin boundaries")
-     })
-     
+       it("should calculate correct bin index for first withdrawal");
+       it("should wrap around after binCount bins");
+       it("should handle withdrawals exactly on bin boundaries");
+     });
+
      describe("Limit Enforcement", () => {
-       it("should allow withdrawals under limit")
-       it("should reject withdrawals that exceed limit")
-       it("should use per-account config when set")
-       it("should fall back to defaults when no account config")
-     })
-     
+       it("should allow withdrawals under limit");
+       it("should reject withdrawals that exceed limit");
+       it("should use per-account config when set");
+       it("should fall back to defaults when no account config");
+     });
+
      describe("Bin Expiration", () => {
-       it("should exclude bins outside window from total")
-       it("should automatically zero expired bins")
-       it("should recycle bins as time progresses")
-     })
-   })
+       it("should exclude bins outside window from total");
+       it("should automatically zero expired bins");
+       it("should recycle bins as time progresses");
+     });
+   });
    ```
 
 5. **TDD Workflow**:

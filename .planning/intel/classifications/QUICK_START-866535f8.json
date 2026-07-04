@@ -5,7 +5,13 @@
   "manifest_override": true,
   "title": "Quick Start: Portable DevContainer",
   "summary": "Instructions for using the portable DevContainer in another project via git submodule or direct copy.",
-  "scope": ["DevContainer", "portability", "git submodule", "WORKSPACE_NAME", "Docker Compose"],
+  "scope": [
+    "DevContainer",
+    "portability",
+    "git submodule",
+    "WORKSPACE_NAME",
+    "Docker Compose"
+  ],
   "cross_refs": [
     ".devcontainer/.env.example",
     "./README.md",

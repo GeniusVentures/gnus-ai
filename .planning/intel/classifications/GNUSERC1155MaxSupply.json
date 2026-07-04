@@ -5,7 +5,15 @@
   "manifest_override": true,
   "title": "GNUSERC1155MaxSupply",
   "summary": "Documents the GNUSERC1155MaxSupply contract extending ERC1155 with supply management, pausing, and burning capabilities via factory and control storage libraries.",
-  "scope": ["GNUSERC1155MaxSupply", "ERC1155", "supply management", "pausing", "burning", "GNUSNFTFactoryStorage", "GNUSControlStorage"],
+  "scope": [
+    "GNUSERC1155MaxSupply",
+    "ERC1155",
+    "supply management",
+    "pausing",
+    "burning",
+    "GNUSNFTFactoryStorage",
+    "GNUSControlStorage"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null,

@@ -23,15 +23,14 @@ event TransferBatch(address indexed operator, address indexed from, address[] in
 
 Event emitted when a batch transfer occurs.
 
-
 Parameters:
 
-| Name         | Type      | Description                                            |
-| :----------- | :-------- | :----------------------------------------------------- |
-| operator     | address   | The address initiating the transfer.                   |
-| from         | address   | The address sending the tokens (or zero for minting).  |
-| destinations | address[] | The addresses receiving the tokens.                    |
-| values       | uint256[] | The amounts of tokens transferred to each address.     |
+| Name         | Type      | Description                                           |
+| :----------- | :-------- | :---------------------------------------------------- |
+| operator     | address   | The address initiating the transfer.                  |
+| from         | address   | The address sending the tokens (or zero for minting). |
+| destinations | address[] | The addresses receiving the tokens.                   |
+| values       | uint256[] | The amounts of tokens transferred to each address.    |
 
 ## Functions info
 
@@ -45,13 +44,11 @@ function supportsInterface(
 
 Checks if the contract supports a given interface.
 
-
 Parameters:
 
-| Name        | Type   | Description                                         |
-| :---------- | :----- | :-------------------------------------------------- |
-| interfaceId | bytes4 | The interface identifier, as specified in ERC-165.  |
-
+| Name        | Type   | Description                                        |
+| :---------- | :----- | :------------------------------------------------- |
+| interfaceId | bytes4 | The interface identifier, as specified in ERC-165. |
 
 Return values:
 
@@ -72,7 +69,6 @@ Mints a batch of tokens to multiple destinations.
 
 Requires the caller to have the `DEFAULT_ADMIN_ROLE`.
 
-
 Parameters:
 
 | Name         | Type      | Description                                                       |
@@ -90,7 +86,6 @@ function transferBatch(
 ```
 
 Transfers a batch of tokens from the caller to multiple destinations.
-
 
 Parameters:
 
@@ -110,10 +105,9 @@ function transferOrBurnBatch(
 
 Transfers or burns a batch of tokens from the caller.
 
-
 Parameters:
 
-| Name         | Type      | Description                                                       |
-| :----------- | :-------- | :---------------------------------------------------------------- |
-| destinations | address[] | The addresses to receive the tokens or the zero address to burn.  |
-| amounts      | uint256[] | The amounts of tokens to transfer or burn for each address.       |
+| Name         | Type      | Description                                                      |
+| :----------- | :-------- | :--------------------------------------------------------------- |
+| destinations | address[] | The addresses to receive the tokens or the zero address to burn. |
+| amounts      | uint256[] | The amounts of tokens to transfer or burn for each address.      |

@@ -5,7 +5,14 @@
   "manifest_override": true,
   "title": "ERC20TransferBatch",
   "summary": "Documents the ERC20TransferBatch contract for batch transfers, minting, and burning of ERC20-like tokens with supply limits and role-based access control.",
-  "scope": ["ERC20TransferBatch", "batch transfers", "token minting", "token burning", "GNUSERC1155MaxSupply", "GeniusAccessControl"],
+  "scope": [
+    "ERC20TransferBatch",
+    "batch transfers",
+    "token minting",
+    "token burning",
+    "GNUSERC1155MaxSupply",
+    "GeniusAccessControl"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null,

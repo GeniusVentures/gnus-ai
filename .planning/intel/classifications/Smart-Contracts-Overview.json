@@ -5,7 +5,17 @@
   "manifest_override": false,
   "title": "GNUS.ai Smart Contracts",
   "summary": "Comprehensive overview of the GNUS.AI smart contract ecosystem covering architecture, token hierarchy, cross-chain bridging, and AI integration.",
-  "scope": ["GNUS.ai", "smart contracts", "Diamond Standard", "ERC-1155", "ERC-20", "cross-chain bridging", "GeniusAI", "GNUSNFTFactory", "GNUSBridge"],
+  "scope": [
+    "GNUS.ai",
+    "smart contracts",
+    "Diamond Standard",
+    "ERC-1155",
+    "ERC-20",
+    "cross-chain bridging",
+    "GeniusAI",
+    "GNUSNFTFactory",
+    "GNUSBridge"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null

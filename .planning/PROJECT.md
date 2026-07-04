@@ -66,11 +66,11 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 
 **Deployment Status (from `diamonds/GeniusDiamond/deployments/`):**
 
-| Network | Chain ID | Diamond Address | Protocol | Facets |
-|---|---|---|---|---|
-| Sepolia | 11155112 | `0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70` | v2.41 | 11 |
-| Sepolia | 11155111 | `0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70` | v2.4 | — |
-| Polygon Amoy | 80002 | `0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB` | v2.4 | — |
+| Network      | Chain ID | Diamond Address                              | Protocol | Facets |
+| ------------ | -------- | -------------------------------------------- | -------- | ------ |
+| Sepolia      | 11155112 | `0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70` | v2.41    | 11     |
+| Sepolia      | 11155111 | `0x9af8050220D8C355CA3c6dC00a78B474cd3e3c70` | v2.4     | —      |
+| Polygon Amoy | 80002    | `0xeC20bDf2f9f77dc37Ee8313f719A3cbCFA0CD1eB` | v2.4     | —      |
 
 No mainnet deployments exist. The `mainnet.json`, `base.json`, `bsc.json`, and `polygon.json` files are config templates with no deployed addresses.
 
@@ -91,19 +91,20 @@ No mainnet deployments exist. The `mainnet.json`, `base.json`, `bsc.json`, and `
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|---|---|---|
-| Remove GeniusAI facet entirely | Escrow moved to SuperGenius chain; facet is dead code with incomplete functionality | — Pending |
-| Use events for init logging | `console.log` not available on live networks; events provide on-chain observability | — Pending |
-| Standardize on Solidity 0.8.19 | Compiler config already uses 0.8.19; pragmas should match | — Pending |
-| Exact version pinning (no ranges) | Supply chain security; prevents unintended dependency updates | ✓ Implemented |
-| 7-day minimum package age check | Supply chain security; blocks brand-new unvetted packages | ✓ Implemented |
+| Decision                          | Rationale                                                                           | Outcome       |
+| --------------------------------- | ----------------------------------------------------------------------------------- | ------------- |
+| Remove GeniusAI facet entirely    | Escrow moved to SuperGenius chain; facet is dead code with incomplete functionality | — Pending     |
+| Use events for init logging       | `console.log` not available on live networks; events provide on-chain observability | — Pending     |
+| Standardize on Solidity 0.8.19    | Compiler config already uses 0.8.19; pragmas should match                           | — Pending     |
+| Exact version pinning (no ranges) | Supply chain security; prevents unintended dependency updates                       | ✓ Implemented |
+| 7-day minimum package age check   | Supply chain security; blocks brand-new unvetted packages                           | ✓ Implemented |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 **After each phase transition** (via `/gsd-transition`):
+
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
@@ -111,10 +112,12 @@ This document evolves at phase transitions and milestone boundaries.
 5. "What This Is" still accurate? → Update if drifted
 
 **After each milestone** (via `/gsd-complete-milestone`):
+
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-26 after initialization*
+
+_Last updated: 2026-05-26 after initialization_

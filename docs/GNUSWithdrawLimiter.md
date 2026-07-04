@@ -19,8 +19,8 @@ The **GNUSWithdrawLimiter** is a security feature that implements rate-limiting 
 The limiter is integrated into **three critical transfer paths**:
 
 1. **GNUSBridge.withdraw()** - Converting child NFTs back to GNUS tokens
-2. **ERC20TransferBatch._transferBatch()** - Batch token transfers  
-3. **GNUSERC1155MaxSupply._beforeTokenTransfer()** - ERC-1155 transfer hook (fallback)
+2. **ERC20TransferBatch.\_transferBatch()** - Batch token transfers
+3. **GNUSERC1155MaxSupply.\_beforeTokenTransfer()** - ERC-1155 transfer hook (fallback)
 
 This comprehensive coverage prevents attackers from bypassing per-account limits by distributing GNUS to multiple Sybil accounts.
 
@@ -43,6 +43,7 @@ Hour 0  Hour 1  Hour 2   ... Hour 23
 ```
 
 **Benefits**:
+
 - **76% Storage Reduction**: Fixed arrays vs. unbounded transaction logs
 - **Constant Gas Costs**: O(binCount) operations regardless of activity
 - **Automatic Rollover**: Old bins are reused via modulo arithmetic
@@ -50,10 +51,10 @@ Hour 0  Hour 1  Hour 2   ... Hour 23
 
 **Comparison**:
 
-| Approach | Storage Growth | Read Cost | Write Cost | Gas Impact |
-|----------|---------------|-----------|------------|------------|
-| Individual Records | O(n transactions) | O(n) | O(1) | Increases over time |
-| **Bin Aggregation** | **O(binCount)** | **O(binCount)** | **O(1)** | **Constant** |
+| Approach            | Storage Growth    | Read Cost       | Write Cost | Gas Impact          |
+| ------------------- | ----------------- | --------------- | ---------- | ------------------- |
+| Individual Records  | O(n transactions) | O(n)            | O(1)       | Increases over time |
+| **Bin Aggregation** | **O(binCount)**   | **O(binCount)** | **O(1)**   | **Constant**        |
 
 ---
 
@@ -71,6 +72,7 @@ struct WithdrawBin {
 ```
 
 **Fields**:
+
 - `timestamp` (uint128): Last update time for this bin
 - `totalAmount` (uint128): Accumulated withdrawal amount in this bin
 
@@ -91,6 +93,7 @@ struct AccountConfig {
 ```
 
 **Fields**:
+
 - `binCount` (uint32): Number of bins for this account (0 = use default)
 - `windowSeconds` (uint64): Time window duration in seconds (0 = use default)
 - `limitAmount` (uint256): Maximum withdrawal amount in wei (0 = use default)
@@ -111,6 +114,7 @@ struct AccountState {
 ```
 
 **Fields**:
+
 - `baseTimestamp` (uint128): Timestamp of first withdrawal (establishes bin timeline)
 - `bins` (WithdrawBin[]): Dynamic array sized to `binCount`
 
@@ -145,7 +149,8 @@ struct Layout {
 binLengthSeconds = windowSeconds / binCount
 ```
 
-**Example**: 
+**Example**:
+
 - Window: 86,400 seconds (24 hours)
 - Bin Count: 24
 - Bin Length: 3,600 seconds (1 hour)
@@ -159,11 +164,13 @@ binIndex = ((currentTime - baseTimestamp) / binLengthSeconds) % binCount
 ```
 
 **Formula Breakdown**:
+
 1. `currentTime - baseTimestamp`: Time elapsed since first withdrawal
 2. `/ binLengthSeconds`: Number of bins elapsed
 3. `% binCount`: Wrap around to array bounds (circular buffer)
 
 **Example**:
+
 ```
 baseTimestamp: 1000000
 currentTime:   1007200  (2 hours later)
@@ -184,6 +191,7 @@ isExpired = (bin.timestamp < (currentTime - windowSeconds))
 ```
 
 **Example**:
+
 ```
 currentTime:    1100000
 windowSeconds:  86400
@@ -227,6 +235,7 @@ function setDefaultLimitAmount(uint256 limitAmount) external
 ```
 
 **Parameters**:
+
 - `limitAmount` (uint256): New default limit in wei (GNUS token base units)
 
 **Access Control**: `onlySuperAdminRole`
@@ -234,6 +243,7 @@ function setDefaultLimitAmount(uint256 limitAmount) external
 **Events Emitted**: `WithdrawLimiterConfigUpdated(defaultLimitAmount, defaultWindowSeconds, defaultBinCount)`
 
 **Example**:
+
 ```solidity
 // Set default limit to 200,000 GNUS
 limiter.setDefaultLimitAmount(200000 * 10**18);
@@ -250,6 +260,7 @@ function setDefaultWindowSeconds(uint256 windowSeconds) external
 ```
 
 **Parameters**:
+
 - `windowSeconds` (uint256): New default window duration in seconds
 
 **Access Control**: `onlySuperAdminRole`
@@ -257,6 +268,7 @@ function setDefaultWindowSeconds(uint256 windowSeconds) external
 **Events Emitted**: `WithdrawLimiterConfigUpdated(defaultLimitAmount, defaultWindowSeconds, defaultBinCount)`
 
 **Example**:
+
 ```solidity
 // Set default window to 7 days
 limiter.setDefaultWindowSeconds(7 * 24 * 60 * 60);
@@ -273,6 +285,7 @@ function setDefaultBinCount(uint256 binCount) external
 ```
 
 **Parameters**:
+
 - `binCount` (uint256): New default bin count (must be > 0)
 
 **Access Control**: `onlySuperAdminRole`
@@ -282,6 +295,7 @@ function setDefaultBinCount(uint256 binCount) external
 **Events Emitted**: `WithdrawLimiterConfigUpdated(defaultLimitAmount, defaultWindowSeconds, defaultBinCount)`
 
 **Example**:
+
 ```solidity
 // Set default to 48 bins (30-minute intervals for 24 hours)
 limiter.setDefaultBinCount(48);
@@ -303,6 +317,7 @@ function setAccountConfig(
 ```
 
 **Parameters**:
+
 - `account` (address): Account to configure
 - `binCount` (uint32): Number of bins (0 = use default)
 - `windowSeconds` (uint64): Window duration in seconds (0 = use default)
@@ -315,6 +330,7 @@ function setAccountConfig(
 **Special Behavior**: Set all parameters to 0 to revert to default configuration.
 
 **Example**:
+
 ```solidity
 // Configure high-trust account with higher limit
 limiter.setAccountConfig(
@@ -339,6 +355,7 @@ function setLimiterEnabled(bool enabled) external
 ```
 
 **Parameters**:
+
 - `enabled` (bool): True to enable limiter, false to disable
 
 **Access Control**: `onlySuperAdminRole`
@@ -348,6 +365,7 @@ function setLimiterEnabled(bool enabled) external
 **Security Note**: Super admins always bypass the limiter regardless of this setting.
 
 **Example**:
+
 ```solidity
 // Disable limiter during maintenance
 limiter.setLimiterEnabled(false);
@@ -374,14 +392,16 @@ function getWithdrawLimiterConfig() external view returns (
 ```
 
 **Returns**:
+
 - `defaultLimitAmount` (uint256): Default limit in wei
 - `defaultWindowSeconds` (uint256): Default window in seconds
 - `defaultBinCount` (uint256): Default bin count
 - `limiterEnabled` (bool): Whether limiter is globally enabled
 
 **Example**:
+
 ```solidity
-(uint256 limit, uint256 window, uint256 bins, bool enabled) = 
+(uint256 limit, uint256 window, uint256 bins, bool enabled) =
     limiter.getWithdrawLimiterConfig();
 ```
 
@@ -400,9 +420,11 @@ function getAccountConfig(address account) external view returns (
 ```
 
 **Parameters**:
+
 - `account` (address): Account to query
 
 **Returns**:
+
 - `binCount` (uint32): Effective bin count
 - `windowSeconds` (uint64): Effective window duration
 - `limitAmount` (uint256): Effective limit amount
@@ -410,8 +432,9 @@ function getAccountConfig(address account) external view returns (
 **Behavior**: Returns custom config if set, otherwise returns defaults.
 
 **Example**:
+
 ```solidity
-(uint32 bins, uint64 window, uint256 limit) = 
+(uint32 bins, uint64 window, uint256 limit) =
     limiter.getAccountConfig(userAddress);
 ```
 
@@ -430,16 +453,19 @@ function getAccountWithdrawStatus(address account) external view returns (
 ```
 
 **Parameters**:
+
 - `account` (address): Account to query
 
 **Returns**:
+
 - `currentUsage` (uint256): Total amount withdrawn in current window
 - `remainingCapacity` (uint256): Amount still available to withdraw
 - `windowEnd` (uint256): Approximate timestamp when window expires
 
 **Example**:
+
 ```solidity
-(uint256 used, uint256 remaining, uint256 end) = 
+(uint256 used, uint256 remaining, uint256 end) =
     limiter.getAccountWithdrawStatus(userAddress);
 
 console.log("Used:", used / 10**18, "GNUS");
@@ -464,6 +490,7 @@ event WithdrawLimiterConfigUpdated(
 ```
 
 **Parameters**:
+
 - `defaultLimitAmount`: New default limit
 - `defaultWindowSeconds`: New default window
 - `defaultBinCount`: New default bin count
@@ -484,6 +511,7 @@ event AccountConfigUpdated(
 ```
 
 **Parameters**:
+
 - `account`: Account whose config was updated
 - `binCount`: New bin count (0 = default)
 - `windowSeconds`: New window duration (0 = default)
@@ -505,6 +533,7 @@ event WithdrawRecorded(
 ```
 
 **Parameters**:
+
 - `account`: Account making withdrawal
 - `amount`: Amount withdrawn
 - `timestamp`: Timestamp of withdrawal
@@ -526,6 +555,7 @@ event WithdrawLimiterTriggered(
 ```
 
 **Parameters**:
+
 - `account`: Account attempting withdrawal
 - `requestedAmount`: Amount requested
 - `activeTotal`: Current total in active bins
@@ -637,12 +667,12 @@ Converts child NFTs back to GNUS tokens.
 function withdraw(uint256 tokenId, uint256 amount) external {
     // Calculate GNUS output amount
     uint256 gnusAmount = amount * exchangeRate;
-    
+
     // Check limiter (super admin bypass built-in)
     if (!hasRole(SUPER_ADMIN_ROLE, msg.sender)) {
         GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(msg.sender, gnusAmount);
     }
-    
+
     // Proceed with burn and mint
     _burn(msg.sender, tokenId, amount);
     _mint(msg.sender, GNUS_TOKEN_ID, gnusAmount, "");
@@ -653,7 +683,7 @@ function withdraw(uint256 tokenId, uint256 amount) external {
 
 ---
 
-#### 2. ERC20TransferBatch._transferBatch()
+#### 2. ERC20TransferBatch.\_transferBatch()
 
 Batch GNUS token transfers.
 
@@ -669,12 +699,12 @@ function _transferBatch(
     for (uint256 i = 0; i < amounts.length; i++) {
         totalAmount += amounts[i];
     }
-    
+
     // Check limiter against sender's limit (super admin bypass)
     if (!hasRole(SUPER_ADMIN_ROLE, operator)) {
         GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(operator, totalAmount);
     }
-    
+
     // Proceed with transfers
     ...
 }
@@ -686,7 +716,7 @@ function _transferBatch(
 
 ---
 
-#### 3. GNUSERC1155MaxSupply._beforeTokenTransfer()
+#### 3. GNUSERC1155MaxSupply.\_beforeTokenTransfer()
 
 ERC-1155 transfer hook (fallback coverage).
 
@@ -701,17 +731,17 @@ function _beforeTokenTransfer(
     bytes memory data
 ) internal virtual override {
     super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    
+
     // Skip if minting (from == 0) or burning (to == 0)
     if (from == address(0) || to == address(0)) {
         return;
     }
-    
+
     // Skip if super admin
     if (hasRole(SUPER_ADMIN_ROLE, operator)) {
         return;
     }
-    
+
     // Aggregate only GNUS token amounts
     uint256 totalGnusAmount = 0;
     for (uint256 i = 0; i < ids.length; i++) {
@@ -719,7 +749,7 @@ function _beforeTokenTransfer(
             totalGnusAmount += amounts[i];
         }
     }
-    
+
     // Check limiter if any GNUS tokens transferred
     if (totalGnusAmount > 0) {
         GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(from, totalGnusAmount);
@@ -753,6 +783,7 @@ if (!hasRole(SUPER_ADMIN_ROLE, account)) {
 ### Access Control
 
 All configuration functions require `onlySuperAdminRole`:
+
 - `setDefaultLimitAmount()`
 - `setDefaultWindowSeconds()`
 - `setDefaultBinCount()`
@@ -774,6 +805,7 @@ All configuration functions require `onlySuperAdminRole`:
 ### Reentrancy Protection
 
 The limiter uses **checks-effects-interactions pattern**:
+
 1. Check limiter (reverts if exceeded)
 2. Update bin state (effects)
 3. Proceed with transfers (interactions)
@@ -787,7 +819,7 @@ No external calls before state updates = no reentrancy risk.
 Uses **Diamond storage pattern** with unique slot:
 
 ```solidity
-bytes32 constant STORAGE_POSITION = 
+bytes32 constant STORAGE_POSITION =
     keccak256("gnus.ai.withdraw.limiter.storage");
 ```
 
@@ -806,12 +838,12 @@ No conflicts with other facets.
 
 ### Runtime Overhead
 
-| Operation | Gas Cost | Target | Status |
-|-----------|----------|--------|--------|
-| First withdrawal (cold storage) | ~30k | ~30k | ✅ Meets |
-| Subsequent withdrawal (warm storage) | ~20-25k | ~30k | ✅ Exceeds |
-| Batch transfer (3 recipients) | ~25-30k/transfer | ~30k | ✅ Meets |
-| Super admin bypass | 0 | Minimal | ✅ Optimal |
+| Operation                            | Gas Cost         | Target  | Status     |
+| ------------------------------------ | ---------------- | ------- | ---------- |
+| First withdrawal (cold storage)      | ~30k             | ~30k    | ✅ Meets   |
+| Subsequent withdrawal (warm storage) | ~20-25k          | ~30k    | ✅ Exceeds |
+| Batch transfer (3 recipients)        | ~25-30k/transfer | ~30k    | ✅ Meets   |
+| Super admin bypass                   | 0                | Minimal | ✅ Optimal |
 
 **Conclusion**: Gas costs meet FR-71 target (~30k overhead).
 
@@ -864,7 +896,7 @@ diamond.setAccountConfig(
 
 ```solidity
 // Check user's current withdrawal status
-(uint256 used, uint256 remaining, uint256 windowEnd) = 
+(uint256 used, uint256 remaining, uint256 windowEnd) =
     diamond.getAccountWithdrawStatus(userAddress);
 
 console.log("Used:", used / 10**18, "GNUS");
@@ -881,12 +913,12 @@ console.log("Resets at:", windowEnd);
 try diamond.withdraw(tokenId, amount) {
     console.log("Withdrawal successful");
 } catch Error(string memory reason) {
-    if (keccak256(bytes(reason)) == 
+    if (keccak256(bytes(reason)) ==
         keccak256("Withdrawal limit exceeded for time window")) {
         // Show user their status and ask to wait
-        (uint256 used,, uint256 windowEnd) = 
+        (uint256 used,, uint256 windowEnd) =
             diamond.getAccountWithdrawStatus(msg.sender);
-        
+
         console.log("Limit exceeded. You've used", used / 10**18, "GNUS");
         console.log("Window resets at", windowEnd);
         console.log("Please try again later");
@@ -913,7 +945,7 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit) => {
     console.log(`Requested: ${requested / 10**18} GNUS`);
     console.log(`Active total: ${active / 10**18} GNUS`);
     console.log(`Limit: ${limit / 10**18} GNUS`);
-    
+
     // Alert security team for investigation
     alertSecurityTeam(account, requested, active, limit);
 });
@@ -937,11 +969,13 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit) => {
 ### Test Types
 
 #### Unit Tests (24 tests)
+
 - Storage library functions (9 tests)
 - Facet administrative functions (10 tests)
 - Initialization (5 tests)
 
 **Files**:
+
 - `test/unit/withdraw-limiter-storage.test.ts`
 - `test/unit/GNUSWithdrawLimiter.test.ts`
 - `test/unit/DiamondInitFacet-withdraw-limiter.test.ts`
@@ -949,11 +983,13 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit) => {
 ---
 
 #### Integration Tests (20 tests)
+
 - GNUSBridge integration (7 tests)
 - ERC20TransferBatch integration (6 tests)
 - GNUSERC1155MaxSupply integration (7 tests)
 
 **Files**:
+
 - `test/integration/withdraw-limiter-bridge.test.ts`
 - `test/integration/withdraw-limiter-batch-transfer.test.ts`
 - `test/integration/withdraw-limiter-erc1155.test.ts`
@@ -961,10 +997,12 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit) => {
 ---
 
 #### Fuzz Tests (14 tests, 256 runs each)
+
 - Bin calculation edge cases (8 tests)
 - Sybil attack prevention (6 tests)
 
 **Files**:
+
 - `test/foundry/fuzz/GNUSWithdrawLimiterFuzz.t.sol`
 - `test/foundry/security/GNUSWithdrawLimiterSybilAttack.t.sol`
 
@@ -979,6 +1017,7 @@ The implementation followed **RED-GREEN-REFACTOR** workflow:
 3. **REFACTOR**: Optimize and clean up code
 
 **Benefits**:
+
 - All features have test coverage from day one
 - Tests serve as executable specifications
 - Prevents regression bugs
@@ -1021,11 +1060,11 @@ contract MyNewFacet is GeniusAccessControl {
         // Check limiter (super admin bypass)
         if (!hasRole(SUPER_ADMIN_ROLE, msg.sender)) {
             GNUSWithdrawLimiterStorage.checkAndRecordWithdraw(
-                msg.sender, 
+                msg.sender,
                 amount
             );
         }
-        
+
         // Proceed with transfer
         _transfer(msg.sender, to, amount);
     }
@@ -1038,8 +1077,8 @@ contract MyNewFacet is GeniusAccessControl {
 
 ```typescript
 // Query user's withdrawal status
-const [used, remaining, windowEnd] = 
-    await diamond.getAccountWithdrawStatus(userAddress);
+const [used, remaining, windowEnd] =
+  await diamond.getAccountWithdrawStatus(userAddress);
 
 // Display to user
 console.log(`Withdrawal Limit Status:
@@ -1050,10 +1089,10 @@ console.log(`Withdrawal Limit Status:
 
 // Check if amount exceeds remaining capacity
 if (requestedAmount.gt(remaining)) {
-    showError(`Withdrawal limit exceeded. 
+  showError(`Withdrawal limit exceeded. 
                Available: ${ethers.utils.formatEther(remaining)} GNUS
                Please wait until ${new Date(windowEnd * 1000).toLocaleString()}`);
-    return;
+  return;
 }
 
 // Proceed with withdrawal
@@ -1066,28 +1105,34 @@ await diamond.withdraw(tokenId, amount);
 
 ```javascript
 // Monitor limiter events for analytics
-diamond.on("WithdrawRecorded", (account, amount, timestamp, binIndex, event) => {
+diamond.on(
+  "WithdrawRecorded",
+  (account, amount, timestamp, binIndex, event) => {
     // Log successful withdrawal
     analytics.logWithdrawal({
-        account,
-        amount: ethers.utils.formatEther(amount),
-        timestamp,
-        binIndex,
-        txHash: event.transactionHash
+      account,
+      amount: ethers.utils.formatEther(amount),
+      timestamp,
+      binIndex,
+      txHash: event.transactionHash,
     });
-});
+  },
+);
 
-diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit, event) => {
+diamond.on(
+  "WithdrawLimiterTriggered",
+  (account, requested, active, limit, event) => {
     // Alert on limit exceeded
     alerts.send({
-        type: "LIMIT_EXCEEDED",
-        account,
-        requested: ethers.utils.formatEther(requested),
-        active: ethers.utils.formatEther(active),
-        limit: ethers.utils.formatEther(limit),
-        txHash: event.transactionHash
+      type: "LIMIT_EXCEEDED",
+      account,
+      requested: ethers.utils.formatEther(requested),
+      active: ethers.utils.formatEther(active),
+      limit: ethers.utils.formatEther(limit),
+      txHash: event.transactionHash,
     });
-});
+  },
+);
 ```
 
 ---
@@ -1099,6 +1144,7 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit, event
 **Cause**: User has withdrawn more than their configured limit in the current window.
 
 **Solution**:
+
 1. Query `getAccountWithdrawStatus()` to see used amount and window end
 2. Wait for window to roll over (bins expire after windowSeconds)
 3. Contact admin for custom config if legitimately high-volume user
@@ -1118,6 +1164,7 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit, event
 **Cause**: High bin count or cold storage access.
 
 **Solutions**:
+
 - Reduce bin count for lower gas (trade-off: less granularity)
 - First withdrawal is more expensive (cold storage initialization)
 - Subsequent withdrawals use warm storage (cheaper)
@@ -1127,11 +1174,13 @@ diamond.on("WithdrawLimiterTriggered", (account, requested, active, limit, event
 ### Limiter not triggering
 
 **Causes**:
+
 1. Limiter disabled globally (`limiterEnabled = false`)
 2. Account is super admin (bypass by design)
 3. Custom config with very high limits
 
 **Solutions**:
+
 - Check `getWithdrawLimiterConfig()` to verify `limiterEnabled = true`
 - Check if account has super admin role
 - Check `getAccountConfig()` for effective limits

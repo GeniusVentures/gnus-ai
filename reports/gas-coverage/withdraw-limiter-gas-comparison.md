@@ -16,7 +16,7 @@ This report provides detailed gas usage measurements for the GNUS Withdraw Limit
 - **Gas cost scales linearly** with bin count across all operations
 - **Cold storage operations** cost 80-100k more gas than warm storage operations
 - **6-bin configuration** offers lowest gas costs with ~106k overhead
-- **96-bin configuration** provides finest granularity at ~379k overhead  
+- **96-bin configuration** provides finest granularity at ~379k overhead
 - **Default 24-bin configuration** balances cost and granularity with ~231k overhead
 
 ---
@@ -32,13 +32,13 @@ This report provides detailed gas usage measurements for the GNUS Withdraw Limit
 
 ### Bin Count Configurations Tested
 
-| Bin Count | Window | Bin Duration | Use Case |
-|-----------|--------|--------------|----------|
-| 6 bins    | 24h    | 4 hours      | Coarse-grained, minimal gas |
+| Bin Count | Window | Bin Duration | Use Case                        |
+| --------- | ------ | ------------ | ------------------------------- |
+| 6 bins    | 24h    | 4 hours      | Coarse-grained, minimal gas     |
 | 12 bins   | 24h    | 2 hours      | Low gas, reasonable granularity |
-| 24 bins   | 24h    | 1 hour       | **Default - balanced** |
-| 48 bins   | 24h    | 30 minutes   | Fine-grained tracking |
-| 96 bins   | 24h    | 15 minutes   | Very fine-grained tracking |
+| 24 bins   | 24h    | 1 hour       | **Default - balanced**          |
+| 48 bins   | 24h    | 30 minutes   | Fine-grained tracking           |
+| 96 bins   | 24h    | 15 minutes   | Very fine-grained tracking      |
 
 ### Test Scenarios
 
@@ -120,16 +120,17 @@ BinCount,Operation,Scenario,GasUsed,Success
 ### 1. GNUSBridge.withdraw() - NFT to GNUS Conversion
 
 | Bin Count | First (Cold) | Subsequent (Warm) | Overhead vs Baseline | Cold-Warm Δ |
-|-----------|--------------|-------------------|----------------------|-------------|
-| 6 bins    | 210,639      | 115,251          | +55,078             | 95,388      |
-| 12 bins   | 235,888      | 136,071          | +55,077             | 99,817      |
-| 24 bins   | 286,390      | 194,811          | +55,078             | 91,579      |
-| 48 bins   | 387,399      | 278,091          | +55,079             | 109,308     |
-| 96 bins   | 589,444      | 444,651          | +55,079             | 144,793     |
+| --------- | ------------ | ----------------- | -------------------- | ----------- |
+| 6 bins    | 210,639      | 115,251           | +55,078              | 95,388      |
+| 12 bins   | 235,888      | 136,071           | +55,077              | 99,817      |
+| 24 bins   | 286,390      | 194,811           | +55,078              | 91,579      |
+| 48 bins   | 387,399      | 278,091           | +55,079              | 109,308     |
+| 96 bins   | 589,444      | 444,651           | +55,079              | 144,793     |
 
 **Baseline** (bridgeOut without limiter): 155,561 gas (6-bin) to 534,365 gas (96-bin)
 
 **Key Observations**:
+
 - Limiter adds consistent ~55k gas overhead across all bin counts (independent of bin count)
 - Cold storage initialization adds 91k-145k gas depending on bin count
 - Gas increases linearly: ~4k gas per bin added
@@ -138,14 +139,15 @@ BinCount,Operation,Scenario,GasUsed,Success
 ### 2. ERC20TransferBatch.transferBatch() - Batch GNUS Transfers
 
 | Bin Count | First (Cold) | Subsequent (Warm) | Cold-Warm Δ | vs withdraw() |
-|-----------|--------------|-------------------|-------------|----------------|
-| 6 bins    | 192,765      | 102,166          | 90,599      | -17,874        |
-| 12 bins   | 218,015      | 122,986          | 95,029      | -17,873        |
-| 24 bins   | 268,516      | 181,726          | 86,790      | -17,874        |
-| 48 bins   | 369,524      | 265,006          | 104,518     | -17,875        |
-| 96 bins   | 571,569      | 431,566          | 140,003     | -17,875        |
+| --------- | ------------ | ----------------- | ----------- | ------------- |
+| 6 bins    | 192,765      | 102,166           | 90,599      | -17,874       |
+| 12 bins   | 218,015      | 122,986           | 95,029      | -17,873       |
+| 24 bins   | 268,516      | 181,726           | 86,790      | -17,874       |
+| 48 bins   | 369,524      | 265,006           | 104,518     | -17,875       |
+| 96 bins   | 571,569      | 431,566           | 140,003     | -17,875       |
 
 **Key Observations**:
+
 - Consistently ~18k gas cheaper than withdraw() (less computation overhead)
 - Similar cold-warm storage delta pattern
 - Sybil attack prevention adds minimal overhead (aggregation logic)
@@ -154,14 +156,15 @@ BinCount,Operation,Scenario,GasUsed,Success
 ### 3. ERC20TransferBatch.transferOrBurnBatch() - Batch with Burn Support
 
 | Bin Count | First (Cold) | Subsequent (Warm) | vs transferBatch() |
-|-----------|--------------|-------------------|--------------------|
-| 6 bins    | 195,496      | 104,897          | +2,731 gas         |
-| 12 bins   | 220,746      | 125,717          | +2,731 gas         |
-| 24 bins   | 271,247      | 184,457          | +2,731 gas         |
-| 48 bins   | 372,255      | 267,737          | +2,731 gas         |
-| 96 bins   | 574,300      | 434,297          | +2,731 gas         |
+| --------- | ------------ | ----------------- | ------------------ |
+| 6 bins    | 195,496      | 104,897           | +2,731 gas         |
+| 12 bins   | 220,746      | 125,717           | +2,731 gas         |
+| 24 bins   | 271,247      | 184,457           | +2,731 gas         |
+| 48 bins   | 372,255      | 267,737           | +2,731 gas         |
+| 96 bins   | 574,300      | 434,297           | +2,731 gas         |
 
 **Key Observations**:
+
 - Adds constant ~2.7k gas overhead for burn support (zero-address check)
 - Otherwise identical behavior to transferBatch()
 - Burn operations counted same as transfers for limiter
@@ -175,7 +178,7 @@ BinCount,Operation,Scenario,GasUsed,Success
 #### withdraw() Operation (First Call - Cold Storage)
 
 | From → To | Gas Increase | % Increase | Cost/Bin |
-|-----------|--------------|------------|----------|
+| --------- | ------------ | ---------- | -------- |
 | 6 → 12    | +25,249      | +11.9%     | 4,208    |
 | 12 → 24   | +50,502      | +21.4%     | 4,208    |
 | 24 → 48   | +101,009     | +35.3%     | 4,208    |
@@ -185,13 +188,13 @@ BinCount,Operation,Scenario,GasUsed,Success
 
 #### Warm Storage Performance
 
-| Bin Count | withdraw() | transferBatch() | Improvement |
-|-----------|------------|-----------------|-------------|
-| 6 bins    | 115,251    | 102,166        | 11.3% faster |
-| 12 bins   | 136,071    | 122,986        | 9.6% faster  |
-| 24 bins   | 194,811    | 181,726        | 6.7% faster  |
-| 48 bins   | 278,091    | 265,006        | 4.7% faster  |
-| 96 bins   | 444,651    | 431,566        | 2.9% faster  |
+| Bin Count | withdraw() | transferBatch() | Improvement  |
+| --------- | ---------- | --------------- | ------------ |
+| 6 bins    | 115,251    | 102,166         | 11.3% faster |
+| 12 bins   | 136,071    | 122,986         | 9.6% faster  |
+| 24 bins   | 194,811    | 181,726         | 6.7% faster  |
+| 48 bins   | 278,091    | 265,006         | 4.7% faster  |
+| 96 bins   | 444,651    | 431,566         | 2.9% faster  |
 
 ---
 
@@ -200,7 +203,7 @@ BinCount,Operation,Scenario,GasUsed,Success
 ### Storage Initialization Cost (Cold vs Warm)
 
 | Bin Count | Cold Storage | Warm Storage | Initialization Cost | % Overhead |
-|-----------|--------------|--------------|---------------------|------------|
+| --------- | ------------ | ------------ | ------------------- | ---------- |
 | 6 bins    | 210,639      | 115,251      | 95,388              | 82.7%      |
 | 12 bins   | 235,888      | 136,071      | 99,817              | 73.3%      |
 | 24 bins   | 286,390      | 194,811      | 91,579              | 47.0%      |
@@ -208,6 +211,7 @@ BinCount,Operation,Scenario,GasUsed,Success
 | 96 bins   | 589,444      | 444,651      | 144,793             | 32.6%      |
 
 **Insights**:
+
 - First withdrawal always significantly more expensive (cold storage writes)
 - Cold storage overhead decreases as percentage with more bins (more slots = less % per slot)
 - After first withdrawal, all subsequent operations benefit from warm storage
@@ -215,12 +219,12 @@ BinCount,Operation,Scenario,GasUsed,Success
 ### Time Granularity vs Gas Cost Trade-off
 
 | Bin Count | Bin Duration | withdraw() Gas | Granularity Rating | Cost Rating |
-|-----------|--------------|----------------|-------------------|-------------|
-| 6 bins    | 4 hours      | 210,639        | ⭐⭐               | ⭐⭐⭐⭐⭐   |
-| 12 bins   | 2 hours      | 235,888        | ⭐⭐⭐             | ⭐⭐⭐⭐     |
-| 24 bins   | 1 hour       | 286,390        | ⭐⭐⭐⭐           | ⭐⭐⭐       |
-| 48 bins   | 30 minutes   | 387,399        | ⭐⭐⭐⭐⭐         | ⭐⭐         |
-| 96 bins   | 15 minutes   | 589,444        | ⭐⭐⭐⭐⭐         | ⭐           |
+| --------- | ------------ | -------------- | ------------------ | ----------- |
+| 6 bins    | 4 hours      | 210,639        | ⭐⭐               | ⭐⭐⭐⭐⭐  |
+| 12 bins   | 2 hours      | 235,888        | ⭐⭐⭐             | ⭐⭐⭐⭐    |
+| 24 bins   | 1 hour       | 286,390        | ⭐⭐⭐⭐           | ⭐⭐⭐      |
+| 48 bins   | 30 minutes   | 387,399        | ⭐⭐⭐⭐⭐         | ⭐⭐        |
+| 96 bins   | 15 minutes   | 589,444        | ⭐⭐⭐⭐⭐         | ⭐          |
 
 ---
 
@@ -268,22 +272,22 @@ BinCount,Operation,Scenario,GasUsed,Success
 
 ### Average Gas Usage Across All Bin Counts
 
-| Operation                  | Average (Cold) | Average (Warm) | Cold-Warm Δ |
-|----------------------------|----------------|----------------|-------------|
-| withdraw()                 | 341,952        | 233,775        | 108,177     |
-| bridgeOut() (no limiter)   | 286,873        | N/A            | N/A         |
-| transferBatch()            | 324,077        | 220,690        | 103,387     |
-| transferOrBurnBatch()      | 326,808        | 223,421        | 103,387     |
+| Operation                | Average (Cold) | Average (Warm) | Cold-Warm Δ |
+| ------------------------ | -------------- | -------------- | ----------- |
+| withdraw()               | 341,952        | 233,775        | 108,177     |
+| bridgeOut() (no limiter) | 286,873        | N/A            | N/A         |
+| transferBatch()          | 324,077        | 220,690        | 103,387     |
+| transferOrBurnBatch()    | 326,808        | 223,421        | 103,387     |
 
 ### Gas Cost Range by Bin Count
 
-| Metric                    | 6 bins → 96 bins | Absolute Δ | % Increase |
-|---------------------------|------------------|------------|------------|
-| withdraw() (cold)         | 210,639 → 589,444 | +378,805   | +179%      |
-| withdraw() (warm)         | 115,251 → 444,651 | +329,400   | +285%      |
-| transferBatch() (cold)    | 192,765 → 571,569 | +378,804   | +196%      |
-| transferBatch() (warm)    | 102,166 → 431,566 | +329,400   | +322%      |
-| bridgeOut() (no limiter)  | 155,561 → 534,365 | +378,804   | +243%      |
+| Metric                   | 6 bins → 96 bins  | Absolute Δ | % Increase |
+| ------------------------ | ----------------- | ---------- | ---------- |
+| withdraw() (cold)        | 210,639 → 589,444 | +378,805   | +179%      |
+| withdraw() (warm)        | 115,251 → 444,651 | +329,400   | +285%      |
+| transferBatch() (cold)   | 192,765 → 571,569 | +378,804   | +196%      |
+| transferBatch() (warm)   | 102,166 → 431,566 | +329,400   | +322%      |
+| bridgeOut() (no limiter) | 155,561 → 534,365 | +378,804   | +243%      |
 
 **Key Insight**: Gas cost scales linearly (~3.9x increase from 6 to 96 bins), but provides 16x finer time resolution.
 
@@ -293,26 +297,28 @@ BinCount,Operation,Scenario,GasUsed,Success
 
 ### Ethereum Mainnet
 
-| Configuration | Bin Count | Justification |
-|--------------|-----------|---------------|
-| **Production** | 12 bins | Balance cost efficiency with adequate granularity (2-hour bins) |
-| **High-Value Treasury** | 6 bins | Minimize gas for large withdrawals (4-hour bins acceptable) |
-| **DeFi Integration** | 24 bins | Standard hourly tracking for protocol integration |
+| Configuration           | Bin Count | Justification                                                   |
+| ----------------------- | --------- | --------------------------------------------------------------- |
+| **Production**          | 12 bins   | Balance cost efficiency with adequate granularity (2-hour bins) |
+| **High-Value Treasury** | 6 bins    | Minimize gas for large withdrawals (4-hour bins acceptable)     |
+| **DeFi Integration**    | 24 bins   | Standard hourly tracking for protocol integration               |
 
 **Estimated Annual Gas Cost** (1000 withdrawals/year):
+
 - 6 bins: 210M gas = ~$200-2000 (depending on gas price)
 - 12 bins: 235M gas = ~$230-2300
 - 24 bins: 286M gas = ~$290-2900
 
 ### Layer 2 Networks (Optimism, Arbitrum, Polygon, Base)
 
-| Configuration | Bin Count | Justification |
-|--------------|-----------|---------------|
-| **Production** | 48 bins | Fine granularity at low cost (30-minute bins) |
-| **High-Security** | 96 bins | Maximum time precision (15-minute bins) |
-| **Standard** | 24 bins | Compatible with mainnet configuration |
+| Configuration     | Bin Count | Justification                                 |
+| ----------------- | --------- | --------------------------------------------- |
+| **Production**    | 48 bins   | Fine granularity at low cost (30-minute bins) |
+| **High-Security** | 96 bins   | Maximum time precision (15-minute bins)       |
+| **Standard**      | 24 bins   | Compatible with mainnet configuration         |
 
 **Estimated Annual Gas Cost** (10,000 withdrawals/year):
+
 - 24 bins: 2.86B gas = ~$3-30 on L2
 - 48 bins: 3.87B gas = ~$4-40 on L2
 - 96 bins: 5.89B gas = ~$6-60 on L2
@@ -337,7 +343,7 @@ Custom bin counts can be set per account:
 // High-frequency trader - needs fine granularity
 setAccountConfig(trader, 96, 86400, limit);
 
-// Treasury - minimize gas costs  
+// Treasury - minimize gas costs
 setAccountConfig(treasury, 6, 86400, limit);
 ```
 
@@ -346,10 +352,12 @@ This allows gas optimization on a per-user basis.
 ### 3. Cold Storage Optimization
 
 For users making frequent withdrawals:
+
 - First withdrawal: Pay cold storage cost
 - Subsequent withdrawals: Benefit from warm storage (45-50% gas savings)
 
 **Example**: A user making 10 withdrawals per day with 24 bins:
+
 - First: 286,390 gas
 - Next 9: 194,811 gas each = 1,753,299 gas
 - **Total**: 2,039,689 gas for 10 withdrawals
@@ -384,6 +392,7 @@ The limiter tracks total GNUS withdrawal per address, preventing:
 ## Testing Coverage
 
 All gas measurements performed with:
+
 - ✅ 50 test cases passing
 - ✅ 5 bin count configurations
 - ✅ 4 operations tested
@@ -404,11 +413,11 @@ The GNUS Withdraw Limiter provides flexible, cost-efficient rate limiting with:
 
 ### Final Recommendations
 
-| Priority | Network | Bin Count | Use Case |
-|----------|---------|-----------|----------|
-| 🥇 **Best for L1** | Ethereum | 6-12 bins | Gas-efficient, adequate security |
-| 🥈 **Best for L2** | All L2s | 48-96 bins | Maximum security, negligible gas |
-| 🥉 **Best Default** | All | 24 bins | Balanced for cross-chain consistency |
+| Priority            | Network  | Bin Count  | Use Case                             |
+| ------------------- | -------- | ---------- | ------------------------------------ |
+| 🥇 **Best for L1**  | Ethereum | 6-12 bins  | Gas-efficient, adequate security     |
+| 🥈 **Best for L2**  | All L2s  | 48-96 bins | Maximum security, negligible gas     |
+| 🥉 **Best Default** | All      | 24 bins    | Balanced for cross-chain consistency |
 
 ---
 

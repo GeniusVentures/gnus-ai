@@ -5,6 +5,11 @@
  * Upgrades GNUS.AI Diamond contracts using RPCDiamondDeployer
  */
 
+// Load Hardhat FIRST so its Runtime Environment context exists before
+// @diamondslab/diamonds (which calls extendEnvironment at import time) loads.
+// Hardhat provides plugin/context plumbing only — no transactions are sent via it.
+import 'hardhat';
+
 import { Diamond } from '@diamondslab/diamonds';
 import chalk from 'chalk';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';
@@ -97,6 +102,7 @@ async function upgradeDiamond(options: UpgradeOptions): Promise<void> {
 		'🔧 Force Upgrade': options.force ? 'Yes' : 'No',
 		'🎯 Target Version': options.targetVersion || 'Latest',
 		'📊 Skip Analysis': options.skipAnalysis ? 'Yes' : 'No',
+		'📝 Encode Only': options.encodeOnly ? 'Yes' : 'No',
 	});
 
 	const deployer = await RPCDiamondDeployer.getInstance(config);

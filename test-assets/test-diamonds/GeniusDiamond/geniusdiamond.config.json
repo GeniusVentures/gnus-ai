@@ -30,10 +30,7 @@
         "2.3": {
           "deployInit": "GNUSNFTFactory_Initialize230()",
           "upgradeInit": "GNUSNFTFactory_Initialize230()",
-          "fromVersions": [
-            0.0,
-            2.0
-          ]
+          "fromVersions": [0.0, 2.0]
         }
       }
     },
@@ -41,19 +38,8 @@
       "priority": 45,
       "versions": {
         "0.0": {
-          "callbacks": [
-            "setNFTProxyRoleForOpenSea"
-          ],
-          "deployInclude": [
-          ]
-        }
-      }
-    },
-    "GeniusAI": {
-      "priority": 70,
-      "versions": {
-        "0.0": {
-          "deployInit": "GeniusAI_Initialize()"
+          "callbacks": ["setNFTProxyRoleForOpenSea"],
+          "deployInclude": []
         }
       }
     },
@@ -63,11 +49,11 @@
         "2.0": {}
       }
     },
-    "GNUSNFTCollectionName": { 
+    "GNUSNFTCollectionName": {
       "priority": 80,
       "versions": {
-        "0.0":{}
-      } 
+        "0.0": {}
+      }
     },
     "GNUSContractAssets": {
       "priority": 100,
@@ -79,9 +65,7 @@
       "priority": 110,
       "versions": {
         "0.0": {
-          "callbacks":[ 
-            "registerProtocolVersionChainId" 
-          ]
+          "callbacks": ["registerProtocolVersionChainId"]
         },
         "2.3": {
           "deployInit": "GNUSControl_Initialize230()"
@@ -119,13 +103,7 @@
         "2.5": {
           "deployInit": "diamondInitialize250()",
           "upgradeInit": "diamondInitialize250()",
-          "fromVersions": [
-            0.0,
-            2.2,
-            2.3,
-            2.4,
-            2.41
-          ]
+          "fromVersions": [0.0, 2.2, 2.3, 2.4, 2.41]
         }
       }
     }

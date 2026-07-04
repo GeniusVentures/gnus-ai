@@ -1,7 +1,7 @@
 import { Diamond } from '@diamondslab/diamonds';
 import {
-    LocalDiamondDeployer,
-    loadDiamondContract,
+	LocalDiamondDeployer,
+	loadDiamondContract,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
@@ -257,22 +257,29 @@ describe('GeniusOwnershipFacet', function () {
 		});
 
 		it('should maintain contract state across ownership transfer', async function () {
-			// Open an escrow before transfer
-			const uuid = hre.ethers.encodeBytes32String('test-uuid');
-			const amount = hre.ethers.parseEther('1.0');
-			await geniusDiamond.connect(user1).OpenEscrow(uuid, { value: amount });
+			// Establish persistent state without the removed escrow feature:
+			// a token balance and a granted role should both survive an ownership transfer,
+			// since the diamond owner (LibDiamond contractOwner) is separate from AccessControl roles.
+			await geniusDiamond['mint(address,uint256)'](
+				user1.address,
+				hre.ethers.parseEther('100'),
+			);
+			const role = await geniusDiamond.MINTER_ROLE();
+			await geniusDiamond.connect(owner).grantRole(role, user2.address);
 
-			// Get contract balance before transfer
-			const balanceBefore = await hre.ethers.provider.getBalance(diamondAddress);
+			// Record pre-transfer state
+			const balanceBefore = await geniusDiamond['balanceOf(address)'](user1.address);
+			expect(await geniusDiamond.hasRole(role, user2.address)).to.be.true;
 
 			// Transfer ownership
 			await geniusDiamond.connect(owner).transferOwnership(user1.address);
+			expect(await geniusDiamond.owner()).to.equal(user1.address);
 
-			// Get contract balance after transfer
-			const balanceAfter = await hre.ethers.provider.getBalance(diamondAddress);
-
-			// Balance should remain unchanged
-			expect(balanceAfter).to.equal(balanceBefore);
+			// State should be unchanged after the transfer
+			expect(await geniusDiamond['balanceOf(address)'](user1.address)).to.equal(
+				balanceBefore,
+			);
+			expect(await geniusDiamond.hasRole(role, user2.address)).to.be.true;
 		});
 
 		it('should allow ownership queries from any address', async function () {

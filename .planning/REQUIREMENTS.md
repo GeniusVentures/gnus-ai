@@ -8,8 +8,8 @@
 ### Technical Debt
 
 - [ ] **DEBT-01**: Remove GeniusAI facet — delete `GeniusAI.sol`, `GeniusAIStorage.sol`, and remove from diamond config. Escrow moved to SuperGenius chain.
-- [ ] **DEBT-02**: Remove `hardhat/console.sol` import and `console.log()` from `DiamondInitFacet.sol`. Replace with event emission.
-- [ ] **DEBT-03**: Standardize all contract pragmas to `^0.8.19` (currently mixed: `^0.8.0`, `^0.8.2`, `^0.8.19`).
+- [x] **DEBT-02**: Remove `hardhat/console.sol` import and `console.log()` from `DiamondInitFacet.sol`. Replace with event emission.
+- [x] **DEBT-03**: Standardize all contract pragmas to `^0.8.19` (currently mixed: `^0.8.0`, `^0.8.2`, `^0.8.19`).
 - [ ] **DEBT-04**: Remove duplicate `_setupRole`/`_grantRole` calls in `DiamondInitFacet.diamondInitialize250()` (lines 51-57).
 - [ ] **DEBT-05**: Remove duplicated `onlySuperAdminRole` modifier from `DiamondInitFacet.sol` — use inherited modifier from `GeniusAccessControl.sol`.
 - [ ] **DEBT-06**: Remove commented-out network configuration blocks from `hardhat.config.ts` (lines 237-241, 282-324).
@@ -44,6 +44,20 @@
 
 - [ ] **DEP-01**: Pin `contracts-starter` to a specific commit hash in `package.json` — currently pointed at `https://github.com/mudgen/diamond-2-hardhat.git` without a commit reference.
 
+### Safe Wallet Proposer
+
+- [x] **SWP-01**: Install Safe SDK dependencies — @safe-global/api-kit, @safe-global/protocol-kit, @safe-global/types-kit as exact-pinned devDependencies.
+- [ ] **SWP-02**: Extend config/CLI/environment validation for Safe proposal mode.
+- [ ] **SWP-03**: Wire CLI options (--safe-propose, --safe-address, etc.) and env loading.
+- [x] **SWP-04**: Implement proposeSafeTransaction() helper using Safe SDK — builds, signs, and submits Safe transaction proposals.
+- [x] **SWP-05**: Implement writeSafeProposalArtifact() — writes local JSON fallback artifact with calldata, selector, metadata.
+- [ ] **SWP-06**: Implement SafeProposerRPCDeploymentStrategy — intercepts diamondCut transactions for Safe proposal instead of direct send.
+- [ ] **SWP-07**: Wire strategy selection in RPCDiamondDeployer — SafeProposerRPCDeploymentStrategy when safePropose=true, RPCDeploymentStrategy otherwise.
+- [x] **SWP-08**: Extend .env.example with Safe proposal section (SAFE_PROPOSE, SAFE_ADDRESS, SAFE_PROPOSER_PRIVATE_KEY, SAFE_TX_SERVICE_URL, SAFE_API_KEY, SAFE_ORIGIN).
+- [ ] **SWP-09**: Add mainnet guard — block direct privileged upgrades on mainnet unless SAFE_PROPOSE=true.
+- [x] **SWP-10**: Unit tests covering config validation, env loading, strategy selection, diamondCut intercept.
+- [x] **SWP-11**: Sepolia smoke test — manual verification that Safe proposal appears in Safe UI.
+
 ## v2 Requirements
 
 ### NFT Token Economics
@@ -56,46 +70,60 @@ _These are investigation items only — no implementation committed until resear
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Escrow release/closing/dispute | Moved to SuperGenius chain, different contracts handle this |
-| New feature development | This is a remediation pass — no greenfield features |
-| Mainnet deployment | Gated on audit completion and remediation verification |
-| Real-time chat / video NFTs | Not part of the GNUS token ecosystem |
-| GNUSNFTCollectionName facet consolidation | Low-priority refactor, defer to future cleanup |
-| Multisig/timelock for super admin | Defer to governance phase |
+| Feature                                   | Reason                                                      |
+| ----------------------------------------- | ----------------------------------------------------------- |
+| Escrow release/closing/dispute            | Moved to SuperGenius chain, different contracts handle this |
+| New feature development                   | This is a remediation pass — no greenfield features         |
+| Mainnet deployment                        | Gated on audit completion and remediation verification      |
+| Real-time chat / video NFTs               | Not part of the GNUS token ecosystem                        |
+| GNUSNFTCollectionName facet consolidation | Low-priority refactor, defer to future cleanup              |
+| Multisig/timelock for super admin         | Defer to governance phase                                   |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| DEBT-01 | Phase 2 | Pending |
-| DEBT-02 | Phase 1 | Pending |
-| DEBT-03 | Phase 1 | Pending |
-| DEBT-04 | Phase 2 | Pending |
-| DEBT-05 | Phase 2 | Pending |
-| DEBT-06 | Phase 1 | Pending |
-| SEC-01 | Phase 3 | Pending |
-| SEC-02 | Phase 3 | Pending |
-| SEC-03 | Phase 3 | Pending |
-| SEC-04 | Phase 3 | Pending |
-| SEC-05 | Phase 4 | Pending |
-| SEC-06 | Phase 4 | Pending |
-| SEC-07 | Phase 4 | Pending |
-| SEC-08 | Phase 5 | Pending |
-| PERF-01 | Phase 5 | Pending |
-| PERF-02 | Phase 5 | Pending |
-| TEST-01 | Phase 6 | Pending |
-| TEST-02 | Phase 6 | Pending |
-| TEST-03 | Phase 6 | Pending |
-| QUAL-01 | Phase 2 | Pending |
-| DEP-01 | Phase 7 | Pending |
+| Requirement | Phase      | Status   |
+| ----------- | ---------- | -------- |
+| DEBT-01     | Phase 2    | Pending  |
+| DEBT-02     | Phase 1    | Complete |
+| DEBT-03     | Phase 1    | Complete |
+| DEBT-04     | Phase 2    | Pending  |
+| DEBT-05     | Phase 2    | Pending  |
+| DEBT-06     | Phase 1    | Pending  |
+| SEC-01      | Phase 3    | Pending  |
+| SEC-02      | Phase 3    | Pending  |
+| SEC-03      | Phase 3    | Pending  |
+| SEC-04      | Phase 3    | Pending  |
+| SEC-05      | Phase 4    | Pending  |
+| SEC-06      | Phase 4    | Pending  |
+| SEC-07      | Phase 4    | Pending  |
+| SEC-08      | Phase 5    | Pending  |
+| PERF-01     | Phase 5    | Pending  |
+| PERF-02     | Phase 5    | Pending  |
+| TEST-01     | Phase 6    | Pending  |
+| TEST-02     | Phase 6    | Pending  |
+| TEST-03     | Phase 6    | Pending  |
+| QUAL-01     | Phase 2    | Pending  |
+| DEP-01      | Phase 7    | Pending  |
+| SWP-01      | Phase 08.1 | Complete |
+| SWP-02      | Phase 08.1 | Pending  |
+| SWP-03      | Phase 08.1 | Pending  |
+| SWP-04      | Phase 08.1 | Complete |
+| SWP-05      | Phase 08.1 | Complete |
+| SWP-06      | Phase 08.1 | Pending  |
+| SWP-07      | Phase 08.1 | Pending  |
+| SWP-08      | Phase 08.1 | Complete |
+| SWP-09      | Phase 08.1 | Pending  |
+| SWP-10      | Phase 08.1 | Complete |
+| SWP-11      | Phase 08.1 | Complete |
 
 **Coverage:**
+
 - v1 requirements: 22 total
-- Mapped to phases: 22
+- v2 requirements (SWP): 11 total
+- Mapped to phases: 33
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-05-26*
-*Last updated: 2026-05-26 after initial definition*
+
+_Requirements defined: 2026-05-26_
+_Last updated: 2026-05-26 after initial definition_

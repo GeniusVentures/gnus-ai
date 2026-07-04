@@ -1,6 +1,6 @@
 # GNUS.ai Tests
 
->> This directory contains the tests for the GNUS.ai project.
+> > This directory contains the tests for the GNUS.ai project.
 
 ## Test Structure
 

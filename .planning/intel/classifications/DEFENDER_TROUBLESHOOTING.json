@@ -5,7 +5,14 @@
   "manifest_override": false,
   "title": "OpenZeppelin Defender Deployment Troubleshooting",
   "summary": "Troubleshooting guide covering common issues, solutions, and recovery procedures for OpenZeppelin Defender contract deployments.",
-  "scope": ["OpenZeppelin Defender", "deployment", "troubleshooting", "gas limits", "RPC connections", "DefenderDiamondDeployer"],
+  "scope": [
+    "OpenZeppelin Defender",
+    "deployment",
+    "troubleshooting",
+    "gas limits",
+    "RPC connections",
+    "DefenderDiamondDeployer"
+  ],
   "cross_refs": [],
   "locked": false,
   "precedence": null

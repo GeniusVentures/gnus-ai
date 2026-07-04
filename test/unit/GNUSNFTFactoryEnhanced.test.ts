@@ -1,7 +1,7 @@
 import { Diamond } from '@diamondslab/diamonds';
 import {
-    loadDiamondContract,
-    LocalDiamondDeployer,
+	loadDiamondContract,
+	LocalDiamondDeployer,
 } from '@diamondslab/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
@@ -42,7 +42,7 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
-        
+
 		// Grant CREATOR_ROLE to creator
 		const CREATOR_ROLE = await geniusDiamond.CREATOR_ROLE();
 		await geniusDiamond.grantRole(CREATOR_ROLE, creator.address);

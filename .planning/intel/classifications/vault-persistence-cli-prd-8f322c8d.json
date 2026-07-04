@@ -5,7 +5,17 @@
   "manifest_override": true,
   "title": "Product Requirements Document: HashiCorp Vault Persistence & CLI Installation",
   "summary": "Defines requirements for adding file-based persistence and Vault CLI installation to the HashiCorp Vault integration in the Diamonds DevContainer.",
-  "scope": ["HashiCorp Vault", "persistence", "Raft storage", "Vault CLI", "DevContainer", "secrets management", "seal/unseal", "migration", "template system"],
+  "scope": [
+    "HashiCorp Vault",
+    "persistence",
+    "Raft storage",
+    "Vault CLI",
+    "DevContainer",
+    "secrets management",
+    "seal/unseal",
+    "migration",
+    "template system"
+  ],
   "cross_refs": [
     ".devcontainer/data/vault-data/",
     ".devcontainer/config/vault-persistent.hcl",

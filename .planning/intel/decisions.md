@@ -8,6 +8,7 @@
 No ADR-type documents were present in the ingest set (35 documents: 32 DOC, 3 PRD, 0 ADR, 0 SPEC).
 
 All key decisions relevant to this project are documented in `.planning/PROJECT.md` under "Key Decisions":
+
 - Remove GeniusAI facet entirely
 - Use events for init logging
 - Standardize on Solidity 0.8.19
@@ -18,4 +19,4 @@ The contract reference docs (GeniusAccessControl, GNUSBridge, GeniusDiamond, etc
 
 ---
 
-*Source: synthesis of 35 classification files in `.planning/intel/classifications/`*
+_Source: synthesis of 35 classification files in `.planning/intel/classifications/`_

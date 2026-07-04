@@ -1,3 +1,14 @@
+// Load the Hardhat Runtime Environment FIRST. @diamondslab/diamonds transitively
+// requires @nomicfoundation/hardhat-ethers, which calls extendEnvironment() at
+// module load — and that needs a Hardhat context to already exist. Importing
+// hardhat before the diamonds library creates that context, so these RPC scripts
+// load cleanly under plain `npx ts-node` (not only via `npx hardhat run`).
+// Hardhat is NOT used to broadcast transactions — all deployment/upgrade traffic
+// is signed and sent directly via ethers over the configured RPC URL.
+import hre, { ethers } from 'hardhat';
+import '@diamondslab/hardhat-diamonds';
+import 'hardhat-multichain';
+
 import {
 	DeploymentRepository,
 	Diamond,
@@ -6,22 +17,49 @@ import {
 	DiamondPathsConfig,
 	FileDeploymentRepository,
 	RPCDeploymentStrategy,
+	RegistryFacetCutAction,
 	SupportedProvider,
 	cutKey,
 } from '@diamondslab/diamonds';
-import '@diamondslab/hardhat-diamonds';
+import { SafeProposerRPCDeploymentStrategy } from './strategies/SafeProposerRPCDeploymentStrategy';
+import { EncodeOnlyRPCDeploymentStrategy } from './strategies/EncodeOnlyRPCDeploymentStrategy';
+import { GnusDeployedDiamondDataSchema } from '../schemas/deployedDiamondDataSchema';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 import { JsonRpcProvider } from 'ethers';
-import { existsSync } from 'fs';
-import hre, { ethers } from 'hardhat';
-import 'hardhat-multichain';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
-import '@diamondslab/hardhat-diamonds';
-
 dotenv.config();
+
+/**
+ * Strip query-string parameters from an RPC URL before logging.
+ *
+ * RPC URLs routinely embed Infura/Alchemy project IDs as query-string
+ * parameters (e.g. `?api_key=...`). Verbose logging would otherwise leak these
+ * into CI logs. If the input is not a parseable URL, it is returned unchanged.
+ *
+ * @param url - The raw RPC URL.
+ * @returns The URL with its query string removed.
+ */
+function redactRpcUrl(url: string): string {
+	try {
+		const parsed = new URL(url);
+		parsed.search = '';
+		return parsed.toString();
+	} catch {
+		return url;
+	}
+}
+
+/**
+ * Private-key validation regex. Accepts 64 hex characters with an OPTIONAL
+ * `0x` prefix and any hex casing, mirroring the leniency of ethers' Wallet /
+ * computeAddress. The previous mandatory-`0x` form rejected valid keys pasted
+ * from wallet exports that omit the prefix.
+ */
+const PRIVATE_KEY_RE = /^(0x)?[a-fA-F0-9]{64}$/;
 
 /**
  * Network configuration interface matching hardhat.config.ts chainManager
@@ -78,6 +116,20 @@ export interface RPCDiamondDeployerConfig extends DiamondConfig {
 	verbose?: boolean;
 	/** Unique key for this deployer instance */
 	rpcDiamondDeployerKey?: string;
+	/** Enable Safe proposal mode for diamondCut/admin upgrades */
+	safePropose?: boolean;
+	/** Safe multisig wallet address */
+	safeAddress?: string;
+	/** Proposer EOA private key (defaults to privateKey) */
+	safeProposerPrivateKey?: string;
+	/** Custom Safe Transaction Service URL */
+	safeTxServiceUrl?: string;
+	/** Safe API key if required */
+	safeApiKey?: string;
+	/** Origin string for Safe proposal */
+	safeOrigin?: string;
+	/** Encode the diamondCut to a local artifact without proposing/executing (dry run) */
+	encodeOnly?: boolean;
 }
 
 /**
@@ -168,21 +220,135 @@ export class RPCDiamondDeployer {
 		this.provider = new JsonRpcProvider(config.rpcUrl);
 		this.signer = new ethers.Wallet(config.privateKey, this.provider) as any;
 
-		// Create RPC deployment strategy
-		this.strategy = new RPCDeploymentStrategy(
-			config.rpcUrl,
-			config.privateKey,
-			config.gasLimitMultiplier || 1.2,
-			config.maxRetries || 3,
-			config.retryDelayMs || 2000,
-			this.verbose,
-		);
+		// Create deployment strategy — branch on safePropose, then encodeOnly.
+		// safePropose takes precedence when both are set: it is the committed
+		// path, while encodeOnly is the local dry-run alternative.
+		if (config.safePropose) {
+			this.strategy = new SafeProposerRPCDeploymentStrategy({
+				rpcUrl: config.rpcUrl,
+				privateKey: config.privateKey,
+				proposerPrivateKey: config.safeProposerPrivateKey || config.privateKey,
+				safeAddress: config.safeAddress!,
+				chainId: config.chainId,
+				gasLimitMultiplier: config.gasLimitMultiplier || 1.2,
+				maxRetries: config.maxRetries || 3,
+				retryDelayMs: config.retryDelayMs || 2000,
+				verbose: this.verbose,
+				safeTxServiceUrl: config.safeTxServiceUrl,
+				safeApiKey: config.safeApiKey,
+				safeOrigin: config.safeOrigin || 'gnus-ai-rpc-upgrade',
+				diamondName: config.diamondName,
+				networkName: config.networkName,
+			});
+		} else if (config.encodeOnly) {
+			this.strategy = new EncodeOnlyRPCDeploymentStrategy({
+				rpcUrl: config.rpcUrl,
+				privateKey: config.privateKey,
+				chainId: config.chainId,
+				gasLimitMultiplier: config.gasLimitMultiplier || 1.2,
+				maxRetries: config.maxRetries || 3,
+				retryDelayMs: config.retryDelayMs || 2000,
+				verbose: this.verbose,
+				diamondName: config.diamondName,
+				networkName: config.networkName,
+			});
+		} else {
+			this.strategy = new RPCDeploymentStrategy(
+				config.rpcUrl,
+				config.privateKey,
+				config.gasLimitMultiplier || 1.2,
+				config.maxRetries || 3,
+				config.retryDelayMs || 2000,
+				this.verbose,
+			);
+		}
 
 		// Initialize diamond with strategy
 		this.diamond = new Diamond(this.config, repository);
 		this.diamond.setProvider(this.provider as any);
 		this.diamond.setSigner(this.signer);
 
+		// gnus-ai records store facet history under `.FacetDeployedInfo`
+		// (scripts/common.ts), but @diamondslab/diamonds seeds its selector
+		// registry from `.DeployedFacets`, and its DeployedDiamondDataSchema has
+		// FacetDeployedInfo commented out — so readDeployFile()'s Zod parse strips
+		// it and this.diamond.getDeployedDiamondData() can never surface it.
+		// Validate the raw canonical file with GnusDeployedDiamondDataSchema
+		// (which declares FacetDeployedInfo) so the history survives to seed the
+		// registry; the upgrade diff then emits Replace/Add/Remove instead of
+		// all-Add, which reverts on-chain with "Cannot add function that already
+		// exists".
+		const facetFilePath = this.config.deployedDiamondDataFilePath;
+		let facetHistory:
+			| Record<string, { address?: string; funcSelectors?: string[] }>
+			| undefined;
+		let hasLegacyDeployedFacets = false;
+		if (facetFilePath && existsSync(facetFilePath)) {
+			const parsed = GnusDeployedDiamondDataSchema.safeParse(
+				JSON.parse(readFileSync(facetFilePath, 'utf8')),
+			);
+			if (parsed.success) {
+				facetHistory = parsed.data.FacetDeployedInfo;
+				hasLegacyDeployedFacets = !!parsed.data.DeployedFacets;
+			} else if (this.verbose) {
+				console.log(chalk.yellow('⚠️  Facet history parse failed; skipping registry seed'));
+			}
+		}
+		if (facetHistory && !hasLegacyDeployedFacets) {
+			const facets = (this.diamond.getDeployConfig().facets ?? {}) as Record<
+				string,
+				{ priority?: number }
+			>;
+			const seeded: Record<
+				string,
+				{
+					facetName: string;
+					priority: number;
+					address: string;
+					action: RegistryFacetCutAction;
+				}
+			> = {};
+			for (const [facetName, { address, funcSelectors }] of Object.entries(facetHistory)) {
+				if (!address || !funcSelectors) {
+					continue;
+				}
+				const priority = facets[facetName]?.priority ?? 1000;
+				for (const selector of funcSelectors) {
+					seeded[selector] = {
+						facetName,
+						priority,
+						address,
+						action: RegistryFacetCutAction.Deployed,
+					};
+				}
+			}
+			this.diamond.registerFunctionSelectors(seeded);
+		}
+
+		// Mirror FacetDeployedInfo into deployedDiamondData.DeployedFacets
+		// so the analysis step (upgrade-rpc.ts) and the library's deploy
+		// loop see the existing facets. Without this, both read
+		// DeployedFacets (always {} after Zod strips FacetDeployedInfo)
+		// and treat every facet as new, triggering wasteful re-deploys
+		// and Replace cuts for unchanged facets.
+		if (facetHistory) {
+			const mirror = this.diamond.getDeployedDiamondData();
+			mirror.DeployedFacets = {};
+			for (const [
+				name,
+				{ address, funcSelectors, version, tx_hash, verified },
+			] of Object.entries(facetHistory)) {
+				if (address && funcSelectors) {
+					mirror.DeployedFacets[name] = {
+						address,
+						funcSelectors,
+						version,
+						tx_hash,
+						verified,
+					};
+				}
+			}
+		}
 		if (this.verbose) {
 			console.log(
 				chalk.blue(
@@ -235,9 +401,14 @@ export class RPCDiamondDeployer {
 			}
 
 			const networkConfig = chainManager.chains[networkName];
+			// chainManager from hardhat-multichain may omit chainId; fall back
+			// to the raw Hardhat networks config when it does.
+			const rawNetworks = (hre.config as any).networks || {};
+			const chainId =
+				networkConfig.chainId || rawNetworks[networkName]?.chainId || 0;
 			return {
 				name: networkName,
-				chainId: networkConfig.chainId || 0,
+				chainId,
 				rpcUrl: networkConfig.rpcUrl || '',
 				blockNumber: networkConfig.blockNumber,
 				nativeCurrency: networkConfig.nativeCurrency,
@@ -308,10 +479,9 @@ export class RPCDiamondDeployer {
 	public static async getInstance(
 		config: RPCDiamondDeployerConfig,
 	): Promise<RPCDiamondDeployer> {
-		// Validate required configuration
-		this.validateConfig(config);
-
-		// Initialize provider and get network info if needed
+		// Initialize provider and auto-detect chainId BEFORE validation so
+		// Safe-propose mode has a valid chainId even when the legacy config
+		// path sets chainId=0 (triggered by RPC_URL in .env).
 		if (!config.provider) {
 			config.provider = new JsonRpcProvider(config.rpcUrl);
 		}
@@ -325,6 +495,9 @@ export class RPCDiamondDeployer {
 			const network = await config.provider.getNetwork();
 			config.networkName = network.name || 'unknown';
 		}
+
+		// Validate required configuration
+		this.validateConfig(config);
 
 		// Create unique key for this deployer instance
 		const key =
@@ -422,14 +595,20 @@ export class RPCDiamondDeployer {
 	): RPCDiamondDeployerConfig {
 		const requiredEnvVars = ['RPC_URL', 'PRIVATE_KEY', 'DIAMOND_NAME'];
 
-		// Check required environment variables
+		// Explicit env-var -> config-key map. The previous implementation used
+		// `envVar.toLowerCase().replace('_', '')`, which only strips the FIRST
+		// underscore (e.g. 'RPC_URL' -> 'rpcurl', not 'rpcUrl'), so the override
+		// branch never matched the real config keys and was effectively dead.
+		const envToConfigKey: Record<string, keyof RPCDiamondDeployerConfig> = {
+			RPC_URL: 'rpcUrl',
+			PRIVATE_KEY: 'privateKey',
+			DIAMOND_NAME: 'diamondName',
+		};
+
+		// Check required environment variables, acknowledging overrides
 		for (const envVar of requiredEnvVars) {
-			if (
-				!process.env[envVar] &&
-				!overrides?.[
-					envVar.toLowerCase().replace('_', '') as keyof RPCDiamondDeployerConfig
-				]
-			) {
+			const configKey = envToConfigKey[envVar];
+			if (!process.env[envVar] && !overrides?.[configKey]) {
 				throw new Error(`Missing required environment variable: ${envVar}`);
 			}
 		}
@@ -452,6 +631,12 @@ export class RPCDiamondDeployer {
 			contractsPath: process.env.CONTRACTS_PATH,
 			configFilePath: process.env.DIAMOND_CONFIG_PATH,
 			writeDeployedDiamondData: process.env.WRITE_DEPLOYED_DIAMOND_DATA !== 'false', // Default to true
+			safePropose: process.env.SAFE_PROPOSE === 'true',
+			safeAddress: process.env.SAFE_ADDRESS,
+			safeProposerPrivateKey: process.env.SAFE_PROPOSER_PRIVATE_KEY,
+			safeTxServiceUrl: process.env.SAFE_TX_SERVICE_URL,
+			safeApiKey: process.env.SAFE_API_KEY,
+			safeOrigin: process.env.SAFE_ORIGIN || 'gnus-ai-rpc-upgrade',
 			...overrides,
 		};
 
@@ -474,8 +659,8 @@ export class RPCDiamondDeployer {
 
 		if (!config.privateKey) {
 			errors.push('Private key is required');
-		} else if (!config.privateKey.match(/^0x[a-fA-F0-9]{64}$/)) {
-			errors.push('Private key must be 64 hex characters with 0x prefix');
+		} else if (!config.privateKey.match(PRIVATE_KEY_RE)) {
+			errors.push('Private key must be 64 hex characters (0x prefix optional)');
 		}
 
 		if (
@@ -491,6 +676,36 @@ export class RPCDiamondDeployer {
 
 		if (config.retryDelayMs && (config.retryDelayMs < 100 || config.retryDelayMs > 30000)) {
 			errors.push('Retry delay must be between 100ms and 30000ms');
+		}
+
+		// Safe proposal mode validation
+		if (config.safePropose) {
+			if (!config.chainId || config.chainId <= 0) {
+				errors.push('A valid chainId is required when SAFE_PROPOSE=true');
+			}
+			if (!config.safeAddress) {
+				errors.push('SAFE_ADDRESS is required when SAFE_PROPOSE=true');
+			} else if (!ethers.isAddress(config.safeAddress)) {
+				errors.push('SAFE_ADDRESS must be a valid address');
+			}
+			const proposerKey = config.safeProposerPrivateKey || config.privateKey;
+			if (!proposerKey) {
+				errors.push('A proposer private key is required when SAFE_PROPOSE=true');
+			} else if (!proposerKey.match(PRIVATE_KEY_RE)) {
+				errors.push(
+					'Safe proposer private key must be 64 hex characters (0x prefix optional)',
+				);
+			}
+		}
+
+		// Mainnet guard: refuse direct privileged diamondCut on mainnet.
+		// Normalize (trim + lowercase) so casing/whitespace variants like
+		// "Mainnet", " mainnet ", or "MAINNET" cannot bypass the guard.
+		const normalizedNetwork = (config.networkName || '').trim().toLowerCase();
+		if (normalizedNetwork === 'mainnet' && !config.safePropose) {
+			errors.push(
+				'Mainnet privileged Diamond cut/admin upgrades require SAFE_PROPOSE=true — refusing to deploy directly',
+			);
 		}
 
 		if (errors.length > 0) {
@@ -542,6 +757,16 @@ export class RPCDiamondDeployer {
 
 		this.deployInProgress = true;
 
+		// Sepolia direct-upgrade advisory.
+		// Normalize (trim + lowercase) to match the mainnet guard's robustness.
+		if (this.networkName.trim().toLowerCase() === 'sepolia' && !this.config.safePropose) {
+			console.warn(
+				chalk.yellow(
+					'⚠️  Direct privileged upgrade on sepolia without Safe proposal — this is allowed but not recommended. Set SAFE_PROPOSE=true for the safe path.',
+				),
+			);
+		}
+
 		try {
 			if (this.verbose) {
 				console.log(chalk.blueBright('\n🚀 Starting RPC Diamond Deployment'));
@@ -550,7 +775,7 @@ export class RPCDiamondDeployer {
 				console.log(
 					chalk.blue(`🌐 Network: ${this.networkName} (Chain ID: ${this.chainId})`),
 				);
-				console.log(chalk.blue(`🔗 RPC URL: ${this.config.rpcUrl}`));
+				console.log(chalk.blue(`🔗 RPC URL: ${redactRpcUrl(this.config.rpcUrl)}`));
 				console.log(chalk.blue('='.repeat(50)));
 			}
 
@@ -802,12 +1027,14 @@ export class RPCDiamondDeployer {
 			console.log(chalk.blue(`📋 Protocol Version: ${deployedData.protocolVersion}`));
 		}
 
-		if (deployedData?.DeployedFacets) {
-			const facetCount = Object.keys(deployedData.DeployedFacets).length;
+		const facetHistorySummary =
+			(deployedData as any)?.FacetDeployedInfo ?? (deployedData as any)?.DeployedFacets;
+		if (facetHistorySummary) {
+			const facetCount = Object.keys(facetHistorySummary).length;
 			console.log(chalk.blue(`🔧 Deployed Facets: ${facetCount}`));
 
-			Object.entries(deployedData.DeployedFacets).forEach(([name, facet]) => {
-				console.log(chalk.gray(`   ${name}: ${facet.address}`));
+			Object.entries(facetHistorySummary).forEach(([name, facet]) => {
+				console.log(chalk.gray(`   ${name}: ${(facet as any).address}`));
 			});
 		}
 
