@@ -91,7 +91,7 @@ export function setupProgram(name: string, description: string): Command {
  * Adds common CLI options to a Commander command
  */
 export function addCommonOptions(command: Command): Command {
-	return command
+	command
 		.option('-d, --diamond-name <name>', 'Name of the diamond', process.env.DIAMOND_NAME)
 		.option('-n, --network-name <name>', 'Network name', process.env.NETWORK_NAME)
 		.option('-r, --rpc-url <url>', 'RPC endpoint URL', process.env.RPC_URL)

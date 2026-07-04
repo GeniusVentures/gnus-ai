@@ -164,6 +164,13 @@ async function main() {
 			delete data.pending;
 			delete data.pendingSafeTxHash;
 			writeFileSync(opts.deployment, JSON.stringify(data, null, 2), 'utf8');
+			// Stamp the Safe nonce into the proposal artifact so confirmDeployment
+			// can verify execution without the Safe Transaction Service.
+			if (tx.nonce !== undefined && tx.nonce !== null) {
+				const artifact = JSON.parse(readFileSync(opts.artifact, 'utf8'));
+				artifact.nonce = tx.nonce;
+				writeFileSync(opts.artifact, JSON.stringify(artifact, null, 2), 'utf8');
+			}
 			console.log(`✅ Executed. on-chain tx_hash: ${tx.transactionHash}`);
 			console.log(`   nonce: ${tx.nonce}, executor: ${tx.executor ?? 'unknown'}`);
 			console.log(`   file: ${opts.deployment}`);
