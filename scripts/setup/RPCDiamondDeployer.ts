@@ -60,6 +60,9 @@ function redactRpcUrl(url: string): string {
  * from wallet exports that omit the prefix.
  */
 const PRIVATE_KEY_RE = /^(0x)?[a-fA-F0-9]{64}$/;
+const kDefaultGasMultiplier = 1.2;
+const kDefaultMaxRetries = 3;
+const kDefaultRetryDelayMs = 2_000;
 
 /**
  * Network configuration interface matching hardhat.config.ts chainManager
@@ -230,9 +233,9 @@ export class RPCDiamondDeployer {
 				proposerPrivateKey: config.safeProposerPrivateKey || config.privateKey,
 				safeAddress: config.safeAddress!,
 				chainId: config.chainId,
-				gasLimitMultiplier: config.gasLimitMultiplier || 1.2,
-				maxRetries: config.maxRetries || 3,
-				retryDelayMs: config.retryDelayMs || 2000,
+				gasLimitMultiplier: config.gasLimitMultiplier || kDefaultGasMultiplier,
+				maxRetries: config.maxRetries || kDefaultMaxRetries,
+				retryDelayMs: config.retryDelayMs || kDefaultRetryDelayMs,
 				verbose: this.verbose,
 				safeTxServiceUrl: config.safeTxServiceUrl,
 				safeApiKey: config.safeApiKey,
@@ -245,9 +248,9 @@ export class RPCDiamondDeployer {
 				rpcUrl: config.rpcUrl,
 				privateKey: config.privateKey,
 				chainId: config.chainId,
-				gasLimitMultiplier: config.gasLimitMultiplier || 1.2,
-				maxRetries: config.maxRetries || 3,
-				retryDelayMs: config.retryDelayMs || 2000,
+				gasLimitMultiplier: config.gasLimitMultiplier || kDefaultGasMultiplier,
+				maxRetries: config.maxRetries || kDefaultMaxRetries,
+				retryDelayMs: config.retryDelayMs || kDefaultRetryDelayMs,
 				verbose: this.verbose,
 				diamondName: config.diamondName,
 				networkName: config.networkName,
@@ -256,9 +259,9 @@ export class RPCDiamondDeployer {
 			this.strategy = new RPCDeploymentStrategy(
 				config.rpcUrl,
 				config.privateKey,
-				config.gasLimitMultiplier || 1.2,
-				config.maxRetries || 3,
-				config.retryDelayMs || 2000,
+				config.gasLimitMultiplier || kDefaultGasMultiplier,
+				config.maxRetries || kDefaultMaxRetries,
+				config.retryDelayMs || kDefaultRetryDelayMs,
 				this.verbose,
 			);
 		}
@@ -281,17 +284,29 @@ export class RPCDiamondDeployer {
 		const facetFilePath = this.config.deployedDiamondDataFilePath;
 		let facetHistory:
 			| Record<string, { address?: string; funcSelectors?: string[] }>
-			| undefined;
+			| undefined = undefined;
 		let hasLegacyDeployedFacets = false;
 		if (facetFilePath && existsSync(facetFilePath)) {
-			const parsed = GnusDeployedDiamondDataSchema.safeParse(
-				JSON.parse(readFileSync(facetFilePath, 'utf8')),
-			);
-			if (parsed.success) {
-				facetHistory = parsed.data.FacetDeployedInfo;
-				hasLegacyDeployedFacets = !!parsed.data.DeployedFacets;
-			} else if (this.verbose) {
-				console.log(chalk.yellow('⚠️  Facet history parse failed; skipping registry seed'));
+			let raw: unknown = undefined;
+			try {
+				raw = JSON.parse(readFileSync(facetFilePath, 'utf8'));
+			} catch {
+				if (this.verbose) {
+					console.log(
+						chalk.yellow('⚠️  Failed to parse deployment file; skipping registry seed'),
+					);
+				}
+			}
+			if (raw !== undefined) {
+				const parsed = GnusDeployedDiamondDataSchema.safeParse(raw);
+				if (parsed.success) {
+					facetHistory = parsed.data.FacetDeployedInfo;
+					hasLegacyDeployedFacets = !!parsed.data.DeployedFacets;
+				} else if (this.verbose) {
+					console.log(
+						chalk.yellow('⚠️  Facet history parse failed; skipping registry seed'),
+					);
+				}
 			}
 		}
 		if (facetHistory && !hasLegacyDeployedFacets) {
@@ -404,8 +419,7 @@ export class RPCDiamondDeployer {
 			// chainManager from hardhat-multichain may omit chainId; fall back
 			// to the raw Hardhat networks config when it does.
 			const rawNetworks = (hre.config as any).networks || {};
-			const chainId =
-				networkConfig.chainId || rawNetworks[networkName]?.chainId || 0;
+			const chainId = networkConfig.chainId || rawNetworks[networkName]?.chainId || 0;
 			return {
 				name: networkName,
 				chainId,
@@ -743,8 +757,15 @@ export class RPCDiamondDeployer {
 				console.log(chalk.gray(`   Key: ${key}`));
 			}
 
-			// Wait for the deployment to complete
+			// Wait for the deployment to complete (with timeout)
+			const kMaxWaitMs = 300_000; // 5 minutes
+			const startedAt = Date.now();
 			while (this.deployInProgress) {
+				if (Date.now() - startedAt > kMaxWaitMs) {
+					throw new Error(
+						`Timed out waiting for deployment to complete on ${this.networkName} after ${kMaxWaitMs / 1000}s`,
+					);
+				}
 				if (this.verbose) {
 					console.log(
 						chalk.blue(`⏳ Waiting for deployment to complete for ${this.networkName}...`),
