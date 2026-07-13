@@ -38,6 +38,7 @@
     "snyk:test": "snyk test --all-projects --exclude=yarn.lock --severity-threshold=medium",
     "socket:scan": "SOCKET_CLI_API_TOKEN=$(grep SOCKET_CLI_API_TOKEN .env | cut -d'=' -f2) npx socket ci",
     "osv:scan": "osv-scanner --lockfile=yarn.lock --format=json",
+    "deployments:aggregate": "npx ts-node --transpile-only scripts/deploy/aggregate-deployments.ts",
     "safe:upgrade": "npx ts-node --transpile-only scripts/safe/safeUpgrade.ts",
     "safe:check": "npx ts-node --transpile-only scripts/safe/checkSafeExecuted.ts",
     "safe:confirm": "npx ts-node --transpile-only scripts/safe/confirmDeployment.ts",
