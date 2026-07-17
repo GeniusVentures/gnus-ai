@@ -18,15 +18,45 @@ findings:
   warning: 7
   info: 4
   total: 15
-status: issues_found
+status: resolved
+resolved: 2026-07-16T00:00:00Z
+resolved_findings: 14
+deferred_findings: 1
+deferred: [IN-02]
+fix_commits:
+  contracts: 7c992b8
+  tests: 1b01bec
+verification: 05-VERIFICATION.md
 ---
+
+## Resolution (post-fix)
+
+All findings were triaged test-first. 14 of 15 are resolved with regression coverage; **IN-02 is intentionally deferred** (dropping `indexed` on a dynamic event argument is an ABI break on the deployed diamond). See `05-VERIFICATION.md` (status: pass) for the full disposition table and live test evidence (257/257 passing).
+
+| Finding | Severity | Disposition | Commit |
+| ------- | -------- | ----------- | ------ |
+| CR-01 | Critical | FIXED — explicit pause + banned-transferor gate on `ERC20TransferBatch` batch paths; 3 regression tests | `7c992b8` / `1b01bec` |
+| CR-02 | Critical | FIXED — reset bins on binCount change + `setAccountConfig` validation; 1 regression test | `7c992b8` / `1b01bec` |
+| CR-03 | Critical | FIXED — `bridgeOut` applies limiter for `id != GNUS_TOKEN_ID` (`amount / exchangeRate`) + emits `SuperAdminBypass`; 2 regression tests | `7c992b8` / `1b01bec` |
+| CR-04 | Critical | FIXED — test calls `emergencyUnpause` | `1b01bec` |
+| WR-01 | Warning | FIXED — deleted vestigial `PausableUpgradeable` + `pause()`/`unpause()`; rewrote stale pause test block | `7c992b8` / `1b01bec` |
+| WR-02 | Warning | FIXED — deleted dead `whenNotPaused` modifier | `7c992b8` |
+| WR-03 | Warning | FIXED — burn branch no longer credits `address(0)` | `7c992b8` |
+| WR-04 | Warning | FIXED — pause test mints before transferring | `1b01bec` |
+| WR-05 | Warning | FIXED — batch-path positive coverage added | `1b01bec` |
+| WR-06 | Warning | FIXED — `setAccountConfig` zero-address + binCount bound (same change as CR-02) | `7c992b8` |
+| WR-07 | Warning | FIXED — one-charge invariant documented in `withdraw` + `_beforeTokenTransfer` | `7c992b8` |
+| IN-01 | Info | FIXED — `sgnsDestination != bytes32(0)` validation in `bridgeOut` | `7c992b8` |
+| IN-02 | Info | DEFERRED — ABI break on deployed diamond; left unchanged for a future phase | — |
+| IN-03 | Info | FIXED — fee-basis (thousandths) comments on `FEE_DOMINATOR` + `MAX_FEE` | `7c992b8` |
+| IN-04 | Info | PROCESS — addressed via CR-01/WR-05 regression tests + accurate `it()` naming | — |
 
 # Phase 5: Code Review Report
 
 **Reviewed:** 2026-07-13
 **Depth:** standard
 **Files Reviewed:** 9
-**Status:** issues_found
+**Status:** resolved (14/15 fixed; IN-02 deferred)
 
 ## Summary
 
