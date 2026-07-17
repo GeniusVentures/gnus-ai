@@ -178,27 +178,35 @@ async function main() {
 		let name = addrToName[addrLower];
 
 		if (!name) {
-			// On-chain data carries no facet names; match by selector overlap
-			// against a known FacetDeployedInfo entry.
-			const selectorStr = facet.functionSelectors
-				.map((s) => s.toLowerCase())
-				.sort()
-				.join(',');
+			// On-chain data carries no facet names; match by best selector
+			// overlap against known FacetDeployedInfo entries. Uses majority
+			// overlap (≥60%) so replaced facets with changed selectors
+			// (e.g. GNUSBridge after bridgeOut signature change) still match.
+			const onChainSels = new Set(
+				facet.functionSelectors.map((s) => s.toLowerCase()),
+			);
+			let bestName: string | undefined;
+			let bestOverlap = 0;
 			for (const [candidateName, info] of Object.entries(currentDeployed)) {
-				const existingSels = info.funcSelectors
-					?.map((s: string) => s.toLowerCase())
-					.sort()
-					.join(',');
-				if (existingSels && existingSels === selectorStr) {
-					name = candidateName;
-					break;
+				const existingSels = (info.funcSelectors || []).map((s: string) =>
+					s.toLowerCase(),
+				);
+				if (existingSels.length === 0) continue;
+				const overlap = existingSels.filter((s) => onChainSels.has(s)).length;
+				const ratio = overlap / existingSels.length;
+				if (ratio >= 0.6 && overlap > bestOverlap) {
+					bestOverlap = overlap;
+					bestName = candidateName;
 				}
 			}
+			name = bestName;
 		}
 
 		if (!name) {
-			console.log(`⚠️  Unrecognised facet at ${facet.facetAddress} — skipping.`);
-			continue;
+			// New facet with no matching entry — keep it under a synthetic key
+			// so it isn't silently dropped from the canonical deployment data.
+			name = `Unknown-${facet.facetAddress.slice(2, 10)}`;
+			console.log(`⚠️  Unrecognised facet at ${facet.facetAddress} — recording as ${name}.`);
 		}
 
 		newDeployed[name] = {

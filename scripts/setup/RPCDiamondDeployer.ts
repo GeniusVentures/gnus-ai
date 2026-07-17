@@ -401,9 +401,14 @@ export class RPCDiamondDeployer {
 			}
 
 			const networkConfig = chainManager.chains[networkName];
+			// chainManager from hardhat-multichain may omit chainId; fall back
+			// to the raw Hardhat networks config when it does.
+			const rawNetworks = (hre.config as any).networks || {};
+			const chainId =
+				networkConfig.chainId || rawNetworks[networkName]?.chainId || 0;
 			return {
 				name: networkName,
-				chainId: networkConfig.chainId || 0,
+				chainId,
 				rpcUrl: networkConfig.rpcUrl || '',
 				blockNumber: networkConfig.blockNumber,
 				nativeCurrency: networkConfig.nativeCurrency,
@@ -474,10 +479,9 @@ export class RPCDiamondDeployer {
 	public static async getInstance(
 		config: RPCDiamondDeployerConfig,
 	): Promise<RPCDiamondDeployer> {
-		// Validate required configuration
-		this.validateConfig(config);
-
-		// Initialize provider and get network info if needed
+		// Initialize provider and auto-detect chainId BEFORE validation so
+		// Safe-propose mode has a valid chainId even when the legacy config
+		// path sets chainId=0 (triggered by RPC_URL in .env).
 		if (!config.provider) {
 			config.provider = new JsonRpcProvider(config.rpcUrl);
 		}
@@ -491,6 +495,9 @@ export class RPCDiamondDeployer {
 			const network = await config.provider.getNetwork();
 			config.networkName = network.name || 'unknown';
 		}
+
+		// Validate required configuration
+		this.validateConfig(config);
 
 		// Create unique key for this deployer instance
 		const key =

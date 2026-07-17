@@ -71,14 +71,13 @@ export async function proposeSafeTransaction(
 	// network I/O. The actual signing is delegated to protocolKit via
 	// Safe.init({ signer }) below, so a second provider+wallet here would be
 	// dead weight that doubles the connection-failure surface.
-	// Normalize the key to 0x-prefixed hex — ethers.computeAddress requires
-	// the full 0x-prefix form (66 chars) even when validateConfig accepts a
-	// 64-char unprefixed key.
-	const proposerAddress = ethers.computeAddress(
-		input.proposerPrivateKey.startsWith('0x')
-			? input.proposerPrivateKey
-			: `0x${input.proposerPrivateKey}`,
-	);
+	// Normalize the key to 0x-prefixed hex — ethers.computeAddress,
+	// Safe.init, and SigningKey all require the 0x prefix even when
+	// validateConfig accepts a 64-char unprefixed key.
+	const normalizedKey = input.proposerPrivateKey.startsWith('0x')
+		? input.proposerPrivateKey
+		: `0x${input.proposerPrivateKey}`;
+	const proposerAddress = ethers.computeAddress(normalizedKey);
 
 	// -- 2. API Kit (Safe Transaction Service client) --------------------------
 	const apiKit = new SafeApiKit({
@@ -94,7 +93,7 @@ export async function proposeSafeTransaction(
 	// is valid and avoids type compatibility issues with JsonRpcProvider.
 	const protocolKit = await Safe.init({
 		provider: input.rpcUrl,
-		signer: input.proposerPrivateKey,
+		signer: normalizedKey,
 		safeAddress: input.safeAddress,
 	});
 
@@ -135,7 +134,7 @@ export async function proposeSafeTransaction(
 		// "Transactions can only be signed by Safe owners". Sign the hash
 		// with ethers ECDSA instead — the Safe Transaction Service embeds
 		// this signature so the proposal appears as trusted in the Queue.
-		const signingKey = new ethers.SigningKey(input.proposerPrivateKey);
+		const signingKey = new ethers.SigningKey(normalizedKey);
 		const sig = signingKey.sign(ethers.getBytes(safeTxHash));
 		const sigBytes = ethers.concat([
 			ethers.getBytes(sig.r),
