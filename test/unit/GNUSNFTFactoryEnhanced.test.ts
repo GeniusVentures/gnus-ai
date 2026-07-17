@@ -299,28 +299,28 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 		});
 	});
 
-	describe('Pause/Unpause Functionality', function () {
-		it('should allow admin to pause contract', async function () {
-			await geniusDiamond.connect(owner).pause();
-			expect(await geniusDiamond.paused()).to.be.true;
+	describe('Emergency Pause Functionality', function () {
+		it('should allow admin to emergency-pause the diamond', async function () {
+			await geniusDiamond.connect(owner).emergencyPause();
+			expect(await geniusDiamond.isEmergencyPaused()).to.be.true;
 		});
 
-		it('should allow admin to unpause contract', async function () {
-			await geniusDiamond.connect(owner).pause();
-			await geniusDiamond.connect(owner).unpause();
-			expect(await geniusDiamond.paused()).to.be.false;
+		it('should allow admin to emergency-unpause the diamond', async function () {
+			await geniusDiamond.connect(owner).emergencyPause();
+			await geniusDiamond.connect(owner).emergencyUnpause();
+			expect(await geniusDiamond.isEmergencyPaused()).to.be.false;
 		});
 
-		it('should revert when non-admin tries to pause', async function () {
-			await expect(geniusDiamond.connect(user1).pause()).to.be.reverted; // Will revert with access control error
+		it('should revert when non-admin tries to emergency-pause', async function () {
+			await expect(geniusDiamond.connect(user1).emergencyPause()).to.be.reverted;
 		});
 
-		it('should revert when non-admin tries to unpause', async function () {
-			await geniusDiamond.connect(owner).pause();
-			await expect(geniusDiamond.connect(user1).unpause()).to.be.reverted;
+		it('should revert when non-admin tries to emergency-unpause', async function () {
+			await geniusDiamond.connect(owner).emergencyPause();
+			await expect(geniusDiamond.connect(user1).emergencyUnpause()).to.be.reverted;
 		});
 
-		it('should prevent minting when paused', async function () {
+		it('should prevent minting when emergency-paused', async function () {
 			// Create NFT first
 			await geniusDiamond
 				.connect(creator)
@@ -329,15 +329,15 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 			// Mint GNUS for burning
 			await geniusDiamond['mint(address,uint256)'](creator.address, toWei(100));
 
-			// Pause
-			await geniusDiamond.connect(owner).pause();
+			// Emergency-pause the diamond
+			await geniusDiamond.connect(owner).emergencyPause();
 
-			// Try to mint - should fail
+			// Try to mint - should fail on the diamond-wide pause gate
 			await expect(
 				geniusDiamond
 					.connect(creator)
 					['mint(address,uint256,uint256,bytes)'](user1.address, 1, 10, '0x'),
-			).to.be.revertedWith('Pausable: paused');
+			).to.be.revertedWith('GNUSControl: contract paused');
 		});
 	});
 

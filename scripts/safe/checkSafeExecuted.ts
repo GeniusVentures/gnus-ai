@@ -45,6 +45,7 @@ dotenv();
 const kDefaultTimeoutSeconds = 300; // 5 minutes
 /** Default seconds between Safe Transaction Service polls. */
 const kDefaultPollSeconds = 15;
+const kMsPerSecond = 1000;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -52,7 +53,7 @@ const kDefaultPollSeconds = 15;
 
 /** Resolve after `seconds` (operational polling pause, not test code). */
 function sleep(seconds: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+	return new Promise((resolve) => setTimeout(resolve, seconds * kMsPerSecond));
 }
 
 /** Parsed CLI options. Hand-rolled because the repo's top-level commander is */
@@ -85,7 +86,7 @@ function parseArgs(): CliOptions {
 // Main
 // ---------------------------------------------------------------------------
 
-async function main() {
+async function main(): Promise<void> {
 	const opts = parseArgs();
 
 	if (!opts.artifact) {
@@ -145,10 +146,36 @@ async function main() {
 	});
 
 	// 4. Poll loop. deadline of 0 with timeOutSec 0 means a single check.
-	const deadline = timeOutSec === 0 ? 0 : Date.now() + timeOutSec * 1000;
+	const deadline = timeOutSec === 0 ? 0 : Date.now() + timeOutSec * kMsPerSecond;
 	for (;;) {
 		// getTransaction returns null until the service has indexed the proposal.
-		const tx = await apiKit.getTransaction(safeTxHash);
+		// Transient Safe TX Service errors (rate-limit, 503, network blip) are
+		// retried rather than crashing the polling loop.
+		let tx: {
+			isExecuted?: boolean;
+			transactionHash?: string;
+			isSuccessful?: boolean;
+			nonce?: number;
+		} | null = null;
+		try {
+			tx = await apiKit.getTransaction(safeTxHash);
+		} catch (err) {
+			const msg = (err as Error).message ?? String(err);
+			if (timeOutSec !== 0 && Date.now() >= deadline) {
+				// Past deadline — stamp pending and exit
+				const data = JSON.parse(readFileSync(opts.deployment, 'utf8'));
+				data.pending = true;
+				data.pendingSafeTxHash = safeTxHash;
+				writeFileSync(opts.deployment, JSON.stringify(data, null, 2), 'utf8');
+				console.log(
+					`⏳ Not executed (${timeOutSec}s). Stamped pending on ${opts.deployment}.`,
+				);
+				process.exit(2);
+			}
+			console.log(`⚠️  Safe TX Service error: ${msg}. Retrying in ${pollSec}s...`);
+			await sleep(pollSec);
+			continue;
+		}
 
 		if (tx && tx.isExecuted && tx.transactionHash) {
 			if (tx.isSuccessful === false) {

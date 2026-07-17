@@ -45,5 +45,8 @@
         "template": "- Product owner approval pending for {phase_name}."
       }
     ]
+  },
+  "git": {
+    "base_branch": "develop"
   }
 }

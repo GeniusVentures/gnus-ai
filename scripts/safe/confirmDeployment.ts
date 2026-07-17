@@ -19,6 +19,13 @@ import { config as dotenv } from 'dotenv';
 dotenv();
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const kMinSelectorOverlapRatio = 0.6;
+const kUnknownFacetAddrSliceLen = 8; // chars from address for synthetic key
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -84,7 +91,7 @@ function parseArgs(): CliOptions {
 // Main
 // ---------------------------------------------------------------------------
 
-async function main() {
+async function main(): Promise<void> {
 	const opts = parseArgs();
 
 	if (!opts.artifact) {
@@ -154,9 +161,9 @@ async function main() {
 	// 5. Update the deployed-data file
 	const deployedData = JSON.parse(readFileSync(opts.deployment, 'utf8'));
 
-	// Determine the Safe exec transaction hash (we don't have it from the
-	// proposal artifact — use the safeTxHash for tracking)
-	const safeTxHash = proposal.safeTxHash;
+	// Prefer the on-chain execution tx hash (written by checkSafeExecuted)
+	// over the Safe service hash for facet tx_hash fields.
+	const onChainTxHash = deployedData.lastExecTxHash || proposal.safeTxHash;
 
 	// Build a map of facetName → deployed info from the current state
 	// Match on-chain facets to the known FacetDeployedInfo entries by address
@@ -170,7 +177,9 @@ async function main() {
 	const addrToName: Record<string, string> = {};
 	for (const [name, info] of Object.entries(currentDeployed)) {
 		const addr = info.address?.toLowerCase();
-		if (addr) addrToName[addr] = name;
+		if (addr) {
+			addrToName[addr] = name;
+		}
 	}
 
 	for (const facet of facets) {
@@ -182,19 +191,17 @@ async function main() {
 			// overlap against known FacetDeployedInfo entries. Uses majority
 			// overlap (≥60%) so replaced facets with changed selectors
 			// (e.g. GNUSBridge after bridgeOut signature change) still match.
-			const onChainSels = new Set(
-				facet.functionSelectors.map((s) => s.toLowerCase()),
-			);
-			let bestName: string | undefined;
+			const onChainSels = new Set(facet.functionSelectors.map((s) => s.toLowerCase()));
+			let bestName: string | undefined = undefined;
 			let bestOverlap = 0;
 			for (const [candidateName, info] of Object.entries(currentDeployed)) {
-				const existingSels = (info.funcSelectors || []).map((s: string) =>
-					s.toLowerCase(),
-				);
-				if (existingSels.length === 0) continue;
+				const existingSels = (info.funcSelectors || []).map((s: string) => s.toLowerCase());
+				if (existingSels.length === 0) {
+					continue;
+				}
 				const overlap = existingSels.filter((s) => onChainSels.has(s)).length;
 				const ratio = overlap / existingSels.length;
-				if (ratio >= 0.6 && overlap > bestOverlap) {
+				if (ratio >= kMinSelectorOverlapRatio && overlap > bestOverlap) {
 					bestOverlap = overlap;
 					bestName = candidateName;
 				}
@@ -205,13 +212,16 @@ async function main() {
 		if (!name) {
 			// New facet with no matching entry — keep it under a synthetic key
 			// so it isn't silently dropped from the canonical deployment data.
-			name = `Unknown-${facet.facetAddress.slice(2, 10)}`;
-			console.log(`⚠️  Unrecognised facet at ${facet.facetAddress} — recording as ${name}.`);
+			const kHexPrefixLen = 2;
+		name = `Unknown-${facet.facetAddress.slice(kHexPrefixLen, kHexPrefixLen + kUnknownFacetAddrSliceLen)}`;
+			console.log(
+				`⚠️  Unrecognised facet at ${facet.facetAddress} — recording as ${name}.`,
+			);
 		}
 
 		newDeployed[name] = {
 			address: facet.facetAddress,
-			tx_hash: safeTxHash,
+			tx_hash: onChainTxHash,
 			version: currentDeployed[name]?.version ?? 0,
 			verified: false,
 			funcSelectors: facet.functionSelectors,
