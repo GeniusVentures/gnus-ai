@@ -129,7 +129,6 @@ export function addCommonOptions(command: Command): Command {
 			'Use hardhat configuration (default: true)',
 			process.env.USE_HARDHAT_CONFIG !== 'false',
 		)
-		.option('--no-use-hardhat-config', 'Disable hardhat configuration')
 		.option('-v, --verbose', 'Enable verbose logging', process.env.VERBOSE === 'true');
 
 	// Safe proposal options are composed here so all RPC commands pick them up
@@ -286,6 +285,14 @@ export function addStatusOptions(command: Command): Command {
 /**
  * Validates common RPC options
  */
+// Validation boundaries matching RPCDiamondDeployer contract.
+const kGasMultiplierMin = 1.0;
+const kGasMultiplierMax = 2.0;
+const kMaxRetriesMin = 1;
+const kMaxRetriesMax = 10;
+const kRetryDelayMinMs = 100;
+const kRetryDelayMaxMs = 30_000;
+
 export function validateRPCOptions(options: BaseRPCOptions): void {
 	const errors: string[] = [];
 
@@ -319,18 +326,18 @@ export function validateRPCOptions(options: BaseRPCOptions): void {
 	// Validate numeric options
 	if (
 		options.gasLimitMultiplier &&
-		(options.gasLimitMultiplier < 1.0 || options.gasLimitMultiplier > 2.0)
+		(options.gasLimitMultiplier < kGasMultiplierMin || options.gasLimitMultiplier > kGasMultiplierMax)
 	) {
 		errors.push('Gas limit multiplier must be between 1.0 and 2.0');
 	}
 
-	if (options.maxRetries && (options.maxRetries < 1 || options.maxRetries > 10)) {
+	if (options.maxRetries && (options.maxRetries < kMaxRetriesMin || options.maxRetries > kMaxRetriesMax)) {
 		errors.push('Max retries must be between 1 and 10');
 	}
 
 	if (
 		options.retryDelayMs &&
-		(options.retryDelayMs < 100 || options.retryDelayMs > 30000)
+		(options.retryDelayMs < kRetryDelayMinMs || options.retryDelayMs > kRetryDelayMaxMs)
 	) {
 		errors.push('Retry delay must be between 100 and 30000 milliseconds');
 	}
@@ -347,7 +354,7 @@ export function validateRPCOptions(options: BaseRPCOptions): void {
  */
 export function createRPCConfig(options: BaseRPCOptions): RPCDiamondDeployerConfig {
 	const privateKey =
-		options.privateKey || process.env.PRIVATE_KEY || process.env.TEST_PRIVATE_KEY!;
+		options.privateKey || process.env.PRIVATE_KEY || process.env.TEST_PRIVATE_KEY;
 
 	// Use hardhat configuration if requested (default) or if no legacy options provided
 	if (options.useHardhatConfig !== false && !options.rpcUrl) {

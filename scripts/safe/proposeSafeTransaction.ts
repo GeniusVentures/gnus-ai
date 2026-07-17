@@ -119,8 +119,8 @@ export async function proposeSafeTransaction(
 	// Proposers) sign with raw ECDSA instead.
 	const isOwner = await protocolKit.isOwner(proposerAddress);
 
-	let senderSignature: string;
-	let safeTransactionDataForProposal: typeof safeTransaction.data;
+	let senderSignature: string = '';
+	let safeTransactionDataForProposal: typeof safeTransaction.data = safeTransaction.data;
 
 	if (isOwner) {
 		// Owner flow: sign via protocolKit so the Safe contract can verify
