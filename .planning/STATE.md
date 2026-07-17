@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-07-03T19:18:47.547Z"
+last_updated: "2026-07-16T00:00:00.000Z"
 progress:
   total_phases: 14
   completed_phases: 5
@@ -22,7 +22,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Bridge-out workstream (08.1 + 08.2) shipped — PR #62 (feature/bridge-out-initiated → develop). 08.2 verification: pass.
+**Current focus:** Phase 5 (Circuit Breaker & Performance) shipped for review — PR #68 (gnus-ai → develop) + nested gnus-ai-contracts PR #2 (→ develop, merge first). 05-VERIFICATION: pass (257/257). `develop` reconciled with `main` (#62–#65); stale `feature/sg_bridging` deleted.
 
 ## Phase Status
 
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md
 | 1     | Preliminary Cleanup               | ✓      | 2/2   | 100%     |
 | 2     | Dead Code Removal                 | ✓      | 2/2   | 100%     |
 | 3     | Input Validation                  | ✓      | 2/2   | 100%     |
-| 4     | Access Control & Observability    | ○      | 0/0   | 0%       |
-| 5     | Circuit Breaker & Performance     | ○      | 0/0   | 0%       |
+| 4     | Access Control & Observability    | ⎇ PR #68 | 0/0 | in PR (ships w/ Phase 5) |
+| 5     | Circuit Breaker & Performance     | ⎇ PR #68 | 1/1 | review (05-VERIFICATION pass) |
 | 6     | Test Coverage                     | ○      | 0/0   | 0%       |
 | 7     | Dependency Hardening              | ○      | 0/0   | 0%       |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
