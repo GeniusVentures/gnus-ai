@@ -14,7 +14,7 @@
 | 1   | Preliminary Cleanup            | Remove development-only imports and standardize tooling | DEBT-02, DEBT-03, DEBT-06          | 3                |
 | 2   | Dead Code Removal              | Remove GeniusAI facet, deduplicate code                 | DEBT-01, DEBT-04, DEBT-05, QUAL-01 | 4                |
 | 3   | Input Validation               | Fix missing guards and validation                       | SEC-01, SEC-02, SEC-03, SEC-04     | 4                |
-| 4   | Access Control & Observability | Harden admin paths and enable Slither                   | SEC-05, SEC-06, SEC-07             | 3                |
+| 4   | Access Control & Observability | 1/1 | Complete   | 2026-07-21 |
 | 5   | Circuit Breaker & Performance  | Emergency pause, loop and gas optimization              | SEC-08, PERF-01, PERF-02           | 3                |
 | 6   | Test Coverage                  | Real fuzz tests, complete assertions, verification      | TEST-01, TEST-02, TEST-03          | 3                |
 | 7   | Dependency Hardening           | Pin contracts-starter, final verification               | DEP-01                             | 2                |
@@ -109,6 +109,12 @@ Plans:
 3. `slither.config.json` no longer excludes `contracts/gnus-ai/`. `yarn slither:scan` runs successfully and any findings are triaged.
 
 **Requirements:** SEC-05, SEC-06, SEC-07
+
+**Plans:** 1/1 plans complete
+
+Plans:
+
+- [x] 04-01-PLAN.md — Add onlySuperAdminRole to diamondInitialize250, SuperAdminBypass event, Slither on production contracts
 
 ---
 

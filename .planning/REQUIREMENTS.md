@@ -20,9 +20,9 @@
 - [ ] **SEC-02**: Add input validation to `GNUSBridge.withdraw()` — validate `amount >= exchangeRate` and `exchangeRate > 0` to prevent division truncation losses.
 - [ ] **SEC-03**: Add input validation to `GNUSBridge.bridgeOut()` — validate `destChainID != chainID` to prevent self-bridging.
 - [ ] **SEC-04**: Add array length validation to `GNUSControl.banTransferorBatch()` and `allowTransferorBatch()` — `tokenIds.length == bannedAddresses.length`.
-- [ ] **SEC-05**: Add `onlySuperAdminRole` modifier to `DiamondInitFacet.diamondInitialize250()`.
-- [ ] **SEC-06**: Emit events when super admin bypasses withdrawal limiter in three code paths (`GNUSBridge.sol:159`, `GNUSERC1155MaxSupply.sol:57`, `ERC20TransferBatch.sol:155`).
-- [ ] **SEC-07**: Enable Slither static analysis on all production contracts — remove `contracts/gnus-ai/` from `slither.config.json` filter_paths. Run scan and fix findings.
+- [x] **SEC-05**: Add `onlySuperAdminRole` modifier to `DiamondInitFacet.diamondInitialize250()`.
+- [x] **SEC-06**: Emit events when super admin bypasses withdrawal limiter in three code paths (`GNUSBridge.sol:159`, `GNUSERC1155MaxSupply.sol:57`, `ERC20TransferBatch.sol:155`).
+- [x] **SEC-07**: Enable Slither static analysis on all production contracts — remove `contracts/gnus-ai/` from `slither.config.json` filter_paths. Run scan and fix findings.
 - [ ] **SEC-08**: Add diamond-level emergency pause mechanism — circuit breaker halting all state-changing operations.
 
 ### Performance
@@ -93,9 +93,9 @@ _These are investigation items only — no implementation committed until resear
 | SEC-02      | Phase 3    | Pending  |
 | SEC-03      | Phase 3    | Pending  |
 | SEC-04      | Phase 3    | Pending  |
-| SEC-05      | Phase 4    | Pending  |
-| SEC-06      | Phase 4    | Pending  |
-| SEC-07      | Phase 4    | Pending  |
+| SEC-05      | Phase 4    | Complete |
+| SEC-06      | Phase 4    | Complete |
+| SEC-07      | Phase 4    | Complete |
 | SEC-08      | Phase 5    | Pending  |
 | PERF-01     | Phase 5    | Pending  |
 | PERF-02     | Phase 5    | Pending  |
