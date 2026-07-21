@@ -15,7 +15,7 @@
 | 2   | Dead Code Removal              | Remove GeniusAI facet, deduplicate code                 | DEBT-01, DEBT-04, DEBT-05, QUAL-01 | 4                |
 | 3   | Input Validation               | Fix missing guards and validation                       | SEC-01, SEC-02, SEC-03, SEC-04     | 4                |
 | 4   | Access Control & Observability | 1/1 | Complete   | 2026-07-21 |
-| 5   | Circuit Breaker & Performance  | Emergency pause, loop and gas optimization              | SEC-08, PERF-01, PERF-02           | 3                |
+| 5   | Circuit Breaker & Performance  | 1/1 | Complete   | 2026-07-21 |
 | 6   | Test Coverage                  | Real fuzz tests, complete assertions, verification      | TEST-01, TEST-02, TEST-03          | 3                |
 | 7   | Dependency Hardening           | Pin contracts-starter, final verification               | DEP-01                             | 2                |
 
