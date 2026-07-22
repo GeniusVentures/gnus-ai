@@ -139,7 +139,7 @@ Plans:
 **Success Criteria:**
 
 1. `test/foundry/fuzz/ExampleFuzz.t.sol` is either replaced with real fuzz tests covering diamond functions or removed entirely. Zero placeholder assertions remain.
-2. `test/unit/NFTFactory.test.ts` has uncommented assertions for 2nd-gen child token minting and GNUS burn logic (lines 371, 375, 522-525).
+2. `test/unit/NFTFactory.test.ts` completes the 2nd-gen child token assertions (lines 371, 375, 522-525): mint success assertion, split supply-delta test, and explicit assertion of current no-burn behavior for 2nd-gen mints (burn semantics deferred to Phase 9 reserve accounting — see `06-CONTEXT.md` D-02).
 3. `GNUSControlStorage.sol` exposes a `getBannedTransferor(tokenId, address)` getter with corresponding unit tests.
 
 **Requirements:** TEST-01, TEST-02, TEST-03
