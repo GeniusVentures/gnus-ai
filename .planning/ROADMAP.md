@@ -144,6 +144,13 @@ Plans:
 
 **Requirements:** TEST-01, TEST-02, TEST-03
 
+**Plans:** 2 plans
+
+Plans:
+
+- [ ] 06-01-PLAN.md — Delete ExampleFuzz.t.sol stub (TEST-01) and complete NFTFactory 2nd-gen assertions (TEST-02)
+- [ ] 06-02-PLAN.md — Add getBannedTransferor view to GNUSControl facet + getter tests (TEST-03)
+
 ---
 
 ### Phase 7: Dependency Hardening
