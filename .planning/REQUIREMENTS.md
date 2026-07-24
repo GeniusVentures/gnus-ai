@@ -34,7 +34,7 @@
 
 - [x] **TEST-01**: Replace stub fuzz tests in `test/foundry/fuzz/ExampleFuzz.t.sol` with real fuzz tests for diamond functions, or remove file entirely.
 - [x] **TEST-02**: Complete 2nd-gen child token minting assertions in `test/unit/NFTFactory.test.ts` (lines 371, 375, 522-525) — validate GNUS burn logic.
-- [ ] **TEST-03**: Add banned transferor getter to `GNUSControlStorage.sol` and corresponding test coverage.
+- [x] **TEST-03**: Add banned transferor getter to `GNUSControlStorage.sol` and corresponding test coverage.
 
 ### Quality
 
@@ -101,7 +101,7 @@ _These are investigation items only — no implementation committed until resear
 | PERF-02     | Phase 5    | Pending  |
 | TEST-01     | Phase 6    | Complete |
 | TEST-02     | Phase 6    | Complete |
-| TEST-03     | Phase 6    | Pending  |
+| TEST-03     | Phase 6    | Complete |
 | QUAL-01     | Phase 2    | Pending  |
 | DEP-01      | Phase 7    | Pending  |
 | SWP-01      | Phase 08.1 | Complete |

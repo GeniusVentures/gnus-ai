@@ -16,7 +16,7 @@
 | 3   | Input Validation               | Fix missing guards and validation                       | SEC-01, SEC-02, SEC-03, SEC-04     | 4                |
 | 4   | Access Control & Observability | 1/1 | Complete   | 2026-07-21 |
 | 5   | Circuit Breaker & Performance  | 1/1 | Complete   | 2026-07-21 |
-| 6   | Test Coverage                  | 1/2 | In Progress|  |
+| 6   | Test Coverage                  | 2/2 | Complete   | 2026-07-24 |
 | 7   | Dependency Hardening           | Pin contracts-starter, final verification               | DEP-01                             | 2                |
 
 ### Phases 8-12: Architecture Transformation
@@ -144,12 +144,12 @@ Plans:
 
 **Requirements:** TEST-01, TEST-02, TEST-03
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 
 - [x] 06-01-PLAN.md — Delete ExampleFuzz.t.sol stub (TEST-01) and complete NFTFactory 2nd-gen assertions (TEST-02)
-- [ ] 06-02-PLAN.md — Add getBannedTransferor view to GNUSControl facet + getter tests (TEST-03)
+- [x] 06-02-PLAN.md — Add getBannedTransferor view to GNUSControl facet + getter tests (TEST-03)
 
 ---
 
