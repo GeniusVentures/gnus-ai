@@ -379,8 +379,8 @@ describe('NFT Factory Tests', async function () {
 				await logEvents(tx);
 			});
 
-			// Test case to validate the correct amount of GNUS is burned for a 2nd gen child mint
-			it('Should burn correct GNUS supply for 2nd gen child NFT mint', async () => {
+			// Test case to validate the correct amount of GNUS is burned for a 1st gen (direct child of GNUS) mint
+			it('Should burn correct GNUS supply for 1st gen (direct child of GNUS) NFT mint', async () => {
 				// Self-contained setup: each mocha test must not share mutable locals.
 				await ownerDiamond['mint(address,uint256)'](signer1, toWei(1000));
 				await ownerDiamond.grantRole(utils.id('CREATOR_ROLE'), signer1);
@@ -403,7 +403,7 @@ describe('NFT Factory Tests', async function () {
 				// Snapshot GNUS supply before the mint
 				const startingSupply = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 
-				// Perform an identical 2nd-gen child mint (signer2 recipient, 5 tokens)
+				// Perform an identical 1st-gen child mint (signer2 recipient, 5 tokens)
 				await signer1Diamond['mint(address,uint256,uint256,bytes)'](
 					signer2, // Recipient address
 					newParentNFTID, // Parent NFT ID
