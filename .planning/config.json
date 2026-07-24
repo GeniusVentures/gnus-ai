@@ -17,7 +17,8 @@
     "code_review_depth": "standard",
     "ui_review": false,
     "skip_discuss": false,
-    "auto_advance": false
+    "auto_advance": false,
+    "_auto_chain_active": false
   },
   "ship": {
     "pr_body_sections": [
