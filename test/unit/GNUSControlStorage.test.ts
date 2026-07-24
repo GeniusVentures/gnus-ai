@@ -258,6 +258,66 @@ describe('GNUSControlStorage Tests', function () {
 		});
 	});
 
+	describe('getBannedTransferor view', function () {
+		it('should report per-token ban set by banTransferorBatch', async function () {
+			const addr = await user1.getAddress();
+
+			await geniusDiamond.banTransferorBatch([NFT_TOKEN_ID_1], [addr]);
+
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr)).to.equal(false);
+		});
+
+		it('should report unbanned after allowTransferorBatch', async function () {
+			const addr = await user1.getAddress();
+
+			await geniusDiamond.banTransferorBatch([NFT_TOKEN_ID_1], [addr]);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+
+			await geniusDiamond.allowTransferorBatch([NFT_TOKEN_ID_1], [addr]);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(false);
+		});
+
+		it('should report global ban via tokenId 0 and via any other tokenId', async function () {
+			const addr = await user1.getAddress();
+
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(false);
+
+			await geniusDiamond.banTransferorForAll(addr);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+
+			await geniusDiamond.allowTransferorForAll(addr);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(false);
+		});
+
+		it('should round-trip batch bans across multiple token/address pairs', async function () {
+			const addr1 = await user1.getAddress();
+			const addr2 = await user2.getAddress();
+
+			await geniusDiamond.banTransferorBatch(
+				[NFT_TOKEN_ID_1, NFT_TOKEN_ID_2],
+				[addr1, addr2],
+			);
+
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr1)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr2)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr1)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr2)).to.equal(false);
+
+			await geniusDiamond.allowTransferorBatch(
+				[NFT_TOKEN_ID_1, NFT_TOKEN_ID_2],
+				[addr1, addr2],
+			);
+
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr1)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr2)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr1)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr2)).to.equal(false);
+		});
+	});
+
 	describe('Protocol initialization', function () {
 		it('should have initialized protocol version', async function () {
 			const info = await geniusDiamond.protocolInfo();
