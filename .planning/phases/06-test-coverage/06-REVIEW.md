@@ -12,7 +12,7 @@ findings:
   warning: 3
   info: 3
   total: 6
-status: issues_found
+status: all_fixed
 ---
 
 # Phase 6: Code Review Report
@@ -32,19 +32,19 @@ All burn-math assertions in the NFTFactory tests were traced against `GNUSNFTFac
 
 ## Warnings
 
-### WR-01: New test name says "2nd gen" but mints a 1st-gen child NFT
+### WR-01: New test name says "2nd gen" but mints a 1st-gen child NFT (fixed)
 
 **File:** `test/unit/NFTFactory.test.ts:383-428`
 **Issue:** The test `it('Should burn correct GNUS supply for 2nd gen child NFT mint', ...)` mints `newParentNFTID` directly. Per `GNUSNFTFactory.beforeMint` (`(id >> 128) == GNUS_TOKEN_ID` gates the burn), `newParentNFTID` is a *1st-gen* child of GNUS — the only generation that burns. Meanwhile the batch test at line 468 mints true 2nd-gen children (`newParentNFTID << 128n | i`) and asserts no burn. So the two tests' naming is inverted relative to the contract's burn semantics: the test labeled "2nd gen ... burn" is actually the 1st-gen burn case. The assertions are correct, but the name actively teaches the wrong invariant to the next reader, and a future editor "fixing" the test to match its name would break it.
 **Fix:** Rename to reflect the generation actually minted, e.g. `it('Should burn correct GNUS supply for 1st gen (direct child of GNUS) NFT mint', ...)`, and adjust the comment at line 406 ("Perform an identical 2nd-gen child mint") accordingly.
 
-### WR-02: Stale TODO and assertion-free ban tests now that the getter exists
+### WR-02: Stale TODO and assertion-free ban tests now that the getter exists (fixed)
 
 **File:** `test/unit/GNUSControlStorage.test.ts:128-163, 180-240`
 **Issue:** Line 132 still carries `// TODO: Add check when there's a getter function for banned status` — the getter (`getBannedTransferor`) is added in this very phase, and the new describe block at line 261 proves it works. Beyond the stale comment, several pre-existing tests in this file remain assertion-free and can never fail: `should ban address globally` (line 129), `should allow address globally after ban` (line 142), `should ban multiple addresses globally` (line 157), `should ban address for specific token` (line 181), `should allow address for specific token after ban` (line 199), `should ban multiple addresses for multiple tokens` (line 220), `should handle same address for multiple tokens` (line 233), `should handle zero address in global ban` (line 354), and `should handle large batch operations` (line 382). Each now has a one-line assertion available via `getBannedTransferor`. Leaving them un-asserted while adding a parallel describe block that does assert creates two tiers of test rigor in one file.
 **Fix:** Delete the TODO at line 132 and add `expect(await geniusDiamond.getBannedTransferor(...))` assertions to the ban/unban tests listed above (the new describe block at line 261 is the template).
 
-### WR-03: Dead `expectedBurn` computation and misleading debug logs in batch test
+### WR-03: Dead `expectedBurn` computation and misleading debug logs in batch test (fixed)
 
 **File:** `test/unit/NFTFactory.test.ts:551-558`
 **Issue:** The Phase 6 edit replaced the burn assertion with `burntSupply === 0n` but left `const expectedBurn = toWei((50 + 1 + 1) * 2.0)` (line 551) computed and logged (line 558: `console.log('Expected burn:', ...)`). `expectedBurn` is now never asserted — it is dead code whose only effect is to print an "expected" value that the test explicitly asserts will NOT happen, which is confusing when reading failure output. Additionally, this test passes `toBN(2.0)` (= 2e18) as the exchange rate at line 485 while the new split test passes raw `2.0` (= 2) at line 398 for the same commented semantics ("Exchange rate: 2.0 tokens for 1 GNUS token"); since `expectedBurn` is dead the inconsistency is harmless here, but the leftover half of the old assertion keeps it visible.
