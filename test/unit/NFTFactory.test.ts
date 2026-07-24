@@ -548,14 +548,12 @@ describe('NFT Factory Tests', async function () {
 				const endingSupply = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 				// Calculate the burned supply as the difference between starting and ending supply
 				const burntSupply = startingSupply - endingSupply;
-				const expectedBurn = toWei((50 + 1 + 1) * 2.0); // Total minted tokens * exchange rate (2.0)
 				// Debug logging
 				// Log NFT info after creation
 				const parentNFTInfo = await signer1Diamond.getNFTInfo(newParentNFTID);
 				console.log('Parent NFT exchange rate:', parentNFTInfo.exchangeRate.toString());
 				console.log('Starting supply:', utils.formatEther(startingSupply));
 				console.log('Ending supply:', utils.formatEther(endingSupply));
-				console.log('Expected burn:', utils.formatEther(expectedBurn));
 
 				// NOTE: GNUSNFTFactory does not currently burn GNUS for 2nd gen child tokens.
 				// Phase 9 (Treasury/Reserve) will replace this with explicit reserve accounting
