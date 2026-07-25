@@ -1,48 +1,45 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-28T01:26:01.227Z",
-  "phase": "03",
-  "phase_name": "input-validation",
-  "phase_dir": ".planning/phases/03-input-validation",
-  "plan": 2,
-  "task": 2,
-  "total_tasks": 2,
+  "timestamp": "2026-07-25T00:47:34.985Z",
+  "phase": "7",
+  "phase_name": "dependency-hardening",
+  "phase_dir": ".planning/phases/07-dependency-hardening",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
   "status": "paused",
+  "workstream": "gnus-ai",
+  "repo_layout": {
+    "gsd_root": "/Users/Shared/SSDevelopment/Development/GeniusVentures/GeniusNetwork/TokenContracts/gnus-ai",
+    "nested_contracts_repo": "contracts/gnus-ai (remote: GeniusVentures/gnus-ai-contracts, branch: develop, at 2e70a63)",
+    "rule": "ALL gsd-sdk commands and planning artifacts live in gnus-ai/.planning — cd gnus-ai first. Never write to the parent TokenContracts/.planning for this workstream."
+  },
   "completed_tasks": [
-    {
-      "id": "03-01",
-      "name": "Fix mintBatch() payable gap + array length validation",
-      "status": "done",
-      "commit": "7b1596d"
-    },
-    {
-      "id": "03-02",
-      "name": "Add withdraw exchangeRate guard + bridgeOut same-chain guard",
-      "status": "done",
-      "commit": "eda3733"
-    }
+    {"id": "phase-6", "name": "Phase 6 Test Coverage — full lifecycle (discuss/plan/execute/review/fix)", "status": "done", "commits": ["4ce3760", "bc26cce", "2c50c72", "9d9ed98 (nested)", "2c343a9", "3e780ae", "278b673", "7d92bb2", "a37fef4", "46c024b"]},
+    {"id": "branch-cleanup", "name": "Deleted stale branches (develop-ruy, master in gnus-ai; fix/phase-04-review-findings in nested), bumped submodule pointer to merged develop", "status": "done", "commit": "362beaa"},
+    {"id": "push", "name": "Pushed gnus-ai develop to origin (dd84dd0..362beaa) after full regression suite passed 421/2-pending/6-pre-existing-failures", "status": "done"}
   ],
-  "remaining_tasks": [],
-  "blockers": [],
-  "human_actions_pending": [],
+  "remaining_tasks": [
+    {"id": "phase-7", "name": "Phase 7 Dependency Hardening (DEP-01): pin contracts-starter to commit hash; final audit + verification of all 22 requirements", "status": "not_started", "next_command": "/gsd:discuss-phase 7 --ws gnus-ai"},
+    {"id": "phase-08.2", "name": "Phase 08.2 Deploy-Verify Pipeline Fixes: 0/3 plans (08.2-01 delegate proposers, 08.2-02 confirmDeployment script, 08.2-03 verifyFacets script)", "status": "not_started", "next_command": "/gsd:plan-phase 08.2 --ws gnus-ai"},
+    {"id": "phase-08.1-uat", "name": "Phase 08.1 human UAT: Sepolia Safe smoke test + Safe Transaction Service non-repudiation check", "status": "blocked_on_human", "next_command": "/gsd:verify-work 08.1 --ws gnus-ai"}
+  ],
+  "blockers": [
+    {"description": "Phase 08.1 verification status is human_needed: requires funded Sepolia deployer EOA, Safe wallet with deployer registered as Proposer in Safe UI, and live Safe Transaction Service", "type": "human_action", "workaround": "none — manual UAT only"}
+  ],
+  "human_actions_pending": [
+    {"action": "Run Sepolia Safe smoke test for 08.1 (propose a diamondCut via the Safe proposer pipeline on Sepolia)", "context": "Only validation path for TS-level Safe SDK proposal submission per 08.1 CONTEXT.md D-02", "blocking": false},
+    {"action": "Verify Safe Transaction Service non-repudiation for 08.1", "context": "Requires proposer EOA pre-registered as Proposer in Safe UI; cannot be auto-verified", "blocking": false}
+  ],
   "decisions": [
-    {
-      "decision": "Kept payable modifier on mintBatch — diamond delegatecall compatibility requires it",
-      "rationale": "Success criteria allows either removing payable OR adding require(msg.value == 0). Latter preserves compatibility",
-      "phase": "03"
-    },
-    {
-      "decision": "Hoisted exchangeRate to local variable in withdraw()",
-      "rationale": "Eliminates double storage read and makes validation explicit before division",
-      "phase": "03"
-    },
-    {
-      "decision": "Set parallelization: false in config",
-      "rationale": "opencode runtime doesn't support worktree isolation; subagent completion signals unreliable",
-      "phase": "03"
-    }
+    {"decision": "Phase 6 D-02: assert CURRENT no-burn behavior for 2nd-gen child mints (burntSupply === 0n); burn semantics deferred to Phase 9 reserve accounting", "rationale": "Implementing burn now would create double migration + diamond upgrade churn when Phase 9 replaces burn/mint backing with reserve accounting", "phase": "6"},
+    {"decision": "Phase 6 D-04/D-05: single getBannedTransferor(uint256,address) view on GNUSControl facet; tokenId 0 (GNUS_TOKEN_ID) is the global-ban query convention", "rationale": "Delegates to the exact predicate enforced by transfer hooks, so getter cannot drift from enforcement semantics", "phase": "6"},
+    {"decision": "develop is the GSD base branch for gnus-ai workstream; main is GitHub default; master was renamed to main and local master deleted as stale ghost", "rationale": "Branch convention pinned in config.json; verified develop↔main state before shipping", "phase": "repo"}
   ],
-  "uncommitted_files": [".planning/config.json", "yarn.lock"],
-  "next_action": "Run /gsd-plan-phase 4 to plan Phase 4: Access Control & Observability",
-  "context_notes": "Phases 1-3 complete (6/6 plans). Phase 4 is next — harden admin-only code paths, add event emissions for super-admin bypass paths, enable Slither static analysis. Execution was smooth with sequential inline mode (parallelization: false). Only recurring issue: npm config incompatibility requires using yarn instead of npx for hardhat commands."
+  "uncommitted_files": [
+    {"path": "contracts/gnus-ai", "reason": "untracked cache_hardhat/ inside nested repo — harmless build artifact, do NOT commit"}
+  ],
+  "known_test_baseline": "yarn test: 421 passing / 2 pending / 6 failing. The 6 failures are PRE-EXISTING Safe SDK mock issues (protocolKit.isOwner is not a function in test/unit/safe/proposeSafeTransaction.test.ts). Never attribute to phase work; do not fix in-scope. Phase 08.2-01 may address the underlying proposer issue.",
+  "next_action": "/gsd:discuss-phase 7 --ws gnus-ai (from the gnus-ai directory) — Phase 7 Dependency Hardening is the last remediation phase before the architecture block",
+  "context_notes": "All remediation phases 1-6 are complete and pushed. Nested contracts repo is on develop at 2e70a63 (includes Phase 6 getBannedTransferor via merged PR #4). GitHub reports 77 Dependabot vulnerabilities on default branch (1 critical, 38 high) — relevant context for Phase 7. Everything compiled and tested green at push time; nothing in flight."
 }
