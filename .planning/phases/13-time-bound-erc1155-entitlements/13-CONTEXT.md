@@ -6,202 +6,232 @@
 <domain>
 ## Phase Boundary
 
-Add a general-purpose time-bound lifecycle to the existing GNUS ERC-1155 child-token model so a token class can declare:
+Add a general-purpose lifecycle and transfer-policy model to the existing GNUS ERC-1155 child-token system so a token class can declare:
 
 - when it becomes usable;
 - when it expires;
-- what transfers are permitted during its lifecycle; and
-- what happens to any remaining balance after expiration.
+- whether and how it may be transferred;
+- how primary issuance is limited; and
+- what happens to the remaining balance after expiration.
 
-The primary initial use case is a non-rollover annual AI allocation: a user purchases a $5 annual GNUS AI allocation, receives ERC-1155 child-token credits, spends them on Writer, Reader, Spam/Safety, and other GCS/ELM services, and loses any unused allocation after expiration. Those utility credits must burn when spent or expired and must not redeem into, credit, or replenish the parent GNUS token or a parent-token treasury.
+The primary initial use case is a non-rollover annual AI allocation: a user purchases a $5 annual GNUS AI allocation, receives ERC-1155 child-token credits, spends them on GCS/ELM services, and loses any unused allocation after expiration. AI allocation credits must be non-transferable, burn when spent or expired, and never redeem into or replenish GNUS, a parent token, a reserve, or a treasury.
 
-The same primitive must remain reusable for album releases, ticket sales, event access, seasonal passes, timed software access, limited drops, refundable or returnable entitlements, and other tokenized rights.
+The same primitive must remain reusable for album releases, tickets, event access, seasonal passes, software access, rentals, promotional allocations, and other tokenized rights.
 
-This phase is limited to lifecycle metadata, lifecycle validation, expiration disposition, burn-only utility-token behavior, view functions, events, and tests. It does not implement the email product, GCS billing, pricing, payment collection, off-chain access control, or the Phase 9 treasury/reserve system.
+This phase is limited to lifecycle metadata, transfer policy, issuance controls required by anti-scalping policies, expiration disposition, view functions, events, and tests. It does not implement a marketplace UI, fiat payment processing, the email product, GCS billing, or the Phase 9 reserve system.
 </domain>
 
-<problem_statement>
+<existing_code>
 ## Existing Code Facts
 
-The current `NFT` struct in `contracts/gnus-ai/GNUSNFTFactoryStorage.sol` contains:
+The current `NFT` struct in `contracts/gnus-ai/GNUSNFTFactoryStorage.sol` has no start time, expiration time, transfer policy, issuance policy, expiration disposition, or burn-only utility classification.
 
-- name
-- symbol
-- URI
-- exchange rate
-- max supply
-- creator
-- child index
-- creation status
+`GNUSNFTFactory.createNFT()` and `createNFTs()` construct the struct directly. `GNUSERC1155MaxSupply._beforeTokenTransfer()` is the common ERC-1155 mint/transfer/burn hook, while `ERC20TransferBatch` contains separate GNUS-only balance paths that bypass that standard hook.
 
-It has no start time, expiration time, transfer policy, expiration disposition, or burn-only utility classification.
+The feature therefore cannot safely be implemented by adding timestamps alone. The design must define lifecycle validity, transfer enforcement, controlled resale, issuance limits, expired-balance settlement, and compatibility with future reserve-backed child tokens.
+</existing_code>
 
-`GNUSNFTFactory.createNFT()` and `createNFTs()` construct this struct directly. `GNUSERC1155MaxSupply._beforeTokenTransfer()` is the common ERC-1155 mint/transfer/burn hook, but `ERC20TransferBatch` contains separate GNUS-only batch paths that bypass the standard hook and enforce selected controls independently.
+<proposed_model>
+## Proposed Model - Not Yet Approved
 
-A time-bound feature therefore cannot be implemented safely by appending timestamps alone. The phase must define where time validity is checked, which operations are restricted, how expired balances are settled, and which token classes burn rather than redeem to the parent or treasury.
-</problem_statement>
+### Time Fields
 
-<proposed_direction>
-## Proposed Direction - Not Yet Approved
-
-### ERC-1155 Token-Class Lifecycle Metadata
-
-Append lifecycle fields to the existing `NFT` struct rather than introducing a parallel token registry. The minimum proposed time fields are:
+Proposed token-ID-level fields:
 
 ```solidity
 uint64 startsAt;   // 0 = immediately active
 uint64 expiresAt;  // 0 = no expiration
 ```
 
-These fields are token-ID-level metadata. Every balance of the same ERC-1155 token ID shares the same lifecycle window.
+Proposed semantics:
 
-Separate policy metadata is also required. Time validity, transferability, active-use settlement, and expiration settlement are different dimensions and must not be collapsed into one boolean.
-
-The exact storage representation remains open for approval. Candidate representations include:
-
-- compact enums appended to `NFT`;
-- bit flags appended to `NFT`;
-- a dedicated namespaced policy mapping keyed by token ID.
-
-### Time Semantics
-
-Proposed canonical rules:
-
-- `startsAt == 0` means the entitlement is active immediately.
-- `expiresAt == 0` means the entitlement does not expire.
-- When both values are nonzero, `expiresAt` must be greater than `startsAt`.
-- The active window is `block.timestamp >= startsAt && (expiresAt == 0 || block.timestamp < expiresAt)`.
+- `startsAt == 0`: active immediately.
+- `expiresAt == 0`: does not expire.
+- If both are nonzero, `expiresAt > startsAt`.
+- Active when `block.timestamp >= startsAt && (expiresAt == 0 || block.timestamp < expiresAt)`.
 - Expiration is exclusive at `expiresAt`.
-- Existing deployed token IDs receive zero-initialized fields and remain immediately active with no expiration.
+- Existing deployed token IDs remain immediately active and non-expiring through zero-value defaults.
 
-### Validity Is Separate From Transferability
+These values apply to the token ID, not independently to each holder or mint lot. Holder-specific expiration would require a different accounting model.
 
-Do not automatically block every transfer before `startsAt` or after `expiresAt`.
+### Transfer Policy
 
-Time validity and transfer policy are separate concerns:
+Time validity and transferability are independent. A token may be transferable before its access window, non-transferable during use, or remain collectible after its entitlement expires.
 
-- An album or event token may be sold or transferred before its release/event start.
-- A ticket may need transferability during a resale window but only be consumable during the event window.
-- AI allocation credits may need to be non-transferable and consumable only during their annual allocation window.
-- An expired collectible may remain transferable even though it no longer grants access.
-
-The lifecycle primitive should therefore expose deterministic status checks and enforce active-window rules on consumption, redemption, access, or settlement paths. Transfer restrictions, when desired, must be expressed by an explicit token policy rather than inferred solely from `startsAt` and `expiresAt`.
-
-### Expiration Disposition
-
-A token class needs an explicit rule for what happens to a holder's remaining balance after `expiresAt`. Proposed baseline dispositions are:
+Candidate policy model:
 
 ```solidity
-enum ExpirationDisposition {
-    NONE,                // Token does not expire or has no automatic settlement rule
-    KEEP_INERT,          // Balance remains but no longer grants the timed entitlement
-    BURN,                // Destroy the expired balance with no value returned
-    RETURN_TO_ISSUER,    // Move expired units to the configured issuer/creator
-    RETURN_TO_TREASURY,  // Move expired units to a configured treasury address
-    REDEEM_TO_PARENT     // Settle through an approved parent/reserve conversion path
+enum TransferPolicy {
+    UNRESTRICTED,
+    SOULBOUND,
+    ISSUER_ONLY,
+    ALLOWLISTED,
+    CONTROLLED_RESALE,
+    LOCKED_AFTER_START
 }
 ```
 
-The final enum names and supported modes are not approved. A generic `RETURN_TO_ADDRESS` plus an explicit `expirationRecipient` may be cleaner than separate issuer and treasury enum values.
+Final names and modes are not approved.
 
-#### Why "Return to Sender" Is Not Sufficient
+#### `UNRESTRICTED`
 
-ERC-1155 balances are fungible within a token ID. Units can be transferred repeatedly and merged into one account balance. The contract cannot reliably determine the original sender for each remaining unit without introducing per-mint-lot or per-transfer provenance storage.
+Normal ERC-1155 transfer behavior subject to existing pause, ban, and authorization rules.
 
-Therefore a token-ID-level return policy must use an explicit deterministic recipient, such as:
+#### `SOULBOUND`
 
-- token creator;
-- token issuer;
-- parent-token treasury;
-- event organizer;
-- rental owner; or
-- another address fixed in the token policy.
+Holder-to-holder transfers are prohibited. Minting, approved consumption/burning, expiration settlement, and an explicitly approved issuer correction or refund path may still be allowed.
 
-If a future product requires each unit to return to its actual original sender, that is a different per-lot provenance design and is out of scope for this token-ID-level phase.
+Recommended for:
 
-### Expiration Cannot Execute Automatically
+- annual AI allocation credits;
+- personal software licenses;
+- identity-bound memberships;
+- non-resalable credentials.
 
-Smart contracts do not wake up when a timestamp is reached. At expiration, balances become expired immediately by view and validation logic, but burn, return, redemption, or conversion requires a transaction.
+#### `ISSUER_ONLY`
 
-The phase should support deterministic lazy settlement and an explicit bounded settlement function:
+Only the issuer or approved system operator can move the token. This supports custody correction, return, rental, and administrative fulfillment without allowing an open secondary market.
 
-- lazy settlement when an expired token is next presented to a consume, transfer, redeem, or cleanup path, where safe and unambiguous;
-- explicit `settleExpired(account, id, amount)` or equivalent function that applies the configured expiration disposition;
-- optional batch settlement over caller-supplied bounded arrays.
+#### `ALLOWLISTED`
 
-No keeper dependency is required for correctness. Expired balances must stop granting the entitlement based solely on timestamps. Settlement affects balances, supply, and accounting hygiene but not whether the entitlement is valid.
+Transfers are allowed only when the destination, operator, or both satisfy an approved registry or role check.
 
-A permissionless settlement call may be safe for `BURN`, `RETURN_TO_ISSUER`, or `RETURN_TO_TREASURY` only if the disposition and recipient were fixed before holders acquired the token. Settlement must not allow the caller to redirect value.
+#### `CONTROLLED_RESALE`
 
-### Burn-Only Utility Behavior
+Ordinary ERC-1155 holder-to-holder transfer functions are blocked. Transfer is permitted only through an approved resale or gifting function/facet that enforces the token's resale rules.
 
-For AI allocation tokens and other use-it-or-lose-it utility children:
+Potential controls include:
 
-- successful consumption burns the amount used;
-- expiration makes the remaining balance unusable;
+- approved marketplace or transfer operator;
+- resale cutoff timestamp;
+- maximum resale price or face-value cap;
+- maximum transfer count;
+- destination wallet eligibility;
+- organizer royalty or fee;
+- refund-to-issuer option;
+- optional gift transfer with no consideration;
+- event-specific allowlist or identity proof.
+
+The contract cannot determine whether an unrestricted transfer was accompanied by an off-chain payment. Therefore price-cap enforcement only works when direct transfers are disabled and the approved resale path handles or verifies the consideration.
+
+#### `LOCKED_AFTER_START`
+
+Presale transfers are allowed before `startsAt`, but holder-to-holder transfers stop once the access, release, or event window begins.
+
+### Anti-Scalping Requires Issuance Controls Too
+
+Non-transferability prevents secondary resale but does not stop a scalper from purchasing many tokens in the primary sale. Ticket anti-scalping should therefore be able to combine transfer policy with issuance controls such as:
+
+- maximum tokens per wallet;
+- maximum tokens per verified purchaser or entitlement proof;
+- allowlist or presale allocation;
+- per-transaction mint cap;
+- sale start and sale end timestamps;
+- rate limiting or phased issuance;
+- issuer-controlled refund and reissue;
+- optional randomized or delayed seat/token assignment.
+
+Wallet limits alone are vulnerable to Sybil wallets. Stronger limits require an external eligibility credential, signed authorization, allowlist proof, or another identity-resistant mechanism. Phase 13 should define the contract hooks and policy data but need not choose a universal identity provider.
+
+### Recommended Initial Product Policies
+
+| Product | Transfer policy | Primary issuance control | Expiration disposition |
+| --- | --- | --- | --- |
+| Annual AI allocation | `SOULBOUND` | One active allocation/cohort policy as approved | `BURN` |
+| Concert/event ticket | `CONTROLLED_RESALE` | Wallet/purchaser cap and sale window | `BURN` or `KEEP_INERT` |
+| Strict non-resale ticket | `SOULBOUND` | Wallet/purchaser cap | `BURN` or `KEEP_INERT` |
+| Album presale/access | `LOCKED_AFTER_START` or `UNRESTRICTED` | Drop limit | `KEEP_INERT` |
+| Rental entitlement | `ISSUER_ONLY` | Issuer fulfillment | `RETURN_TO_ADDRESS` |
+| Promotional allocation | `SOULBOUND` or `ALLOWLISTED` | Per-user allocation | `BURN` or `RETURN_TO_ADDRESS` |
+| Reserve-backed voucher | Product-specific | Product-specific | `REDEEM_TO_PARENT` if approved |
+
+For tickets, `CONTROLLED_RESALE` is generally preferable to mandatory soulbound behavior because it can block scalpers while still supporting legitimate resale, gifting, refunds, and accessibility-related transfers.
+
+### Expiration Disposition
+
+A separate expiration policy determines what happens to a remaining balance after `expiresAt`:
+
+```solidity
+enum ExpirationDisposition {
+    NONE,
+    KEEP_INERT,
+    BURN,
+    RETURN_TO_ADDRESS,
+    REDEEM_TO_PARENT
+}
+```
+
+An explicit `expirationRecipient` would be used for `RETURN_TO_ADDRESS`.
+
+- `KEEP_INERT`: balance remains, but the timed entitlement no longer works.
+- `BURN`: expired units are destroyed with no value returned.
+- `RETURN_TO_ADDRESS`: expired units move to a fixed issuer, organizer, owner, or treasury.
+- `REDEEM_TO_PARENT`: settlement uses an approved and solvent reserve/redemption path.
+
+True return to the historical original sender cannot be inferred reliably for fungible ERC-1155 balances after transfers and balance merging. That would require per-mint-lot or per-unit provenance and is outside this token-ID-level phase.
+
+### Expiration Settlement
+
+Contracts do not execute automatically when time passes. The entitlement becomes invalid directly from `block.timestamp`, while balance movement requires a transaction.
+
+Candidate settlement path:
+
+```solidity
+function settleExpired(address account, uint256 id, uint256 amount) external;
+```
+
+The function must:
+
+- require the token to be expired;
+- apply only the configured disposition;
+- use only a fixed configured return recipient;
+- prevent the caller from redirecting value;
+- avoid unbounded holder enumeration;
+- emit the holder, ID, amount, disposition, and destination;
+- support bounded batch settlement if approved.
+
+Permissionless settlement may be safe when the result was fixed before issuance and cannot benefit or be redirected by the caller.
+
+### AI Allocation Behavior
+
+For annual AI credits:
+
+- transfer policy is `SOULBOUND`;
+- active use burns the amount consumed;
 - expiration disposition is `BURN`;
-- expiration settlement burns the remaining amount when invoked;
-- no GNUS or parent-child token value is minted, released, credited, deposited, refunded, or returned;
-- the child token must not enter a future parent reserve redemption path;
-- no rollover occurs after the allocation period.
+- unused balance becomes invalid exactly at expiration;
+- settlement burns expired balance when invoked;
+- no GNUS, parent-token, reserve, treasury, refund, or rollover value is created.
+</proposed_model>
 
-This burn-only policy is intentionally different from normal child tokens that may participate in Phase 9 reserve-backed redemption.
+<enforcement>
+## Enforcement Requirements
 
-### Other Disposition Examples
+Transfer policy must be enforced in every applicable balance-moving path, not only in UI metadata.
 
-- **Album release/access token:** `KEEP_INERT` after the access window so it remains a collectible.
-- **Event ticket:** `BURN` when admitted; after the event it may use `KEEP_INERT` for a collectible ticket stub or `BURN` for pure admission credentials.
-- **Rental or checked-out asset:** `RETURN_TO_ISSUER` after the rental period.
-- **Promotional inventory:** `RETURN_TO_TREASURY` when the campaign ends.
-- **Reserve-backed voucher:** `REDEEM_TO_PARENT` if the approved economics guarantee backing and define post-expiry redemption.
-</proposed_direction>
+Likely enforcement points after approval:
 
-<use_cases>
-## Representative Uses
+- ordinary ERC-1155 single transfers;
+- ordinary ERC-1155 batch transfers;
+- mint and burn paths where policy-specific restrictions apply;
+- approved controlled-resale or gifting facet;
+- bridge paths if time-bound tokens may bridge;
+- custom direct-balance batch paths;
+- proxy or adapter paths capable of moving the underlying ERC-1155 balance;
+- expiration settlement paths.
 
-| Use case | startsAt | expiresAt | Active use | Expiration disposition | Transfer policy example |
-| --- | --- | --- | --- | --- | --- |
-| Annual AI allocation | purchase/start date | one-year end date | Burn credits per AI job | `BURN` | Non-transferable |
-| Album access/release | release timestamp | optional access end | Gate content access | `KEEP_INERT` | Presale and collectible transfer allowed |
-| Event ticket | admission start | admission cutoff/event end | Burn or mark consumed on admission | `BURN` or `KEEP_INERT` | Transferable until cutoff |
-| Seasonal pass | season start | season end | Validate on each use or burn usage units | `BURN` or `KEEP_INERT` | Product-specific |
-| Limited software access | activation date | license end | Gate capability invocation | `BURN` or `KEEP_INERT` | Usually non-transferable |
-| Rental entitlement | rental start | return deadline | Gate possession/use | `RETURN_TO_ISSUER` | Usually non-transferable |
-| Promotional allocation | campaign start | campaign end | Spend promotional units | `RETURN_TO_TREASURY` or `BURN` | Product-specific |
-| Reserve-backed voucher | issue/start date | redemption deadline | Redeem under reserve rules | `REDEEM_TO_PARENT` if approved | Product-specific |
-</use_cases>
+A common internal policy predicate should be reused where possible. Custom paths that bypass the standard hook require explicit parity checks.
 
-<integration_points>
-## Expected Integration Points
+For `SOULBOUND`, the policy must distinguish prohibited holder-to-holder transfers from allowed operations such as minting, consumption burns, expiration burns, fixed-recipient returns, and any narrowly approved issuer correction.
 
-### Contract Submodule (`contracts/gnus-ai` -> `GeniusVentures/gnus-ai-contracts`)
-
-Likely affected files after approval and planning:
-
-- `GNUSNFTFactoryStorage.sol` - append lifecycle metadata and the approved policy/disposition representation.
-- `GNUSNFTFactory.sol` - creation APIs, validation, lifecycle getters, policy getters, lifecycle events, and backward-compatible creation behavior.
-- `GNUSERC1155MaxSupply.sol` - only if the approved transfer policy or lazy-settlement policy requires common-hook enforcement.
-- `ERC20TransferBatch.sol` - review required because its GNUS-only custom batch paths bypass the common ERC-1155 hook.
-- a dedicated entitlement/settlement facet, if approved, for consume and `settleExpired` operations.
-- future Phase 9 reserve/redemption facets - explicitly exclude burn-only utility token IDs and honor only the approved `REDEEM_TO_PARENT` disposition.
-- ABI and diamond deployment configuration - regenerate and upgrade affected facets.
-
-### Parent Repository (`GeniusVentures/gnus-ai`)
-
-- Hardhat unit tests for time boundaries, creation, spending, transfer policy, and every approved expiration disposition.
-- Foundry fuzz/invariant tests for timestamp boundaries, fixed-recipient settlement, and no-parent-credit guarantees.
-- Submodule pointer update after the contract PR is merged.
-- Deployment and Safe diamond-upgrade artifacts for testnet before mainnet consideration.
-</integration_points>
+For `CONTROLLED_RESALE`, standard direct transfers must revert unless the operator and call path are the approved resale mechanism. Merely adding a marketplace function without blocking ordinary transfers would not enforce a price cap.
+</enforcement>
 
 <api_surface>
 ## Candidate API Surface - Names Not Approved
 
-View helpers should make time status and expiration settlement unambiguous for applications and GCS nodes:
-
 ```solidity
 function isTokenActive(uint256 id) external view returns (bool);
-function isTokenStarted(uint256 id) external view returns (bool);
 function isTokenExpired(uint256 id) external view returns (bool);
 function getTokenLifecycle(uint256 id)
     external
@@ -215,79 +245,74 @@ function getTokenLifecycle(uint256 id)
     );
 ```
 
-Creation APIs may either:
-
-- add lifecycle-aware overloads while retaining current `createNFT`/`createNFTs` behavior as timeless defaults; or
-- add dedicated `createTimeBoundNFT`/batch functions.
-
-Existing selectors and callers must remain compatible unless an explicit diamond-upgrade migration plan approves a breaking change.
-
-Candidate settlement interfaces include:
+Potential controlled-transfer interfaces:
 
 ```solidity
-function settleExpired(address account, uint256 id, uint256 amount) external;
-function settleExpiredBatch(
-    address[] calldata accounts,
-    uint256[] calldata ids,
-    uint256[] calldata amounts
-) external;
+function giftTransfer(address to, uint256 id, uint256 amount, bytes calldata authorization) external;
+
+function resaleTransfer(
+    address seller,
+    address buyer,
+    uint256 id,
+    uint256 amount,
+    uint256 price,
+    bytes calldata authorization
+) external payable;
 ```
 
-The exact interface is open. It must:
+These are discussion sketches only. The research and planning pass must determine whether consideration is handled natively, by an approved marketplace contract, or through signed settlement evidence.
 
-- require the token to be expired;
-- apply only the disposition configured for that token ID;
-- prevent the caller from selecting or changing the recipient;
-- avoid unbounded holder or token enumeration;
-- emit an event describing the holder, token ID, amount, disposition, and destination; and
-- clearly separate burn-only utility consumption from reserve redemption.
+Existing `createNFT()` and `createNFTs()` selectors should retain timeless, legacy-compatible behavior. Lifecycle-aware creation may use overloads, dedicated functions, or a separate configuration step before first mint.
 </api_surface>
 
 <security_and_upgrade>
 ## Security and Upgrade Requirements
 
-1. **Storage-layout verification is mandatory.** Lifecycle and policy fields must be appended safely to the deployed `NFT` struct or placed in a new namespaced storage mapping. No existing field may be reordered or have its type changed.
-2. **Existing token behavior must remain unchanged.** Zero-valued lifecycle and policy fields must map to an explicitly defined legacy behavior that leaves existing tokens active and non-expiring.
-3. **No automatic parent credit.** Burn-only utility tokens must never trigger normal child-to-parent conversion, reserve withdrawal, treasury credit, GNUS minting, or refunds.
-4. **Disposition is fixed and deterministic.** Settlement callers may trigger the approved action but may not choose the action or recipient.
-5. **No inferred sender.** Return settlement uses a configured address. It must not attempt to infer an original sender from transfer history.
-6. **Forced-return disclosure.** A return or redemption disposition must be fixed or tightly restricted before first mint and exposed through view functions and events so holders know the post-expiry rule.
-7. **Boundary tests are mandatory.** Test immediately before `startsAt`, exactly at `startsAt`, immediately before `expiresAt`, exactly at `expiresAt`, and after expiration.
-8. **Timestamp authority is block time.** Applications may display calendar dates, but contract enforcement uses `block.timestamp` with normal validator timestamp tolerance.
-9. **No hidden metadata enforcement.** Off-chain JSON metadata may mirror the dates and disposition, but contract decisions must use on-chain fields.
-10. **Batch-path parity is mandatory.** Any lifecycle, transfer, or settlement restriction that applies to standard ERC-1155 paths must also be tested against custom batch paths that can bypass the standard hook.
-11. **No unbounded cleanup loops.** Expired-token settlement must operate on caller-supplied bounded items; the contract must not enumerate all owners or all token IDs.
-12. **Authorization must be explicit.** Only approved creator/admin paths may configure lifecycle metadata, disposition, or recipient. Whether policies may change after minting remains an open decision.
-13. **No arbitrary confiscation.** A creator or administrator must not be able to change an existing holder's expiration disposition from inert/burn to forced return after issuance.
-14. **Reserve solvency applies to redemption.** `REDEEM_TO_PARENT` can only be enabled where the reserve and exchange-rate invariants are defined and tested.
-15. **Diamond upgrade and rollback plan required.** Testnet upgrade, selector verification, storage inspection, and full regression suite are required before mainnet deployment.
+1. Storage changes must be append-only or use a new namespaced policy mapping. Existing fields cannot be reordered or narrowed.
+2. Existing token IDs must remain active, non-expiring, and behaviorally compatible through explicit zero-value defaults.
+3. Transfer and expiration policies must be fixed before holders acquire tokens or only adjustable under narrowly defined, disclosed rules.
+4. An administrator must not be able to convert a transferable token into a confiscatable or forced-return token after issuance.
+5. `SOULBOUND` must still allow approved mint, consume/burn, expiration settlement, and correction/refund operations.
+6. `CONTROLLED_RESALE` must block bypass through ordinary single transfers, batch transfers, operators, proxies, bridge paths, and custom balance mutations.
+7. Resale-price enforcement is valid only when the approved transfer path controls or verifies consideration.
+8. Purchase caps must account for Sybil limitations; wallet-only caps must not be described as identity-proof.
+9. Return settlement must use a fixed configured recipient, never an inferred sender or caller-supplied destination.
+10. Burn-only AI tokens must never credit GNUS, a parent token, a reserve, a treasury, or a refund balance.
+11. `REDEEM_TO_PARENT` must be unavailable without approved reserve, rate, and solvency invariants.
+12. No unbounded loops over holders or token IDs.
+13. Lifecycle, transfer, disposition, resale, and policy changes require explicit events.
+14. All new selectors require diamond collision checks.
+15. Testnet upgrade, storage-layout verification, selector verification, rollback planning, Slither review, and full regression testing are required before mainnet deployment.
 </security_and_upgrade>
 
 <testing>
 ## Required Test Categories
 
-- timeless existing NFT remains active forever with legacy disposition behavior;
-- future-start token exists but is not yet consumable;
-- token becomes consumable exactly at `startsAt`;
-- token becomes invalid exactly at `expiresAt`;
+- existing legacy NFT remains active, non-expiring, and behaviorally unchanged;
+- future-start token exists but cannot be consumed before `startsAt`;
+- exact `startsAt` and `expiresAt` boundary behavior;
 - invalid timestamp combinations revert;
-- burn-only AI credit spending decreases balance and supply;
-- expired `BURN` settlement decreases holder balance and total supply;
-- `KEEP_INERT` leaves balance and supply unchanged but denies the expired entitlement;
-- `RETURN_TO_ISSUER` moves only the requested expired amount to the fixed issuer;
-- `RETURN_TO_TREASURY` moves only the requested expired amount to the fixed treasury;
+- `SOULBOUND` rejects direct and operator holder-to-holder transfers;
+- `SOULBOUND` still permits approved mint and burn/consume paths;
+- controlled-resale token rejects ordinary single and batch transfers;
+- approved resale path succeeds only within sale/resale windows;
+- resale price above an approved cap reverts where price enforcement is enabled;
+- resale after cutoff reverts;
+- transfer-count cap cannot be bypassed through batches or operators;
+- gifting behavior follows its separate authorization and consideration rules;
+- per-wallet primary mint cap works atomically in single and batch issuance;
+- issuance cap cannot be bypassed by repeated calls from the same wallet;
+- tests explicitly document that wallet caps do not prevent Sybil wallets;
+- expired `BURN` decreases holder balance and total supply;
+- `KEEP_INERT` leaves balance intact but denies entitlement;
+- `RETURN_TO_ADDRESS` uses only the configured recipient;
 - settlement caller cannot redirect returned balances;
 - settlement before expiration reverts;
-- repeated settlement cannot exceed the holder's remaining balance;
-- burn-only spending/expiry produces zero parent, GNUS, treasury, reserve, or refund credit;
-- `REDEEM_TO_PARENT` is unavailable without approved reserve configuration and solvency;
-- normal child-token economics remain unchanged;
-- presale/release token transfer behavior follows its explicit transfer policy rather than implicit time validity;
-- unauthorized lifecycle, disposition, or recipient modification reverts;
-- post-mint malicious disposition changes are impossible under the approved mutability rule;
-- batch and single-item operations enforce equivalent approved rules;
-- fuzz tests cover timestamp ordering, boundary arithmetic, settlement amounts, and idempotency;
-- upgrade test proves pre-existing `NFT` records decode correctly with zero lifecycle and policy fields.
+- burn-only AI spending and expiration create no parent, GNUS, reserve, treasury, refund, or rollover credit;
+- unauthorized lifecycle, transfer-policy, disposition, recipient, resale, or issuance-policy changes revert;
+- mixed-token batches revert atomically when any token violates policy;
+- custom batch, proxy, bridge, and adapter paths cannot bypass approved rules;
+- upgrade test proves pre-existing `NFT` records decode correctly.
 </testing>
 
 <open_decisions>
@@ -295,48 +320,51 @@ The exact interface is open. It must:
 
 No item below is locked by this document.
 
-1. **Field names:** `startsAt` / `expiresAt` versus `validFrom` / `validUntil`.
-2. **Policy representation:** enums, flags, or separate token-policy mapping.
-3. **Supported expiration dispositions:** which of `KEEP_INERT`, `BURN`, fixed-address return, and `REDEEM_TO_PARENT` are required in v1.
-4. **Generic return model:** separate `RETURN_TO_ISSUER` and `RETURN_TO_TREASURY` modes versus one `RETURN_TO_ADDRESS` mode with `expirationRecipient`.
-5. **Date and policy mutability:** immutable after token creation, mutable only before first mint, or admin/creator adjustable under tightly restricted rules and events.
-6. **AI allocation ID strategy:** unique token ID per user purchase, shared annual/calendar cohort IDs, or another issuance model. Token-ID-level timestamps cannot represent different expiration dates for different holders of the same ID.
-7. **Transfer rules:** whether burn-only AI allocations are strictly soulbound and which other lifecycle policies are needed initially.
-8. **Settlement authorization:** token holder only, approved operator, or permissionless application of a fixed disposition.
-9. **Partial settlement:** whether callers may settle any expired amount up to the balance or must settle the entire expired balance.
-10. **Consumption interface:** generic burn/consume function in the NFT facet versus a dedicated entitlement facet.
-11. **Collectible behavior:** whether expired tickets and album-access tokens default to `KEEP_INERT` or require an explicit disposition every time.
-12. **Metadata update:** whether ERC-1155 JSON metadata must include mirrored ISO-8601 start/end dates, transfer policy, disposition, and recipient.
-13. **Dependency on Phase 9:** whether Phase 13 ships before reserve accounting with `REDEEM_TO_PARENT` disabled, or after Phase 9 so redeemable settlement is implemented together.
-14. **Annual period definition:** exact 365-day duration, calendar-year expiration, or application-supplied approved timestamps.
-15. **Per-lot provenance:** confirm that true return-to-original-sender behavior is out of scope unless a future per-mint-lot model is added.
+1. Field names: `startsAt` / `expiresAt` versus `validFrom` / `validUntil`.
+2. Policy storage: enums, flags, or a separate namespaced policy mapping.
+3. Initial transfer modes required in v1.
+4. Whether AI allocations are always strictly `SOULBOUND`.
+5. Whether tickets default to `CONTROLLED_RESALE` or permit organizers to choose `SOULBOUND`.
+6. Whether controlled resale supports price caps, gifting, refunds, transfer-count caps, and transfer cutoffs in v1.
+7. Whether consideration is handled by the diamond, an approved marketplace, or signed external settlement evidence.
+8. Which primary-sale anti-scalping controls belong in the token policy.
+9. Whether purchaser limits are wallet-only or can consume an external eligibility credential.
+10. Supported expiration dispositions in v1.
+11. Policy and date mutability before and after first mint.
+12. AI allocation ID strategy: per purchase, per annual cohort, or another model.
+13. Settlement authorization: holder, approved operator, or permissionless fixed-result settlement.
+14. Whether expired tickets and album tokens default to collectible `KEEP_INERT` behavior.
+15. Whether `REDEEM_TO_PARENT` waits for Phase 9 reserve accounting.
+16. Annual allocation period: 365 days, calendar year, or application-supplied timestamps.
+17. Confirm true return-to-original-sender and per-mint-lot provenance are out of scope.
 </open_decisions>
 
 <canonical_refs>
 ## Canonical References
 
-Downstream research, planning, or implementation agents must read all of the following before proposing changes:
+Downstream research, planning, or implementation agents must read:
 
-- `contracts/gnus-ai/GNUSNFTFactoryStorage.sol` - deployed `NFT` struct and namespaced storage.
-- `contracts/gnus-ai/GNUSNFTFactory.sol` - token creation, minting, child-ID generation, and NFT getters.
-- `contracts/gnus-ai/GNUSERC1155MaxSupply.sol` - common ERC-1155 transfer hook.
-- `contracts/gnus-ai/ERC20TransferBatch.sol` - custom batch paths that bypass the standard ERC-1155 hook.
-- `.planning/ROADMAP.md` - Phases 9-12 treasury, bridge, proxy, and supply-ledger dependencies.
-- `.planning/Update-Smart-Contracts-Architecture.md` - current token-economics architecture.
-- External product/design discussion supplied by the user: `https://grok.com/share/bGVnYWN5_1fcc8abf-f66b-4dc5-9718-14ec27870006`.
+- `contracts/gnus-ai/GNUSNFTFactoryStorage.sol`;
+- `contracts/gnus-ai/GNUSNFTFactory.sol`;
+- `contracts/gnus-ai/GNUSERC1155MaxSupply.sol`;
+- `contracts/gnus-ai/ERC20TransferBatch.sol`;
+- applicable bridge, proxy, and adapter contracts capable of moving balances;
+- `.planning/ROADMAP.md`;
+- `.planning/Update-Smart-Contracts-Architecture.md`;
+- the user-supplied product/design discussion.
 </canonical_refs>
 
 <approval_gate>
 ## Approval Gate
 
-This context document is intentionally marked **Discussion**.
+This context remains **Discussion**.
 
 - Do not mark decisions as locked.
 - Do not generate an autonomous execution plan.
 - Do not modify Solidity, tests, ABI, deployment configuration, or submodule pointers.
-- Do not begin implementation until Kenneth Hurley explicitly approves the lifecycle semantics, issuance model, transfer policy, and expiration dispositions in this document.
+- Do not begin implementation until Kenneth Hurley explicitly approves lifecycle semantics, issuance controls, transfer policy, controlled-resale behavior, and expiration dispositions.
 
-After approval, the next step is a code-grounded research pass across both `GeniusVentures/gnus-ai` and `GeniusVentures/gnus-ai-contracts`, followed by a separate reviewable Phase 13 plan.
+After approval, perform a code-grounded research pass across `GeniusVentures/gnus-ai` and `GeniusVentures/gnus-ai-contracts`, then produce a separate reviewable Phase 13 plan.
 </approval_gate>
 
 ---
