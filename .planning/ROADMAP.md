@@ -29,6 +29,13 @@
 | 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
 
+### Phases 13-14: AI Entitlements & Licensing
+
+| #   | Phase                    | Goal                                                              | Requirements         | Success Criteria |
+| --- | ------------------------ | ----------------------------------------------------------------- | -------------------- | ---------------- |
+| 13  | Time-Bound Entitlements  | Lifecycle, transfer policies, expiration dispositions; AI Credits | (context locked)     | 8                |
+| 14  | Private-Network Licensing| Tenant License NFTs, SKU registry, payment router, hybrid scope   | LIC-01..07           | 7                |
+
 ## Phase Details
 
 ### Tech Debt & Security Remediation (Phases 1-7)
@@ -319,5 +326,54 @@ Plans:
 
 ---
 
+## Phase 13: Time-Bound ERC-1155 Entitlements
+
+**Goal:** Add lifecycle (validFrom/validUntil, per-token-ID and per-holder expiry), six transfer policies, issuance anti-scalping controls, and expiration dispositions with settlement to the ERC-1155 child-token system. Primary product: AI Credits — soulbound, burn-on-spend, burn-on-expiry, never redeemable.
+
+**Context:** `.planning/phases/13-time-bound-erc1155-entitlements/13-CONTEXT.md` (decisions D1-D13 locked 2026-08-03)
+
+**Success Criteria:**
+
+1. Lifecycle config appended to `NFT` struct (validFrom, validUntil, defaultDuration, expirationMode, transferPolicy, expirationDisposition, expirationRecipient, credentialVerifier); zero-value defaults keep existing tokens active/unrestricted/non-expiring; upgrade test proves decode compatibility.
+2. `ExpirationMode { None, PerTokenId, PerHolder }` with per-holder clocks in `expiresAt[tokenId][holder]` mapping; stacked settle-first renewal (expired balances settled, never resurrected).
+3. All six transfer policies enforced by a single predicate in `_beforeTokenTransfer`; no operator exemptions (NFT_PROXY_OPERATOR_ROLE cannot bypass); ERC-20 proxy covered without changes.
+4. Policy-bound tokens non-bridgeable in v1 (bridging IS a transfer; no vault exemption).
+5. All five dispositions implemented (NONE, KEEP_INERT, BURN, RETURN_TO_ADDRESS, REDEEM_TO_PARENT); permissionless fixed-outcome `settleExpired()`; REDEEM_TO_PARENT settles to direct parent via Phase 9 reserves, collateralized tokens only.
+6. Anti-scalping: per-wallet mint cap + sale window + generic credential-verifier hook (CEI-ordered) in `beforeMint`.
+7. AI Credits: direct GNUS child, exchangeRate 1.0, SOULBOUND, BURN, PerHolder expiry; spend/expiry creates zero GNUS/parent/reserve/treasury credit.
+8. Timestamps creator-only mutable post-mint (renewal); policy/disposition/mode/recipient immutable after first mint; all mutations emit events.
+
+**Requirements:** (LIC precursor; Phase 13 requirements to be formalized at plan time)
+**Priority:** P1
+**Depends on:** **Phase 9 (hard)** — implemented on completed Phase 9 treasury/reserve code
+**Constraints:** Phase 10 (policy check in lockTokens), Phase 11 (no proxy operator exemptions), Phase 12 (expired-unsettled = circulating)
+
+---
+
+## Phase 14: Private-Network AI Licensing
+
+**Goal:** Per-company tenant licensing on the public EVM canonical layer with SuperGenius private-network execution — License NFTs as tenant/network identity, AI Credits as spendable children, payment router for USDC/GNUS/Banxa rails, and hybrid public/private settlement.
+
+**Source:** `.planning/private-network-ai.md` + owner resolutions (ingested 2026-08-03; intel at `.planning/intel/`)
+
+**Success Criteria:**
+
+1. GNUS AI Product Root token instantiated as the public AI network; per-company License NFTs created as its children; company AI Credits as children of the License NFT; individual AI Credits remain direct product-root children (no Individual License NFT branch).
+2. `NFT` struct gains `networkScope {PublicOnly=0, PrivateOnly, Hybrid}`, `privateNetworkId`, `publicSettlementEnabled` — appended after Phase 13 fields; zero defaults backwards-compatible; upgrade test proves decode.
+3. On-chain Product/SKU registry: minion-denominated `priceInMinions`, `creditAmount`, `duration`, `createsLicense`, `renewsLicense`, `active`. No USD oracle.
+4. Payment router facet: USDC / GNUS-minions / Banxa-confirmed rails all produce equivalent final state (license created/renewed + credits minted/extended + activation event).
+5. `LicenseActivated(companyAdmin, licenseId, privateNetworkId, expiresAt)` emitted on creation and every renewal; SuperGenius consumers derive license state from events alone.
+6. Hybrid-scope tokens redeemable to GNUS via Phase 13's REDEEM_TO_PARENT path (exchangeRate > 0, Phase 9 collateralized); burn-only AI Credits remain non-redeemable.
+7. Private-network spend pattern (bridged burn events vs mirror + periodic settlement) resolved during phase planning; informed by Phase 10 vault design.
+
+**Requirements:** LIC-01, LIC-02, LIC-03, LIC-04, LIC-05, LIC-06, LIC-07
+**Priority:** P1
+**Depends on:** Phase 13 (lifecycle/transfer/disposition mechanisms); transitively Phase 9 (reserves) and Phase 10 (bridge)
+**Open design question:** PD-7 private-spend settlement pattern (`.planning/intel/decisions.md`)
+
+---
+
 _Roadmap created: 2026-05-26_
 _Phases 8-12 added: 2026-06-15_
+_Phase 13 added: 2026-08-03 (context locked)_
+_Phase 14 added: 2026-08-03 (ingested from private-network-ai.md)_

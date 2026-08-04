@@ -68,6 +68,18 @@
 
 _These are investigation items only — no implementation committed until research validates feasibility and security of the approach._
 
+## v3 Requirements — Private-Network AI Licensing (ingested 2026-08-03)
+
+### Licensing
+
+- [ ] **LIC-01**: Per-tenant License NFT model — GNUS AI Product Root token serves as the public AI network; per-company License NFTs created as its children; company AI Credits as children of the License NFT. Individual AI Credits remain direct children of the product root (no Individual License NFT branch). License NFT's `privateNetworkId` identifies the SuperGenius private network/tenant for AI processing.
+- [ ] **LIC-02**: NFT struct network-scope fields — append `networkScope` (enum: `PublicOnly`=0, `PrivateOnly`, `Hybrid`), `privateNetworkId`, `publicSettlementEnabled` after Phase 13 lifecycle fields. Append-only; existing token IDs decode with zero defaults (PublicOnly, 0, false) and remain behaviorally unchanged; upgrade test required.
+- [ ] **LIC-03**: Product/SKU registry — on-chain registry mapping SKUs to fixed minion-denominated prices (`priceInMinions`, `creditAmount`, `duration`, `createsLicense`, `renewsLicense`, `active`). No USD oracle, no `priceUsd` field.
+- [ ] **LIC-04**: Payment router facet — turns USDC / GNUS-minions / Banxa-confirmed payment into License NFT creation/renewal + AI Credit minting/top-up. All three rails produce equivalent final state. Payment asset and license/credit assets remain distinct.
+- [ ] **LIC-05**: `LicenseActivated(companyAdmin, licenseId, privateNetworkId, expiresAt)` event emitted on license creation and every renewal; SuperGenius consumers derive license state from events alone.
+- [ ] **LIC-06**: Hybrid-scope redeemability — Hybrid-scope tokens configured with `exchangeRate > 0` and `REDEEM_TO_PARENT` disposition (Phase 13 D8 path), collateralized via Phase 9 `mintBackedChild`. Pure burn-only AI Credits remain non-redeemable.
+- [ ] **LIC-07**: Private-network spend design — resolve how AI credits are spent on SuperGenius against public-canonical balances (bridged burn events vs mirror + periodic settlement). Open design question (PD-7) to be resolved in Phase 14 discuss/plan, informed by Phase 10 bridge vault work.
+
 ## Out of Scope
 
 | Feature                                   | Reason                                                      |
@@ -115,15 +127,23 @@ _These are investigation items only — no implementation committed until resear
 | SWP-09      | Phase 08.1 | Pending  |
 | SWP-10      | Phase 08.1 | Complete |
 | SWP-11      | Phase 08.1 | Complete |
+| LIC-01      | Phase 14   | Pending  |
+| LIC-02      | Phase 14   | Pending  |
+| LIC-03      | Phase 14   | Pending  |
+| LIC-04      | Phase 14   | Pending  |
+| LIC-05      | Phase 14   | Pending  |
+| LIC-06      | Phase 14   | Pending  |
+| LIC-07      | Phase 14   | Pending  |
 
 **Coverage:**
 
 - v1 requirements: 22 total
 - v2 requirements (SWP): 11 total
-- Mapped to phases: 33
+- v3 requirements (LIC): 7 total
+- Mapped to phases: 40
 - Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-05-26_
-_Last updated: 2026-05-26 after initial definition_
+_Last updated: 2026-08-03 — LIC-01..07 ingested from `.planning/private-network-ai.md`_
