@@ -660,27 +660,27 @@ Selector surface: **removed** `withdraw(uint256,uint256)`; **added** per §H. Th
 | A7 | The 50M global cap should be enforced against the synced global figure (B1) rather than local id-0 supply | §C | LOW — only matters when multiple chains mint; with single-chain minting the two coincide. |
 | A8 | D5's successor (`nonConvertible` flag) is needed at all in Revision 2 | §D5 note | LOW — if Phase 13's burn-only tokens can simply never be converted socially (nobody converts what they don't want to), the flag is unnecessary; if contracts must enforce it, add the struct bit. Plan-time user checkpoint. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Provenance model depth (B1 vs B2 vs Phase-12-style per-chain)**
+1. **Provenance model depth (B1 vs B2 vs Phase-12-style per-chain)** — RESOLVED by CONTEXT D8 + B1 approval (09-CONTEXT.md "provenance" section, B1 model locked)
    - What we know: user said "initialize function set"; B1 is the minimal mechanism satisfying it.
    - What's unclear: whether eventual consistency + admin sync is acceptable, or whether bridge events must synchronously update both chains' counters (impossible on-chain without a messenger — the relayer would need to call `syncGlobalSupply` on the source chain per bridge, which B2 formalizes).
    - Recommendation: B1 + documented sync ritual; Phase 12 replaces with full per-chain ledger. **User checkpoint at plan time.**
 
-2. **3-arg MINTER mint restriction (Pitfall 5)**
+2. **3-arg MINTER mint restriction (Pitfall 5)** — RESOLVED by CONTEXT D10 (MINTER restricted to id 0)
    - What we know: the overload can mint any id with no paired burn — a conservation hole under Revision 2.
    - What's unclear: whether the bridge relayer ever bridges child ids (needs ops input).
    - Recommendation: restrict to id 0; if child bridging is real, relayer does mint(0) → convert. **User checkpoint.**
 
-3. **Depth-gate admin exception (A3)**
+3. **Depth-gate admin exception (A3)** — RESOLVED by CONTEXT D6 (depth gate locked, strict revert)
    - What we know: §F option 3 reverts depth ≥2 mints unconditionally.
    - What's unclear: Phase 13's AI Credits issuance flow — does the License creator hold parent supply to convert from at credit-issuance time?
    - Recommendation: keep the gate strict; Phase 13 can convert on behalf via creator-held parent supply. Confirm against 13-CONTEXT at plan time.
 
-4. **`totalSupplyOfAll()` behavior when uninitialized**
+4. **`totalSupplyOfAll()` behavior when uninitialized** — RESOLVED by CONTEXT D8 (revert-when-uninitialized) + B1 approval
    - Revert (recommended — forces the runbook seed step, Pitfall 4) vs return local tree supply (forgiving, hides misconfiguration). Plan-time decision.
 
-5. **Bridge-fee disposition under Revision 2** — partially resolved: convert never fees (no hook on convert path). Remaining: the fee haircut inside `_mintWithBridgeFee` means bridge-in mints less than bridge-out burned → global supply **decreases** by fees over time. Under "nothing leaves the system except bridging," is the fee a sanctioned destruction? It already was (pre-Phase-9 behavior); Revision 2 keeps it and the counter correctly tracks post-fee amounts (Pitfall 3). Document for user; no action recommended.
+5. **Bridge-fee disposition under Revision 2** — RESOLVED by CONTEXT D5 (nonConvertible) + Revision-2 model acceptance; fee behavior unchanged from pre-Phase-9, documented in Plan 09-03 Task 2. — partially resolved: convert never fees (no hook on convert path). Remaining: the fee haircut inside `_mintWithBridgeFee` means bridge-in mints less than bridge-out burned → global supply **decreases** by fees over time. Under "nothing leaves the system except bridging," is the fee a sanctioned destruction? It already was (pre-Phase-9 behavior); Revision 2 keeps it and the counter correctly tracks post-fee amounts (Pitfall 3). Document for user; no action recommended.
 
 ## Environment Availability
 
@@ -837,7 +837,7 @@ Selector surface: **removed** `withdraw(uint256,uint256)`; **added** per §H. Th
 | Pitfalls | HIGH | Line-number-verified; cross-chain pitfalls inherent to counter designs |
 | Test migration | HIGH | Call sites grep-verified; foundry refs should be re-grepped at plan time |
 
-### Open Questions (requiring user checkpoints at plan time)
+### Open Questions (RESOLVED) — pointers to governing CONTEXT decisions above
 
 1. Provenance model depth: B1 eventual-consistency + sync ritual (recommended) vs fuller per-chain tracking (Phase 12 pull-in) — §B, Open Question 1.
 2. 3-arg MINTER mint restriction to id 0 (conservation hole) vs preserving child-id bridge-in — §A warning, Open Question 2.
