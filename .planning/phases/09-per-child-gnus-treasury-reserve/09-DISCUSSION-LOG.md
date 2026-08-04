@@ -136,3 +136,47 @@
 - `redeemFromERC20Proxy` adapter — Phase 11 territory
 - Cross-chain treasury mirroring — Phase 10/12
 - Phase 13 CONTEXT amendment (D12 withdraw→convert, rate framing) — at Phase 13 plan time
+
+---
+
+# Amendment: Conversion-Native Pivot (2026-08-04, during plan-phase)
+
+> Triggered at plan time. The reserve-ledger model above was superseded before planning began. Original capture preserved above for audit.
+
+## Escrow custody (A1 from research rev 1)
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Diamond-address custody | issueBacked/depositToReserve transfer id-0 to `address(this)`; adds `balanceOf(diamond,0) >= Σ reserveOf` invariant | |
+| Pure earmark accounting | Ledger only; no custody movement | ✓ (then mooted) |
+
+**Discussion:** User probed the "cost" of custody — walked through `_beforeTokenTransfer` (GNUSERC1155MaxSupply.sol:50,75-83): deposits user→diamond would false-charge the limiter; releases diamond→user would charge the diamond under WR-03's limiterSubject rule. Both need hook carve-outs. User then correctly identified the double-spend framing was ERC-20-thinking: the ERC-20 `transfer()` facade (GNUSBridge.sol:271-274) is the same id-0 ERC-1155 balance move, and custody is just another entry in the same mapping — detection, not prevention. Custody dropped before the bigger pivot made it moot.
+
+## The pivot: supplies in minions, no reserve ledger
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Reserve ledger (original D1/D3/D6) | `reserveOf`/`redeemableBacking` mappings, `issueBacked`, `depositToReserve`, surplus withdrawal | |
+| **Conversion-native** | All supplies minion-denominated; convert = `_burn(fromId) + _mint(toId)` same amount; rate read-only; child supply IS the escrow | ✓ |
+
+**User's key statements:**
+- "Burn means to send to zero address and not usable any more — it's more of a conversion than a burn/mint" — terminology lock; no burns except cross-chain bridging.
+- "We should keep supply(id) in minions, why the multiplier? Only when totalSupply function is called will it return the minions supply * rate[id]" — the insight that collapsed the ledger into read-side display math.
+- "totalSupply() should return only the GNUS tokens that aren't in another token, and maybe a secondary function totalSupplyOfAll() should return the total supply of all tokens. Because when we bridge to, it does burn and mint, which means we can track provenance also."
+- "totalSupplyOfAll [must] include other chains' provenances, which we will have to have some sort of initialize function set" — became `GNUSTreasury_Initialize300(seed)` + `globalSupply` counter + `syncGlobalSupply` valve.
+
+**Consequence:** D1 (reserve mappings), D6 (depositToReserve/surplus — user first answered "creators can withdraw surplus" then the whole apparatus became moot), original D3 ledger mechanics, `issueBacked` — all deleted. CONCERNS #1 dies by construction: conversion only releases minions locked in the token's own supply.
+
+## Research rev 2 checkpoints (user answers)
+
+| # | Question | Answer |
+|---|----------|--------|
+| 1 | Provenance mechanism B1 (counter + initializer + sync valve, eventual consistency) | yes |
+| 2 | Restrict MINTER_ROLE 3-arg mint to id 0 (conservation hole) | yes |
+| 3 | Depth gate: mint = direct children only, deeper issuance via convert() | yes |
+| 4 | Uninitialized `totalSupplyOfAll()` behavior | (a) revert until seeded — user: "it's a read, revert what?" → clarified as loud-failure on the view so the cap check can't be silently bypassed; locked (a) |
+| 5 | Keep the flag as `nonConvertible` (D5 successor) | keep |
+
+## Surplus withdrawal (superseded)
+
+User answered "creators can withdraw surplus-reserve tokens" during the custody discussion; the conversion-native pivot then removed the reserve apparatus entirely, mooting the question. Recorded here so the flip is auditable.
