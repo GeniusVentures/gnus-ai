@@ -24,7 +24,7 @@
 | #   | Phase            | Goal                                                     | Requirements                          | Success Criteria |
 | --- | ---------------- | -------------------------------------------------------- | ------------------------------------- | ---------------- |
 | 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
-| 9   | Treasury/Reserve | 4/5 | In Progress|  |
+| 9   | Treasury/Reserve | 5/5 | Complete   | 2026-08-05 |
 | 10  | Bridge Vault     | Lock/release vaults, state machine, replay protection    | BRIDGE-02, BRIDGE-03, BRIDGE-04       | 6                |
 | 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
@@ -256,7 +256,7 @@ Plans:
 **GitHub:** [gnus-ai#58](https://github.com/GeniusVentures/gnus-ai/issues/58)
 **Concerns addressed:** #1 Asymmetric burn/mint, #2 Exchange rate math, #3 No treasury tracking, #4 ID collision, #7 Rate enforcement, #10 mint semantics, #21 Descendant tests, #30 No solvency views
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 > NOTE: The Success Criteria above reference the SUPERSEDED reserve-ledger model. CONTEXT.md (09-CONTEXT.md, D1–D11) locks the conversion-native model: no reserve apparatus, all supplies in minions, conversion as supply-neutral reallocation. Treat the goal/concerns as intent; CONTEXT as the controlling design.
 
@@ -277,7 +277,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 09-05 — Test migration (5 .withdraw files + 2 mint-semantics files + smart-trigger) + Foundry ConservationInvariant (I1/I2/I5)
+- [x] 09-05 — Test migration (5 .withdraw files + 2 mint-semantics files + smart-trigger) + Foundry ConservationInvariant (I1/I2/I5)
 
 ---
 

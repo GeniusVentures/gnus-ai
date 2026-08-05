@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-08-05T22:06:00.000Z"
+last_updated: "2026-08-05T23:34:57.058Z"
 progress:
   total_phases: 16
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 20
   completed_plans: 20
-  percent: 62
+  percent: 63
 ---
 
 # Project State
@@ -37,11 +37,21 @@ See: .planning/PROJECT.md
 | 7     | Dependency Hardening              | ○      | 0/0   | 0%       |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ○      | 0/3   | 0%       |
-| 9     | Per-Child GNUS Treasury/Reserve   | ⏳     | 4/5   | 80%      |
+| 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
 
 ## Next Actions
 
-1. Execute Plan 09-05: test migration — rewrite the 50 exchange-rate/withdraw-era failures against the conversion-native model
+1. Phase 9 complete. Next phase per ROADMAP: Phase 6 plan 6-02 (test coverage) or Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
+2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
+
+### Phase 9 Decisions Logged (09-05)
+
+- ConservationInvariant Foundry suite lands I1/I2/I5 only — I3 (two-diamond bridge) and I6 (limiter charge matrix) are pinned by GNUSTreasury.test.ts unit suites per plan; I4 covered by unit tests
+- Handler ghost variables come in two flavors: call counters (coverage) and amount sums (invariants) — `ghost_totalBridgedOutAmount` distinct from `ghost_totalBridgeDeposits`; `ghost_totalAdminBurned` distinct from `ghost_totalBurned`
+- T-09-28 mitigation: handler draws ids from `ghost_createdIds` only — random id seeds almost never hit created ids
+- Slither 0.11.5 run on 5 changed contracts: 3 unique findings, all false-positives (weak-prng on deterministic bin indexing; erc721-interface on intentional ERC-20 facade `approve`/`transferFrom` return-bool). Committed slither.config.json NOT modified.
+- Slither inclusion gap: `contracts/gnus-ai/` is NOT actually excluded in the committed filter_paths (CONCERNS.md is stale on this point), but `yarn slither:scan` is evidently not running in CI — Phase 7 owns wiring it into the audit gate
+- smart-trigger.ts:389 `'mint'` label confirmed inert (function-NAME risk classifier, not calldata builder) — dispositioned with comment, no semantic change
 
 ### Phase 9 Decisions Logged (09-04)
 
