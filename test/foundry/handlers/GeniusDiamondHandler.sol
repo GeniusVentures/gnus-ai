@@ -18,6 +18,8 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     uint256 public ghost_totalCollectionsCreated;
     uint256 public ghost_totalBridgeDeposits;
     uint256 public ghost_totalBridgeWithdrawals;
+    // Phase 9 (09-01): conversion-native model — count of successful convert() calls
+    uint256 public ghost_convertCalls;
 
     // Action counters for call summary
     uint256 public calls_transfer;
@@ -528,6 +530,52 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         }
 
         console.log("[HANDLER] Burn ERC1155:", tokenId);
+    }
+
+    /**
+     * @notice Bounded convert handler (Phase 9 - conversion-native model)
+     * @dev Calls the diamond's `convert(fromId, toId, minionAmount, to)` selector.
+     *      The selector is added by Plan 09-02; until then every call reverts and
+     *      the ghost counter stays at zero. Uses a low-level call so this file
+     *      compiles before the facet lands.
+     *
+     * INPUT BOUNDS:
+     * - actorSeed: Unbounded, modulo actors.length to select sender
+     * - fromIdSeed: Bounded to [0, 100] to cover GNUS + plausible child ids
+     * - toIdSeed: Bounded to [0, 100] to cover GNUS + plausible child ids
+     * - amount: Bounded to [1, 1e30] (sane non-zero minion range)
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_convertCalls: Incremented on successful convert
+     * - calls_mint1155: NOT touched (convert is its own action; not a mint)
+     *
+     * @param actorSeed Seed to select actor (sender)
+     * @param fromIdSeed Source token id seed
+     * @param toIdSeed Destination token id seed
+     * @param amount Minion amount to convert
+     */
+    function handler_convert(uint256 actorSeed, uint256 fromIdSeed, uint256 toIdSeed, uint256 amount) public {
+        currentActor = actors[actorSeed % actors.length];
+        uint256 fromId = _boundUint256(fromIdSeed, 0, 100);
+        uint256 toId = _boundUint256(toIdSeed, 0, 100);
+        amount = _boundUint256(amount, 1, 1e30);
+
+        bytes memory callData = abi.encodeWithSignature(
+            "convert(uint256,uint256,uint256,address)",
+            fromId,
+            toId,
+            amount,
+            currentActor
+        );
+
+        vm.prank(currentActor);
+        (bool success, ) = diamond.call(callData);
+
+        if (success) {
+            ghost_convertCalls++;
+        }
+
+        console.log("[HANDLER] Convert:", fromId, toId, amount);
     }
 
     /**
