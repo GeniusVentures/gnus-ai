@@ -687,7 +687,9 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      * @param amount Minion amount to mint (bounded to the caller's GNUS balance)
      */
     function handler_factoryMint(uint256 idSeed, uint256 amount) public {
-        if (ghost_createdIds.length == 0) return;
+        if (ghost_createdIds.length == 0) {
+            return;
+        }
         uint256 id = ghost_createdIds[idSeed % ghost_createdIds.length];
 
         uint256 balance = _getGNUSBalance(address(this));
@@ -774,7 +776,9 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
 
         bytes memory supplyCall = abi.encodeWithSignature("totalSupply(uint256)", id);
         (bool ok, bytes memory supplyData) = diamond.staticcall(supplyCall);
-        if (!ok) return 0;
+        if (!ok) {
+            return 0;
+        }
         uint256 supply = abi.decode(supplyData, (uint256));
         return supply >= maxSupply ? 0 : maxSupply - supply;
     }
