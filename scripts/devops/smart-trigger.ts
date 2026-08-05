@@ -529,9 +529,19 @@ class SmartTrigger {
 	}
 
 	private getRiskLevel(): 'critical' | 'high' | 'medium' | 'low' {
-		if (this.riskScore >= 70) return 'critical';
-		if (this.riskScore >= 40) return 'high';
-		if (this.riskScore >= 20) return 'medium';
+		// Phase 9 (09-05): `mint` above is the 2-arg root mint (GNUS issuance) or the
+		// 4-arg factory mint (minion-denominated per D1). Calldata semantics are unchanged
+		// for root mints; the 4-arg factory mint now expects minions (not child units),
+		// which is a caller-side concern — this list only classifies the function NAME.
+		if (this.riskScore >= 70) {
+			return 'critical';
+		}
+		if (this.riskScore >= 40) {
+			return 'high';
+		}
+		if (this.riskScore >= 20) {
+			return 'medium';
+		}
 		return 'low';
 	}
 
