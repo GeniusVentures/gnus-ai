@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-08-05T20:44:01.000Z"
+last_updated: "2026-08-05T20:58:00.000Z"
 progress:
   total_phases: 16
   completed_phases: 9
-  total_plans: 25
-  completed_plans: 17
-  percent: 56
+  total_plans: 20
+  completed_plans: 18
+  percent: 58
 ---
 
 # Project State
@@ -37,11 +37,11 @@ See: .planning/PROJECT.md
 | 7     | Dependency Hardening              | ○      | 0/0   | 0%       |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ○      | 0/3   | 0%       |
-| 9     | Per-Child GNUS Treasury/Reserve   | ⏳     | 1/5   | 20%      |
+| 9     | Per-Child GNUS Treasury/Reserve   | ⏳     | 2/5   | 40%      |
 
 ## Next Actions
 
-1. Execute Plan 09-02: GNUSTreasury facet (convert + views + totalSupplyOfAll + syncGlobalSupply + initializer)
+1. Execute Plan 09-03: geniusdiamond.config.json facet registration (GNUSTreasury + protocolVersion bump to 3.0)
 
 ## Accumulated Context
 
