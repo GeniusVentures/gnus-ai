@@ -13,13 +13,24 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     // Ghost variables to track expected state
     uint256 public ghost_totalMinted;
     uint256 public ghost_totalBurned;
+    // Phase 9 (09-05): SUM burned via the MINTER_ROLE GNUSBridge.burn path
+    // (the ONLY burn that decrements the globalSupply provenance counter).
+    // User-initiated ERC1155Burnable.burn does NOT touch globalSupply.
+    uint256 public ghost_totalAdminBurned;
     uint256 public ghost_totalTransfers;
     uint256 public ghost_totalApprovals;
     uint256 public ghost_totalCollectionsCreated;
     uint256 public ghost_totalBridgeDeposits;
+    // Phase 9 (09-05): SUM of amounts actually burned by bridgeOut (I1 conservation
+    // needs the quantity, not just the call count). Distinct from ghost_totalBridgeDeposits
+    // which is a successful-call counter used elsewhere for coverage metrics.
+    uint256 public ghost_totalBridgedOutAmount;
     uint256 public ghost_totalBridgeWithdrawals;
     // Phase 9 (09-01): conversion-native model — count of successful convert() calls
     uint256 public ghost_convertCalls;
+    // Phase 9 (09-05): ids of child tokens actually created by handler_createNFT —
+    // convert/depth-gate bounding draws from this set only (T-09-28).
+    uint256[] public ghost_createdIds;
 
     // Action counters for call summary
     uint256 public calls_transfer;
@@ -32,6 +43,8 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     uint256 public calls_revokeRole;
     uint256 public calls_mint1155;
     uint256 public calls_burn1155;
+    uint256 public calls_createNFT;
+    uint256 public calls_factoryMint;
 
     // Track actors
     address[] public actors;
@@ -87,7 +100,9 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
 
         // Bound amount to actor's balance
         uint256 balance = _getGNUSBalance(currentActor);
-        if (balance == 0) return;
+        if (balance == 0) {
+            return;
+        }
 
         amount = _boundUint256(amount, 1, balance);
 
@@ -265,7 +280,9 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         currentActor = actors[actorSeed % actors.length];
 
         uint256 balance = _getGNUSBalance(currentActor);
-        if (balance == 0) return;
+        if (balance == 0) {
+            return;
+        }
 
         amount = _boundUint256(amount, 1 ether, balance);
 
@@ -281,6 +298,7 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
             )
         {
             ghost_totalBridgeDeposits++;
+            ghost_totalBridgedOutAmount += amount;
             calls_bridgeDeposit++;
         } catch {}
 
@@ -418,7 +436,9 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         currentActor = actors[actorSeed % actors.length];
 
         uint256 balance = _getGNUSBalance(currentActor);
-        if (balance == 0) return;
+        if (balance == 0) {
+            return;
+        }
 
         amount = _boundUint256(amount, 1, balance);
 
@@ -466,7 +486,10 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      */
     function handler_mint1155(uint256 recipientSeed, uint256 tokenId, uint256 amount) public {
         address recipient = actors[recipientSeed % actors.length];
-        tokenId = _boundUint256(tokenId, 1, 100); // Token IDs 1-100
+        // Phase 9 (D10): the 3-arg MINTER mint is restricted to id 0 (root GNUS issuance).
+        // id 0 keeps the original role-check coverage; any non-zero id must revert with
+        // "MINTER_ROLE mints GNUS only" — a success here is a conservation hole (Pitfall 5).
+        tokenId = _boundUint256(tokenId, 0, 100);
         amount = _boundUint256(amount, 1, 1000);
 
         bytes memory callData = abi.encodeWithSignature(
@@ -479,8 +502,16 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         // Only test contract has MINTER_ROLE
         (bool success, ) = diamond.call(callData);
 
+        if (tokenId != GNUS_TOKEN_ID) {
+            // D10 guard: non-root ids must never be mintable out of thin air.
+            require(!success, "D10 violated: MINTER_ROLE minted a non-root id");
+            return;
+        }
+
         if (success) {
             calls_mint1155++;
+            // Root mint conserves into the tree supply — track for I1 (matches handler_mint).
+            ghost_totalMinted += amount;
         }
 
         console.log("[HANDLER] Mint ERC1155:", tokenId);
@@ -556,9 +587,25 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      */
     function handler_convert(uint256 actorSeed, uint256 fromIdSeed, uint256 toIdSeed, uint256 amount) public {
         currentActor = actors[actorSeed % actors.length];
-        uint256 fromId = _boundUint256(fromIdSeed, 0, 100);
-        uint256 toId = _boundUint256(toIdSeed, 0, 100);
-        amount = _boundUint256(amount, 1, 1e30);
+
+        // T-09-28: draw ids from the actually-created set only — random ids in [0,100]
+        // almost never exist, so the convert path would never be exercised.
+        uint256 idSpace = ghost_createdIds.length + 1; // +1 for GNUS (id 0)
+        uint256 fromIdx = fromIdSeed % idSpace;
+        uint256 toIdx = toIdSeed % idSpace;
+        uint256 fromId = fromIdx == 0 ? GNUS_TOKEN_ID : ghost_createdIds[fromIdx - 1];
+        uint256 toId = toIdx == 0 ? GNUS_TOKEN_ID : ghost_createdIds[toIdx - 1];
+        if (fromId == toId) {
+            // same-id guard reverts by design; skip
+            return;
+        }
+
+        // Bound to the sender's actual balance so the burn leg can succeed.
+        uint256 balance = _getBalance1155(currentActor, fromId);
+        if (balance == 0) {
+            return;
+        }
+        amount = _boundUint256(amount, 1, balance);
 
         bytes memory callData = abi.encodeWithSignature(
             "convert(uint256,uint256,uint256,address)",
@@ -572,10 +619,172 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         (bool success, ) = diamond.call(callData);
 
         if (success) {
+            // I2 neutrality: convert moves supply between ids; no supply ghost changes.
             ghost_convertCalls++;
         }
 
         console.log("[HANDLER] Convert:", fromId, toId, amount);
+    }
+
+    /**
+     * @notice Create a direct-child NFT of GNUS and record its id
+     * @dev Uses the factory's `createNFT(uint256,string,string,uint256,uint256,string)`
+     *      with parentID == GNUS_TOKEN_ID. The created id equals the parent's childCurIndex
+     *      at creation time (direct children of GNUS are sequentially numbered 1, 2, 3, ...).
+     *      The test contract holds DEFAULT_ADMIN_ROLE, which satisfies the
+     *      "Only Creators or Admins" gate on createNFT.
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_createdIds: new child id pushed on success
+     * - calls_createNFT: Counter for this handler invocation
+     *
+     * @param exchRateSeed Seed for the display-only exchange rate (bounded [1, 1e6])
+     * @param maxSupplySeed Seed for the per-id minion cap (bounded [1, 1e12])
+     */
+    function handler_createNFT(uint256 exchRateSeed, uint256 maxSupplySeed) public {
+        uint256 exchRate = _boundUint256(exchRateSeed, 1, 1e6);
+        uint256 maxSupply = _boundUint256(maxSupplySeed, 1, 1e12);
+
+        // The next direct-child id of GNUS is the current childCurIndex (read via getNFTInfo).
+        uint256 nextId = _getChildCurIndex(GNUS_TOKEN_ID);
+        if (nextId == 0) {
+            // parent info unreadable — skip rather than corrupt ghosts
+            return;
+        }
+
+        bytes memory callData = abi.encodeWithSignature(
+            "createNFT(uint256,string,string,uint256,uint256,string)",
+            GNUS_TOKEN_ID,
+            "Fuzz Child",
+            "FCHILD",
+            exchRate,
+            maxSupply,
+            ""
+        );
+
+        (bool success, ) = diamond.call(callData);
+
+        if (success) {
+            ghost_createdIds.push(nextId);
+            calls_createNFT++;
+        }
+
+        console.log("[HANDLER] Create NFT:", nextId);
+    }
+
+    /**
+     * @notice Factory-mint a created direct-child id (1:1 GNUS burn, D1)
+     * @dev Calls `mint(address,uint256,uint256,bytes)` as the test contract (admin passes
+     *      the "Creator or Admin" gate). beforeMint burns `amount` of the CALLER's id-0
+     *      balance 1:1 (minion semantics, no rate math). This is the tree's only valid
+     *      child-issuance tap under the conversion-native model.
+     *
+     * GHOST VARIABLE UPDATES:
+     * - ghost_totalMinted: unchanged — the burn leg and mint leg cancel (tree Σ constant).
+     * - calls_factoryMint: Counter for this handler invocation
+     *
+     * @param idSeed Seed to select from ghost_createdIds
+     * @param amount Minion amount to mint (bounded to the caller's GNUS balance)
+     */
+    function handler_factoryMint(uint256 idSeed, uint256 amount) public {
+        if (ghost_createdIds.length == 0) return;
+        uint256 id = ghost_createdIds[idSeed % ghost_createdIds.length];
+
+        uint256 balance = _getGNUSBalance(address(this));
+        if (balance == 0) {
+            return;
+        }
+        amount = _boundUint256(amount, 1, balance);
+
+        // Respect the per-id minion cap: totalSupply(id) + amount <= maxSupply(id).
+        uint256 headroom = _getMaxSupplyHeadroom(id);
+        if (headroom == 0) {
+            return;
+        }
+        if (amount > headroom) amount = headroom;
+
+        bytes memory callData = abi.encodeWithSignature(
+            "mint(address,uint256,uint256,bytes)",
+            address(this),
+            id,
+            amount,
+            ""
+        );
+
+        (bool success, ) = diamond.call(callData);
+
+        if (success) {
+            calls_factoryMint++;
+        }
+
+        console.log("[HANDLER] Factory Mint:", id, amount);
+    }
+
+    /**
+     * @notice Get the ERC1155 balance of an account for an arbitrary token id
+     * @param account Address to check
+     * @param id Token id
+     * @return balance Token balance
+     */
+    function _getBalance1155(address account, uint256 id) internal view returns (uint256) {
+        bytes memory callData = abi.encodeWithSignature("balanceOf(address,uint256)", account, id);
+        (bool success, bytes memory returnData) = diamond.staticcall(callData);
+        if (!success) {
+            return 0;
+        }
+        return abi.decode(returnData, (uint256));
+    }
+
+    /**
+     * @notice Read childCurIndex of a parent id from getNFTInfo
+     * @dev NFT struct order: (name, symbol, uri, exchangeRate, maxSupply, creator, childCurIndex, nftCreated, ...).
+     * @param parentId Parent token id
+     * @return childCurIndex Current child index (next direct-child id)
+     */
+    function _getChildCurIndex(uint256 parentId) internal view returns (uint256) {
+        bytes memory callData = abi.encodeWithSignature("getNFTInfo(uint256)", parentId);
+        (bool success, bytes memory returnData) = diamond.staticcall(callData);
+        if (!success) {
+            return 0;
+        }
+        (, , , , , , uint128 childCurIndex, , , ) = abi.decode(
+            returnData,
+            (string, string, string, uint256, uint256, address, uint128, bool, uint256, bool)
+        );
+        return uint256(childCurIndex);
+    }
+
+    /**
+     * @notice Remaining mintable headroom for a token id (maxSupply - totalSupply)
+     * @dev maxSupply == 0 means uncapped in the factory; treat as uint256 max headroom.
+     * @param id Token id
+     * @return headroom Mintable minions remaining before the per-id cap
+     */
+    function _getMaxSupplyHeadroom(uint256 id) internal view returns (uint256) {
+        bytes memory callData = abi.encodeWithSignature("getNFTInfo(uint256)", id);
+        (bool success, bytes memory returnData) = diamond.staticcall(callData);
+        if (!success) {
+            return 0;
+        }
+        (, , , , uint256 maxSupply, , , , , ) = abi.decode(
+            returnData,
+            (string, string, string, uint256, uint256, address, uint128, bool, uint256, bool)
+        );
+        if (maxSupply == 0) return type(uint256).max;
+
+        bytes memory supplyCall = abi.encodeWithSignature("totalSupply(uint256)", id);
+        (bool ok, bytes memory supplyData) = diamond.staticcall(supplyCall);
+        if (!ok) return 0;
+        uint256 supply = abi.decode(supplyData, (uint256));
+        return supply >= maxSupply ? 0 : maxSupply - supply;
+    }
+
+    /**
+     * @notice Number of child ids created by handler_createNFT (for invariant iteration)
+     * @return length of ghost_createdIds
+     */
+    function ghost_createdIdsLength() external view returns (uint256) {
+        return ghost_createdIds.length;
     }
 
     /**
