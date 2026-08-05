@@ -256,6 +256,29 @@ Plans:
 **GitHub:** [gnus-ai#58](https://github.com/GeniusVentures/gnus-ai/issues/58)
 **Concerns addressed:** #1 Asymmetric burn/mint, #2 Exchange rate math, #3 No treasury tracking, #4 ID collision, #7 Rate enforcement, #10 mint semantics, #21 Descendant tests, #30 No solvency views
 
+**Plans:** 0/5 plans complete
+
+> NOTE: The Success Criteria above reference the SUPERSEDED reserve-ledger model. CONTEXT.md (09-CONTEXT.md, D1–D11) locks the conversion-native model: no reserve apparatus, all supplies in minions, conversion as supply-neutral reallocation. Treat the goal/concerns as intent; CONTEXT as the controlling design.
+
+Plans:
+
+**Wave 1**
+
+- [ ] 09-01 — Storage foundation + Wave-0 test scaffolds (GNUSTreasuryStorage lib, NFT struct appends, createNFTs collision guard, GNUSTreasury.test.ts stub, handler_convert stub)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 09-02 — GNUSTreasury facet (convert, display views, totalSupplyOfAll, syncGlobalSupply, Initialize300)
+- [ ] 09-03 — GNUSBridge rewiring (delete withdraw, restrict MINTER to id 0, provenance hooks + global cap in _mintWithBridgeFee/burn, bridgeOut rate-math cleanup)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 09-04 — beforeMint rewrite (1:1 minion + depth gate) + diamond config 3.0 + GNUSTreasury unit suite (13 suites)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 09-05 — Test migration (5 .withdraw files + 2 mint-semantics files + smart-trigger) + Foundry ConservationInvariant (I1/I2/I5)
+
 ---
 
 ## Phase 10: Lock/Release Bridge Vault
