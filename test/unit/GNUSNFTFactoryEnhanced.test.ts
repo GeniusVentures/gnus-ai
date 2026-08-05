@@ -40,6 +40,10 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 		[owner, creator, user1, user2] = await ethers.getSigners();
 
+		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
+		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
+		await geniusDiamond.GNUSTreasury_Initialize300(0n);
+
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
 
@@ -343,7 +347,7 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 	describe('Minting with Exchange Rates', function () {
 		it('should burn correct amount of GNUS when minting child NFT', async function () {
-			// Create NFT with exchange rate of 2
+			// Create NFT with exchange rate of 2 (display-only under Phase 9, D2)
 			await geniusDiamond
 				.connect(creator)
 				.createNFT(0, 'Rate 2 NFT', 'R2', 2, 10000, 'ipfs://r2');
@@ -353,13 +357,13 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 			const initialBalance = await geniusDiamond['balanceOf(address)'](creator.address);
 
-			// Mint 10 NFTs (should burn 20 GNUS)
+			// Mint 10 child minions (burns exactly 10 GNUS, 1:1 — rate never applied, D1)
 			await geniusDiamond
 				.connect(creator)
 				['mint(address,uint256,uint256,bytes)'](user1.address, 1, 10, '0x');
 
 			const finalBalance = await geniusDiamond['balanceOf(address)'](creator.address);
-			expect(initialBalance - finalBalance).to.equal(20); // 10 * 2
+			expect(initialBalance - finalBalance).to.equal(10); // 1:1 minion burn
 		});
 
 		it('should revert when creator has insufficient GNUS to burn', async function () {
@@ -367,14 +371,14 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 				.connect(creator)
 				.createNFT(0, 'Expensive NFT', 'EXP', 100, 10000, 'ipfs://exp');
 
-			// Mint only 50 GNUS (need 1000 for 10 NFTs at rate 100)
+			// Mint only 50 GNUS (need 1,000 for 1,000 minions at the 1:1 minion burn)
 			await geniusDiamond['mint(address,uint256)'](creator.address, 50);
 
 			await expect(
 				geniusDiamond
 					.connect(creator)
-					['mint(address,uint256,uint256,bytes)'](user1.address, 1, 10, '0x'),
-			).to.be.revertedWith('Not enough GNUS_TOKEN to burn');
+					['mint(address,uint256,uint256,bytes)'](user1.address, 1, 1000, '0x'),
+			).to.be.revertedWith('Not enough GNUS_TOKEN to convert');
 		});
 
 		it('should only allow creator or admin to mint NFT', async function () {
