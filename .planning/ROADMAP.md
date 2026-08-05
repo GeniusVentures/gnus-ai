@@ -24,7 +24,7 @@
 | #   | Phase            | Goal                                                     | Requirements                          | Success Criteria |
 | --- | ---------------- | -------------------------------------------------------- | ------------------------------------- | ---------------- |
 | 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
-| 9   | Treasury/Reserve | Per-child GNUS reserve backing model                     | TREASURY-01, TREASURY-02, TREASURY-03 | 6                |
+| 9   | Treasury/Reserve | 1/5 | In Progress|  |
 | 10  | Bridge Vault     | Lock/release vaults, state machine, replay protection    | BRIDGE-02, BRIDGE-03, BRIDGE-04       | 6                |
 | 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
@@ -256,7 +256,7 @@ Plans:
 **GitHub:** [gnus-ai#58](https://github.com/GeniusVentures/gnus-ai/issues/58)
 **Concerns addressed:** #1 Asymmetric burn/mint, #2 Exchange rate math, #3 No treasury tracking, #4 ID collision, #7 Rate enforcement, #10 mint semantics, #21 Descendant tests, #30 No solvency views
 
-**Plans:** 0/5 plans complete
+**Plans:** 1/5 plans executed
 
 > NOTE: The Success Criteria above reference the SUPERSEDED reserve-ledger model. CONTEXT.md (09-CONTEXT.md, D1–D11) locks the conversion-native model: no reserve apparatus, all supplies in minions, conversion as supply-neutral reallocation. Treat the goal/concerns as intent; CONTEXT as the controlling design.
 
@@ -264,7 +264,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 09-01 — Storage foundation + Wave-0 test scaffolds (GNUSTreasuryStorage lib, NFT struct appends, createNFTs collision guard, GNUSTreasury.test.ts stub, handler_convert stub)
+- [x] 09-01 — Storage foundation + Wave-0 test scaffolds (GNUSTreasuryStorage lib, NFT struct appends, createNFTs collision guard, GNUSTreasury.test.ts stub, handler_convert stub)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
