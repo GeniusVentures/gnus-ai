@@ -1,14 +1,19 @@
 /**
  * @title Withdraw Limiter Gas Usage Comparison Tests
  * @notice Measures gas usage for different bin count configurations
- * @dev Tests GNUSBridge and ERC20TransferBatch operations with varying bin counts
+ * @dev Tests GNUSTreasury and ERC20TransferBatch operations with varying bin counts
  *
  * Test Coverage:
  * - Bin counts: 6, 12, 24, 48, 96
- * - Operations: withdraw(), bridgeOut(), transferBatch(), transferOrBurnBatch()
- * - Scenarios: first withdrawal (cold), subsequent withdrawal (warm), limit exceeded
+ * - Operations: convert() (GNUS-terminal), bridgeOut(), transferBatch(), transferOrBurnBatch()
+ * - Scenarios: first conversion (cold), subsequent conversion (warm), limit exceeded
  *
  * Output: CSV data for gas-coverage/withdraw-limiter-gas-comparison.md
+ *
+ * Phase 9 (09-05): withdraw() was removed (D4); the limiter is now exercised through
+ * GNUSTreasury.convert() on its GNUS-terminal leg. Amounts are minion-denominated
+ * (1:1, no exchange-rate math), so gas baselines differ from the withdraw-era figures:
+ * convert is two supply ops (burn + mint) with an explicit limiter charge, no fee path.
  */
 
 import {
@@ -79,13 +84,17 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 
 			initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 
-			// Create child NFT for withdraw tests
+			// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
+			// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
+			await geniusDiamond.GNUSTreasury_Initialize300(0n);
+
+			// Create child NFT for convert tests
 			// createNFT(parentId, name, symbol, exchangeRate, maxSupply, uri)
 			await geniusDiamond.createNFT(
 				GNUS_TOKEN_ID, // parent = GNUS (tokenId 0)
 				'Child NFT', // name
 				'CNFT', // symbol
-				EXCHANGE_RATE, // exchangeRate (100 NFTs = 1 GNUS)
+				EXCHANGE_RATE, // exchangeRate (display-only under the conversion-native model, D2)
 				toWei(50000000), // maxSupply (50M tokens)
 				'', // uri
 			);
@@ -111,7 +120,10 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 			);
 		}
 
-		// Helper function to setup user with tokens
+		// Helper function to setup user with tokens.
+		// Phase 9: child minions are minted via the factory mint path (D10 restricts the
+		// MINTER_ROLE 3-arg mint to id 0). The factory mint burns the CALLER's id-0
+		// balance 1:1, so the owner funds themselves first, then mints to the user.
 		async function setupUserWithTokens(
 			user: SignerWithAddress,
 			gnusAmount: bigint,
@@ -121,12 +133,14 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 			if (gnusAmount > 0n) {
 				await geniusDiamond['mint(address,uint256)'](user.address, gnusAmount);
 			}
-			// Mint child NFT tokens
+			// Mint child NFT tokens (owner pays the 1:1 minion burn)
 			if (nftAmount > 0n) {
-				await geniusDiamond['mint(address,uint256,uint256)'](
+				await geniusDiamond['mint(address,uint256)'](owner.address, nftAmount);
+				await geniusDiamond['mint(address,uint256,uint256,bytes)'](
 					user.address,
 					CHILD_NFT_ID,
 					nftAmount,
+					'0x',
 				);
 			}
 		}
@@ -150,51 +164,56 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 					await ethers.provider.send('evm_revert', [snapshotId]);
 				});
 
-				describe('GNUSBridge.withdraw()', function () {
-					it(`should measure gas for first withdrawal (cold storage) - ${binCount} bins`, async function () {
-						const nftAmount = ethers.parseEther('1000000'); // 1M NFTs
-						const expectedGnus = nftAmount / BigInt(EXCHANGE_RATE); // 10k GNUS
+				describe('GNUSTreasury.convert() (GNUS-terminal)', function () {
+					it(`should measure gas for first conversion (cold storage) - ${binCount} bins`, async function () {
+						const nftAmount = ethers.parseEther('10000'); // 10k child minions = 10k GNUS (1:1)
 
 						await setupUserWithTokens(user1, 0n, nftAmount);
 
-						const tx = await geniusDiamond.connect(user1).withdraw(nftAmount, CHILD_NFT_ID);
+						const tx = await geniusDiamond
+							.connect(user1)
+							.convert(CHILD_NFT_ID, GNUS_TOKEN_ID, nftAmount, user1.address);
 						const receipt = await tx.wait();
 
-						recordGas(binCount, 'withdraw()', 'first (cold)', receipt!.gasUsed, true);
+						recordGas(binCount, 'convert()', 'first (cold)', receipt!.gasUsed, true);
 					});
 
-					it(`should measure gas for subsequent withdrawal (warm storage) - ${binCount} bins`, async function () {
-						const nftAmount = ethers.parseEther('500000'); // 500k NFTs each
+					it(`should measure gas for subsequent conversion (warm storage) - ${binCount} bins`, async function () {
+						const nftAmount = ethers.parseEther('5000'); // 5k child minions each
 						await setupUserWithTokens(user1, 0n, nftAmount * 2n);
 
-						// First withdrawal to initialize storage
-						await geniusDiamond.connect(user1).withdraw(nftAmount, CHILD_NFT_ID);
+						// First conversion to initialize storage
+						await geniusDiamond
+							.connect(user1)
+							.convert(CHILD_NFT_ID, GNUS_TOKEN_ID, nftAmount, user1.address);
 
 						// Advance time slightly (1 hour)
 						await ethers.provider.send('evm_increaseTime', [3600]);
 						await ethers.provider.send('evm_mine', []);
 
-						// Second withdrawal (warm storage)
-						const tx = await geniusDiamond.connect(user1).withdraw(nftAmount, CHILD_NFT_ID);
+						// Second conversion (warm storage)
+						const tx = await geniusDiamond
+							.connect(user1)
+							.convert(CHILD_NFT_ID, GNUS_TOKEN_ID, nftAmount, user1.address);
 						const receipt = await tx.wait();
 
-						recordGas(binCount, 'withdraw()', 'subsequent (warm)', receipt!.gasUsed, true);
+						recordGas(binCount, 'convert()', 'subsequent (warm)', receipt!.gasUsed, true);
 					});
 
-					it(`should measure gas for failed withdrawal (limit exceeded) - ${binCount} bins`, async function () {
-						const nftAmount = ethers.parseEther('15000000'); // 15M NFTs = 150k GNUS (exceeds 100k limit)
+					it(`should measure gas for failed conversion (limit exceeded) - ${binCount} bins`, async function () {
+						const nftAmount = ethers.parseEther('150000'); // 150k minions = 150k GNUS (exceeds 100k limit)
 						await setupUserWithTokens(user1, 0n, nftAmount);
 
 						try {
 							const tx = await geniusDiamond
 								.connect(user1)
-								.withdraw(nftAmount, CHILD_NFT_ID);
+								.convert(CHILD_NFT_ID, GNUS_TOKEN_ID, nftAmount, user1.address);
 							const receipt = await tx.wait();
-							recordGas(binCount, 'withdraw()', 'limit exceeded', receipt!.gasUsed, false);
+							recordGas(binCount, 'convert()', 'limit exceeded', receipt!.gasUsed, false);
 						} catch (error: any) {
 							// Get gas from error
 							const gasUsed = error.receipt?.gasUsed || 0n;
-							recordGas(binCount, 'withdraw()', 'limit exceeded', gasUsed, false);
+							recordGas(binCount, 'convert()', 'limit exceeded', gasUsed, false);
 						}
 					});
 				});
@@ -395,7 +414,7 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 			// Generate summary statistics
 			console.log('\n📈 Summary Statistics:\n');
 			const operations = [
-				'withdraw()',
+				'convert()',
 				'bridgeOut()',
 				'transferBatch()',
 				'transferOrBurnBatch()',
