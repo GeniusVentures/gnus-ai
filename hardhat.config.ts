@@ -338,6 +338,13 @@ const config: HardhatUserConfig = {
 				deploymentsPath: 'diamonds',
 				contractsPath: 'contracts/gnus-ai',
 			},
+			// Phase 9 (09-04): second diamond instance for cross-chain provenance tests.
+			// Points at the SAME source tree + config as GeniusDiamond; the
+			// LocalDiamondDeployer separates instances via `localDiamondDeployerKey`.
+			GeniusDiamondChainB: {
+				deploymentsPath: 'diamonds',
+				contractsPath: 'contracts/gnus-ai',
+			},
 		},
 	},
 };
