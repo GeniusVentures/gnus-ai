@@ -1,45 +1,46 @@
 {
   "version": "1.0",
-  "timestamp": "2026-07-25T00:47:34.985Z",
-  "phase": "7",
-  "phase_name": "dependency-hardening",
-  "phase_dir": ".planning/phases/07-dependency-hardening",
-  "plan": null,
-  "task": null,
-  "total_tasks": null,
+  "timestamp": "2026-08-06T01:08:18Z",
+  "phase": "9",
+  "phase_name": "per-child-gnus-treasury-reserve",
+  "phase_dir": ".planning/phases/09-per-child-gnus-treasury-reserve",
   "status": "paused",
   "workstream": "gnus-ai",
-  "repo_layout": {
-    "gsd_root": "/Users/Shared/SSDevelopment/Development/GeniusVentures/GeniusNetwork/TokenContracts/gnus-ai",
-    "nested_contracts_repo": "contracts/gnus-ai (remote: GeniusVentures/gnus-ai-contracts, branch: develop, at 2e70a63)",
-    "rule": "ALL gsd-sdk commands and planning artifacts live in gnus-ai/.planning — cd gnus-ai first. Never write to the parent TokenContracts/.planning for this workstream."
+  "plans": [
+    {"id": "09-01", "name": "Treasury storage + factory augmentation", "status": "done"},
+    {"id": "09-02", "name": "GNUSTreasury facet (conversion-native)", "status": "done"},
+    {"id": "09-03", "name": "GNUSBridge migration (delete withdraw, add hooks)", "status": "done"},
+    {"id": "09-04", "name": "Test suite + factory finalization", "status": "done"},
+    {"id": "09-05", "name": "Invariant tests + deployment migration", "status": "done"}
+  ],
+  "review": {
+    "status": "complete",
+    "file": ".planning/phases/09-per-child-gnus-treasury-reserve/09-REVIEW.md",
+    "critical": 0,
+    "warning": 2,
+    "info": 2
   },
-  "completed_tasks": [
-    {"id": "phase-6", "name": "Phase 6 Test Coverage — full lifecycle (discuss/plan/execute/review/fix)", "status": "done", "commits": ["4ce3760", "bc26cce", "2c50c72", "9d9ed98 (nested)", "2c343a9", "3e780ae", "278b673", "7d92bb2", "a37fef4", "46c024b"]},
-    {"id": "branch-cleanup", "name": "Deleted stale branches (develop-ruy, master in gnus-ai; fix/phase-04-review-findings in nested), bumped submodule pointer to merged develop", "status": "done", "commit": "362beaa"},
-    {"id": "push", "name": "Pushed gnus-ai develop to origin (dd84dd0..362beaa) after full regression suite passed 421/2-pending/6-pre-existing-failures", "status": "done"}
+  "uncommitted_files": [
+    "contracts/gnus-ai/DiamondInitFacet.sol (added diamondInitialize260 + GNUSControlStorage import)",
+    "diamonds/GeniusDiamond/geniusdiamond.config.json (3.0 → 2.6, fixed upgradeInit, removed dead entries)",
+    ".planning/phases/09-per-child-gnus-treasury-reserve/09-REVIEW.md (new)"
   ],
   "remaining_tasks": [
-    {"id": "phase-7", "name": "Phase 7 Dependency Hardening (DEP-01): pin contracts-starter to commit hash; final audit + verification of all 22 requirements", "status": "not_started", "next_command": "/gsd:discuss-phase 7 --ws gnus-ai"},
-    {"id": "phase-08.2", "name": "Phase 08.2 Deploy-Verify Pipeline Fixes: 0/3 plans (08.2-01 delegate proposers, 08.2-02 confirmDeployment script, 08.2-03 verifyFacets script)", "status": "not_started", "next_command": "/gsd:plan-phase 08.2 --ws gnus-ai"},
-    {"id": "phase-08.1-uat", "name": "Phase 08.1 human UAT: Sepolia Safe smoke test + Safe Transaction Service non-repudiation check", "status": "blocked_on_human", "next_command": "/gsd:verify-work 08.1 --ws gnus-ai"}
-  ],
-  "blockers": [
-    {"description": "Phase 08.1 verification status is human_needed: requires funded Sepolia deployer EOA, Safe wallet with deployer registered as Proposer in Safe UI, and live Safe Transaction Service", "type": "human_action", "workaround": "none — manual UAT only"}
-  ],
-  "human_actions_pending": [
-    {"action": "Run Sepolia Safe smoke test for 08.1 (propose a diamondCut via the Safe proposer pipeline on Sepolia)", "context": "Only validation path for TS-level Safe SDK proposal submission per 08.1 CONTEXT.md D-02", "blocking": false},
-    {"action": "Verify Safe Transaction Service non-repudiation for 08.1", "context": "Requires proposer EOA pre-registered as Proposer in Safe UI; cannot be auto-verified", "blocking": false}
+    {"id": "fix-WR-01", "name": "Add explicit require before globalSupply decrement in GNUSBridge.burn()", "severity": "warning"},
+    {"id": "fix-WR-02", "name": "Update stale withdraw() references in GNUSWithdrawLimiterStorage.test.ts stubs", "severity": "warning"},
+    {"id": "verify", "name": "Run /gsd:verify-work 9", "status": "not_started"},
+    {"id": "test-residuals", "name": "Disposition 3 residual test failure categories", "status": "not_started"},
+    {"id": "commit", "name": "Commit DiamondInitFacet + config + REVIEW.md", "status": "not_started"},
+    {"id": "pr", "name": "Create draft PR, run /gsd-inbox", "status": "not_started"}
   ],
   "decisions": [
-    {"decision": "Phase 6 D-02: assert CURRENT no-burn behavior for 2nd-gen child mints (burntSupply === 0n); burn semantics deferred to Phase 9 reserve accounting", "rationale": "Implementing burn now would create double migration + diamond upgrade churn when Phase 9 replaces burn/mint backing with reserve accounting", "phase": "6"},
-    {"decision": "Phase 6 D-04/D-05: single getBannedTransferor(uint256,address) view on GNUSControl facet; tokenId 0 (GNUS_TOKEN_ID) is the global-ban query convention", "rationale": "Delegates to the exact predicate enforced by transfer hooks, so getter cannot drift from enforcement semantics", "phase": "6"},
-    {"decision": "develop is the GSD base branch for gnus-ai workstream; main is GitHub default; master was renamed to main and local master deleted as stale ghost", "rationale": "Branch convention pinned in config.json; verified develop↔main state before shipping", "phase": "repo"}
+    {"decision": "protocolVersion 3.0 → 2.6", "rationale": "No v3.0 init function exists; codebase convention ties version to initializer name (250→v2.5.0, 260→v2.6.0)"},
+    {"decision": "diamondInitialize260() carries only v2.6 delta", "rationale": "Code comment: prior initializers never re-executed. Deployment tool sequences 250→260 for fresh deploys."},
+    {"decision": "DiamondInitFacet upgradeInit set to empty string for v2.5", "rationale": "diamondInitialize250() resets limiter defaults on every upgrade — bug. v2.5 upgradeInit now empty."},
+    {"decision": "Removed GNUSNFTFactory v3.0 entry", "rationale": "No init change from v2.3; calling Initialize230() with guard 'protocolVersion < 230' would revert on upgrade from 2.3."}
   ],
-  "uncommitted_files": [
-    {"path": "contracts/gnus-ai", "reason": "untracked cache_hardhat/ inside nested repo — harmless build artifact, do NOT commit"}
-  ],
-  "known_test_baseline": "yarn test: 421 passing / 2 pending / 6 failing. The 6 failures are PRE-EXISTING Safe SDK mock issues (protocolKit.isOwner is not a function in test/unit/safe/proposeSafeTransaction.test.ts). Never attribute to phase work; do not fix in-scope. Phase 08.2-01 may address the underlying proposer issue.",
-  "next_action": "/gsd:discuss-phase 7 --ws gnus-ai (from the gnus-ai directory) — Phase 7 Dependency Hardening is the last remediation phase before the architecture block",
-  "context_notes": "All remediation phases 1-6 are complete and pushed. Nested contracts repo is on develop at 2e70a63 (includes Phase 6 getBannedTransferor via merged PR #4). GitHub reports 77 Dependabot vulnerabilities on default branch (1 critical, 38 high) — relevant context for Phase 7. Everything compiled and tested green at push time; nothing in flight."
+  "blockers": [],
+  "human_actions_pending": [],
+  "next_action": "Commit DiamondInitFacet.sol + config + REVIEW.md, then decide on WR-01/WR-02 disposition",
+  "context_notes": "Post-execution cleanup session. Phase 9 executors left 3.0 versioning everywhere — corrected to 2.6. User caught upgradeInit bug and rejected code duplication. diamondInitialize260() is minimal: just sets protocolVersion=260."
 }
