@@ -184,7 +184,7 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 					// 3. Current bin receives the withdrawal amount
 					// Will be implemented once checkAndRecordWithdraw is available
 					// const withdrawAmount = toWei('1000');
-					// await expect(geniusDiamond.connect(user1).withdraw(withdrawAmount, nftId))
+					// await expect(geniusDiamond.connect(user1).convert(withdrawAmount, nftId)) // Phase 9: use convert(...) instead
 					//   .to.emit(geniusDiamond, 'WithdrawRecorded');
 					// const state = await geniusDiamond.getAccountWithdrawStatus(user1.address);
 					// expect(state.baseTimestamp).to.be.gt(0);
@@ -247,7 +247,7 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 					const requestedAmount2 = toWei('6000'); // Should fail (95000 + 6000 > 100000)
 
 					// Will implement actual revert test once checkAndRecordWithdraw is available
-					// await expect(geniusDiamond.connect(user1).withdraw(requestedAmount2, nftId))
+					// await expect(geniusDiamond.connect(user1).convert(requestedAmount2, nftId)) // Phase 9: use convert(...) instead
 					//   .to.be.revertedWith('Withdrawal limit exceeded for time window');
 				});
 			});
