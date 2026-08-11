@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-08-06T01:08:18Z",
+  "timestamp": "2026-08-11T02:14:41.730Z",
   "phase": "9",
   "phase_name": "per-child-gnus-treasury-reserve",
   "phase_dir": ".planning/phases/09-per-child-gnus-treasury-reserve",
@@ -14,33 +14,43 @@
     {"id": "09-05", "name": "Invariant tests + deployment migration", "status": "done"}
   ],
   "review": {
-    "status": "complete",
+    "status": "fixes-applied",
     "file": ".planning/phases/09-per-child-gnus-treasury-reserve/09-REVIEW.md",
     "critical": 0,
     "warning": 2,
-    "info": 2
+    "info": 2,
+    "fixed": 2,
+    "fix_commits": ["de7fe76 (contracts submodule, WR-01)", "000e611 (gnus-ai, WR-02)", "fcc6313 (gnus-ai, REVIEW.md)"]
   },
-  "uncommitted_files": [
-    "contracts/gnus-ai/DiamondInitFacet.sol (added diamondInitialize260 + GNUSControlStorage import)",
-    "diamonds/GeniusDiamond/geniusdiamond.config.json (3.0 → 2.6, fixed upgradeInit, removed dead entries)",
-    ".planning/phases/09-per-child-gnus-treasury-reserve/09-REVIEW.md (new)"
-  ],
+  "branches": {
+    "gnus-ai": "wip/phase-9-pause (pushed)",
+    "contracts/gnus-ai": "wip/phase-9-pause (pushed, HEAD 8520166)",
+    "diamonds/GeniusDiamond": "wip/phase-9-pause (pushed, HEAD 27e90cb)",
+    "TokenContracts (root)": "develop — NOT branched, has unpushed commits + unpushed submodule bumps"
+  },
+  "uncommitted_files": [],
   "remaining_tasks": [
-    {"id": "fix-WR-01", "name": "Add explicit require before globalSupply decrement in GNUSBridge.burn()", "severity": "warning"},
-    {"id": "fix-WR-02", "name": "Update stale withdraw() references in GNUSWithdrawLimiterStorage.test.ts stubs", "severity": "warning"},
+    {"id": "provenance-redesign", "name": "Implement per-chain provenance model (BLOCKED on 5 design questions — see .continue-here.md)", "status": "blocked_on_user"},
+    {"id": "test-residuals", "name": "Re-run full suite at final config state; disposition remaining failures (last full run: 398 pass / 25 fail, but config changed since)", "status": "not_started"},
+    {"id": "submodule-bumps", "name": "Bump submodule pointers in gnus-ai + root TokenContracts repo", "status": "not_started"},
     {"id": "verify", "name": "Run /gsd:verify-work 9", "status": "not_started"},
-    {"id": "test-residuals", "name": "Disposition 3 residual test failure categories", "status": "not_started"},
-    {"id": "commit", "name": "Commit DiamondInitFacet + config + REVIEW.md", "status": "not_started"},
-    {"id": "pr", "name": "Create draft PR, run /gsd-inbox", "status": "not_started"}
+    {"id": "pr", "name": "Create draft PRs per repo, run /gsd-inbox", "status": "not_started"}
   ],
   "decisions": [
-    {"decision": "protocolVersion 3.0 → 2.6", "rationale": "No v3.0 init function exists; codebase convention ties version to initializer name (250→v2.5.0, 260→v2.6.0)"},
-    {"decision": "diamondInitialize260() carries only v2.6 delta", "rationale": "Code comment: prior initializers never re-executed. Deployment tool sequences 250→260 for fresh deploys."},
-    {"decision": "DiamondInitFacet upgradeInit set to empty string for v2.5", "rationale": "diamondInitialize250() resets limiter defaults on every upgrade — bug. v2.5 upgradeInit now empty."},
-    {"decision": "Removed GNUSNFTFactory v3.0 entry", "rationale": "No init change from v2.3; calling Initialize230() with guard 'protocolVersion < 230' would revert on upgrade from 2.3."}
+    {"decision": "protocolVersion is 2.6, not 3.0", "rationale": "User: 'no config should have 3.0 in the config'. The 3.0 bump (commits 919ee4c/f249ade in GeniusDiamond) was an AI error. Version-embedded initializer convention (250=v2.5.0, 260=v2.6.0) per commit 2691cea."},
+    {"decision": "GNUSTreasury_Initialize300 renamed to GNUSTreasury_Initialize260", "rationale": "Function was born misnamed in 7c0ef13 — no 260 ever existed to cherry-pick. Renamed in contract, config signatures, and 7 test files."},
+    {"decision": "Removed deployInitSignature/upgradeInitSignature from GNUSTreasury 2.6 config", "rationale": "Cut-time inits CANNOT take parameters — BaseDeploymentStrategy.getInitCalldata() encodes with zero args (verified in tooling source). Cross-chain seed must be a post-deploy call."},
+    {"decision": "DiamondInitFacet 2.6 init is diamondInitialize250() (roles only, no protocolVersion write)", "rationale": "This eliminates the original 'Constructor was already initialized >= 2.30' ordering bug: nothing sets protocolVersion before GNUSControl_Initialize230() runs post-cut."},
+    {"decision": "Provenance model redesign: per-chain supply mapping", "rationale": "User design: Initialize260() (no-arg, cut-safe) records own block.chainid; setSisterChainSupply(chainId, newSupply) applies delta to globalSupply per sister; called at onboarding (part of multisig facet-cut batch) and after any out-of-band mint."},
+    {"decision": "EVMRelay verification of sister-chain updates — REJECTED", "rationale": "User: 'not going to happen often enough to warrant an EVM monitoring system'. Manual/admin calls suffice."}
   ],
-  "blockers": [],
-  "human_actions_pending": [],
-  "next_action": "Commit DiamondInitFacet.sol + config + REVIEW.md, then decide on WR-01/WR-02 disposition",
-  "context_notes": "Post-execution cleanup session. Phase 9 executors left 3.0 versioning everywhere — corrected to 2.6. User caught upgradeInit bug and rejected code duplication. diamondInitialize260() is minimal: just sets protocolVersion=260."
+  "blockers": [
+    {"description": "5 provenance-redesign design questions awaiting user answers (flag ownership, seed semantics on chain N, single vs batch setter, role choice, syncGlobalSupply fate)", "type": "human_action", "workaround": "none"}
+  ],
+  "human_actions_pending": [
+    {"action": "Answer the 5 design questions in .planning/phases/09-per-child-gnus-treasury-reserve/.continue-here.md", "context": "User was mid-design when pausing", "blocking": true},
+    {"action": "Root TokenContracts repo still on develop with unpushed commits — decide whether it also gets a wip branch", "context": "gnus-ai gitlink bump will need a home", "blocking": false}
+  ],
+  "next_action": "Read .continue-here.md in the phase dir; get user's 5 design answers; implement GNUSTreasuryStorage layout + Initialize260/SetSeedSupply/setSisterChainSupply in ONE pass (storage, contract, config, tests)",
+  "context_notes": "Multiple false starts this session (fold-in approach reverted after user pushback). Actual root cause of the deploy-fixture failure was the erroneous 3.0 config, not missing init deltas. Renaming to 2.6 + diamondInitialize250-as-init fixed the original Constructor failure (GNUSBridge suite: 9/9 pass). Do NOT re-attempt init fold-in. Do NOT proceed on design assumptions — user stopped the session twice for this."
 }

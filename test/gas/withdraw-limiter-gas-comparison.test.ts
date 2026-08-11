@@ -86,7 +86,7 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 
 			// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
 			// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
-			await geniusDiamond.GNUSTreasury_Initialize300(0n);
+			await geniusDiamond.GNUSTreasury_Initialize260(0n);
 
 			// Create child NFT for convert tests
 			// createNFT(parentId, name, symbol, exchangeRate, maxSupply, uri)
