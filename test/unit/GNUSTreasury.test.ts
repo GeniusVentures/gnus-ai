@@ -25,7 +25,7 @@ chai.use(chaiAsPromised);
  *   - convert legs (child->GNUS, GNUS->child, child->child, deep) with WR-07 charge matrix
  *   - revert matrix (same-id, zero amount, uncreated id, insufficient balance, nonConvertible src/dst)
  *   - display views (unitsOf / totalUnitsOf / totalSupplyOfAll) with floor rounding + id-0 guard
- *   - provenance lifecycle (Initialize300 seed, re-init guard, syncGlobalSupply role-gated)
+ *   - provenance lifecycle (Initialize260 seed, re-init guard, syncGlobalSupply role-gated)
  *   - cross-chain provenance via two-diamond fixture (B1 model)
  *   - global cap + bridge-fee drift (Pitfall 3)
  *   - counter-untouched property (Pitfall 2)
@@ -162,7 +162,7 @@ describe('GNUS Treasury Tests', async function () {
 			 */
 			async function bootWithChild(): Promise<bigint> {
 				// Seed provenance with 0 — the local fixture has no bridged-in supply yet.
-				await ownerDiamond.GNUSTreasury_Initialize300(0n);
+				await ownerDiamond.GNUSTreasury_Initialize260(0n);
 				// Mint 1000 free GNUS to signer1 (they will pay for converts).
 				await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 				// Also give owner some GNUS so they can fund the factory-mint burn.
@@ -286,7 +286,7 @@ describe('GNUS Treasury Tests', async function () {
 			describe('child to child', function () {
 				it('childA->childB convert: zero limiter charge, supply-neutral reallocation', async function () {
 					// Initialize and create TWO direct children
-					await ownerDiamond.GNUSTreasury_Initialize300(0n);
+					await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'A', 'A', toWei('1'), toWei('1000000'), 'ipfs://a');
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'B', 'B', toWei('1'), toWei('1000000'), 'ipfs://b');
@@ -319,7 +319,7 @@ describe('GNUS Treasury Tests', async function () {
 			describe('deep', function () {
 				it('grandchild->GNUS single-hop convert; no tree-walking; rate never applied', async function () {
 					// Initialize and build a depth-2 tree: GNUS -> A -> B
-					await ownerDiamond.GNUSTreasury_Initialize300(0n);
+					await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
 					// Create depth-1 child A
@@ -398,7 +398,7 @@ describe('GNUS Treasury Tests', async function () {
 
 				it('convert nonConvertible destination reverts', async function () {
 					// Two children; flip destination's nonConvertible; attempt convert src->dst.
-					await ownerDiamond.GNUSTreasury_Initialize300(0n);
+					await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'A', 'A', toWei('1'), toWei('1000000'), 'ipfs://a');
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'B', 'B', toWei('1'), toWei('1000000'), 'ipfs://b');
@@ -469,7 +469,7 @@ describe('GNUS Treasury Tests', async function () {
 					}
 				});
 
-				it('Initialize300 seeds globalSupply and emits GlobalSupplyInitialized', async function () {
+				it('Initialize260 seeds globalSupply and emits GlobalSupplyInitialized', async function () {
 					// If the deploy already initialized, this call reverts with "Already initialized"
 					// — which is also a valid proof of the one-shot guard. Test both branches.
 					const initialized = await provider.send('eth_getStorageAt', [
@@ -477,7 +477,7 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await expect(ownerDiamond.GNUSTreasury_Initialize300(0n))
+						await expect(ownerDiamond.GNUSTreasury_Initialize260(0n))
 							.to.emit(geniusDiamond, 'GlobalSupplyInitialized')
 							.withArgs(0n, owner);
 						const v = await geniusDiamond.totalSupplyOfAll();
@@ -496,10 +496,10 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 					// Second call must revert
-					await expect(ownerDiamond.GNUSTreasury_Initialize300(123n)).to.be.revertedWith(
+					await expect(ownerDiamond.GNUSTreasury_Initialize260(123n)).to.be.revertedWith(
 						'Already initialized',
 					);
 				});
@@ -511,7 +511,7 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 
 					// Non-admin cannot sync
@@ -531,12 +531,12 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await expect(signer1Diamond.GNUSTreasury_Initialize300(0n)).to.be.revertedWith(
+						await expect(signer1Diamond.GNUSTreasury_Initialize260(0n)).to.be.revertedWith(
 							'Only SuperAdmin allowed',
 						);
 					} else {
 						// If pre-initialized, the "Already initialized" guard fires before the role check.
-						await expect(signer1Diamond.GNUSTreasury_Initialize300(0n)).to.be.reverted;
+						await expect(signer1Diamond.GNUSTreasury_Initialize260(0n)).to.be.reverted;
 					}
 				});
 			});
@@ -584,14 +584,14 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initA) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 					const initB = await provider.send('eth_getStorageAt', [
 						chainBAddress,
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initB) === 0n) {
-						await chainBOwnerDiamond.GNUSTreasury_Initialize300(0n);
+						await chainBOwnerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 
 					// Mint 1000 on chain A
@@ -625,7 +625,7 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 
 					// Mint exactly the cap
@@ -646,7 +646,7 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 					// Fund the factory-mint caller (owner) with 100 id-0 FIRST (counter: 100),
 					// then bring signer1 to the cap minus that amount. Counter ends at exactly
@@ -672,7 +672,7 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 
 					// Set bridge fee to 200 (20%) — max allowed per GNUSControl.
@@ -723,7 +723,7 @@ describe('GNUS Treasury Tests', async function () {
 				it('unitsOf/totalUnitsOf revert when rate == 0', async function () {
 					// createNFTs guards rate > 0 for direct children of GNUS. Craft a rate=0 child by
 					// direct storage write (test-only technique; simulates a corrupted/legacy record).
-					await ownerDiamond.GNUSTreasury_Initialize300(0n).catch(() => {}); // idempotent
+					await ownerDiamond.GNUSTreasury_Initialize260(0n).catch(() => {}); // idempotent
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('100'));
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'A', 'A', toWei('1'), toWei('1000000'), 'ipfs://a');
 					const childA = 1n;
@@ -755,7 +755,7 @@ describe('GNUS Treasury Tests', async function () {
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 					]);
 					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_Initialize300(0n);
+						await ownerDiamond.GNUSTreasury_Initialize260(0n);
 					}
 					// Fund the factory-mint caller (owner) first: 100 to owner, 900 to signer1.
 					// globalSupply = 1000 and every subsequent step must leave it untouched.
@@ -804,7 +804,7 @@ describe('GNUS Treasury Tests', async function () {
 
 			describe('minion cap', function () {
 				it('per-id maxSupply is a minion cap: exactly-to-cap succeeds, cap+1 reverts', async function () {
-					await ownerDiamond.GNUSTreasury_Initialize300(0n).catch(() => {});
+					await ownerDiamond.GNUSTreasury_Initialize260(0n).catch(() => {});
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('2000'));
 
 					// Create child with maxSupply = 1000 minions
@@ -842,7 +842,7 @@ describe('GNUS Treasury Tests', async function () {
 					// appended slots via hardhat_setStorageAt to simulate "this record predates the
 					// struct-append upgrade." The read path must then decode parentId == 0 and
 					// nonConvertible == false, and all pre-existing fields must read back byte-identical.
-					await ownerDiamond.GNUSTreasury_Initialize300(0n).catch(() => {});
+					await ownerDiamond.GNUSTreasury_Initialize260(0n).catch(() => {});
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
 					const expectedRate = toWei('3'); // 3e18 — arbitrary non-trivial rate
@@ -913,7 +913,7 @@ describe('GNUS Treasury Tests', async function () {
 							globalSupplySlot,
 							ethers.toBeHex(0n, 32),
 						]);
-						await ownerDiamond.GNUSTreasury_Initialize300(toWei('5000'));
+						await ownerDiamond.GNUSTreasury_Initialize260(toWei('5000'));
 					}
 
 					expect(await geniusDiamond.totalSupplyOfAll()).to.eq(toWei('5000'));
@@ -935,7 +935,7 @@ describe('GNUS Treasury Tests', async function () {
 					await provider.send('hardhat_setStorageAt', [diamondAddress, initSlot, ethers.toBeHex(0n, 32)]);
 
 					// Misconfigured deploy: seed 0.
-					await ownerDiamond.GNUSTreasury_Initialize300(0n);
+					await ownerDiamond.GNUSTreasury_Initialize260(0n);
 
 					// The DIVERGENCE between totalSupplyOfAll (0) and totalSupply(0) (5000) is the
 					// misconfiguration signal. Runbook MUST read totalSupply(0) (plus any outstanding

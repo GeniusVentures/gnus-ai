@@ -220,7 +220,7 @@ describe('GNUS Bridge Tests', async function () {
 				beforeEach(async function () {
 					// Seed the provenance counter so the global-cap check in
 					// _mintWithBridgeFee can run (reverts when uninitialized, D8/Pitfall 4).
-					await ownerDiamond.GNUSTreasury_Initialize300(0n);
+					await ownerDiamond.GNUSTreasury_Initialize260(0n);
 
 					// Create NFT for testing
 					nftID = 1n;

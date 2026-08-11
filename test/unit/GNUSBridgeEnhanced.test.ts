@@ -43,7 +43,7 @@ describe('GNUSBridge Enhanced Tests', function () {
 
 		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
 		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
-		await geniusDiamond.GNUSTreasury_Initialize300(0n);
+		await geniusDiamond.GNUSTreasury_Initialize260(0n);
 
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');

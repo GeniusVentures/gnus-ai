@@ -112,7 +112,7 @@ describe('NFT Factory Tests', async function () {
 
 				// Seed the provenance counter so the global-cap check in
 				// _mintWithBridgeFee can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
-				await ownerDiamond.GNUSTreasury_Initialize300(0n);
+				await ownerDiamond.GNUSTreasury_Initialize260(0n);
 
 				snapshotId = await provider.send('evm_snapshot', []);
 			});
