@@ -12,7 +12,7 @@
  * @module scripts/setup/strategies/SafeProposerRPCDeploymentStrategy
  */
 
-import { RPCDeploymentStrategy, Diamond, type FacetCuts } from '@diamondslab/diamonds';
+import { RPCDeploymentStrategy, Diamond, type FacetCuts } from '@geniusventures/diamonds';
 import { OperationType } from '@safe-global/types-kit';
 import chalk from 'chalk';
 

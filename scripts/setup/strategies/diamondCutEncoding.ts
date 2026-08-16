@@ -16,8 +16,8 @@
  * @module scripts/setup/strategies/diamondCutEncoding
  */
 
-import { RPCDeploymentStrategy, Diamond, getContractArtifact } from '@diamondslab/diamonds';
-import type { FacetCuts } from '@diamondslab/diamonds';
+import { RPCDeploymentStrategy, Diamond, getContractArtifact } from '@geniusventures/diamonds';
+import type { FacetCuts } from '@geniusventures/diamonds';
 import { ethers } from 'ethers';
 import chalk from 'chalk';
 

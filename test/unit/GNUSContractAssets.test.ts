@@ -1,8 +1,8 @@
-import type { Diamond } from '@diamondslab/diamonds';
+import type { Diamond } from '@geniusventures/diamonds';
 import {
 	LocalDiamondDeployer,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { expect } from 'chai';
 import type { Signer } from 'ethers';
 import hre from 'hardhat';

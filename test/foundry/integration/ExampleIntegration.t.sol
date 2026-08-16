@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
-import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondABILoader.sol";
+import "@geniusventures/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
+import "@geniusventures/diamonds-hardhat-foundry/contracts/DiamondABILoader.sol";
 import "../helpers/DiamondDeployment.sol";
 
 /**

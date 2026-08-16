@@ -1,4 +1,4 @@
-// Load the Hardhat Runtime Environment FIRST. @diamondslab/diamonds transitively
+// Load the Hardhat Runtime Environment FIRST. @geniusventures/diamonds transitively
 // requires @nomicfoundation/hardhat-ethers, which calls extendEnvironment() at
 // module load — and that needs a Hardhat context to already exist. Importing
 // hardhat before the diamonds library creates that context, so these RPC scripts
@@ -6,7 +6,7 @@
 // Hardhat is NOT used to broadcast transactions — all deployment/upgrade traffic
 // is signed and sent directly via ethers over the configured RPC URL.
 import hre, { ethers } from 'hardhat';
-import '@diamondslab/hardhat-diamonds';
+import '@geniusventures/hardhat-diamonds';
 import 'hardhat-multichain';
 
 import {
@@ -20,7 +20,7 @@ import {
 	RegistryFacetCutAction,
 	SupportedProvider,
 	cutKey,
-} from '@diamondslab/diamonds';
+} from '@geniusventures/diamonds';
 import { SafeProposerRPCDeploymentStrategy } from './strategies/SafeProposerRPCDeploymentStrategy';
 import { EncodeOnlyRPCDeploymentStrategy } from './strategies/EncodeOnlyRPCDeploymentStrategy';
 import { GnusDeployedDiamondDataSchema } from '../schemas/deployedDiamondDataSchema';
@@ -272,7 +272,7 @@ export class RPCDiamondDeployer {
 		this.diamond.setSigner(this.signer);
 
 		// gnus-ai records store facet history under `.FacetDeployedInfo`
-		// (scripts/common.ts), but @diamondslab/diamonds seeds its selector
+		// (scripts/common.ts), but @geniusventures/diamonds seeds its selector
 		// registry from `.DeployedFacets`, and its DeployedDiamondDataSchema has
 		// FacetDeployedInfo commented out — so readDeployFile()'s Zod parse strips
 		// it and this.diamond.getDeployedDiamondData() can never surface it.
@@ -385,7 +385,7 @@ export class RPCDiamondDeployer {
 	}
 
 	/**
-	 * Load diamond configuration from @diamondslab/hardhat-diamonds
+	 * Load diamond configuration from @geniusventures/hardhat-diamonds
 	 *
 	 * @param diamondName - Name of the diamond
 	 * @returns DiamondPathsConfig from hardhat configuration
@@ -451,7 +451,7 @@ export class RPCDiamondDeployer {
 		privateKey: string,
 		overrides: Partial<RPCDiamondDeployerConfig> = {},
 	): RPCDiamondDeployerConfig {
-		// Get diamond configuration from @diamondslab/hardhat-diamonds
+		// Get diamond configuration from @geniusventures/hardhat-diamonds
 		const diamondConfig = this.getDiamondConfigFromHardhat(diamondName);
 
 		// Get network configuration from hardhat chainManager

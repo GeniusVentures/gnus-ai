@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Zod validation counterpart to `IFacetDeployedInfo` (scripts/common.ts).
  *
  * gnus-ai's canonical deployment record carries per-facet history under
- * `FacetDeployedInfo`, but @diamondslab/diamonds' `DeployedDiamondDataSchema`
+ * `FacetDeployedInfo`, but @geniusventures/diamonds' `DeployedDiamondDataSchema`
  * has that member commented out — so the library's `readDeployFile()` Zod parse
  * strips it and `Diamond.getDeployedDiamondData()` can never surface it. This
  * schema declares `FacetDeployedInfo` so callers can validate the raw record

@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 
-import '@diamondslab/diamonds-hardhat-foundry';
-import '@diamondslab/hardhat-diamonds';
+import '@geniusventures/diamonds-hardhat-foundry';
+import '@geniusventures/hardhat-diamonds';
 import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-web3-v4';
 import '@typechain/hardhat';
