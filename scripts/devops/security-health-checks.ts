@@ -468,7 +468,7 @@ class SecurityHealthChecks {
 			// Check diamond configuration
 			const diamondConfigPath = path.join(
 				process.cwd(),
-				'@diamondslab/diamonds',
+				'@geniusventures/diamonds',
 				'GNUSDAODiamond',
 				'gnusdaodiamond.config.json',
 			);

@@ -4,7 +4,7 @@ import {
 	Diamond,
 	diffDeployedFacets,
 	getDeployedFacets,
-} from '@diamondslab/diamonds';
+} from '@geniusventures/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';

@@ -1,9 +1,9 @@
-import { Diamond, SupportedProvider } from '@diamondslab/diamonds';
+import { Diamond, SupportedProvider } from '@geniusventures/diamonds';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';

@@ -15,7 +15,7 @@ import {
 	RPCDiamondDeployer,
 	RPCDiamondDeployerConfig,
 } from '../../../scripts/setup/RPCDiamondDeployer';
-import { RPCDeploymentStrategy } from '@diamondslab/diamonds';
+import { RPCDeploymentStrategy } from '@geniusventures/diamonds';
 import { SafeProposerRPCDeploymentStrategy } from '../../../scripts/setup/strategies/SafeProposerRPCDeploymentStrategy';
 import { ethers } from 'hardhat';
 import sinon from 'sinon';

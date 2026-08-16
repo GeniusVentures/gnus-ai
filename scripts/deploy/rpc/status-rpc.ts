@@ -6,11 +6,11 @@
  */
 
 // Load Hardhat FIRST so its Runtime Environment context exists before
-// @diamondslab/diamonds (which calls extendEnvironment at import time) loads.
+// @geniusventures/diamonds (which calls extendEnvironment at import time) loads.
 // Hardhat provides plugin/context plumbing only — no transactions are sent via it.
 import 'hardhat';
 
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import chalk from 'chalk';
 import { ethers } from 'ethers';
 import { RPCDiamondDeployer } from '../../setup/RPCDiamondDeployer';

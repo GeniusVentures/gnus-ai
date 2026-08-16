@@ -3,12 +3,12 @@ import chaiAsPromised from 'chai-as-promised';
 import { debuglog } from 'util';
 import { GNUS_TOKEN_ID } from '../../scripts/common';
 
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { assert, expect } from 'chai';
 import { debug } from 'debug';

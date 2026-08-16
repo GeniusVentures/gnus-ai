@@ -5,12 +5,12 @@ import { GNUS_TOKEN_ID } from '../../scripts/common';
 import { iObjToString } from '../../scripts/utils/iObjToString';
 import { logEvents } from '../../scripts/utils/logEvents';
 
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { assert, expect } from 'chai';
 import { debug } from 'debug';

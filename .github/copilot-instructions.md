@@ -11,11 +11,11 @@ GNUS.ai is an **ERC-2535 Diamond Standard** smart contract system implementing a
 
 **Architecture Philosophy**: Modular facet-based upgradability using Diamond proxy pattern. Each facet handles distinct functionality (ownership, access control, NFT factory, AI escrow, bridge operations).
 
-**Diamond Management System**: Uses the `@diamondslab` package suite providing comprehensive tooling for ERC-2535 Diamond development:
+**Diamond Management System**: Uses the `@geniusventures` package suite providing comprehensive tooling for ERC-2535 Diamond development:
 
-- **@diamondslab/hardhat-diamonds**: Deployment, ABI generation, configuration management
-- **@diamondslab/diamonds-hardhat-foundry**: Foundry integration, fuzz testing base contracts
-- **@diamondslab/diamonds-monitor**: Runtime monitoring and analytics
+- **@geniusventures/hardhat-diamonds**: Deployment, ABI generation, configuration management
+- **@geniusventures/diamonds-hardhat-foundry**: Foundry integration, fuzz testing base contracts
+- **@geniusventures/diamonds-monitor**: Runtime monitoring and analytics
 
 ## Critical Development Workflows
 
@@ -52,7 +52,7 @@ yarn coverage                      # Hardhat coverage via Solidity Coverage
 - **deployInit/upgradeInit**: Init function signatures for deployment/upgrades
 - **fromVersions**: Specifies which versions can upgrade to current
 
-**@diamondslab Hardhat Tasks** (from `@diamondslab/hardhat-diamonds`):
+**@geniusventures Hardhat Tasks** (from `@geniusventures/hardhat-diamonds`):
 
 ```bash
 # Generate combined Diamond ABI from all facets
@@ -82,7 +82,7 @@ After modifying facets, ALWAYS run `yarn clean-compile` to regenerate Diamond AB
 import {
   LocalDiamondDeployer,
   loadDiamondContract,
-} from "@diamondslab/hardhat-diamonds/dist/utils";
+} from "@geniusventures/hardhat-diamonds/dist/utils";
 
 describe("Contract Tests", function () {
   const networkNames = process.argv[
@@ -119,7 +119,7 @@ describe("Contract Tests", function () {
 **Foundry/Solidity Tests** - Extend DiamondFuzzBase:
 
 ```solidity
-import {DiamondFuzzBase} from "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+import {DiamondFuzzBase} from "@geniusventures/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
 import {DiamondDeployment} from "../helpers/DiamondDeployment.sol"; // Auto-generated
 
 contract MyTest is DiamondFuzzBase {
@@ -209,7 +209,7 @@ yarn forge:fmt:check     # Solidity formatting
 
 **Hardhat Tests** (TypeScript):
 
-- Use `LocalDiamondDeployer.getInstance()` from `@diamondslab/hardhat-diamonds`
+- Use `LocalDiamondDeployer.getInstance()` from `@geniusventures/hardhat-diamonds`
 - Multiton pattern: one deployment per network, reused across tests
 - Load contracts with `loadDiamondContract<T>()` for full type safety
 

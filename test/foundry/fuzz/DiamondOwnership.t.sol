@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+import "@geniusventures/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
 import "../helpers/DiamondDeployment.sol";
 
 /// @title ExampleDiamondOwnership
