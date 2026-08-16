@@ -14,6 +14,8 @@ import {
 } from '../utils/bridge-fixtures';
 
 describe('GNUSBridge Enhanced Tests', function () {
+	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
+	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 	let geniusDiamond: GeniusDiamond;
 	let owner: SignerWithAddress;
 	let user1: SignerWithAddress;
@@ -42,8 +44,16 @@ describe('GNUSBridge Enhanced Tests', function () {
 		[owner, user1, user2, user3] = await ethers.getSigners();
 
 		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
-		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
-		await geniusDiamond.GNUSTreasury_Initialize260(0n);
+		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4). The GeniusDiamond
+		// fixture is shared (cached) across suites, so a prior suite may already have
+		// seeded the one-shot SetSeedSupply — guard on provenanceInitialized (slot +1).
+		const initialized = await hre.network.provider.send('eth_getStorageAt', [
+			diamondAddress,
+			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+		]);
+		if (BigInt(initialized) === 0n) {
+			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
+		}
 
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');

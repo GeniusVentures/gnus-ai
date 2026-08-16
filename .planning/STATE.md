@@ -76,3 +76,9 @@ See: .planning/PROJECT.md
 
 - Phase 08.1 inserted after Phase 8: Safe Wallet Proposer retrofit for diamondCut proposals (URGENT)
 - Phase 08.2 inserted after Phase 08.1: Deploy-verify pipeline fixes (URGENT)
+
+## Session Continuity
+
+Last session: 2026-08-15 (branch renamed wip/phase-9-pause → feature/09-per-child-gnus-treasury-reserve across all repos)
+Stopped at: Phase 9 provenance redesign implemented + all test regressions fixed (458 passing, 0 failing); committing, then verify-work 9, then push
+Resume file: .planning/phases/09-per-child-gnus-treasury-reserve/.continue-here.md
