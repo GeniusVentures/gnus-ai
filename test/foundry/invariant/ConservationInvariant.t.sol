@@ -47,7 +47,7 @@ contract ConservationInvariant is GeniusDiamondTestBase {
         // the initializer reverts — catch and continue (idempotent harness bring-up).
         vm.prank(owner);
         (bool seeded, ) = diamond.call(
-            abi.encodeWithSignature("GNUSTreasury_Initialize260(uint256)", uint256(0))
+            abi.encodeWithSignature("GNUSTreasury_SetSeedSupply(uint256)", uint256(0))
         );
         if (!seeded) {
             console.log("[SETUP] Provenance already initialized on fork; continuing");

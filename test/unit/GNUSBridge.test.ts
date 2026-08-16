@@ -32,7 +32,6 @@ describe('GNUS Bridge Tests', async function () {
 		}
 	} else if (process.argv.includes('test') || process.argv.includes('coverage')) {
 		networkProviders.set('hardhat', ethers.provider as any);
-		networkProviders.set('hardhat', ethers.provider as any);
 	}
 
 	for (const [networkName, provider] of networkProviders.entries()) {
@@ -52,6 +51,9 @@ describe('GNUS Bridge Tests', async function () {
 
 			let ethersMultichain: typeof ethers;
 			let snapshotId: string;
+			// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
+			const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
+			let deployedDiamondAddress: string;
 
 			let erc1155ProxyOperator: GeniusDiamond;
 
@@ -68,6 +70,7 @@ describe('GNUS Bridge Tests', async function () {
 				await diamondDeployer.setVerbose(true);
 				diamond = await diamondDeployer.getDiamondDeployed();
 				const deployedDiamondData = diamond.getDeployedDiamondData();
+			deployedDiamondAddress = deployedDiamondData.DiamondAddress! || '';
 
 				// Load the Diamond contract using the utility function
 				geniusDiamond = await loadDiamondContract<GeniusDiamond>(
@@ -220,7 +223,16 @@ describe('GNUS Bridge Tests', async function () {
 				beforeEach(async function () {
 					// Seed the provenance counter so the global-cap check in
 					// _mintWithBridgeFee can run (reverts when uninitialized, D8/Pitfall 4).
-					await ownerDiamond.GNUSTreasury_Initialize260(0n);
+					// The GeniusDiamond fixture is shared (cached) across suites, so a prior
+					// suite may already have seeded the one-shot SetSeedSupply — guard on
+					// provenanceInitialized (slot +1).
+					const initialized = await provider.send('eth_getStorageAt', [
+						deployedDiamondAddress,
+						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+					]);
+					if (BigInt(initialized) === 0n) {
+						await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
+					}
 
 					// Create NFT for testing
 					nftID = 1n;

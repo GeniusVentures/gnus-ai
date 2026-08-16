@@ -26,8 +26,13 @@ GNUS.ai is an **ERC-2535 Diamond Standard** smart contract system implementing a
 yarn clean-compile
 
 # Run Hardhat tests across multiple chains
-yarn test                          # Alias for test-multichain
-yarn test-multichain test/unit/*.test.ts --chains sepolia,polygon_amoy
+# NOTE: pass NO positional test path. The bare command (mocha's default spec) is the
+# only form that reliably includes the subdirectory suites (test/unit/safe/, test/unit/rpc/):
+#   - `test/unit/*.test.ts`   silently skips them (one-level glob)
+#   - `"test/unit/**/*.test.ts"` (quoted) fails: hardhat treats it as a literal path (MODULE_NOT_FOUND)
+#   - `test/unit/**/*.test.ts` (unquoted) depends on shell globstar (fails on macOS bash 3.2)
+yarn test                          # Alias for test-multichain, full suite via mocha default spec
+yarn test-multichain --chains sepolia,polygon_amoy
 
 # Foundry fuzz tests (use for property-based testing)
 yarn forge:test                    # Basic Foundry tests

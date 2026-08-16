@@ -99,13 +99,25 @@ describe('Withdraw Limiter Integration Tests', async function () {
 
 			beforeEach(async function () {
 				// Snapshot BEFORE setup so the afterEach revert restores the pre-initialized
-				// provenance state (GNUSTreasury_Initialize260 is one-shot; a post-setup
+				// provenance state (GNUSTreasury_SetSeedSupply is one-shot; a post-setup
 				// snapshot would carry provenanceInitialized=true into the next test).
 				snapshotId_2 = (await provider.send('evm_snapshot', [])) as string;
 
 				// Phase 9 (09-05): seed the provenance counter so the global-cap check in
 				// _mintWithBridgeFee can run (reverts when uninitialized per D8/Pitfall 4).
-				await ownerDiamond.GNUSTreasury_Initialize260(0n);
+				// The GeniusDiamond fixture is shared (cached) across suites, so a prior
+				// suite may already have seeded the one-shot SetSeedSupply — guard on
+				// provenanceInitialized (slot +1).
+				const TREASURY_STORAGE_SLOT = ethers.keccak256(
+					ethers.toUtf8Bytes('gnus.ai.treasury.storage'),
+				);
+				const initialized = await provider.send('eth_getStorageAt', [
+					geniusDiamond.target as string,
+					ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+				]);
+				if (BigInt(initialized) === 0n) {
+					await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
+				}
 
 				// Create NFT fresh for each test
 				nftID = 1n;

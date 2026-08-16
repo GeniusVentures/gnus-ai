@@ -329,11 +329,18 @@ describe('ERC1155ProxyOperator Tests', function () {
 			const tokenId = 1;
 			const mintAmount = 10;
 
-			// Mint NFTs using 3-parameter signature
-			await geniusDiamond['mint(address,uint256,uint256)'](
+			// Fund owner (the NFT creator / factory-mint caller) with GNUS — the 4-arg factory
+			// mint burns the caller's GNUS 1:1 (D1). Amount is minion-denominated (plain number).
+			await geniusDiamond['mint(address,uint256)'](await owner.getAddress(), mintAmount);
+
+			// Phase 9 D10: the 3-arg mint overload is MINTER_ROLE-restricted to GNUS (id 0);
+			// a non-zero id reverts. Mint the child NFT via the production 4-arg path
+			// (GNUSNFTFactory.mint), called by owner (the NFT creator); it burns owner's GNUS 1:1.
+			await geniusDiamond['mint(address,uint256,uint256,bytes)'](
 				await user1.getAddress(),
 				tokenId,
 				mintAmount,
+				'0x',
 			);
 
 			// Check total supply
@@ -426,10 +433,17 @@ describe('ERC1155ProxyOperator Tests', function () {
 			const tokenId = 1;
 			const mintAmount = 10;
 
-			// Mint and transfer tokens using 3-parameter signature
+			// Mint the child NFT via the production path (GNUSNFTFactory 4-arg mint), which
+			// burns GNUS from user1 rather than routing through the MINTER_ROLE-restricted
+			// 3-arg overload (Phase 9 D10 restricts that overload to GNUS id 0; a non-zero id reverts).
 			await geniusDiamond
 				.connect(user1)
-				['mint(address,uint256,uint256)'](await user1.getAddress(), tokenId, mintAmount);
+				['mint(address,uint256,uint256,bytes)'](
+					await user1.getAddress(),
+					tokenId,
+					mintAmount,
+					'0x',
+				);
 			await geniusDiamond
 				.connect(user1)
 				.safeTransferFrom(
@@ -498,11 +512,17 @@ describe('ERC1155ProxyOperator Tests', function () {
 			await tx.wait();
 
 			const tokenId = 1;
-			// Mint NFTs using 3-parameter signature
-			await geniusDiamond['mint(address,uint256,uint256)'](
+			// Fund owner (the NFT creator / factory-mint caller) with GNUS — the 4-arg factory
+			// mint burns the caller's GNUS 1:1 (D1). Amount is minion-denominated (plain number).
+			await geniusDiamond['mint(address,uint256)'](await owner.getAddress(), 20);
+			// Mint the child NFT via the production path (GNUSNFTFactory 4-arg mint), called by
+			// owner (the NFT creator here); it burns owner's GNUS 1:1. The 3-arg overload is
+			// MINTER_ROLE-restricted to GNUS id 0 (Phase 9 D10), so it cannot mint a child NFT.
+			await geniusDiamond['mint(address,uint256,uint256,bytes)'](
 				await user1.getAddress(),
 				tokenId,
 				20,
+				'0x',
 			);
 
 			// Multiple transfers
@@ -621,11 +641,17 @@ describe('ERC1155ProxyOperator Tests', function () {
 			);
 			await tx.wait();
 			const nftTokenId = 1;
-			// Mint NFTs using 3-parameter signature
-			await geniusDiamond['mint(address,uint256,uint256)'](
+			// Fund owner (the NFT creator / factory-mint caller) with GNUS — the 4-arg factory
+			// mint burns the caller's GNUS 1:1 (D1). Amount is minion-denominated (plain number).
+			await geniusDiamond['mint(address,uint256)'](await owner.getAddress(), 500);
+			// Mint the child NFT via the production path (GNUSNFTFactory 4-arg mint), called by
+			// owner (the NFT creator here); it burns owner's GNUS 1:1. The 3-arg overload is
+			// MINTER_ROLE-restricted to GNUS id 0 (Phase 9 D10), so it cannot mint a child NFT.
+			await geniusDiamond['mint(address,uint256,uint256,bytes)'](
 				await user1.getAddress(),
 				nftTokenId,
 				500,
+				'0x',
 			);
 
 			// Set approval explicitly (since isApprovedForAll override may not work in Diamond)

@@ -91,6 +91,9 @@ describe('proposeSafeTransaction', function () {
 			// real SDK returns so downstream .data access works.
 			signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
 			getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
+			// The script branches on protocolKit.isOwner (owner vs delegate signing).
+			// Resolve true so the owner flow uses the signTransaction/signHash stubs below.
+			isOwner: sandbox.stub().resolves(true),
 			signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
 		};
 		sandbox.stub(Safe, 'init').resolves(mockProtocolKit as any);
@@ -133,6 +136,9 @@ describe('proposeSafeTransaction', function () {
 			// real SDK returns so downstream .data access works.
 			signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
 			getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
+			// The script branches on protocolKit.isOwner (owner vs delegate signing).
+			// Resolve true so the owner flow uses the signTransaction/signHash stubs below.
+			isOwner: sandbox.stub().resolves(true),
 			signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
 		};
 		sandbox.stub(Safe, 'init').resolves(mockProtocolKit as any);
@@ -166,6 +172,9 @@ describe('proposeSafeTransaction', function () {
 			// real SDK returns so downstream .data access works.
 			signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
 			getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
+			// The script branches on protocolKit.isOwner (owner vs delegate signing).
+			// Resolve true so the owner flow uses the signTransaction/signHash stubs below.
+			isOwner: sandbox.stub().resolves(true),
 			signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
 		};
 		sandbox.stub(Safe, 'init').resolves(mockProtocolKit as any);
@@ -214,6 +223,9 @@ describe('proposeSafeTransaction', function () {
 			// real SDK returns so downstream .data access works.
 			signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
 			getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
+			// The script branches on protocolKit.isOwner (owner vs delegate signing).
+			// Resolve true so the owner flow uses the signTransaction/signHash stubs below.
+			isOwner: sandbox.stub().resolves(true),
 			signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
 		};
 		const initStub = sandbox.stub(Safe, 'init').resolves(mockProtocolKit as any);
@@ -250,6 +262,9 @@ describe('proposeSafeTransaction', function () {
 			// real SDK returns so downstream .data access works.
 			signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
 			getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
+			// The script branches on protocolKit.isOwner (owner vs delegate signing).
+			// Resolve true so the owner flow uses the signTransaction/signHash stubs below.
+			isOwner: sandbox.stub().resolves(true),
 			signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
 		};
 		sandbox.stub(Safe, 'init').resolves(mockProtocolKit as any);
@@ -284,6 +299,9 @@ describe('proposeSafeTransaction', function () {
 			// real SDK returns so downstream .data access works.
 			signTransaction: sandbox.stub().callsFake((tx: unknown) => Promise.resolve(tx)),
 			getTransactionHash: sandbox.stub().resolves(SAFE_TX_HASH),
+			// The script branches on protocolKit.isOwner (owner vs delegate signing).
+			// Resolve true so the owner flow uses the signTransaction/signHash stubs below.
+			isOwner: sandbox.stub().resolves(true),
 			signHash: sandbox.stub().resolves({ data: '0x' + 'cd'.repeat(65) }),
 		};
 		sandbox.stub(Safe, 'init').resolves(mockProtocolKit as any);
