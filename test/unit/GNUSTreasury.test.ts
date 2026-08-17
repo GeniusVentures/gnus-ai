@@ -643,14 +643,21 @@ describe('GNUS Treasury Tests', async function () {
 
 					// Cross-chain drift: A says 1000 (its own supply), B says 200 (its own supply).
 					// Truth: aggregate is 1000 (the 200 minted on B is the bridge-in counterpart of
-					// tokens still counted on A). Reconcile both directions via setSisterChainSupply.
-					await chainBOwnerDiamond.setSisterChainSupply([CHAIN_A_VIEW], [toWei('1000')]);
-					expect(await chainBGeniusDiamond.totalSupplyOfAll()).to.eq(toWei('1200')); // 200 own + 1000 sister
+					// tokens still counted on A). Reconcile both directions via setSisterChainSupply,
+					// recording each sister's contribution NET of the in-flight bridged amount so the
+					// aggregate is counted once, not double-counted (Codex P1).
+					//
+					// Chain B (globalSupply 200) must reach 1000: it already counts the 200 bridge-in,
+					// so A's *additional* contribution is 1000 - 200 = 800.
+					await chainBOwnerDiamond.setSisterChainSupply([CHAIN_A_VIEW], [toWei('800')]);
+					expect(await chainBGeniusDiamond.totalSupplyOfAll()).to.eq(toWei('1000')); // 200 own + 800 sister
 
-					await ownerDiamond.setSisterChainSupply([CHAIN_B_VIEW], [toWei('200')]);
-					expect(await geniusDiamond.totalSupplyOfAll()).to.eq(toWei('1200')); // 1000 own + 200 sister
+					// Chain A (globalSupply 1000) is already correct: the 200 it still counts as its
+					// own IS the in-flight amount now sitting on B, so B contributes nothing new.
+					await ownerDiamond.setSisterChainSupply([CHAIN_B_VIEW], [toWei('0')]);
+					expect(await geniusDiamond.totalSupplyOfAll()).to.eq(toWei('1000')); // 1000 own + 0 sister
 
-					// Both chains now agree on the aggregate figure.
+					// Both chains now agree on the counted-once aggregate figure.
 					expect(await geniusDiamond.totalSupplyOfAll()).to.eq(
 						await chainBGeniusDiamond.totalSupplyOfAll(),
 					);
