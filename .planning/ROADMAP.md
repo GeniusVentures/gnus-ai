@@ -302,6 +302,25 @@ Plans:
 **GitHub:** [gnus-ai#59](https://github.com/GeniusVentures/gnus-ai/issues/59)
 **Concerns addressed:** #6 Burn/mint bridge, #28 No state machine, #29 No emergency pause, #22 Bridge tests, #13 No withdraw events
 
+> NOTE: The Success Criteria above reference the SUPERSEDED vault/escrow model. CONTEXT.md (10-CONTEXT.md, D-01..D-22) locks the provenance-relocation model: no vault custody, bridgeOut burns from source chainSupply, bridgeIn mints into destination chainSupply via _mintWithBridgeFee, totalSupplyOfAll() invariant under bridging. LOCK_CONFIRMED state dropped; state machine is NONE → INITIATED → RELEASED via (BridgeOutInitiated event, processedMessages flag). Treat the goal/concerns as intent; CONTEXT as the controlling design.
+
+**Plans:** 4 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 10-01-PLAN.md — GNUSBridgeValidatorStorage diamond storage library (processedMessages + validatorMerkleRoot + validatorThreshold)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 10-02-PLAN.md — GNUSBridge.bridgeIn + setValidatorSet + BridgeReleased/ValidatorSetUpdated events + diamond config 3.0 entry
+
+**Wave 3** *(blocked on Wave 2; 03 and 04 parallel — disjoint files)*
+
+- [ ] 10-03-PLAN.md — Unit test suite (test/utils/bridge-certificate.ts helpers + test/unit/GNUSBridgeIn.test.ts, 15 behaviors + canonical SG test vector)
+- [ ] 10-04-PLAN.md — Foundry invariants (BridgeInvariant real invariants + ConservationInvariant bridge-pair + handler_bridgeIn ghost state)
+
 ---
 
 ## Phase 11: ERC-20 Proxy Hardening
