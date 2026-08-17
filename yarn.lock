@@ -1350,32 +1350,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@geniusventures/diamonds-hardhat-foundry@npm:2.4.0-gv.1":
-  version: 2.4.0-gv.1
-  resolution: "@geniusventures/diamonds-hardhat-foundry@npm:2.4.0-gv.1"
+"@geniusventures/diamonds-hardhat-foundry@npm:2.4.0-gv.2":
+  version: 2.4.0-gv.2
+  resolution: "@geniusventures/diamonds-hardhat-foundry@npm:2.4.0-gv.2"
   dependencies:
     picocolors: "npm:^1.1.0"
   peerDependencies:
-    "@geniusventures/diamonds": 1.3.2-gv.1
-    "@geniusventures/hardhat-diamonds": 1.1.15-gv.1
+    "@geniusventures/diamonds": ">=1.3.2-gv.1 <2.0.0"
+    "@geniusventures/hardhat-diamonds": ">=1.1.15-gv.1 <2.0.0"
     "@nomicfoundation/hardhat-ethers": ^3.0.8
     ethers: ^6.0.0
     hardhat: ^2.26.0
-  checksum: 10c0/7fac1c62abfa12e6abaa45a5aa551c0107926aefb30e171fab8618ca8dcdc099c01c10e5294b95c1d2736387d7891ac700e391950d4df70d01e26ea2af8154f8
+  checksum: 10c0/a2bc3cb89c1ff39ad3d6402f5875e5c45d42a16c3c4908167431326577891612de4afc125d2acab4bdea68245d9a61be75a1feb8ecccdecd03409dcb50ec9df8
   languageName: node
   linkType: hard
 
-"@geniusventures/diamonds-monitor@npm:1.0.4-gv.1":
-  version: 1.0.4-gv.1
-  resolution: "@geniusventures/diamonds-monitor@npm:1.0.4-gv.1"
+"@geniusventures/diamonds-monitor@npm:1.0.4-gv.2":
+  version: 1.0.4-gv.2
+  resolution: "@geniusventures/diamonds-monitor@npm:1.0.4-gv.2"
   dependencies:
     ethers: "npm:^6.4.0"
     winston: "npm:^3.17.0"
   peerDependencies:
-    "@geniusventures/diamonds": 1.3.2-gv.1
+    "@geniusventures/diamonds": ">=1.3.2-gv.1 <2.0.0"
     ethers: ^6.0.0
     hardhat: ^2.0.0
-  checksum: 10c0/28108c6ad9afeacc24de0012baebe703db6aa473071249cf876e9b13f27783cee20be3efe8a50df749d0b5f201049c57930d6f156a87eb3bb5a71df4356e6128
+  checksum: 10c0/0d07862c5e3578196867e09b27cc2bf0f5f5bff37f65281977086ddfe728b3d782e866d0e95e893a66c0233810ad626d0762c80f0cdeb881710e0dceb50b9507
   languageName: node
   linkType: hard
 
@@ -1399,16 +1399,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@geniusventures/hardhat-diamonds@npm:1.1.15-gv.1":
-  version: 1.1.15-gv.1
-  resolution: "@geniusventures/hardhat-diamonds@npm:1.1.15-gv.1"
+"@geniusventures/hardhat-diamonds@npm:1.1.15-gv.2":
+  version: 1.1.15-gv.2
+  resolution: "@geniusventures/hardhat-diamonds@npm:1.1.15-gv.2"
   dependencies:
     chalk: "npm:^4.1.2"
   peerDependencies:
-    "@geniusventures/diamonds": 1.3.2-gv.1
+    "@geniusventures/diamonds": ">=1.3.2-gv.1 <2.0.0"
     ethers: ^6.0.0
     hardhat: ^2.0.0
-  checksum: 10c0/0838254f37fb7b92da85fbaaeb2c72500a36e2ffd2327e172229bf0e23b845d6bb2f4ec5396b2a4bdef62e6e0f0e806ffb6d1dedbaaa966ca376bb6f4afb0719
+  checksum: 10c0/2403ca31883811749724dac543fb196a0ec1ae84441f2014961eb8043d80fca5b347e80d338fcc664a5c52a0d4a90adb447999abd5cec5f39c47883ad0f74d4b
   languageName: node
   linkType: hard
 
@@ -1419,9 +1419,9 @@ __metadata:
     "@commitlint/cli": "npm:19.8.1"
     "@commitlint/config-conventional": "npm:19.8.1"
     "@geniusventures/diamonds": "npm:1.3.2-gv.2"
-    "@geniusventures/diamonds-hardhat-foundry": "npm:2.4.0-gv.1"
-    "@geniusventures/diamonds-monitor": "npm:1.0.4-gv.1"
-    "@geniusventures/hardhat-diamonds": "npm:1.1.15-gv.1"
+    "@geniusventures/diamonds-hardhat-foundry": "npm:2.4.0-gv.2"
+    "@geniusventures/diamonds-monitor": "npm:1.0.4-gv.2"
+    "@geniusventures/hardhat-diamonds": "npm:1.1.15-gv.2"
     "@gnus.ai/contracts-upgradeable-diamond": "npm:4.5.0"
     "@nomicfoundation/hardhat-chai-matchers": "npm:2.1.2"
     "@nomicfoundation/hardhat-ethers": "npm:3.1.3"
