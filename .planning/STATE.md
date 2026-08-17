@@ -3,7 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-08-17T00:00:00.000Z"
+stopped_at: Phase 10 context gathered
+last_updated: "2026-08-17T21:34:52.346Z"
 progress:
   total_phases: 16
   completed_phases: 10
@@ -79,6 +80,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-15 (branch renamed wip/phase-9-pause → feature/09-per-child-gnus-treasury-reserve across all repos)
-Stopped at: Phase 9 provenance redesign implemented + all test regressions fixed (458 passing, 0 failing); committing, then verify-work 9, then push
-Resume file: .planning/phases/09-per-child-gnus-treasury-reserve/.continue-here.md
+Last session: 2026-08-17T21:34:52.337Z
+Stopped at: Phase 10 context gathered
+Resume file: .planning/phases/10-lock-release-bridge-vault/10-CONTEXT.md
