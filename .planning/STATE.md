@@ -32,7 +32,7 @@ See: .planning/PROJECT.md
 | 2     | Dead Code Removal                 | ✓      | 2/2   | 100%     |
 | 3     | Input Validation                  | ✓      | 2/2   | 100%     |
 | 4     | Access Control & Observability    | ✓      | 1/1   | 100%     |
-| 5     | Circuit Breaker & Performance     | ⎇ PR #68 | 1/1 | review (05-VERIFICATION pass) |
+| 5     | Circuit Breaker & Performance     | ✓      | 1/1   | 100%     |
 | 6     | Test Coverage                     | ✓      | 2/2   | 100%     |
 | 7     | Dependency Hardening              | ○      | 0/0   | 0%       |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
