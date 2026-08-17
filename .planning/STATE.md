@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_execute
-stopped_at: Phase 10 planned — 4 plans, 3 waves, decision coverage gate passed
-last_updated: "2026-08-17T22:57:06.119Z"
+stopped_at: Completed 10-01 (GNUSBridgeValidatorStorage library) — next plan 10-02
+last_updated: "2026-08-17T23:08:26.530Z"
 progress:
   total_phases: 16
   completed_phases: 10
   total_plans: 24
-  completed_plans: 20
+  completed_plans: 21
   percent: 63
 ---
 
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 10 — lock/release bridge vault (next per ROADMAP; phases 6, 08.2, 9 complete)
+**Current focus:** Phase 10 — lock-release-bridge-vault
 
 ## Phase Status
 
@@ -39,12 +39,19 @@ See: .planning/PROJECT.md
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
-| 10    | Lock/Release Bridge Vault         | ◐      | 0/4   | 0%       |
+| 10    | Lock/Release Bridge Vault         | ◐      | 1/4   | 25%      |
 
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
 2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
+
+### Phase 10 Decisions Logged (10-01)
+
+- Pure storage library with no imports — mirrors GNUSTreasuryStorage.sol exactly (no LibDiamond dependency needed for a data-only layout)
+- Slot string is `gnus.ai.bridge.validator.storage` (with .validator infix), NOT `gnus.ai.bridge.storage` — 10-RESEARCH.md Pitfall 6 reserves the shorter name for a future facet
+- No Initialize function on the storage library — Phase 10 uses explicit configuration via `setValidatorSet` (10-RESEARCH.md Pitfall 7: explicit configuration beats magic defaults)
+- Field order is load-bearing for append-only compatibility: `processedMessages` → `validatorMerkleRoot` → `validatorThreshold`; Phase 12 may append after these fields
 
 ### Phase 9 Decisions Logged (09-05)
 
@@ -81,6 +88,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-17T22:57:06.119Z
-Stopped at: Phase 10 planned — 4 plans, 3 waves, decision coverage gate passed
-Resume file: .planning/phases/10-lock-release-bridge-vault/10-01-PLAN.md
+Last session: 2026-08-17T23:08:26.530Z
+Stopped at: Completed 10-01 (GNUSBridgeValidatorStorage library) — next plan 10-02
+Resume file: .planning/phases/10-lock-release-bridge-vault/10-02-PLAN.md
