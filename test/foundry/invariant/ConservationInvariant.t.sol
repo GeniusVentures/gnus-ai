@@ -56,6 +56,12 @@ contract ConservationInvariant is GeniusDiamondTestBase {
         handler = new GeniusDiamondHandler();
         handler.setUp();
 
+        // Deterministically exercise the convert path once so the afterInvariant
+        // coverage guard (ghost_convertCalls >= 1) holds regardless of fuzz luck
+        // (Codex P2). convert/factoryMint are supply-neutral, so the tree/global
+        // baselines captured below are unaffected.
+        handler.seedConversion();
+
         // Restrict the fuzzer to the supply-relevant handlers so conservation is
         // exercised densely (approve/role handlers are supply-neutral noise here).
         bytes4[] memory selectors = new bytes4[](6);
@@ -116,14 +122,21 @@ contract ConservationInvariant is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Sanity: the convert call counter is monotonically non-decreasing.
-     * @dev A cheap guard that the handler's convert path is actually being exercised
-     *      (or correctly reverting without state corruption). The counter can never
-     *      decrease, so asserting it is >= 0 plus exercising it is the check; the
-     *      real property is that convert never corrupts supply (I1/I2 above).
+     * @notice Post-campaign coverage guard: the convert path must actually have been
+     *         exercised at least once during the fuzz campaign.
+     * @dev `ghost_convertCalls` only increments on a SUCCESSFUL convert. A plain
+     *      `invariant_*` is also evaluated at setUp (counter == 0 there), so the
+     *      positive assertion lives in afterInvariant, which foundry runs once after
+     *      all runs complete. This replaces the former tautological `>= 0` check —
+     *      a uint256 is always >= 0, so that assertion passed even when every
+     *      convert reverted and the path was never tested (Codex P2).
      */
-    function invariant_convertCallCountMonotonic() public view {
-        assertTrue(handler.ghost_convertCalls() >= 0, "convert call count must be non-negative");
+    function afterInvariant() public {
+        assertGt(
+            handler.ghost_convertCalls(),
+            0,
+            "convert path never exercised: ghost_convertCalls == 0 after campaign"
+        );
     }
 
     // ========================================
