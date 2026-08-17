@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-08-05T23:34:57.058Z"
+last_updated: "2026-08-17T00:00:00.000Z"
 progress:
   total_phases: 16
   completed_phases: 10
@@ -22,7 +22,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 09 — per-child-gnus-treasury-reserve
+**Current focus:** Phase 10 — lock/release bridge vault (next per ROADMAP; phases 6, 08.2, 9 complete)
 
 ## Phase Status
 
@@ -33,15 +33,15 @@ See: .planning/PROJECT.md
 | 3     | Input Validation                  | ✓      | 2/2   | 100%     |
 | 4     | Access Control & Observability    | ✓      | 1/1   | 100%     |
 | 5     | Circuit Breaker & Performance     | ⎇ PR #68 | 1/1 | review (05-VERIFICATION pass) |
-| 6     | Test Coverage                     | ⏳     | 1/2   | 50%      |
+| 6     | Test Coverage                     | ✓      | 2/2   | 100%     |
 | 7     | Dependency Hardening              | ○      | 0/0   | 0%       |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
-| 08.2  | Deploy-Verify Pipeline Fixes      | ○      | 0/3   | 0%       |
+| 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
 
 ## Next Actions
 
-1. Phase 9 complete. Next phase per ROADMAP: Phase 6 plan 6-02 (test coverage) or Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
+1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
 2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
 
 ### Phase 9 Decisions Logged (09-05)

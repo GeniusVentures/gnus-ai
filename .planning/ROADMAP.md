@@ -227,13 +227,13 @@ Plans:
 **Goal:** [Urgent work - to be planned]
 **Requirements**: TBD
 **Depends on:** Phase 08.1
-**Plans:** 0/3 plans complete
+**Plans:** 3/3 plans complete (verified 2026-07-03 — see 08.2-VERIFICATION.md; plans 02/03 executed without separate PLAN artifacts)
 
 Plans:
 
-- [ ] 08.2-01 — Fix proposeSafeTransaction for delegate proposers (non-owner signing)
-- [ ] 08.2-02 — New confirmDeployment script (Safe exec → update deployed-data)
-- [ ] 08.2-03 — New verifyFacets script (forge verify-contract + V2 API)
+- [x] 08.2-01 — Fix proposeSafeTransaction for delegate proposers (non-owner signing)
+- [x] 08.2-02 — New confirmDeployment script (Safe exec → update deployed-data) — delivered as checkSafeExecuted.ts
+- [x] 08.2-03 — New verifyFacets script (forge verify-contract + V2 API)
 
 ## Phase 9: Per-Child GNUS Treasury/Reserve
 
