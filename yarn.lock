@@ -1379,9 +1379,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@geniusventures/diamonds@npm:1.3.2-gv.1":
-  version: 1.3.2-gv.1
-  resolution: "@geniusventures/diamonds@npm:1.3.2-gv.1"
+"@geniusventures/diamonds@npm:1.3.2-gv.2":
+  version: 1.3.2-gv.2
+  resolution: "@geniusventures/diamonds@npm:1.3.2-gv.2"
   dependencies:
     "@ethersproject/abstract-signer": "npm:^5.8.0"
     axios: "npm:^1.12.0"
@@ -1395,7 +1395,7 @@ __metadata:
     typescript: ^5.0.0
   bin:
     diamond-abi: dist/scripts/diamond-abi-cli.js
-  checksum: 10c0/1f3635be8a9a01d1bd89045363018931e094b1d485b67eb212d91e494c58b69f3f7c2dd068d1eb31da730d03608bc6a0dfdfffad9f488f07bc7841882410eecb
+  checksum: 10c0/cc050b23fd19bb1c228e7f027b489fd1e500863534efffa8c7c160b7798bb1df6504b65340defc0a6fb6393b9334f419fa0ff6ca44d2438a7da1a427cd52c73b
   languageName: node
   linkType: hard
 
@@ -1418,7 +1418,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": "npm:19.8.1"
     "@commitlint/config-conventional": "npm:19.8.1"
-    "@geniusventures/diamonds": "npm:1.3.2-gv.1"
+    "@geniusventures/diamonds": "npm:1.3.2-gv.2"
     "@geniusventures/diamonds-hardhat-foundry": "npm:2.4.0-gv.1"
     "@geniusventures/diamonds-monitor": "npm:1.0.4-gv.1"
     "@geniusventures/hardhat-diamonds": "npm:1.1.15-gv.1"
