@@ -25,7 +25,7 @@
 | --- | ---------------- | -------------------------------------------------------- | ------------------------------------- | ---------------- |
 | 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
 | 9   | Treasury/Reserve | 5/5 | Complete   | 2026-08-05 |
-| 10  | Bridge Vault     | 1/4 | In Progress|  |
+| 10  | Bridge Vault     | 2/4 | In Progress|  |
 | 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
 
@@ -304,7 +304,7 @@ Plans:
 
 > NOTE: The Success Criteria above reference the SUPERSEDED vault/escrow model. CONTEXT.md (10-CONTEXT.md, D-01..D-22) locks the provenance-relocation model: no vault custody, bridgeOut burns from source chainSupply, bridgeIn mints into destination chainSupply via _mintWithBridgeFee, totalSupplyOfAll() invariant under bridging. LOCK_CONFIRMED state dropped; state machine is NONE → INITIATED → RELEASED via (BridgeOutInitiated event, processedMessages flag). Treat the goal/concerns as intent; CONTEXT as the controlling design.
 
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 
@@ -314,7 +314,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 10-02-PLAN.md — GNUSBridge.bridgeIn + setValidatorSet + BridgeReleased/ValidatorSetUpdated events + diamond config 3.0 entry
+- [x] 10-02-PLAN.md — GNUSBridge.bridgeIn + setValidatorSet + BridgeReleased/ValidatorSetUpdated events + diamond config 3.0 entry
 
 **Wave 3** *(blocked on Wave 2; 03 and 04 parallel — disjoint files)*
 
