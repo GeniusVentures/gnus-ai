@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import type { Wallet } from 'ethers';
+import type { BaseWallet } from 'ethers';
 
 /**
  * Bridge-in certificate helpers (Phase 10 — Lock/Release Bridge Vault).
@@ -81,7 +81,7 @@ export function computeBridgeInStructHash(message: BridgeInMessage): string {
  * internally — do NOT prepend it manually (RESEARCH Pitfall 1).
  */
 export async function signBridgeInCertificate(
-	wallet: Wallet,
+	wallet: BaseWallet,
 	message: BridgeInMessage,
 ): Promise<string> {
 	const structHash = computeBridgeInStructHash(message);
@@ -144,33 +144,38 @@ export function buildValidatorMerkleTree(validatorAddresses: string[]): {
 	// Proof accumulator per leaf index.
 	const proofsByIndex: string[][] = leaves.map(() => []);
 
+	// Track ALL leaf indices under each node so every leaf in a merged subtree
+	// receives the new sibling when its ancestor combines.
 	let level: string[] = leaves.slice();
-	let levelIndex: number[] = leaves.map((_, i) => i);
+	let levelMembers: number[][] = leaves.map((_, i) => [i]);
 
 	while (level.length > 1) {
 		const nextLevel: string[] = [];
-		const nextIndex: number[] = [];
+		const nextMembers: number[][] = [];
 		for (let i = 0; i < level.length; i += 2) {
 			if (i + 1 < level.length) {
 				const a = level[i];
 				const b = level[i + 1];
 				const [lo, hi] = a.toLowerCase() < b.toLowerCase() ? [a, b] : [b, a];
 				const parent = ethers.keccak256(ethers.concat([lo, hi]));
-				// For each child, the sibling goes into the child's proof.
-				proofsByIndex[levelIndex[i]].push(b);
-				proofsByIndex[levelIndex[i + 1]].push(a);
+				// Every leaf under the left child gets `b` appended to its proof;
+				// every leaf under the right child gets `a` appended.
+				for (const leafIdx of levelMembers[i]) {
+					proofsByIndex[leafIdx].push(b);
+				}
+				for (const leafIdx of levelMembers[i + 1]) {
+					proofsByIndex[leafIdx].push(a);
+				}
 				nextLevel.push(parent);
-				// The parent inherits the left child's leaf index (proofsByIndex
-				// for the right child has already been updated with the left sibling).
-				nextIndex.push(levelIndex[i]);
+				nextMembers.push([...levelMembers[i], ...levelMembers[i + 1]]);
 			} else {
 				// Odd node: promote unchanged, no proof addition.
 				nextLevel.push(level[i]);
-				nextIndex.push(levelIndex[i]);
+				nextMembers.push(levelMembers[i]);
 			}
 		}
 		level = nextLevel;
-		levelIndex = nextIndex;
+		levelMembers = nextMembers;
 	}
 
 	const root = level[0];
