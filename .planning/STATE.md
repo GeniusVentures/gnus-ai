@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_execute
-stopped_at: Completed 10-02 (bridgeIn threshold-certificate execution + setValidatorSet + GNUSBridge 3.0 config entry) — next plan 10-03
-last_updated: "2026-08-17T23:18:16.057Z"
+stopped_at: Completed 10-03 (bridgeIn unit test suite + certificate helper — 20/20 passing, canonical cross-repo test vector logged) — next plan 10-04
+last_updated: "2026-08-17T23:37:10.663Z"
 progress:
   total_phases: 16
   completed_phases: 10
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 63
 ---
 
@@ -39,12 +39,21 @@ See: .planning/PROJECT.md
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
-| 10    | Lock/Release Bridge Vault         | ◐      | 2/4   | 50%      |
+| 10    | Lock/Release Bridge Vault         | ◐      | 3/4   | 75%      |
 
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
 2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
+
+### Phase 10 Decisions Logged (10-03)
+
+- Helper module accepts `BaseWallet` (not `Wallet`) — `Wallet.createRandom()` returns `HDNodeWallet` which extends `BaseWallet` but not `Wallet`; `signMessage` lives on `BaseWallet` in ethers v6, so widening the type is the minimal-change fix
+- Merkle tree builder tracks per-node member SETS (not a single inherited leaf index) — fixes a draft bug where right-subtree leaves were missing sibling appends when their ancestor merged
+- Diamond `chainID` aliased to live Hardhat chainid (31337) in test setup via `setChainID` so `bridgeIn`'s D-08 cross-chain guard passes for happy-path tests; wrong-chain test exercises digest mismatch by overriding `destChainID` off-chain
+- Global-cap test uses `amount = GNUS_MAX_SUPPLY + 1` directly — no need to seed `globalSupply` near the cap, the require fires on the very first bridgeIn
+- `chainSupply` assertion dropped in favor of `totalSupplyOfAll` — GNUSTreasury does not expose a public per-chain reader; per-chain partition is covered by Plan 10-04 Foundry invariants
+- Canonical test vector (Hardhat account #0 private key, fixed BridgeInMessage) is logged for SG-side `SignEVM` C++ cross-check — closes Pitfall 1 / Pitfall 3 mitigation
 
 ### Phase 10 Decisions Logged (10-02)
 
@@ -98,6 +107,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-17T23:18:16.057Z
-Stopped at: Completed 10-02 (bridgeIn threshold-certificate execution + setValidatorSet + GNUSBridge 3.0 config entry) — next plan 10-03
-Resume file: .planning/phases/10-lock-release-bridge-vault/10-03-PLAN.md
+Last session: 2026-08-17T23:37:10.653Z
+Stopped at: Completed 10-03 (bridgeIn unit test suite + certificate helper — 20/20 passing, canonical cross-repo test vector logged) — next plan 10-04
+Resume file: None
