@@ -36,12 +36,12 @@ This phase replaces the "lock in vault" framing in ROADMAP.md with the Phase-9-n
 
 ### Validator Set Management
 - **D-15:** For now, use option (b): the diamond stores a threshold plus a merkle root (or equivalent commitment) of the authorized validator set. Rotation is less frequent than per-validator admin calls.
-- **D-16:** The exact mechanism for how the EVM chain learns the current SG validator set is **deliberately deferred**. SG's `ValidatorRegistry` is CRDT-driven, weight-based, and open (anyone can be a validator). A future decision will determine the fastest/most secure way to export the current set to the diamond. Until then, a manually-updated merkle root is acceptable.
+- **D-16 [informational]:** The exact mechanism for how the EVM chain learns the current SG validator set is **deliberately deferred**. SG's `ValidatorRegistry` is CRDT-driven, weight-based, and open (anyone can be a validator). A future decision will determine the fastest/most secure way to export the current set to the diamond. Until then, a manually-updated merkle root is acceptable.
 - **D-17:** SG validator keys are derived from Ethereum private keys (`GenerateGeniusAddress` uses `EthereumKeyGenerator` over secp256k1), so the same keypair can sign both SG-native consensus messages and EVM-compatible digests. This makes the threshold-ECDSA certificate practical without a separate key registry.
 
 ### Interim / Progressive Authorization (per user 2026-08-17)
 - **D-18:** For the current phase, a manual path is acceptable: Super Admin multisig can execute bridge-in directly, or an automatic relayer can operate on testnets (e.g., Sepolia) while mainnets require Super Admin approval.
-- **D-19:** Longer-term, an amount-based two-tier policy is desired: bridge-in amounts `<= 100 GNUS per 24 hours` may be automatic (relay-executed with the certificate), while amounts `>= 100 GNUS in 24 hours` require Super Admin release. This tiered policy is **deferred to a later phase** and is not required for Phase 10 completion, but the design should not preclude it.
+- **D-19 [informational]:** Longer-term, an amount-based two-tier policy is desired: bridge-in amounts `<= 100 GNUS per 24 hours` may be automatic (relay-executed with the certificate), while amounts `>= 100 GNUS in 24 hours` require Super Admin release. This tiered policy is **deferred to a later phase** and is not required for Phase 10 completion, but the design should not preclude it.
 
 ### Emergency Pause
 - **D-20:** Both `bridgeOut` and `bridgeIn` must be pausable by Super Admin (or a designated guardian role). Pause blocks new initiations and new releases.
