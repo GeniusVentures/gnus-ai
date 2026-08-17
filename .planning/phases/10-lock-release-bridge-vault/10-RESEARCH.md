@@ -686,27 +686,29 @@ std::vector<uint8_t> GeniusAccount::SignEVM( const std::array<uint8_t, 32> &stru
 
 ## Open Questions
 
-1. **How will the SG-side aggregator service be deployed and operated?**
+> **Status at plan time (2026-08-17): all DEFERRED — none block Phase 10.** Questions 1 and 3 are SuperGenius-repo work (parallel track). Question 2 is a deployment-runbook task, not contract code. Question 4 is deferred to Phase 12 per its own recommendation. Question 5 is RESOLVED by the planner: `bridgeIn` does NOT charge the withdraw limiter (mints skip the limiter by design — `GNUSERC1155MaxSupply._beforeTokenTransfer` checks `!isMinting`; the limiter is a withdrawal-rate control, not a receipt-rate control).
+
+1. **How will the SG-side aggregator service be deployed and operated?** — DEFERRED (SuperGenius-repo track)
    - What we know: D-11 says "SG's aggregator produces a purpose-built EVM envelope after slot quorum is reached." The consensus round scheme in `ConsensusManager::GetAggregatorRole` already picks a `CurrentAggregator` per round.
    - What's unclear: Is the EVM envelope built by the same `CurrentAggregator` node, or by a separate process? Where does the aggregated certificate get published so a permissionless relayer can pick it up (pubsub topic, HTTP endpoint, IPFS)?
    - Recommendation: Treat this as SuperGenius-repo work to be planned in parallel. The EVM-side `bridgeIn` does not care — it accepts any properly-formed certificate from any submitter.
 
-2. **What is the initial validator merkle root and threshold for each deployed chain?**
+2. **What is the initial validator merkle root and threshold for each deployed chain?** — DEFERRED (deployment runbook, not contract code)
    - What we know: D-15 says the merkle root will be manually updated for now. D-16 says the export mechanism is deferred.
    - What's unclear: Who computes the initial root? What threshold (e.g., 2-of-3, 3-of-5, 5-of-7)? Where is the off-chain validator list documented?
    - Recommendation: Add a deployment-runbook task: "Super Admin generates the initial validator set file, computes the merkle root off-chain, and calls `setValidatorSet(root, threshold)` via the multisig." Test the full flow on Sepolia first.
 
-3. **How does the SG-side aggregator know the destination chain's diamond address to include in the digest?**
+3. **How does the SG-side aggregator know the destination chain's diamond address to include in the digest?** — DEFERRED (SuperGenius-repo track)
    - What we know: D-08 requires `address(diamond)` in the digest.
    - What's unclear: Is the diamond address for each chain stored in SG's config? In `deployed-data.json`? In a CRDT registry?
    - Recommendation: SG-side aggregator should read from a chain-registry config file (similar to `ChainContractPair` already used by `BridgeRelayer`). Out of scope for this phase but flag for the SG-side plan.
 
-4. **Does `BridgeOutInitiated` need to also be emitted on `bridgeIn` for symmetric SG-side tracking?**
+4. **Does `BridgeOutInitiated` need to also be emitted on `bridgeIn` for symmetric SG-side tracking?** — DEFERRED to Phase 12 (Cross-Chain Supply Ledger)
    - What we know: The SG side tracks `/bridge/executed/{chainid}:{tx_hash}` for replay protection on its own books.
    - What's unclear: Does SG need to learn that the destination-side `bridgeIn` completed (for its own ledger), or is the EVM-side `processedMessages` flag sufficient?
    - Recommendation: Defer to Phase 12 (Cross-Chain Supply Ledger). The `BridgeReleased` event this phase adds is sufficient for SG to observe completion if/when it needs to.
 
-5. **Should `bridgeIn` charge the GNUSWithdrawLimiter for the recipient?**
+5. **Should `bridgeIn` charge the GNUSWithdrawLimiter for the recipient?** — RESOLVED: no (see status note above)
    - What we know: `bridgeOut` charges the limiter for child tokens (and the `_burn` hook charges it for GNUS). The `_mint` path explicitly skips the limiter (only non-mint transfers charge it — `GNUSERC1155MaxSupply._beforeTokenTransfer` checks `!isMinting`).
    - What's unclear: Is minting-on-destination a "withdrawal" from the user's perspective that should count against their limiter? Almost certainly not — they are RECEIVING tokens, not withdrawing. But the user might then immediately bridgeOut or sell, hitting the limiter on the way out.
    - Recommendation: **Do not charge the limiter on bridgeIn.** The limiter is a withdrawal-rate control, not a receipt-rate control. The user will hit it on the next outgoing transfer if applicable. Flag for planner/user confirmation.
