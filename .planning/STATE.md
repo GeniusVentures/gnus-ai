@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_execute
-stopped_at: Completed 10-01 (GNUSBridgeValidatorStorage library) — next plan 10-02
-last_updated: "2026-08-17T23:08:26.530Z"
+stopped_at: Completed 10-02 (bridgeIn threshold-certificate execution + setValidatorSet + GNUSBridge 3.0 config entry) — next plan 10-03
+last_updated: "2026-08-17T23:18:16.057Z"
 progress:
   total_phases: 16
   completed_phases: 10
   total_plans: 24
-  completed_plans: 21
+  completed_plans: 22
   percent: 63
 ---
 
@@ -39,12 +39,22 @@ See: .planning/PROJECT.md
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
-| 10    | Lock/Release Bridge Vault         | ◐      | 1/4   | 25%      |
+| 10    | Lock/Release Bridge Vault         | ◐      | 2/4   | 50%      |
 
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
 2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
+
+### Phase 10 Decisions Logged (10-02)
+
+- bridgeIn lives on the existing GNUSBridge facet (not a new facet) — final deployedBytecode is 21635 bytes (2941 headroom under EIP-170)
+- Digest binds transferId, srcChainID, block.chainid, address(this), recipient, GNUS_TOKEN_ID, amount via abi.encode, then EIP-191-wraps with toEthSignedMessageHash — cross-chain (D-08) and cross-diamond replay protection
+- Merkle leaf is keccak256(abi.encodePacked(signer)) — 20-byte packed encoding per Pitfall 3 (NOT abi.encode which pads to 32); SG side must match
+- GNUS_TOKEN_ID hardcoded in bridgeIn (D-14) — child-token bridge-in is mint-of-id-0 followed by GNUSTreasury convert; no tokenId parameter on bridgeIn
+- Explicit require(v.validatorThreshold > 0, "Validator set not configured") placed BEFORE the signatures.length >= threshold check (Pitfall 7) — without it, an unconfigured set would vacuously pass any certificate
+- setValidatorSet emits ValidatorSetUpdated BEFORE the write so the event captures the OLD root (D-18 multisig audit trail)
+- No deployInit/upgradeInit on the GNUSBridge 3.0 diamond-config entry — explicit setValidatorSet post-upgrade beats magic defaults for security-critical parameters (RESEARCH Pitfall 7)
 
 ### Phase 10 Decisions Logged (10-01)
 
@@ -88,6 +98,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-17T23:08:26.530Z
-Stopped at: Completed 10-01 (GNUSBridgeValidatorStorage library) — next plan 10-02
-Resume file: .planning/phases/10-lock-release-bridge-vault/10-02-PLAN.md
+Last session: 2026-08-17T23:18:16.057Z
+Stopped at: Completed 10-02 (bridgeIn threshold-certificate execution + setValidatorSet + GNUSBridge 3.0 config entry) — next plan 10-03
+Resume file: .planning/phases/10-lock-release-bridge-vault/10-03-PLAN.md
