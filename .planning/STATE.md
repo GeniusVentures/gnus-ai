@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_execute
-stopped_at: Completed 10-03 (bridgeIn unit test suite + certificate helper — 20/20 passing, canonical cross-repo test vector logged) — next plan 10-04
+stopped_at: Completed 10-04 (Foundry bridgeIn invariants — BridgeInvariant 2/2 + ConservationInvariant 4/4 green, full tree 213/2/3 matching Phase 9 baseline). Phase 10 all 4 plans landed — post-wave gates next
 last_updated: "2026-08-17T23:37:10.663Z"
 progress:
   total_phases: 16
@@ -39,12 +39,21 @@ See: .planning/PROJECT.md
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
-| 10    | Lock/Release Bridge Vault         | ◐      | 3/4   | 75%      |
+| 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
 
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
-2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
+2. Cleanup follow-up (not blocking): full `npx hardhat test` on develop (verified 2026-08-17, Phase 10 work in place) shows **477 passing / 2 pending / 1 failing** — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes 38/38 in isolation on both pre- and post-Phase-10 HEADs. The earlier "25 residual failures" note was stale. Root fix belongs to a Phase 9 sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 213 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
+
+### Phase 10 Decisions Logged (10-04)
+
+- Deterministic-invalid certificate derived from fuzz seed (`sigs[0] = abi.encodePacked(bytes32(seed), bytes32(seed^1), uint8(27))`) — random garbage that must NEVER verify; `invariant_noValidCertFromFuzzedSigs` asserts `ghost_bridgeInSuccesses == 0` (BRIDGE-03 soundness)
+- Validator set configured in setUp with fixed nonzero root + threshold=1 (T-10-F02) — an unconfigured set would vacuously revert before reaching signature checks, making the soundness invariant meaningless
+- Handler swallows reverts and only tracks state — reverting in the handler would cause the fuzzer to discard runs on expected reverts
+- `GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION` declared once as a constant in BridgeInvariant with the mapping-slot formula documented (T-10-F05) — invariants read `processedMessages[transferId]` via direct `vm.load` of `keccak256(abi.encode(transferId, POSITION))`
+- Bridge-pair conservation formula: `globalSupply == globalSupplyAtSeed + totalMinted - totalBurned + totalBridgedInAmount` — bridgeOut burn (already subtracted in I1's tree-supply check) and bridgeIn mint cancel globally (D-01/D-02)
+- Full clean-tree `yarn forge:test` verified 213 passed / 2 failed / 3 skipped — identical to Phase 9's documented baseline; the 2 failures are Phase 08.1 Safe-proposer setUp reverts, unchanged
 
 ### Phase 10 Decisions Logged (10-03)
 
@@ -107,6 +116,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-17T23:37:10.653Z
-Stopped at: Completed 10-03 (bridgeIn unit test suite + certificate helper — 20/20 passing, canonical cross-repo test vector logged) — next plan 10-04
+Last session: 2026-08-17T23:59:00.000Z
+Stopped at: Completed 10-04 (Foundry bridgeIn invariants — BridgeInvariant 2/2 + ConservationInvariant 4/4 green). Phase 10 all 4 plans landed — post-wave gates next (code review, regression, phase verification)
 Resume file: None
