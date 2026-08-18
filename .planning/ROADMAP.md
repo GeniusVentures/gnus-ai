@@ -25,7 +25,7 @@
 | --- | ---------------- | -------------------------------------------------------- | ------------------------------------- | ---------------- |
 | 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
 | 9   | Treasury/Reserve | 5/5 | Complete   | 2026-08-05 |
-| 10  | Bridge Vault     | 3/4 | In Progress|  |
+| 10  | Bridge Vault     | 4/4 | Complete   | 2026-08-18 |
 | 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
 
@@ -304,7 +304,7 @@ Plans:
 
 > NOTE: The Success Criteria above reference the SUPERSEDED vault/escrow model. CONTEXT.md (10-CONTEXT.md, D-01..D-22) locks the provenance-relocation model: no vault custody, bridgeOut burns from source chainSupply, bridgeIn mints into destination chainSupply via _mintWithBridgeFee, totalSupplyOfAll() invariant under bridging. LOCK_CONFIRMED state dropped; state machine is NONE → INITIATED → RELEASED via (BridgeOutInitiated event, processedMessages flag). Treat the goal/concerns as intent; CONTEXT as the controlling design.
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 
@@ -319,7 +319,7 @@ Plans:
 **Wave 3** *(blocked on Wave 2; 03 and 04 parallel — disjoint files)*
 
 - [x] 10-03-PLAN.md — Unit test suite (test/utils/bridge-certificate.ts helpers + test/unit/GNUSBridgeIn.test.ts, 15 behaviors + canonical SG test vector)
-- [ ] 10-04-PLAN.md — Foundry invariants (BridgeInvariant real invariants + ConservationInvariant bridge-pair + handler_bridgeIn ghost state)
+- [x] 10-04-PLAN.md — Foundry invariants (BridgeInvariant real invariants + ConservationInvariant bridge-pair + handler_bridgeIn ghost state)
 
 ---
 
