@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-stopped_at: Phase 10 shipped — PR #73 (draft)
-last_updated: "2026-08-19T16:18:41.983Z"
+stopped_at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
+last_updated: "2026-08-19T17:36:10.312Z"
 progress:
   total_phases: 16
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 24
   completed_plans: 24
-  percent: 63
+  percent: 69
 ---
 
 # Project State
@@ -116,6 +116,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-17T23:59:00.000Z
-Stopped at: Completed 10-04 (Foundry bridgeIn invariants — BridgeInvariant 2/2 + ConservationInvariant 4/4 green). Phase 10 all 4 plans landed — post-wave gates next (code review, regression, phase verification)
-Resume file: None
+Last session: 2026-08-19T17:36:10.302Z
+Stopped at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
+Resume file: .planning/phases/11-erc-20-proxy-hardening/11-CONTEXT.md
