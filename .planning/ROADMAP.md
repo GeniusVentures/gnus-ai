@@ -325,23 +325,25 @@ Plans:
 
 ## Phase 11: ERC-20 Proxy Hardening
 
-**Goal:** Fix ERC-20 proxy approval/allowance semantics, make child token ID immutable, add redeem adapter.
+**Goal:** Fix ERC-20 proxy approval/allowance semantics, make proxy configuration immutable, add a generic redeem adapter.
+
+> NOTE: This phase spans TWO repos per 11-CONTEXT.md (D-01..D-05, locked 2026-08-19). The proxy-contract work (criteria 1–4, 6 — PROXY-01/02) lives in the **erc20-gnus-proxy** repo under its own workstream (`erc20-gnus-proxy/.planning/`), planned from `gnus-ai/.planning/phases/11-erc-20-proxy-hardening/11-CONTEXT.md`. ONLY criterion 5 (PROXY-03, the redeem adapter) is implemented in THIS repo, as a generic diamond-side adapter any external ERC-20 proxy can call. Criterion 5's original "via reserve" wording is SUPERSEDED — Phase 9 D1 locked the conversion-native model: no reserve apparatus exists; the adapter targets `GNUSTreasury.convert()`.
 
 **Success Criteria:**
 
-1. Real `_allowances` mapping replaces `setApprovalForAll()` — amount-specific ERC-20 approvals.
-2. `approve(spender, amount)` sets a real allowance, not an ERC-1155 operator approval.
-3. `transferFrom()` uses real allowance with `_spendAllowance()`.
-4. Child token ID is immutable after initialization.
-5. `redeem()` added for single-transaction proxied-child to GNUS via reserve.
-6. DEX-style approve then transferFrom flow tested.
+1. Real `_allowances` mapping replaces `setApprovalForAll()` — amount-specific ERC-20 approvals. → **erc20-gnus-proxy repo**
+2. `approve(spender, amount)` sets a real allowance, not an ERC-1155 operator approval. → **erc20-gnus-proxy repo**
+3. `transferFrom()` uses real allowance with `_spendAllowance()`. → **erc20-gnus-proxy repo**
+4. Child token ID (and all init config) immutable after one-shot initialization. → **erc20-gnus-proxy repo**
+5. Generic `redeem()` adapter on the gnus-ai diamond for single-transaction proxied-child → GNUS via `GNUSTreasury.convert()` — callable by any conforming external ERC-20 proxy. → **THIS repo**
+6. DEX-style approve then transferFrom flow tested. → **erc20-gnus-proxy repo** (against a GeniusDiamond deployed from a bumped nested `contracts/gnus-ai` pin that includes this repo's Phase 11 redeem adapter)
 
-**Requirements:** PROXY-01, PROXY-02, PROXY-03
+**Requirements:** PROXY-01, PROXY-02 (erc20-gnus-proxy repo), PROXY-03 (this repo)
 **Priority:** P0 (security-critical)
 **Reviewer:** @Super-Genius
 **Assignee:** @Am0rfu5
 
-**GitHub:** [erc20-gnus-proxy#9](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/9), [erc20-gnus-proxy#10](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/10)
+**GitHub:** [erc20-gnus-proxy#9](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/9) (PROXY-01/02), [erc20-gnus-proxy#10](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/10) (PROXY-03 — reserve wording superseded per 11-CONTEXT D-06/D-07)
 **Concerns addressed:** #5 All-or-nothing approval, #23 Proxy tests
 
 ---

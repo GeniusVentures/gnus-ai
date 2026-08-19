@@ -58,6 +58,12 @@
 - [x] **SWP-10**: Unit tests covering config validation, env loading, strategy selection, diamondCut intercept.
 - [x] **SWP-11**: Sepolia smoke test — manual verification that Safe proposal appears in Safe UI.
 
+### ERC-20 Proxy
+
+- [ ] **PROXY-01**: Real amount-specific ERC-20 allowances on the erc20-gnus-proxy contract — `_allowances` mapping; `approve(spender, amount)` sets a real allowance (NOT `setApprovalForAll`); `transferFrom()` spends via `_spendAllowance()`. Implemented in the `erc20-gnus-proxy` repo (see Phase 11).
+- [ ] **PROXY-02**: Immutable proxy configuration — one-shot initialization of `childTokenId`, `erc1155Contract`, `name`, `symbol` on the erc20-gnus-proxy contract. Implemented in the `erc20-gnus-proxy` repo (see Phase 11).
+- [ ] **PROXY-03**: Generic redeem adapter on the gnus-ai diamond — single-transaction proxied-child → GNUS via `GNUSTreasury.convert()`, callable by any conforming external ERC-20 proxy. Implemented in this repo (see Phase 11).
+
 ## v2 Requirements
 
 ### NFT Token Economics
@@ -127,6 +133,9 @@ _These are investigation items only — no implementation committed until resear
 | SWP-09      | Phase 08.1 | Pending  |
 | SWP-10      | Phase 08.1 | Complete |
 | SWP-11      | Phase 08.1 | Complete |
+| PROXY-01    | Phase 11 (erc20-gnus-proxy repo) | Pending  |
+| PROXY-02    | Phase 11 (erc20-gnus-proxy repo) | Pending  |
+| PROXY-03    | Phase 11   | Pending  |
 | LIC-01      | Phase 14   | Pending  |
 | LIC-02      | Phase 14   | Pending  |
 | LIC-03      | Phase 14   | Pending  |
@@ -137,10 +146,10 @@ _These are investigation items only — no implementation committed until resear
 
 **Coverage:**
 
-- v1 requirements: 22 total
+- v1 requirements: 25 total (22 + PROXY-01/02/03)
 - v2 requirements (SWP): 11 total
 - v3 requirements (LIC): 7 total
-- Mapped to phases: 40
+- Mapped to phases: 43
 - Unmapped: 0
 
 ---
