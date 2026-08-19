@@ -181,19 +181,19 @@ describe('GNUSBridge bridgeIn', function () {
 			).to.be.revertedWith('Only SuperAdmin allowed');
 		});
 
-		it('succeeds from owner and emits ValidatorSetUpdated with old/new root + threshold', async function () {
+		it('succeeds from owner and emits ValidatorSetUpdated with old/new root + thresholds', async function () {
 			const newRoot = ethers.keccak256(ethers.toUtf8Bytes('new-root'));
 			await expect(geniusDiamond.setValidatorSet(newRoot, 3n))
 				.to.emit(geniusDiamond, 'ValidatorSetUpdated')
-				.withArgs(ethers.ZeroHash, newRoot, 3n);
+				.withArgs(ethers.ZeroHash, newRoot, 0n, 3n);
 		});
 
-		it('emits the OLD root on rotation (D-18 multisig audit trail)', async function () {
+		it('emits the OLD root + OLD threshold on rotation (D-18 multisig audit trail)', async function () {
 			await configureValidatorSet();
 			const newRoot = ethers.keccak256(ethers.toUtf8Bytes('rotated-root'));
 			await expect(geniusDiamond.setValidatorSet(newRoot, 2n))
 				.to.emit(geniusDiamond, 'ValidatorSetUpdated')
-				.withArgs(validatorRoot, newRoot, 2n);
+				.withArgs(validatorRoot, newRoot, VALIDATOR_THRESHOLD, 2n);
 		});
 
 		it('reverts on zero root', async function () {
