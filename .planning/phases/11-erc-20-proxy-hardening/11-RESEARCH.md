@@ -444,27 +444,21 @@ describe('GNUS Redeem Adapter Tests', async function () {
 | A5 | Limiter charge should be keyed to the proxy (the caller of the adapter), not the upstream user. The diamond has no way to know the user without trusting the proxy. | Pitfall 2 | If the user-facing requirement is "limiter per end-user", this design is wrong. The proxy would need to pass the user address and the adapter would need to trust it (or require a signature). The planner should surface this trade-off. |
 | A6 | `RedeemedViaAdapter` event is additive convenience; the existing `Converted` event from `convert()` is the canonical audit trail. | Code Examples | If downstream consumers key off `RedeemedViaAdapter` specifically, the event is load-bearing. The plan should make this explicit. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Does the diamond need `onERC1155Received`?**
+1. **Does the diamond need `onERC1155Received`?** — RESOLVED in 11-01-PLAN.md (interfaces block + Task 1): yes — `_doSafeTransferAcceptanceCheck` fires on any contract recipient with no self-transfer exemption (verified at `ERC1155Upgradeable.sol:184, 461-479`). Adapter implements `onERC1155Received` (returns magic selector) and `onERC1155BatchReceived` (reverts — stranded-custody defense, T-11-05).
    - What we know: The adapter pulls tokens into `address(this)` via `_safeTransferFrom`. Standard ERC-1155 requires the receiver hook when the recipient is a contract. The diamond IS a contract (the proxy diamond). The current codebase has NO `onERC1155Received` implementation (verified by grep — only doc comments mention it).
    - What's unclear: Whether `ERC1155Upgradeable._safeTransferFrom` skips the receiver check when `to == address(this)`. Unlikely — OZ reference doesn't special-case this.
    - Recommendation: Planner reads `node_modules/@gnus.ai/contracts-upgradeable-diamond/token/ERC1155/ERC1155Upgradeable.sol` `_safeTransferFrom` and `_doSafeTransferAcceptanceCheck`. If the check fires, the adapter facet (or a companion) implements `onERC1155Received` returning the magic value, and `supportsInterface` advertises `IERC1155Receiver`. Add acceptance criterion: happy-path test passes.
 
-2. **Where does the limiter charge accrue?**
+2. **Where does the limiter charge accrue?** — RESOLVED in 11-01-PLAN.md (Task 1): planner rejected the `this.convert()` path (would require modifying shipped Phase 9 `GNUSTreasury.convert` — violates minimal-change). Adapter inlines `_burn(address(this))` + `_mint(recipient, GNUS_TOKEN_ID)` and charges `checkAndRecordWithdraw(from, amount)` explicitly against the real user BEFORE the pull. Per-caller semantics preserved; per-diamond DoS avoided.
    - What we know: `convert()` charges `checkAndRecordWithdraw(sender, ...)` where `sender = _msgSender()`. With `this.convert()`, `sender` becomes the diamond.
    - What's unclear: Whether the design intent is per-user, per-proxy, or per-diamond limiting. Per-diamond is a DoS risk.
    - Recommendation: See Pitfall 2 option (c) — adapter charges the limiter directly against `_msgSender()` (the proxy), and `convert()` skips its own charge when `_msgSender() == address(this)`. Planner decides; discuss with user if the per-user limit is a hard requirement.
 
-3. **Does the user need to ERC-1155-approve the proxy, the diamond, or both?**
-   - What we know: The pull chain is `user → adapter (via diamond)`. The adapter's `_safeTransferFrom(user, address(this), ...)` requires the diamond to be an approved operator of the user.
-   - What's unclear: Whether the proxy can be an intermediary holder (user → proxy, then proxy → diamond), which would let the user only approve the proxy.
-   - Recommendation: Planner picks one model and documents it in the plan. The two-hop model (user approves proxy; proxy pulls to itself, then calls adapter which pulls from proxy) requires the proxy to also approve the diamond. The one-hop model (user approves diamond directly; proxy calls adapter with `from=user` — but this changes the adapter's signature to take a `from` parameter) is simpler but requires the user to know about the diamond. **Simplest: adapter takes a `from` parameter; the proxy passes the user; the user has approved the diamond (one-time).**
+3. **Does the user need to ERC-1155-approve the proxy, the diamond, or both?** — RESOLVED in 11-01-PLAN.md (Task 1): one-hop model. User ERC-1155-approves the DIAMOND directly (one-time `setApprovalForAll(diamond, true)`); the external proxy passes the user address through as `from`. No `NFT_PROXY_OPERATOR_ROLE` reliance (Phase 13 lock honored).
 
-4. **Adapter signature: `redeem(childId, amount, recipient)` or `redeem(from, childId, amount, recipient)`?**
-   - What we know: 11-CONTEXT.md lists `redeem(uint256 childId, uint256 amount, address recipient)` as the planner's-discretion option.
-   - What's unclear: Whether the caller-of-record (the proxy) is always the holder of the child tokens, or whether the adapter needs to support pull-from-third-party.
-   - Recommendation: If we go with the two-hop model (proxy holds tokens momentarily), the signature `redeem(childId, amount, recipient)` suffices — `_msgSender()` IS the holder. If we go one-hop (user holds throughout), we need `redeem(from, childId, amount, recipient)`. **Planner decides; recommend the two-hop model for signature simplicity, even at the cost of the proxy needing its own ERC-1155 approval to the diamond.**
+4. **Adapter signature: `redeem(childId, amount, recipient)` or `redeem(from, childId, amount, recipient)`?** — RESOLVED in 11-01-PLAN.md (interfaces block): `redeem(address from, uint256 childId, uint256 amount, address recipient)` — the four-parameter form enables the proxy-mediated flow without proxy custody.
 
 ## Environment Availability
 
