@@ -338,13 +338,27 @@ Plans:
 5. Generic `redeem()` adapter on the gnus-ai diamond for single-transaction proxied-child → GNUS via `GNUSTreasury.convert()` — callable by any conforming external ERC-20 proxy. → **THIS repo**
 6. DEX-style approve then transferFrom flow tested. → **erc20-gnus-proxy repo** (against a GeniusDiamond deployed from a bumped nested `contracts/gnus-ai` pin that includes this repo's Phase 11 redeem adapter)
 
-**Requirements:** PROXY-01, PROXY-02 (erc20-gnus-proxy repo), PROXY-03 (this repo)
+**Requirements:** PROXY-03
+
+(PROXY-01 and PROXY-02 are owned by the erc20-gnus-proxy workstream — see 11-CONTEXT.md D-02/D-04.)
 **Priority:** P0 (security-critical)
 **Reviewer:** @Super-Genius
 **Assignee:** @Am0rfu5
 
 **GitHub:** [erc20-gnus-proxy#9](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/9) (PROXY-01/02), [erc20-gnus-proxy#10](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/10) (PROXY-03 — reserve wording superseded per 11-CONTEXT D-06/D-07)
 **Concerns addressed:** #5 All-or-nothing approval, #23 Proxy tests
+
+**Plans:** 2 plans (gnus-ai diamond-side ONLY — PROXY-03)
+
+Plans:
+
+**Wave 1**
+
+- [ ] 11-01-PLAN.md — GNUSRedeemAdapter facet (redeem + onERC1155Received + batch rejection) + diamond config 3.0 entry at priority 118
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 11-02-PLAN.md — Unit test suite (14 cases: happy path direct + proxy-mediated, full revert matrix, WR-07 limiter attribution, super-admin bypass, receiver hook, no-custody invariant) + MockERC20Proxy test helper
 
 ---
 
