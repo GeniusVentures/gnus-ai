@@ -3,12 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-08-17T00:00:00.000Z"
+stopped_at: Phase 10 complete (4/4) — ready to discuss Phase 13
+last_updated: 2026-08-19T01:09:43.204Z
 progress:
   total_phases: 16
   completed_phases: 10
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 24
+  completed_plans: 24
   percent: 63
 ---
 
@@ -22,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 10 — lock/release bridge vault (next per ROADMAP; phases 6, 08.2, 9 complete)
+**Current focus:** Phase 13 — time bound erc1155 entitlements
 
 ## Phase Status
 
@@ -38,11 +39,47 @@ See: .planning/PROJECT.md
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
+| 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
 
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
-2. Cleanup follow-up (not blocking): full `npx hardhat test` shows 25 residual failures — 6 Safe proposer (Phase 08.1 pre-existing), 4 ERC1155ProxyOperator D10 side-effects, 12+ GNUSTreasury cross-suite "Already initialized" pollution (Phase 09-04 fixture isolation), 2 factory/deployer cross-suite pollution. Each file passes individually; a Phase 9 sweep should refactor provenance-initializer calls into idempotent helpers.
+2. Cleanup follow-up (not blocking): full `npx hardhat test` on develop (verified 2026-08-17, Phase 10 work in place) shows **477 passing / 2 pending / 1 failing** — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes 38/38 in isolation on both pre- and post-Phase-10 HEADs. The earlier "25 residual failures" note was stale. Root fix belongs to a Phase 9 sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 213 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
+
+### Phase 10 Decisions Logged (10-04)
+
+- Deterministic-invalid certificate derived from fuzz seed (`sigs[0] = abi.encodePacked(bytes32(seed), bytes32(seed^1), uint8(27))`) — random garbage that must NEVER verify; `invariant_noValidCertFromFuzzedSigs` asserts `ghost_bridgeInSuccesses == 0` (BRIDGE-03 soundness)
+- Validator set configured in setUp with fixed nonzero root + threshold=1 (T-10-F02) — an unconfigured set would vacuously revert before reaching signature checks, making the soundness invariant meaningless
+- Handler swallows reverts and only tracks state — reverting in the handler would cause the fuzzer to discard runs on expected reverts
+- `GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION` declared once as a constant in BridgeInvariant with the mapping-slot formula documented (T-10-F05) — invariants read `processedMessages[transferId]` via direct `vm.load` of `keccak256(abi.encode(transferId, POSITION))`
+- Bridge-pair conservation formula: `globalSupply == globalSupplyAtSeed + totalMinted - totalBurned + totalBridgedInAmount` — bridgeOut burn (already subtracted in I1's tree-supply check) and bridgeIn mint cancel globally (D-01/D-02)
+- Full clean-tree `yarn forge:test` verified 213 passed / 2 failed / 3 skipped — identical to Phase 9's documented baseline; the 2 failures are Phase 08.1 Safe-proposer setUp reverts, unchanged
+
+### Phase 10 Decisions Logged (10-03)
+
+- Helper module accepts `BaseWallet` (not `Wallet`) — `Wallet.createRandom()` returns `HDNodeWallet` which extends `BaseWallet` but not `Wallet`; `signMessage` lives on `BaseWallet` in ethers v6, so widening the type is the minimal-change fix
+- Merkle tree builder tracks per-node member SETS (not a single inherited leaf index) — fixes a draft bug where right-subtree leaves were missing sibling appends when their ancestor merged
+- Diamond `chainID` aliased to live Hardhat chainid (31337) in test setup via `setChainID` so `bridgeIn`'s D-08 cross-chain guard passes for happy-path tests; wrong-chain test exercises digest mismatch by overriding `destChainID` off-chain
+- Global-cap test uses `amount = GNUS_MAX_SUPPLY + 1` directly — no need to seed `globalSupply` near the cap, the require fires on the very first bridgeIn
+- `chainSupply` assertion dropped in favor of `totalSupplyOfAll` — GNUSTreasury does not expose a public per-chain reader; per-chain partition is covered by Plan 10-04 Foundry invariants
+- Canonical test vector (Hardhat account #0 private key, fixed BridgeInMessage) is logged for SG-side `SignEVM` C++ cross-check — closes Pitfall 1 / Pitfall 3 mitigation
+
+### Phase 10 Decisions Logged (10-02)
+
+- bridgeIn lives on the existing GNUSBridge facet (not a new facet) — final deployedBytecode is 21635 bytes (2941 headroom under EIP-170)
+- Digest binds transferId, srcChainID, block.chainid, address(this), recipient, GNUS_TOKEN_ID, amount via abi.encode, then EIP-191-wraps with toEthSignedMessageHash — cross-chain (D-08) and cross-diamond replay protection
+- Merkle leaf is keccak256(abi.encodePacked(signer)) — 20-byte packed encoding per Pitfall 3 (NOT abi.encode which pads to 32); SG side must match
+- GNUS_TOKEN_ID hardcoded in bridgeIn (D-14) — child-token bridge-in is mint-of-id-0 followed by GNUSTreasury convert; no tokenId parameter on bridgeIn
+- Explicit require(v.validatorThreshold > 0, "Validator set not configured") placed BEFORE the signatures.length >= threshold check (Pitfall 7) — without it, an unconfigured set would vacuously pass any certificate
+- setValidatorSet emits ValidatorSetUpdated BEFORE the write so the event captures the OLD root (D-18 multisig audit trail)
+- No deployInit/upgradeInit on the GNUSBridge 3.0 diamond-config entry — explicit setValidatorSet post-upgrade beats magic defaults for security-critical parameters (RESEARCH Pitfall 7)
+
+### Phase 10 Decisions Logged (10-01)
+
+- Pure storage library with no imports — mirrors GNUSTreasuryStorage.sol exactly (no LibDiamond dependency needed for a data-only layout)
+- Slot string is `gnus.ai.bridge.validator.storage` (with .validator infix), NOT `gnus.ai.bridge.storage` — 10-RESEARCH.md Pitfall 6 reserves the shorter name for a future facet
+- No Initialize function on the storage library — Phase 10 uses explicit configuration via `setValidatorSet` (10-RESEARCH.md Pitfall 7: explicit configuration beats magic defaults)
+- Field order is load-bearing for append-only compatibility: `processedMessages` → `validatorMerkleRoot` → `validatorThreshold`; Phase 12 may append after these fields
 
 ### Phase 9 Decisions Logged (09-05)
 
@@ -79,6 +116,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-15 (branch renamed wip/phase-9-pause → feature/09-per-child-gnus-treasury-reserve across all repos)
-Stopped at: Phase 9 provenance redesign implemented + all test regressions fixed (458 passing, 0 failing); committing, then verify-work 9, then push
-Resume file: .planning/phases/09-per-child-gnus-treasury-reserve/.continue-here.md
+Last session: 2026-08-17T23:59:00.000Z
+Stopped at: Completed 10-04 (Foundry bridgeIn invariants — BridgeInvariant 2/2 + ConservationInvariant 4/4 green). Phase 10 all 4 plans landed — post-wave gates next (code review, regression, phase verification)
+Resume file: None

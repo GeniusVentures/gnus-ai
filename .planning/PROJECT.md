@@ -27,6 +27,7 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 - ✓ RPC-based deployment pipeline with retry logic — `scripts/setup/RPCDiamondDeployer.ts`
 - ✓ Dual test framework: Hardhat/Mocha + Foundry with fuzz/invariant testing
 - ✓ DevOps security tooling: Slither, Snyk, Semgrep, OSV-Scanner, Socket Security
+- ✓ Lock/release bridging via provenance relocation — threshold-ECDSA `bridgeIn` certificate verification, replay-protected via `processedMessages`, global-supply conserving (BRIDGE-02/03/04) — Validated in Phase 10: Lock/Release Bridge Vault — `contracts/gnus-ai/GNUSBridge.sol`, `contracts/gnus-ai/GNUSBridgeValidatorStorage.sol`
 
 ### Active
 
@@ -120,4 +121,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-26 after initialization_
+_Last updated: 2026-08-19 after Phase 10 completion_

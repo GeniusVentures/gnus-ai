@@ -33,6 +33,24 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     // convert/depth-gate bounding draws from this set only (T-09-28).
     uint256[] public ghost_createdIds;
 
+    // Phase 10 (10-04): bridgeIn ghost state for the Foundry invariant suite.
+    // ghost_bridgeInCalls counts every attempt (success + revert) so the afterInvariant
+    // coverage guard can prove the fuzzer actually reached the path (T-10-F01).
+    // ghost_bridgeInSuccesses / ghost_totalBridgedInAmount / ghost_releasedIds(List)
+    // only update when the diamond call succeeded — the invariant_noValidCertFromFuzzedSigs
+    // soundness property asserts ghost_bridgeInSuccesses stays at zero for the random-cert
+    // campaign (BRIDGE-03).
+    uint256 public ghost_bridgeInCalls;
+    uint256 public ghost_bridgeInSuccesses;
+    uint256 public ghost_totalBridgedInAmount;
+    mapping(bytes32 => bool) public ghost_releasedIds;
+    bytes32[] public ghost_releasedIdsList;
+
+    // Phase 10 (IN-03): dedicated role-op counter. Previously handler_grantRole
+    // incremented ghost_totalCollectionsCreated, corrupting any invariant that
+    // interprets that ghost as actual collection creations.
+    uint256 public ghost_roleOps;
+
     // Action counters for call summary
     uint256 public calls_transfer;
     uint256 public calls_approve;
@@ -375,6 +393,86 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
+     * @notice Bounded bridgeIn handler — the fuzzer's entry point for the destination-side
+     *         bridge release path (Phase 10, BRIDGE-02/BRIDGE-03/BRIDGE-04).
+     * @dev Always submits a deterministic-but-invalid certificate built from the fuzz `seed`:
+     *      a single random 65-byte signature with an empty merkle proof. The soundness
+     *      invariant (BridgeInvariant.invariant_noValidCertFromFuzzedSigs) asserts this
+     *      handler NEVER succeeds — if `ghost_bridgeInSuccesses` ever becomes non-zero,
+     *      the signature recovery or merkle verification in GNUSBridge._verifyThresholdCertificate
+     *      is broken. Handlers swallow reverts; failed calls are still tracked via
+     *      `ghost_bridgeInCalls` for the coverage guard.
+     *
+     * INPUT BOUNDS:
+     * - amount: Bounded to [1, 1_000_000 ether] via forge-std `bound`
+     * - srcChainID: Bounded to [1, 1000]; must differ from block.chainid (same-chain guard)
+     * - recipient: Must not be the zero address
+     * - transferId / seed: Unbounded fuzz inputs (transferId is the replay-protection key)
+     *
+     * GHOST VARIABLE UPDATES (on success only):
+     * - ghost_bridgeInSuccesses: incremented
+     * - ghost_totalBridgedInAmount: incremented by post-call `amount`
+     * - ghost_releasedIds[transferId]: set to true
+     * - ghost_releasedIdsList: transferId appended (for invariant-time iteration)
+     *
+     * ALWAYS INCREMENTED:
+     * - ghost_bridgeInCalls: incremented unconditionally (attempt counter)
+     *
+     * @param transferId Replay-protection key for the release
+     * @param srcChainID Source chain id (fuzzed, bounded to 1..1000, != block.chainid)
+     * @param recipient Release recipient (fuzzed, assumed non-zero)
+     * @param amount Release amount (fuzzed, bounded to [1, 1_000_000 ether])
+     * @param seed Seed material for the deterministic-but-invalid certificate
+     */
+    function handler_bridgeIn(
+        bytes32 transferId,
+        uint256 srcChainID,
+        address recipient,
+        uint256 amount,
+        uint256 seed
+    ) external {
+        amount = bound(amount, 1, 1_000_000 ether);
+        srcChainID = bound(srcChainID, 1, 1000);
+        vm.assume(srcChainID != block.chainid);
+        vm.assume(recipient != address(0));
+
+        // Deterministic-but-invalid certificate: a single 65-byte signature built from
+        // the fuzz seed (r, s, v=27) with an empty merkle proof. The validator set
+        // configured by the invariant setUp uses a fixed nonzero root, so this random
+        // signature should never pass ECDSA recovery + merkle membership.
+        bytes[] memory sigs = new bytes[](1);
+        sigs[0] = abi.encodePacked(bytes32(seed), bytes32(seed ^ 1), uint8(27));
+        bytes32[][] memory proofs = new bytes32[][](1);
+        proofs[0] = new bytes32[](0);
+
+        ghost_bridgeInCalls++;
+
+        (bool ok, ) = diamond.call(
+            abi.encodeWithSignature(
+                "bridgeIn(bytes32,uint256,address,uint256,bytes[],bytes32[][])",
+                transferId,
+                srcChainID,
+                recipient,
+                amount,
+                sigs,
+                proofs
+            )
+        );
+
+        if (ok) {
+            // Reaching this branch means the fuzzer stumbled on a valid certificate
+            // against the configured validator set — that is a finding (BRIDGE-03).
+            ghost_bridgeInSuccesses++;
+            ghost_totalBridgedInAmount += amount;
+            ghost_releasedIds[transferId] = true;
+            ghost_releasedIdsList.push(transferId);
+        }
+        // NOTE: invariant tests must add `handler_bridgeIn.selector` to their
+        // targetSelector allowlist (see BridgeInvariant.setUp and
+        // ConservationInvariant.setUp) so the fuzzer reaches this entry point.
+    }
+
+    /**
      * @notice Bounded role granting handler for access control testing
      * @dev Grants random roles to random actors to test RBAC (Role-Based Access Control).
      *      Only DEFAULT_ADMIN_ROLE can grant roles, enforcing security hierarchy.
@@ -397,7 +495,7 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      * - Checks multiple roles can coexist on same address
      *
      * GHOST VARIABLE UPDATES:
-     * - ghost_totalCollectionsCreated: Reused as role operation counter
+     * - ghost_roleOps: Incremented on successful role grant
      * - calls_grantRole: Counter for this handler invocation
      *
      * @param roleSeed Seed to select role to grant
@@ -421,7 +519,7 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         vm.prank(currentActor);
         _grantRole(role, target);
 
-        ghost_totalCollectionsCreated++; // Reusing ghost variable for role operations count
+        ghost_roleOps++;
         calls_grantRole++;
 
         console.log("[HANDLER] Grant Role");
@@ -886,6 +984,16 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      */
     function ghost_createdIdsLength() external view returns (uint256) {
         return ghost_createdIds.length;
+    }
+
+    /**
+     * @notice Number of successfully-released bridge transferIds (for invariant iteration)
+     * @dev BridgeInvariant.invariant_processedMessagesIffReleased walks this list to
+     *      verify the diamond's processedMessages mapping is set for every released id.
+     * @return length of ghost_releasedIdsList
+     */
+    function getReleasedIdsLength() external view returns (uint256) {
+        return ghost_releasedIdsList.length;
     }
 
     /**
