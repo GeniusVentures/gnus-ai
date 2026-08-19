@@ -25,7 +25,7 @@
 | --- | ---------------- | -------------------------------------------------------- | ------------------------------------- | ---------------- |
 | 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
 | 9   | Treasury/Reserve | 5/5 | Complete   | 2026-08-05 |
-| 10  | Bridge Vault     | 4/4 | Complete   | 2026-08-18 |
+| 10  | Bridge Vault     | 4/4 | Complete    | 2026-08-19 |
 | 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
 
