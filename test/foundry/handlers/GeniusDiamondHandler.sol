@@ -46,6 +46,11 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     mapping(bytes32 => bool) public ghost_releasedIds;
     bytes32[] public ghost_releasedIdsList;
 
+    // Phase 10 (IN-03): dedicated role-op counter. Previously handler_grantRole
+    // incremented ghost_totalCollectionsCreated, corrupting any invariant that
+    // interprets that ghost as actual collection creations.
+    uint256 public ghost_roleOps;
+
     // Action counters for call summary
     uint256 public calls_transfer;
     uint256 public calls_approve;
@@ -490,7 +495,7 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      * - Checks multiple roles can coexist on same address
      *
      * GHOST VARIABLE UPDATES:
-     * - ghost_totalCollectionsCreated: Reused as role operation counter
+     * - ghost_roleOps: Incremented on successful role grant
      * - calls_grantRole: Counter for this handler invocation
      *
      * @param roleSeed Seed to select role to grant
@@ -514,7 +519,7 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         vm.prank(currentActor);
         _grantRole(role, target);
 
-        ghost_totalCollectionsCreated++; // Reusing ghost variable for role operations count
+        ghost_roleOps++;
         calls_grantRole++;
 
         console.log("[HANDLER] Grant Role");
