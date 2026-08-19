@@ -17,7 +17,7 @@ findings:
   warning: 5
   info: 3
   total: 8
-status: issues_found
+status: fixed
 ---
 
 # Phase 10: Code Review Report
@@ -102,6 +102,23 @@ emit ValidatorSetUpdated(oldRoot, newRoot, newThreshold);
 **File:** `test/foundry/handlers/GeniusDiamondHandler.sol:517`
 **Issue:** The grant-role handler increments `ghost_totalCollectionsCreated` ("Reusing ghost variable for role operations count" per the inline comment). Any future invariant that interprets `ghost_totalCollectionsCreated` as actual collection creations will read corrupted data. No current invariant consumes it for that purpose, so this is latent.
 **Fix:** Add a dedicated `ghost_roleOps` counter; the reuse saves one slot of clarity it shouldn't.
+
+---
+
+## Fix Disposition
+
+| Finding | Disposition |
+|---------|-------------|
+| WR-01 (cumulative-issuance cap) | DEFERRED — Phase 12 supply-ledger design + operational runbook (B1 model is by design; `updateChainSupply` reconciliation is the designated headroom-reclaim mechanism) |
+| WR-02 (post-fee zero-amount guard) | FIXED — contracts/gnus-ai commit `f7e6221` (`fix(10): WR-02 revert bridge-in when fee consumes entire amount`) |
+| WR-03 (oldThreshold in ValidatorSetUpdated) | FIXED — contracts/gnus-ai commit `90e4910` + outer-repo test update `6ea3cf2` |
+| WR-04 (overclaimed invariant NatSpec) | FIXED — outer-repo commit `60290c7` (comment-only; no new handler added) |
+| WR-05 (no upgradeInit for GNUSBridge 3.0) | DEFERRED — deployment/upgrade runbook step: `setValidatorSet` MUST be called post-upgrade before the phase is live |
+| IN-01 (Hardhat well-known key in test) | DEFERRED — no action; documented as safe (signing-only, never sends transactions) |
+| IN-02 (emit-before-write ordering) | FIXED — folded into WR-03 contract commit `90e4910` (locals read, writes, then emit) |
+| IN-03 (ghost counter reuse) | FIXED — outer-repo commit `814cd6f` (dedicated `ghost_roleOps`) |
+
+Submodule pin bump: outer-repo commit `ad7b667` (contracts/gnus-ai → `90e4910`).
 
 ---
 
