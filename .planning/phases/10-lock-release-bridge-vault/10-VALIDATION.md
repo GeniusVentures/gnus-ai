@@ -1,17 +1,18 @@
 ---
 phase: 10
 slug: lock-release-bridge-vault
-status: planned
+status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-08-17
 planned: 2026-08-17
+validated: 2026-08-18
 ---
 
 # Phase 10 — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
-> Wave 0 artifacts (test files + helpers + invariant extensions) are planned in 10-03 and 10-04.
+> Wave 0 artifacts (test files + helpers + invariant extensions) were delivered in 10-03 and 10-04 and audited green 2026-08-18.
 
 ---
 
@@ -24,7 +25,7 @@ planned: 2026-08-17
 | **Config file (Hardhat)** | `hardhat.config.ts` |
 | **Config file (Foundry)** | `test/foundry/GeniusDiamond.forge.config.json` |
 | **Quick run command (unit)** | `npx hardhat test test/unit/GNUSBridgeIn.test.ts` |
-| **Quick run command (Foundry)** | `forge test --match-contract BridgeInvariant -vvv` |
+| **Quick run command (Foundry)** | `npx hardhat diamonds-forge:test --diamond-name GeniusDiamond --network localhost --force -- --match-contract BridgeInvariant -vvv` |
 | **Full suite command** | `npx hardhat test && yarn forge:test` |
 | **Estimated runtime** | ~120 seconds |
 
@@ -52,23 +53,23 @@ planned: 2026-08-17
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 10-01-01 | 03 | 3 | BRIDGE-02 | T-10-10 | bridgeIn reverts when paused | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "paused"` | Planned in 10-03 | ⬜ pending |
-| 10-01-02 | 03 | 3 | BRIDGE-02 | T-10-08 | bridgeIn reverts on unconfigured validator set | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "unconfigured validator set"` | Planned in 10-03 | ⬜ pending |
-| 10-01-03 | 03 | 3 | BRIDGE-02 | — | bridgeIn mints on valid certificate | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "mints on valid certificate"` | Planned in 10-03 | ⬜ pending |
-| 10-01-04 | 03 | 3 | BRIDGE-03 | T-10-02 | bridgeIn reverts on duplicate transferId | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "replay"` | Planned in 10-03 | ⬜ pending |
-| 10-01-05 | 03 | 3 | BRIDGE-03 | T-10-03 | bridgeIn reverts on wrong destination chain | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "wrong destination"` | Planned in 10-03 | ⬜ pending |
-| 10-01-06 | 03 | 3 | BRIDGE-03 | T-10-04 | bridgeIn reverts on cross-diamond replay | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "cross-diamond"` | Planned in 10-03 | ⬜ pending |
-| 10-01-07 | 03 | 3 | BRIDGE-03 | T-10-06 | bridgeIn reverts on unsorted signatures | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "not strictly ascending"` | Planned in 10-03 | ⬜ pending |
-| 10-01-08 | 03 | 3 | BRIDGE-03 | T-10-06 | bridgeIn reverts on duplicate signer | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "duplicate signer"` | Planned in 10-03 | ⬜ pending |
-| 10-01-09 | 03 | 3 | BRIDGE-03 | T-10-07 | bridgeIn reverts on non-validator signature | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "not a registered validator"` | Planned in 10-03 | ⬜ pending |
-| 10-01-10 | 03 | 3 | BRIDGE-03 | T-10-08 | bridgeIn reverts below threshold | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "below threshold"` | Planned in 10-03 | ⬜ pending |
-| 10-01-11 | 03 | 3 | BRIDGE-04 | T-10-14 | bridgeIn enforces global cap | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "global cap"` | Planned in 10-03 | ⬜ pending |
-| 10-01-12 | 03 | 3 | BRIDGE-04 | — | bridgeIn applies bridge fee | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "applies bridge fee"` | Planned in 10-03 | ⬜ pending |
-| 10-01-13 | 03 | 3 | BRIDGE-04 | — | bridgeIn increments chainSupply and globalSupply | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "chain supply"` | Planned in 10-03 | ⬜ pending |
-| 10-01-14 | 03 | 3 | BRIDGE-02 | T-10-13 | setValidatorSet only by Super Admin | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "setValidatorSet"` | Planned in 10-03 | ⬜ pending |
-| 10-02-01 | 04 | 3 | BRIDGE-02 | T-10-12 | processedMessages set iff BridgeReleased emitted | invariant | `forge test --match-contract BridgeInvariant --match-test invariant_processedMessagesIffReleased` | Planned in 10-04 | ⬜ pending |
-| 10-02-02 | 04 | 3 | BRIDGE-03 | T-10-01/06/07 | arbitrary signatures never pass verification | fuzz | `forge test --match-contract BridgeInvariant --match-test invariant_noValidCertFromFuzzedSigs` | Planned in 10-04 | ⬜ pending |
-| 10-02-03 | 04 | 3 | BRIDGE-04 | — | globalSupply unchanged across bridgeOut + bridgeIn | invariant | `forge test --match-contract ConservationInvariant --match-test invariant_bridgePairConservation` | Planned in 10-04 | ⬜ pending |
+| 10-01-01 | 03 | 3 | BRIDGE-02 | T-10-10 | bridgeIn reverts when paused | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "paused"` | ✅ | ✅ green |
+| 10-01-02 | 03 | 3 | BRIDGE-02 | T-10-08 | bridgeIn reverts on unconfigured validator set | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "Validator set not configured"` | ✅ | ✅ green |
+| 10-01-03 | 03 | 3 | BRIDGE-02 | — | bridgeIn mints on valid certificate | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "mints on valid certificate"` | ✅ | ✅ green |
+| 10-01-04 | 03 | 3 | BRIDGE-03 | T-10-02 | bridgeIn reverts on duplicate transferId | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "replay"` | ✅ | ✅ green |
+| 10-01-05 | 03 | 3 | BRIDGE-03 | T-10-03 | bridgeIn reverts on wrong destination chain | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "wrong destination"` | ✅ | ✅ green |
+| 10-01-06 | 03 | 3 | BRIDGE-03 | T-10-04 | bridgeIn reverts on cross-diamond replay | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "cross-diamond"` | ✅ | ✅ green |
+| 10-01-07 | 03 | 3 | BRIDGE-03 | T-10-06 | bridgeIn reverts on unsorted signatures | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "strictly ascending"` | ✅ | ✅ green |
+| 10-01-08 | 03 | 3 | BRIDGE-03 | T-10-06 | bridgeIn reverts on duplicate signer | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "strictly ascending"` | ✅ | ✅ green |
+| 10-01-09 | 03 | 3 | BRIDGE-03 | T-10-07 | bridgeIn reverts on non-validator signature | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "not in validator set"` | ✅ | ✅ green |
+| 10-01-10 | 03 | 3 | BRIDGE-03 | T-10-08 | bridgeIn reverts below threshold | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "below threshold"` | ✅ | ✅ green |
+| 10-01-11 | 03 | 3 | BRIDGE-04 | T-10-14 | bridgeIn enforces global cap | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "global cap"` | ✅ | ✅ green |
+| 10-01-12 | 03 | 3 | BRIDGE-04 | — | bridgeIn applies bridge fee | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "applies bridge fee"` | ✅ | ✅ green |
+| 10-01-13 | 03 | 3 | BRIDGE-04 | — | bridgeIn increments chainSupply and globalSupply | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "increments chainSupply"` | ✅ | ✅ green |
+| 10-01-14 | 03 | 3 | BRIDGE-02 | T-10-13 | setValidatorSet only by Super Admin | unit | `npx hardhat test test/unit/GNUSBridgeIn.test.ts --grep "setValidatorSet"` | ✅ | ✅ green |
+| 10-02-01 | 04 | 3 | BRIDGE-02 | T-10-12 | processedMessages set iff BridgeReleased emitted | invariant | `forge test --match-contract BridgeInvariant --match-test invariant_processedMessagesIffReleased` | ✅ | ✅ green |
+| 10-02-02 | 04 | 3 | BRIDGE-03 | T-10-01/06/07 | arbitrary signatures never pass verification | fuzz | `forge test --match-contract BridgeInvariant --match-test invariant_noValidCertFromFuzzedSigs` | ✅ | ✅ green |
+| 10-02-03 | 04 | 3 | BRIDGE-04 | — | globalSupply unchanged across bridgeOut + bridgeIn | invariant | `forge test --match-contract ConservationInvariant --match-test invariant_bridgePairConservation` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -76,7 +77,7 @@ planned: 2026-08-17
 
 ## Wave 0 Requirements
 
-All Wave 0 artifacts are now planned (not blocking — they ARE the work of Plans 10-03 and 10-04):
+All Wave 0 artifacts delivered by Plans 10-03 and 10-04:
 
 - [x] `test/unit/GNUSBridgeIn.test.ts` — Plan 10-03 Task 2
 - [x] `test/utils/bridge-certificate.ts` — Plan 10-03 Task 1
@@ -107,3 +108,31 @@ All Wave 0 artifacts are now planned (not blocking — they ARE the work of Plan
 - [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** planned 2026-08-17 — ready for execution
+
+---
+
+## Validation Audit 2026-08-18
+
+Retroactive Nyquist audit (`/gsd-validate-phase 10`). File existed from plan time (State A); all rows were stale `⬜ pending` despite execution having completed. Cross-referenced every row's grep/match pattern against the live test files and updated statuses.
+
+**Gaps found:** 0
+**Resolved:** 0
+**Escalated:** 0
+
+**Coverage verification:**
+
+| Suite | Result | Evidence |
+|-------|--------|----------|
+| `test/unit/GNUSBridgeIn.test.ts` | 20/20 passing | Verified 2026-08-18 during Phase 10 regression gate; all 14 unit rows (10-01-01..14) map to present describe/it blocks |
+| `BridgeInvariant` | 2/2 passing | `invariant_processedMessagesIffReleased`, `invariant_noValidCertFromFuzzedSigs` — verified 2026-08-18 (10-04) |
+| `ConservationInvariant` | 4/4 passing | `invariant_bridgePairConservation` (+ I1/I2/I5) — verified 2026-08-18 (10-04) |
+| Full regression | 477 passing / 2 pending / 1 failing | The 1 failure is pre-existing GNUSControlStorage chainID cross-suite pollution (Phase 9 sweep item) — not Phase 10 scope |
+
+**Row adjustments during audit:**
+- 10-01-07 and 10-01-08 (unsorted signatures, duplicate signer) both resolve to the `--grep "strictly ascending"` test — the contract enforces strict ascending order which rejects both cases in one revert path.
+- 10-01-09 grep pattern corrected from `"not a registered validator"` to `"not in validator set"` to match the actual revert string in `GNUSBridge.sol`.
+- 10-01-02 grep pattern corrected from `"unconfigured validator set"` to `"Validator set not configured"` to match the actual revert string.
+- 10-01-13 grep pattern corrected from `"chain supply"` to `"increments chainSupply"` to match the actual test name.
+- Quick-run Foundry command updated to the full working invocation (`npx hardhat diamonds-forge:test ... --force`) — plain `forge test` requires a live localhost diamond.
+
+**Conclusion:** all 17 mapped behaviors have real, green automated coverage. Phase 10 is NYQUIST-COMPLIANT.
