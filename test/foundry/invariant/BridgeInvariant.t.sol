@@ -25,10 +25,12 @@ import {console} from "forge-std/console.sol";
  *          The handler always submits a deterministic-but-invalid certificate
  *          (random 65-byte sig with empty proof). The validator set in setUp
  *          uses a fixed nonzero merkle root, so NO fuzzed signature should
- *          ever verify. `ghost_bridgeInSuccesses == 0` after the campaign is
- *          the strongest soundness check available to a fuzzer — a non-zero
- *          value means ECDSA recovery or merkle membership verification is
- *          broken in `_verifyThresholdCertificate`.
+ *          ever verify. `ghost_bridgeInSuccesses == 0` after the campaign
+ *          proves that no single-signature garbage certificate with an EMPTY
+ *          proof verifies against a fixed root. It does NOT exercise
+ *          multi-level merkle proof paths or the malformed-v/s revert
+ *          matrix — those are covered by the unit suite
+ *          (test/unit/GNUSBridgeIn.test.ts), not by this invariant.
  *
  *      afterInvariant (coverage guard, T-10-F01):
  *          Asserts `ghost_bridgeInCalls > 0` so the campaign actually
@@ -132,8 +134,10 @@ contract BridgeInvariant is GeniusDiamondTestBase {
      *      root. If `ghost_bridgeInSuccesses` is non-zero after the campaign,
      *      `_verifyThresholdCertificate` accepted a garbage certificate — a
      *      critical soundness failure in either ECDSA recovery or merkle
-     *      membership verification. This property cannot be proven by unit
-     *      tests because it requires the full fuzz reachable state space.
+     *      membership verification. Scope: this campaign only proves the
+     *      single-sig / empty-proof / fixed-root case. Multi-level merkle proof
+     *      paths and the malformed-v/s revert matrix are covered by the unit
+     *      suite (test/unit/GNUSBridgeIn.test.ts), not by this invariant.
      */
     function invariant_noValidCertFromFuzzedSigs() public view {
         assertEq(
