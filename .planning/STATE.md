@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_execute
-stopped_at: Completed 10-04 (Foundry bridgeIn invariants — BridgeInvariant 2/2 + ConservationInvariant 4/4 green, full tree 213/2/3 matching Phase 9 baseline). Phase 10 all 4 plans landed — post-wave gates next
-last_updated: "2026-08-17T23:37:10.663Z"
+status: ready_to_plan
+stopped_at: Phase 10 complete (4/4) — ready to discuss Phase 13
+last_updated: 2026-08-19T01:09:43.204Z
 progress:
   total_phases: 16
   completed_phases: 10
   total_plans: 24
-  completed_plans: 23
+  completed_plans: 24
   percent: 63
 ---
 
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 10 — lock-release-bridge-vault
+**Current focus:** Phase 13 — time bound erc1155 entitlements
 
 ## Phase Status
 
