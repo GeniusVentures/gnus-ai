@@ -26,7 +26,7 @@
 | 8   | Bridge Recipient | Add 64-byte SG public key destination to bridgeOut()     | BRIDGE-01                             | 3                |
 | 9   | Treasury/Reserve | 5/5 | Complete   | 2026-08-05 |
 | 10  | Bridge Vault     | 4/4 | Complete    | 2026-08-19 |
-| 11  | Proxy Hardening  | Real ERC-20 allowances, immutable config, redeem adapter | PROXY-01, PROXY-02, PROXY-03          | 6                |
+| 11  | Proxy Hardening  | 2/2 | Complete   | 2026-08-19 |
 | 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
 
 ### Phases 13-14: AI Entitlements & Licensing
@@ -348,17 +348,17 @@ Plans:
 **GitHub:** [erc20-gnus-proxy#9](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/9) (PROXY-01/02), [erc20-gnus-proxy#10](https://github.com/GeniusVentures/erc20-gnus-proxy/issues/10) (PROXY-03 — reserve wording superseded per 11-CONTEXT D-06/D-07)
 **Concerns addressed:** #5 All-or-nothing approval, #23 Proxy tests
 
-**Plans:** 2 plans (gnus-ai diamond-side ONLY — PROXY-03)
+**Plans:** 2/2 plans complete
 
 Plans:
 
 **Wave 1**
 
-- [ ] 11-01-PLAN.md — GNUSRedeemAdapter facet (redeem + onERC1155Received + batch rejection) + diamond config 3.0 entry at priority 118
+- [x] 11-01-PLAN.md — GNUSRedeemAdapter facet (redeem + onERC1155Received + batch rejection) + diamond config 3.0 entry at priority 118
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 11-02-PLAN.md — Unit test suite (14 cases: happy path direct + proxy-mediated, full revert matrix, WR-07 limiter attribution, super-admin bypass, receiver hook, no-custody invariant) + MockERC20Proxy test helper
+- [x] 11-02-PLAN.md — Unit test suite (14 cases: happy path direct + proxy-mediated, full revert matrix, WR-07 limiter attribution, super-admin bypass, receiver hook, no-custody invariant) + MockERC20Proxy test helper
 
 ---
 
