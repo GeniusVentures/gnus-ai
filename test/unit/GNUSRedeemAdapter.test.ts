@@ -260,12 +260,16 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				it('is callable by a contract (simulated external proxy)', async function () {
 					const childId = await bootWithChild();
 					const mockProxy = await deployMockProxy(signers[9]);
+					// Authorization chain (Codex P1 fix): the holder must operator-approve the
+					// CALLER (the proxy) in addition to the diamond. The proxy approval is the
+					// authorization grant; the diamond approval remains the transfer mechanism.
+					await signer1Diamond.setApprovalForAll(await mockProxy.getAddress(), true);
 
 					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
 					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](signer2, GNUS_TOKEN_ID);
 
 					// The mock is driven by an unrelated third party (signers[9]) — the adapter
-					// only cares that `from` approved the diamond as operator.
+					// requires `from` to have approved the proxy contract as operator.
 					await expect(
 						mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('20'), signer2),
 					)
@@ -347,11 +351,24 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					).to.be.revertedWith('ERC1155: insufficient balance for transfer');
 				});
 
+				it('reverts when an unauthorized third party drives a proxy against a victim (Codex P1)', async function () {
+					const childId = await bootWithChild();
+					const mockProxy = await deployMockProxy(signers[9]);
+					// Victim (signer1) has approved the DIAMOND (from bootWithChild) but NOT the
+					// proxy contract. An attacker driving the proxy must not be able to redeem
+					// the victim's tokens — approval of the diamond is the transfer mechanism,
+					// not authorization for arbitrary callers.
+					await expect(
+						mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('10'), signers[9].address),
+					).to.be.revertedWith('GNUSRedeemAdapter: caller not authorized by token holder');
+				});
+
 				it('reverts when from has not approved the diamond as operator', async function () {
 					const childId = await bootWithChild();
 					const mockProxy = await deployMockProxy(signers[9]);
-					// Revoke signer1's operator approval, then drive the redeem through the
-					// mock proxy so the caller (proxy) is neither owner nor approved.
+					// Authorize the proxy (passes the Codex-P1 caller gate) but revoke the
+					// diamond operator approval, so the TRANSFER gate is what fires.
+					await signer1Diamond.setApprovalForAll(await mockProxy.getAddress(), true);
 					await signer1Diamond.setApprovalForAll(diamondAddress, false);
 					await expect(
 						mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('10'), signer2),
@@ -384,6 +401,8 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					const childId = await bootWithChild();
 					const mockProxy = await deployMockProxy(signers[9]);
 					const proxyAddress = await mockProxy.getAddress();
+					// Authorize the proxy as operator for the holder (Codex P1 caller gate).
+					await signer1Diamond.setApprovalForAll(proxyAddress, true);
 
 					const userBefore = await geniusDiamond.getAccountWithdrawStatus(signer1);
 					const proxyBefore = await geniusDiamond.getAccountWithdrawStatus(proxyAddress);
@@ -464,27 +483,27 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
 					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](attackerAddress, GNUS_TOKEN_ID);
 
-					// Outer redeem must succeed even though the hook reenters. The reentrant
-					// redeem does NOT revert (signer1 approved the DIAMOND as operator, so the
-					// approval gate passes for any caller) — but it is equivalent to the
-					// attacker calling redeem directly: no free mint, no custody, limiter
-					// charged for every GNUS minted. This pins the CEI/no-state-corruption
-					// invariant: outer 10 + reentrant 5 debited, 15 GNUS minted, all accounted.
+					// Outer redeem must succeed even though the hook reenters. With the
+					// Codex-P1 authorization gate, the reentrant call (caller = attacker
+					// contract, from = signer1, who never approved the attacker) REVERTS at
+					// the caller gate — this is the stronger invariant: a reentrant (or any)
+					// third party cannot move signer1's tokens at all. Exactly the outer
+					// 10 GNUS is minted, 10 child debited, limiter charged once.
 					const limiterBefore = await geniusDiamond.getAccountWithdrawStatus(signer1);
 					await signer1Diamond.redeem(signer1, childId, toWei('10'), attackerAddress);
 					const limiterAfter = await geniusDiamond.getAccountWithdrawStatus(signer1);
 
 					expect(await attacker.reentryAttempts()).to.eq(1n);
-					// Exactly 10 (outer) + 5 (reentrant) GNUS minted — nothing extra.
+					// Only the outer 10 minted — the reentrant 5 was blocked by the caller gate.
 					expect(
 						(await geniusDiamond['balanceOf(address,uint256)'](attackerAddress, GNUS_TOKEN_ID)) - gnusBefore,
-					).to.eq(toWei('15'));
-					// Exactly 10 + 5 child tokens debited from signer1.
+					).to.eq(toWei('10'));
+					// Exactly 10 child tokens debited from signer1 (no reentrant drain).
 					expect(childBefore - (await geniusDiamond['balanceOf(address,uint256)'](signer1, childId))).to.eq(
-						toWei('15'),
+						toWei('10'),
 					);
-					// Limiter charged for every minted GNUS (no under-charging via reentry).
-					expect(limiterAfter.currentUsage - limiterBefore.currentUsage).to.eq(toWei('15'));
+					// Limiter charged exactly once for the outer mint.
+					expect(limiterAfter.currentUsage - limiterBefore.currentUsage).to.eq(toWei('10'));
 					// No-custody invariant holds through the reentrancy.
 					expect(await geniusDiamond['balanceOf(address,uint256)'](diamondAddress, childId)).to.eq(0n);
 				});
