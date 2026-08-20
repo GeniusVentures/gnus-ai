@@ -95,7 +95,7 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
-    "@geniusventures/diamonds": "1.3.2-gv.2",
+    "@geniusventures/diamonds": "1.3.3-gv",
     "@geniusventures/diamonds-hardhat-foundry": "2.4.0-gv.2",
     "@geniusventures/diamonds-monitor": "1.0.4-gv.2",
     "@geniusventures/hardhat-diamonds": "1.1.15-gv.2",
