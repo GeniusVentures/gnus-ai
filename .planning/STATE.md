@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_plan
-stopped_at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
-last_updated: "2026-08-19T19:19:41.687Z"
+status: shipped
+stopped_at: Phase 11 shipped — draft PR #75 to develop (gnus-ai redeem adapter half; proxy half in erc20-gnus-proxy workstream)
+last_updated: "2026-08-20T19:27:25.180Z"
 progress:
   total_phases: 16
   completed_phases: 12
