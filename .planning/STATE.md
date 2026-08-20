@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: shipped
-stopped_at: Phase 11 shipped — draft PR #75 to develop (gnus-ai redeem adapter half; proxy half in erc20-gnus-proxy workstream)
-last_updated: "2026-08-20T19:27:25.180Z"
+stopped_at: Phase 11 merged to develop via PR #75 (ec825c1; Codex P1 fix included); proxy half in erc20-gnus-proxy workstream
+last_updated: "2026-08-20T20:05:00.000Z"
 progress:
   total_phases: 16
   completed_phases: 12
