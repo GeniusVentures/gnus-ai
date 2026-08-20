@@ -36,13 +36,15 @@ chai.use(chaiAsPromised);
  */
 describe('GNUS Redeem Adapter Tests', async function () {
 	const diamondName = 'GeniusDiamond';
-	const log: debug.Debugger = debug('GNUSRedeemAdapter:log:${diamondName}');
+	const log: debug.Debugger = debug(`GNUSRedeemAdapter:log:${diamondName}`);
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
 
 	if (process.argv.includes('test-multichain')) {
-		const networkNames = process.argv[process.argv.indexOf('--chains') + 1].split(',');
+		const chainsIdx = process.argv.indexOf('--chains');
+		const chainsArg = chainsIdx >= 0 ? process.argv[chainsIdx + 1] : undefined;
+		const networkNames = (chainsArg ?? 'hardhat').split(',');
 		if (networkNames.includes('hardhat')) {
 			networkProviders.set('hardhat', ethers.provider as any);
 		}
@@ -215,6 +217,16 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				return factory.deploy(diamondAddress);
 			}
 
+			/**
+			 * Deploy a malicious recipient whose onERC1155Received hook reenters
+			 * redeem (CEI probe — the mint-leg hook must not enable a profitable
+			 * reentrancy; limiter/approval state is already finalized by then).
+			 */
+			async function deployReenteringRecipient(): Promise<Contract> {
+				const factory = await hre.ethers.getContractFactory('ReenteringRecipient');
+				return factory.deploy(diamondAddress);
+			}
+
 			describe('happy path', function () {
 				it('redeems child tokens for GNUS via the adapter (happy path)', async function () {
 					const childId = await bootWithChild();
@@ -358,6 +370,13 @@ describe('GNUS Redeem Adapter Tests', async function () {
 						),
 					).to.be.revertedWith('GNUSRedeemAdapter: batch transfers not accepted');
 				});
+
+				it('reverts on direct (non-redeem) single transfer to the diamond (WR-01 hook gate)', async function () {
+					const childId = await bootWithChild();
+					await expect(
+						signer1Diamond.safeTransferFrom(signer1, diamondAddress, childId, toWei('10'), '0x'),
+					).to.be.revertedWith('GNUSRedeemAdapter: unexpected transfer');
+				});
 			});
 
 			describe('withdrawal limiter (WR-07)', function () {
@@ -407,6 +426,67 @@ describe('GNUS Redeem Adapter Tests', async function () {
 
 					const ownerAfter = await geniusDiamond.getAccountWithdrawStatus(owner);
 					expect(ownerAfter.currentUsage).to.eq(ownerBefore.currentUsage);
+				});
+
+				it('reverts with the limiter-exceeded string when from exceeds the limit', async function () {
+					const childId = await bootWithChild();
+					// Tighten signer1's per-account limit to 30e18 so one redeem of 50
+					// exceeds it; the charge must revert BEFORE the pull (CEI, T-11-01).
+					await ownerDiamond.setAccountConfig(signer1, 0, 0, toWei('30'));
+
+					// Charge exactly the limit first.
+					await signer1Diamond.redeem(signer1, childId, toWei('30'), signer2);
+
+					const userAfter = await geniusDiamond.getAccountWithdrawStatus(signer1);
+					expect(userAfter.remainingCapacity).to.eq(0n);
+
+					// The next redeem must hit the limiter — and the child balance must be
+					// untouched, pinning charge-before-pull ordering.
+					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
+					await expect(signer1Diamond.redeem(signer1, childId, toWei('10'), signer2)).to.be.revertedWith(
+						'Withdrawal limit exceeded for time window',
+					);
+					expect(await geniusDiamond['balanceOf(address,uint256)'](signer1, childId)).to.eq(childBefore);
+					expect(await geniusDiamond['balanceOf(address,uint256)'](diamondAddress, childId)).to.eq(0n);
+				});
+			});
+
+			describe('reentrancy (recipient hook)', function () {
+				it('a reentering recipient cannot corrupt state via the mint-leg hook', async function () {
+					const childId = await bootWithChild();
+					const attacker = await deployReenteringRecipient();
+					const attackerAddress = await attacker.getAddress();
+
+					// Arm the hook to reenter redeem with signer1's params while the
+					// mint-leg hook fires on the attacker as recipient.
+					await attacker.armReentry(signer1, childId, toWei('5'));
+
+					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
+					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](attackerAddress, GNUS_TOKEN_ID);
+
+					// Outer redeem must succeed even though the hook reenters. The reentrant
+					// redeem does NOT revert (signer1 approved the DIAMOND as operator, so the
+					// approval gate passes for any caller) — but it is equivalent to the
+					// attacker calling redeem directly: no free mint, no custody, limiter
+					// charged for every GNUS minted. This pins the CEI/no-state-corruption
+					// invariant: outer 10 + reentrant 5 debited, 15 GNUS minted, all accounted.
+					const limiterBefore = await geniusDiamond.getAccountWithdrawStatus(signer1);
+					await signer1Diamond.redeem(signer1, childId, toWei('10'), attackerAddress);
+					const limiterAfter = await geniusDiamond.getAccountWithdrawStatus(signer1);
+
+					expect(await attacker.reentryAttempts()).to.eq(1n);
+					// Exactly 10 (outer) + 5 (reentrant) GNUS minted — nothing extra.
+					expect(
+						(await geniusDiamond['balanceOf(address,uint256)'](attackerAddress, GNUS_TOKEN_ID)) - gnusBefore,
+					).to.eq(toWei('15'));
+					// Exactly 10 + 5 child tokens debited from signer1.
+					expect(childBefore - (await geniusDiamond['balanceOf(address,uint256)'](signer1, childId))).to.eq(
+						toWei('15'),
+					);
+					// Limiter charged for every minted GNUS (no under-charging via reentry).
+					expect(limiterAfter.currentUsage - limiterBefore.currentUsage).to.eq(toWei('15'));
+					// No-custody invariant holds through the reentrancy.
+					expect(await geniusDiamond['balanceOf(address,uint256)'](diamondAddress, childId)).to.eq(0n);
 				});
 			});
 		});
