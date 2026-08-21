@@ -10,7 +10,7 @@ import {
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
-import { Contract, JsonRpcProvider } from 'ethers';
+import { JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
@@ -19,20 +19,18 @@ import { toWei } from '../../scripts/utils/helpers';
 chai.use(chaiAsPromised);
 
 /**
- * Phase 11 — GNUSRedeemAdapter unit tests (Plan 11-02).
+ * Phase 11 — GNUSRedeemAdapter unit tests (caller-bound direct-burn rework).
  *
- * Pins PROXY-03 behaviorally:
- *   - happy path: direct-EOA redeem and proxy-mediated (contract-caller) redeem
+ * Pins PROXY-03 behaviorally after the Codex-P1 simplification:
+ *   - redeem(childId, amount) is caller-bound: the caller IS the holder and recipient
+ *   - direct burn/mint (no pull) — no operator approvals required
  *   - full revert matrix (exact strings from GNUSRedeemAdapter.sol)
- *   - WR-07 limiter attribution to `from` (not the proxy, not the diamond)
- *   - super-admin bypass with raw-topic SuperAdminBypass assertion
- *   - receiver-hook enablement (happy path passing IS the Pitfall 1 regression)
- *   - batch rejection (stranded-custody defense, T-11-05)
- *   - loupe selector presence post-upgrade
+ *   - WR-07 limiter attribution to the caller + super-admin bypass (raw topic)
  *   - no-custody invariant (diamond child balance == 0 after redeem)
+ *   - unconditional receiver-hook reverts (direct single + batch transfers)
+ *   - loupe selector presence post-upgrade
  *
- * Suite names are literal grep targets for the Per-Task Verification Map in
- * 11-VALIDATION.md; do NOT rename.
+ * Suite names are literal grep targets for the Per-Task Verification Map; do NOT rename.
  */
 describe('GNUS Redeem Adapter Tests', async function () {
 	const diamondName = 'GeniusDiamond';
@@ -78,7 +76,6 @@ describe('GNUS Redeem Adapter Tests', async function () {
 			let signers: SignerWithAddress[];
 			let signer0: string;
 			let signer1: string;
-			let signer2: string;
 			let owner: string;
 			let ownerSigner: SignerWithAddress;
 			let geniusDiamond: GeniusDiamond;
@@ -116,7 +113,6 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				signers = await ethersMultichain.getSigners();
 				signer0 = signers[0].address;
 				signer1 = signers[1].address;
-				signer2 = signers[2].address;
 				signer1Diamond = geniusDiamond.connect(signers[1]);
 
 				owner = diamond.getDeployedDiamondData().DeployerAddress || '';
@@ -157,8 +153,8 @@ describe('GNUS Redeem Adapter Tests', async function () {
 
 			/**
 			 * Boot a fresh state: seed provenance, mint GNUS, create a direct child at
-			 * rate 2e18, mint 100 child minions to signer1 (the user), and approve the
-			 * diamond as ERC-1155 operator for signer1 so the redeem pull succeeds.
+			 * rate 2e18, and mint 100 child minions to signer1 (the user). No operator
+			 * approvals are needed — redeem burns the caller's balance directly.
 			 * Returns the child token id (= 1).
 			 */
 			async function bootWithChild(): Promise<bigint> {
@@ -181,8 +177,6 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					toWei('100'),
 					'0x',
 				);
-				// One-time operator approval: user approves the DIAMOND (never the proxy).
-				await signer1Diamond.setApprovalForAll(diamondAddress, true);
 				return childId;
 			}
 
@@ -206,44 +200,23 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				return childId;
 			}
 
-			/**
-			 * Deploy a fresh MockERC20Proxy pointed at the diamond, connected to `signer`.
-			 */
-			async function deployMockProxy(signer: SignerWithAddress): Promise<Contract> {
-				const factory = await hre.ethers.getContractFactory(
-					'contracts/gnus-ai/testing/MockERC20Proxy.sol:MockERC20Proxy',
-					signer,
-				);
-				return factory.deploy(diamondAddress);
-			}
-
-			/**
-			 * Deploy a malicious recipient whose onERC1155Received hook reenters
-			 * redeem (CEI probe — the mint-leg hook must not enable a profitable
-			 * reentrancy; limiter/approval state is already finalized by then).
-			 */
-			async function deployReenteringRecipient(): Promise<Contract> {
-				const factory = await hre.ethers.getContractFactory('ReenteringRecipient');
-				return factory.deploy(diamondAddress);
-			}
-
 			describe('happy path', function () {
-				it('redeems child tokens for GNUS via the adapter (happy path)', async function () {
+				it('redeems the caller child tokens for GNUS (happy path)', async function () {
 					const childId = await bootWithChild();
 
 					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
-					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](signer2, GNUS_TOKEN_ID);
+					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, GNUS_TOKEN_ID);
 					const supplyChildBefore = await geniusDiamond['totalSupply(uint256)'](childId);
 					const supplyGnusBefore = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 
-					await expect(signer1Diamond.redeem(signer1, childId, toWei('30'), signer2))
-						.to.emit(geniusDiamond, 'RedeemedViaAdapter')
-						.withArgs(signer1, signer1, childId, toWei('30'), signer2);
+					await expect(signer1Diamond.redeem(childId, toWei('30')))
+						.to.emit(geniusDiamond, 'Redeemed')
+						.withArgs(signer1, childId, toWei('30'));
 
 					expect(await geniusDiamond['balanceOf(address,uint256)'](signer1, childId)).to.eq(
 						childBefore - toWei('30'),
 					);
-					expect(await geniusDiamond['balanceOf(address,uint256)'](signer2, GNUS_TOKEN_ID)).to.eq(
+					expect(await geniusDiamond['balanceOf(address,uint256)'](signer1, GNUS_TOKEN_ID)).to.eq(
 						gnusBefore + toWei('30'),
 					);
 					// No-custody invariant: the diamond never holds child tokens.
@@ -257,36 +230,8 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					);
 				});
 
-				it('is callable by a contract (simulated external proxy)', async function () {
-					const childId = await bootWithChild();
-					const mockProxy = await deployMockProxy(signers[9]);
-					// Authorization chain (Codex P1 fix): the holder must operator-approve the
-					// CALLER (the proxy) in addition to the diamond. The proxy approval is the
-					// authorization grant; the diamond approval remains the transfer mechanism.
-					await signer1Diamond.setApprovalForAll(await mockProxy.getAddress(), true);
-
-					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
-					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](signer2, GNUS_TOKEN_ID);
-
-					// The mock is driven by an unrelated third party (signers[9]) — the adapter
-					// requires `from` to have approved the proxy contract as operator.
-					await expect(
-						mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('20'), signer2),
-					)
-						.to.emit(geniusDiamond, 'RedeemedViaAdapter')
-						.withArgs(await mockProxy.getAddress(), signer1, childId, toWei('20'), signer2);
-
-					expect(childBefore - (await geniusDiamond['balanceOf(address,uint256)'](signer1, childId))).to.eq(
-						toWei('20'),
-					);
-					expect((await geniusDiamond['balanceOf(address,uint256)'](signer2, GNUS_TOKEN_ID)) - gnusBefore).to.eq(
-						toWei('20'),
-					);
-					expect(await geniusDiamond['balanceOf(address,uint256)'](diamondAddress, childId)).to.eq(0n);
-				});
-
 				it('redeem selector present on diamond (loupe check)', async function () {
-					const redeemSelector = ethers.id('redeem(address,uint256,uint256,address)').slice(0, 10);
+					const redeemSelector = ethers.id('redeem(uint256,uint256)').slice(0, 10);
 					const facetAddrs: string[] = await geniusDiamond.facetAddresses();
 					let found = false;
 					for (const facet of facetAddrs) {
@@ -298,48 +243,46 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					}
 					expect(found, 'redeem selector must be registered on a facet').to.be.true;
 				});
+
+				it('old four-argument redeem selector is NOT present (caller-bound rework)', async function () {
+					const oldSelector = ethers.id('redeem(address,uint256,uint256,address)').slice(0, 10);
+					const facetAddrs: string[] = await geniusDiamond.facetAddresses();
+					for (const facet of facetAddrs) {
+						const selectors: string[] = await geniusDiamond.facetFunctionSelectors(facet);
+						expect(
+							selectors.map((s) => s.toLowerCase()).includes(oldSelector.toLowerCase()),
+							'old redeem(address,uint256,uint256,address) must not be registered',
+						).to.be.false;
+					}
+				});
 			});
 
 			describe('revert matrix', function () {
 				it('reverts when childId is GNUS_TOKEN_ID', async function () {
-					const childId = await bootWithChild();
+					await bootWithChild();
 					await expect(
-						signer1Diamond.redeem(signer1, GNUS_TOKEN_ID, toWei('10'), signer2),
+						signer1Diamond.redeem(GNUS_TOKEN_ID, toWei('10')),
 					).to.be.revertedWith('Cannot redeem GNUS itself');
 				});
 
 				it('reverts when amount is zero', async function () {
 					const childId = await bootWithChild();
 					await expect(
-						signer1Diamond.redeem(signer1, childId, 0n, signer2),
+						signer1Diamond.redeem(childId, 0n),
 					).to.be.revertedWith('Amount must be greater than zero');
-				});
-
-				it('reverts when recipient is zero address', async function () {
-					const childId = await bootWithChild();
-					await expect(
-						signer1Diamond.redeem(signer1, childId, toWei('10'), ethers.ZeroAddress),
-					).to.be.revertedWith('ERC1155: mint to the zero address');
-				});
-
-				it('reverts when from is zero address', async function () {
-					const childId = await bootWithChild();
-					await expect(
-						signer1Diamond.redeem(ethers.ZeroAddress, childId, toWei('10'), signer2),
-					).to.be.revertedWith('ERC1155: transfer from the zero address');
 				});
 
 				it('reverts when child token is not created', async function () {
 					await bootWithChild();
 					await expect(
-						signer1Diamond.redeem(signer1, 999n, toWei('10'), signer2),
+						signer1Diamond.redeem(999n, toWei('10')),
 					).to.be.revertedWith('Token not created.');
 				});
 
 				it('reverts when child token is nonConvertible', async function () {
 					const childId = await bootWithNonConvertibleChild();
 					await expect(
-						signer1Diamond.redeem(signer1, childId, toWei('10'), signer2),
+						signer1Diamond.redeem(childId, toWei('10')),
 					).to.be.revertedWith('Token is non-convertible');
 				});
 
@@ -347,87 +290,35 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					const childId = await bootWithChild();
 					// signer1 has 100 child; try to redeem 200.
 					await expect(
-						signer1Diamond.redeem(signer1, childId, toWei('200'), signer2),
-					).to.be.revertedWith('ERC1155: insufficient balance for transfer');
-				});
-
-				it('reverts when an unauthorized third party drives a proxy against a victim (Codex P1)', async function () {
-					const childId = await bootWithChild();
-					const mockProxy = await deployMockProxy(signers[9]);
-					// Victim (signer1) has approved the DIAMOND (from bootWithChild) but NOT the
-					// proxy contract. An attacker driving the proxy must not be able to redeem
-					// the victim's tokens — approval of the diamond is the transfer mechanism,
-					// not authorization for arbitrary callers.
-					await expect(
-						mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('10'), signers[9].address),
-					).to.be.revertedWith('GNUSRedeemAdapter: caller not authorized by token holder');
-				});
-
-				it('reverts when from has not approved the diamond as operator', async function () {
-					const childId = await bootWithChild();
-					const mockProxy = await deployMockProxy(signers[9]);
-					// Authorize the proxy (passes the Codex-P1 caller gate) but revoke the
-					// diamond operator approval, so the TRANSFER gate is what fires.
-					await signer1Diamond.setApprovalForAll(await mockProxy.getAddress(), true);
-					await signer1Diamond.setApprovalForAll(diamondAddress, false);
-					await expect(
-						mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('10'), signer2),
-					).to.be.revertedWith('ERC1155: caller is not token owner or approved');
-				});
-
-				it('reverts on batch transfer to the diamond', async function () {
-					const childId = await bootWithChild();
-					await expect(
-						signer1Diamond.safeBatchTransferFrom(
-							signer1,
-							diamondAddress,
-							[childId],
-							[toWei('10')],
-							'0x',
-						),
-					).to.be.revertedWith('GNUSRedeemAdapter: batch transfers not accepted');
-				});
-
-				it('reverts on direct (non-redeem) single transfer to the diamond (WR-01 hook gate)', async function () {
-					const childId = await bootWithChild();
-					await expect(
-						signer1Diamond.safeTransferFrom(signer1, diamondAddress, childId, toWei('10'), '0x'),
-					).to.be.revertedWith('GNUSRedeemAdapter: unexpected transfer');
+						signer1Diamond.redeem(childId, toWei('200')),
+					).to.be.revertedWith('ERC1155: burn amount exceeds totalSupply');
 				});
 			});
 
 			describe('withdrawal limiter (WR-07)', function () {
-				it('charges the withdrawal limiter against from, not the proxy or the diamond', async function () {
+				it('charges the withdrawal limiter against the caller', async function () {
 					const childId = await bootWithChild();
-					const mockProxy = await deployMockProxy(signers[9]);
-					const proxyAddress = await mockProxy.getAddress();
-					// Authorize the proxy as operator for the holder (Codex P1 caller gate).
-					await signer1Diamond.setApprovalForAll(proxyAddress, true);
 
 					const userBefore = await geniusDiamond.getAccountWithdrawStatus(signer1);
-					const proxyBefore = await geniusDiamond.getAccountWithdrawStatus(proxyAddress);
 					const diamondBefore = await geniusDiamond.getAccountWithdrawStatus(diamondAddress);
 
-					await mockProxy.connect(signers[9]).redeemOnBehalf(signer1, childId, toWei('25'), signer2);
+					await signer1Diamond.redeem(childId, toWei('25'));
 
 					const userAfter = await geniusDiamond.getAccountWithdrawStatus(signer1);
-					const proxyAfter = await geniusDiamond.getAccountWithdrawStatus(proxyAddress);
 					const diamondAfter = await geniusDiamond.getAccountWithdrawStatus(diamondAddress);
 
 					expect(userAfter.currentUsage - userBefore.currentUsage).to.eq(toWei('25'));
-					expect(proxyAfter.currentUsage).to.eq(proxyBefore.currentUsage);
 					expect(diamondAfter.currentUsage).to.eq(diamondBefore.currentUsage);
 				});
 
-				it('emits SuperAdminBypass when from is super admin (raw topic)', async function () {
+				it('emits SuperAdminBypass when caller is super admin (raw topic)', async function () {
 					const childId = await bootWithChild();
-					// Fund the owner with child tokens and approve the diamond.
+					// Fund the owner with child tokens.
 					await ownerDiamond['mint(address,uint256,uint256,bytes)'](owner, childId, toWei('50'), '0x');
-					await ownerDiamond.setApprovalForAll(diamondAddress, true);
 
 					const ownerBefore = await geniusDiamond.getAccountWithdrawStatus(owner);
 
-					const bypassTx = await ownerDiamond.redeem(owner, childId, toWei('10'), owner);
+					const bypassTx = await ownerDiamond.redeem(childId, toWei('10'));
 					const bypassReceipt = await bypassTx.wait();
 					// SuperAdminBypass is declared in a library (GNUSWithdrawLimiterStorage),
 					// not a facet, so it is absent from the diamond proxy ABI — parse the raw
@@ -447,22 +338,22 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					expect(ownerAfter.currentUsage).to.eq(ownerBefore.currentUsage);
 				});
 
-				it('reverts with the limiter-exceeded string when from exceeds the limit', async function () {
+				it('reverts with the limiter-exceeded string when caller exceeds the limit', async function () {
 					const childId = await bootWithChild();
 					// Tighten signer1's per-account limit to 30e18 so one redeem of 50
-					// exceeds it; the charge must revert BEFORE the pull (CEI, T-11-01).
+					// exceeds it; the charge must revert BEFORE the burn (CEI, T-11-01).
 					await ownerDiamond.setAccountConfig(signer1, 0, 0, toWei('30'));
 
 					// Charge exactly the limit first.
-					await signer1Diamond.redeem(signer1, childId, toWei('30'), signer2);
+					await signer1Diamond.redeem(childId, toWei('30'));
 
 					const userAfter = await geniusDiamond.getAccountWithdrawStatus(signer1);
 					expect(userAfter.remainingCapacity).to.eq(0n);
 
 					// The next redeem must hit the limiter — and the child balance must be
-					// untouched, pinning charge-before-pull ordering.
+					// untouched, pinning charge-before-burn ordering.
 					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
-					await expect(signer1Diamond.redeem(signer1, childId, toWei('10'), signer2)).to.be.revertedWith(
+					await expect(signer1Diamond.redeem(childId, toWei('10'))).to.be.revertedWith(
 						'Withdrawal limit exceeded for time window',
 					);
 					expect(await geniusDiamond['balanceOf(address,uint256)'](signer1, childId)).to.eq(childBefore);
@@ -470,42 +361,25 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				});
 			});
 
-			describe('reentrancy (recipient hook)', function () {
-				it('a reentering recipient cannot corrupt state via the mint-leg hook', async function () {
+			describe('no-custody receiver hooks', function () {
+				it('reverts on direct single transfer to the diamond', async function () {
 					const childId = await bootWithChild();
-					const attacker = await deployReenteringRecipient();
-					const attackerAddress = await attacker.getAddress();
+					await expect(
+						signer1Diamond.safeTransferFrom(signer1, diamondAddress, childId, toWei('10'), '0x'),
+					).to.be.revertedWith('GNUSRedeemAdapter: unexpected transfer');
+				});
 
-					// Arm the hook to reenter redeem with signer1's params while the
-					// mint-leg hook fires on the attacker as recipient.
-					await attacker.armReentry(signer1, childId, toWei('5'));
-
-					const childBefore = await geniusDiamond['balanceOf(address,uint256)'](signer1, childId);
-					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](attackerAddress, GNUS_TOKEN_ID);
-
-					// Outer redeem must succeed even though the hook reenters. With the
-					// Codex-P1 authorization gate, the reentrant call (caller = attacker
-					// contract, from = signer1, who never approved the attacker) REVERTS at
-					// the caller gate — this is the stronger invariant: a reentrant (or any)
-					// third party cannot move signer1's tokens at all. Exactly the outer
-					// 10 GNUS is minted, 10 child debited, limiter charged once.
-					const limiterBefore = await geniusDiamond.getAccountWithdrawStatus(signer1);
-					await signer1Diamond.redeem(signer1, childId, toWei('10'), attackerAddress);
-					const limiterAfter = await geniusDiamond.getAccountWithdrawStatus(signer1);
-
-					expect(await attacker.reentryAttempts()).to.eq(1n);
-					// Only the outer 10 minted — the reentrant 5 was blocked by the caller gate.
-					expect(
-						(await geniusDiamond['balanceOf(address,uint256)'](attackerAddress, GNUS_TOKEN_ID)) - gnusBefore,
-					).to.eq(toWei('10'));
-					// Exactly 10 child tokens debited from signer1 (no reentrant drain).
-					expect(childBefore - (await geniusDiamond['balanceOf(address,uint256)'](signer1, childId))).to.eq(
-						toWei('10'),
-					);
-					// Limiter charged exactly once for the outer mint.
-					expect(limiterAfter.currentUsage - limiterBefore.currentUsage).to.eq(toWei('10'));
-					// No-custody invariant holds through the reentrancy.
-					expect(await geniusDiamond['balanceOf(address,uint256)'](diamondAddress, childId)).to.eq(0n);
+				it('reverts on batch transfer to the diamond', async function () {
+					const childId = await bootWithChild();
+					await expect(
+						signer1Diamond.safeBatchTransferFrom(
+							signer1,
+							diamondAddress,
+							[childId],
+							[toWei('10')],
+							'0x',
+						),
+					).to.be.revertedWith('GNUSRedeemAdapter: batch transfers not accepted');
 				});
 			});
 		});
