@@ -1,8 +1,8 @@
 # Roadmap: Gnus.ai Tech Debt & Security Remediation
 
 **Created:** 2026-05-26
-**Updated:** 2026-06-15
-**Granularity:** Standard (12 phases)
+**Updated:** 2026-08-21
+**Granularity:** Standard (13 phases; Phase 12 retired 2026-08-21 — superseded by Phase 10)
 **Core Value:** Production-ready smart contracts with reserve-backed token economics, lock/release cross-chain bridging, and standard-compliant ERC-20 proxy — all reviewed and safe for mainnet deployment.
 
 ## Phase Summary
@@ -27,7 +27,7 @@
 | 9   | Treasury/Reserve | 5/5 | Complete   | 2026-08-05 |
 | 10  | Bridge Vault     | 4/4 | Complete    | 2026-08-19 |
 | 11  | Proxy Hardening  | 2/2 | Complete   | 2026-08-19 |
-| 12  | Supply Ledger    | Per-token per-chain supply accounting                    | LEDGER-01, LEDGER-02                  | 5                |
+| 12  | Supply Ledger    | ~~Per-token per-chain supply accounting~~ **SUPERSEDED by Phase 10** | LEDGER-01, LEDGER-02                  | —                |
 
 ### Phases 13-14: AI Entitlements & Licensing
 
@@ -362,24 +362,56 @@ Plans:
 
 ---
 
-## Phase 12: Cross-Chain Supply Ledger
+## Phase 12: Cross-Chain Supply Ledger — **SUPERSEDED / RETIRED**
+
+> **Status (2026-08-21): RETIRED — no longer a phase.** This phase was scoped against the
+> vault/escrow bridging model. Phase 10 shipped the **provenance-relocation** model instead
+> (10-CONTEXT.md D-01: *"No vault, no escrow, no lock-then-release custody"*), which removes
+> the premise this phase was built on. Retired by owner decision; see supersession analysis
+> below. Do not plan or execute.
+
+**Why retired:**
+
+- **`escrowed` is dead** — nothing is ever escrowed under provenance relocation; there is no
+  vault balance to count.
+- **`pendingInbound` is un-knowable on-chain** — the destination chain first learns of a bridge
+  when `bridgeIn` executes (via the validator certificate); there is no pending window to record.
+- **"lock and release operations" don't exist** — Phase 10 replaced them with
+  `bridgeOut`/`bridgeIn`, which already update `chainSupply[block.chainid]` atomically.
+- **The surviving bookkeeping is already shipped** (Phase 9): `GNUSTreasuryStorage.Layout`
+  holds `globalSupply` + `chainSupply[chainid]` + `ownChainId`; `GNUSTreasury.totalSupplyOfAll()`
+  and `setSisterChainSupply()` provide the global counter and the reconciliation valve.
+- **Per-token-per-chain accounting is redundant** — every child minion is backed 1:1 by GNUS
+  (Phase 9 conversion-native model), so child supply is derived from GNUS supply, not tracked
+  independently.
+- **Criterion 5 (don't override `totalSupply()`)** is already satisfied — nothing overrides it.
+
+**Carried forward (deferred, not lost):**
+
+- Source-side in-flight visibility (`pendingOutbound`) — Phase 10 left the hooks
+  (`BridgeOutInitiated` event, `INITIATED` state, `processedMessages`) should a future phase
+  want an on-chain in-flight ledger. Not currently required by any consumer.
+- Phase 13 v2 "active supply" metric keyed off `isTokenActive` — tracked in 13-CONTEXT.md
+  `<deferred>`; does not need this phase.
+
+**Original (superseded) spec — kept for archaeology:**
 
 **Goal:** Implement per-token, per-chain supply tracking with bridge-aware view functions.
 
-**Success Criteria:**
+**Success Criteria:** *(all superseded — see above)*
 
-1. `ChainSupply` struct: `circulating, escrowed, pendingOutbound, pendingInbound`.
-2. Per-token per-chain mapping with enumeration support.
-3. View functions: `globalAccountedSupply()`, `chainCirculatingSupply()`, `chainEscrowedSupply()`.
-4. Updated atomically on lock and release operations.
-5. Does NOT override ERC-20/1155 `totalSupply()` — wallets expect local supply.
+1. ~~`ChainSupply` struct: `circulating, escrowed, pendingOutbound, pendingInbound`.~~
+2. ~~Per-token per-chain mapping with enumeration support.~~
+3. ~~View functions: `globalAccountedSupply()`, `chainCirculatingSupply()`, `chainEscrowedSupply()`.~~
+4. ~~Updated atomically on lock and release operations.~~
+5. ~~Does NOT override ERC-20/1155 `totalSupply()` — wallets expect local supply.~~
 
-**Requirements:** LEDGER-01, LEDGER-02
-**Priority:** P1
+**Requirements:** LEDGER-01, LEDGER-02 *(retired with the phase)*
+**Priority:** ~~P1~~ n/a
 **Reviewer:** @Super-Genius
 **Assignee:** @Am0rfu5
 
-**GitHub:** [gnus-ai#57](https://github.com/GeniusVentures/gnus-ai/issues/57)
+**GitHub:** [gnus-ai#57](https://github.com/GeniusVentures/gnus-ai/issues/57) *(close as superseded-by-Phase-10)*
 **Concerns addressed:** #24 Diamond selector overlap, #26 Dependency tracking
 
 ---
@@ -404,7 +436,7 @@ Plans:
 **Requirements:** (LIC precursor; Phase 13 requirements to be formalized at plan time)
 **Priority:** P1
 **Depends on:** **Phase 9 (hard)** — implemented on completed Phase 9 treasury/reserve code
-**Constraints:** Phase 10 (policy check in lockTokens), Phase 11 (no proxy operator exemptions), Phase 12 (expired-unsettled = circulating)
+**Constraints:** Phase 10 (policy check in lockTokens), Phase 11 (no proxy operator exemptions). ~~Phase 12 (expired-unsettled = circulating)~~ — Phase 12 retired; the "expired-unsettled = circulating" convention is now owned by Phase 13 itself (settlement burns flow through standard `_burn` hooks).
 
 ---
 
