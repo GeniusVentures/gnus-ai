@@ -380,9 +380,9 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					// MockRedeemCaller implements IERC1155Receiver ONLY to receive its
 					// child balance via GNUSNFTFactory.mint (which keeps the acceptance
 					// check). The redeem mint-back (CR-01 _mint override) must succeed
-					// without invoking any hook — proven implicitly: the facet's
-					// unconditional-revert hooks are shadowed by the override, so any
-					// acceptance check on the mint-back would revert this transaction.
+					// without invoking any hook on the recipient — the discriminating
+					// case below sets rejectTransfers and still expects success, which
+					// would be impossible if the OZ acceptance check still ran.
 					const mockFactory = await ethers.getContractFactory('MockRedeemCaller');
 					const mock = await mockFactory.deploy();
 					await mock.waitForDeployment();
@@ -409,9 +409,46 @@ describe('GNUS Redeem Adapter Tests', async function () {
 						await geniusDiamond['balanceOf(address,uint256)'](mockAddress, GNUS_TOKEN_ID),
 					).to.eq(gnusBefore + toWei('15'));
 				});
+
+				it('redeem succeeds even when the recipient hook would reject (discriminates CR-01)', async function () {
+					const childId = await bootWithChild();
+
+					const mockFactory = await ethers.getContractFactory('MockRedeemCaller');
+					const mock = await mockFactory.deploy();
+					await mock.waitForDeployment();
+					const mockAddress = await mock.getAddress();
+
+					await ownerDiamond['mint(address,uint256,uint256,bytes)'](
+						mockAddress,
+						childId,
+						toWei('40'),
+						'0x',
+					);
+
+					// Flip rejectTransfers (slot 0) so the recipient hook REVERTS if invoked.
+					// Pre-CR-01 the OZ acceptance check called onERC1155Received on the
+					// mint-back, so this redeem reverted ('MockRedeemCaller: transfer
+					// rejected'); post-fix the hook-free _mint override never calls it,
+					// so the redeem must succeed. This is the case that fails if the
+					// override is ever reverted.
+					await provider.send('hardhat_setStorageAt', [
+						mockAddress,
+						ethers.toBeHex(0, 32),
+						ethers.zeroPadValue('0x01', 32),
+					]);
+					expect(await mock.rejectTransfers()).to.be.true;
+
+					await expect(mock.redeem(diamondAddress, childId, toWei('15')))
+						.to.emit(geniusDiamond, 'Redeemed')
+						.withArgs(mockAddress, childId, toWei('15'));
+
+					expect(await mock.childBalance(diamondAddress, childId)).to.eq(toWei('25'));
+					expect(await mock.gnusBalance(diamondAddress)).to.eq(toWei('15'));
+				});
 			});
 
-			describe('no-custody receiver hooks', function () {				it('reverts on direct single transfer to the diamond', async function () {
+			describe('no-custody receiver hooks', function () {
+				it('reverts on direct single transfer to the diamond', async function () {
 					const childId = await bootWithChild();
 					await expect(
 						signer1Diamond.safeTransferFrom(signer1, diamondAddress, childId, toWei('10'), '0x'),
