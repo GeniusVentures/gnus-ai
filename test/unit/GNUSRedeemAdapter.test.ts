@@ -25,6 +25,7 @@ chai.use(chaiAsPromised);
  *   - redeem(childId, amount) is caller-bound: the caller IS the holder and recipient
  *   - direct burn/mint (no pull) — no operator approvals required
  *   - full revert matrix (exact strings from GNUSRedeemAdapter.sol)
+ *   - CR-01: contract callers redeem without IERC1155Receiver (hook-free _mint)
  *   - WR-07 limiter attribution to the caller + super-admin bypass (raw topic)
  *   - no-custody invariant (diamond child balance == 0 after redeem)
  *   - unconditional receiver-hook reverts (direct single + batch transfers)
@@ -286,12 +287,23 @@ describe('GNUS Redeem Adapter Tests', async function () {
 					).to.be.revertedWith('Token is non-convertible');
 				});
 
-				it('reverts when caller has insufficient balance', async function () {
+				it('reverts when amount exceeds total supply (supply-exhaustion path)', async function () {
 					const childId = await bootWithChild();
-					// signer1 has 100 child; try to redeem 200.
+					// Only 100 child exist in total supply; redeeming 200 trips the
+					// ERC1155Supply supply check before the caller-balance check.
 					await expect(
 						signer1Diamond.redeem(childId, toWei('200')),
 					).to.be.revertedWith('ERC1155: burn amount exceeds totalSupply');
+				});
+
+				it('reverts when caller balance is insufficient (balance path)', async function () {
+					const childId = await bootWithChild();
+					// Mint another 100 to the owner so total supply (200) exceeds the
+					// attempted redeem (150) but the caller's balance (100) does not.
+					await ownerDiamond['mint(address,uint256,uint256,bytes)'](owner, childId, toWei('100'), '0x');
+					await expect(
+						signer1Diamond.redeem(childId, toWei('150')),
+					).to.be.revertedWith('ERC1155: burn amount exceeds balance');
 				});
 			});
 
@@ -361,8 +373,45 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				});
 			});
 
-			describe('no-custody receiver hooks', function () {
-				it('reverts on direct single transfer to the diamond', async function () {
+			describe('contract caller (CR-01)', function () {
+				it('contract caller redeems successfully (hook-free mint)', async function () {
+					const childId = await bootWithChild();
+
+					// MockRedeemCaller implements IERC1155Receiver ONLY to receive its
+					// child balance via GNUSNFTFactory.mint (which keeps the acceptance
+					// check). The redeem mint-back (CR-01 _mint override) must succeed
+					// without invoking any hook — proven implicitly: the facet's
+					// unconditional-revert hooks are shadowed by the override, so any
+					// acceptance check on the mint-back would revert this transaction.
+					const mockFactory = await ethers.getContractFactory('MockRedeemCaller');
+					const mock = await mockFactory.deploy();
+					await mock.waitForDeployment();
+					const mockAddress = await mock.getAddress();
+
+					await ownerDiamond['mint(address,uint256,uint256,bytes)'](
+						mockAddress,
+						childId,
+						toWei('40'),
+						'0x',
+					);
+
+					const gnusBefore = await geniusDiamond['balanceOf(address,uint256)'](
+						mockAddress,
+						GNUS_TOKEN_ID,
+					);
+
+					await expect(mock.redeem(diamondAddress, childId, toWei('15')))
+						.to.emit(geniusDiamond, 'Redeemed')
+						.withArgs(mockAddress, childId, toWei('15'));
+
+					expect(await mock.childBalance(diamondAddress, childId)).to.eq(toWei('25'));
+					expect(
+						await geniusDiamond['balanceOf(address,uint256)'](mockAddress, GNUS_TOKEN_ID),
+					).to.eq(gnusBefore + toWei('15'));
+				});
+			});
+
+			describe('no-custody receiver hooks', function () {				it('reverts on direct single transfer to the diamond', async function () {
 					const childId = await bootWithChild();
 					await expect(
 						signer1Diamond.safeTransferFrom(signer1, diamondAddress, childId, toWei('10'), '0x'),
