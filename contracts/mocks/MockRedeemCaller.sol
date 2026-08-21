@@ -17,6 +17,13 @@ interface IGNUSRedeemDiamond {
 ///      a plain non-receiver caller would work for redeem; this mock needs the
 ///      receiver solely to hold a balance in the first place.
 contract MockRedeemCaller is IERC1155ReceiverUpgradeable {
+    /// @dev Post-fix this always succeeds (the receiver magic value is returned).
+    ///      Flipped to true by the WR-01 test via hardhat_setStorageAt to simulate
+    ///      a recipient that rejects the mint-back — pre-CR-01 that rejection came
+    ///      from the OZ acceptance check itself; post-fix the mint-back has no hook,
+    ///      so the revert is only reachable through this flag.
+    bool public rejectTransfers;
+
     function redeem(address diamond, uint256 childId, uint256 amount) external {
         IGNUSRedeemDiamond(diamond).redeem(childId, amount);
     }
@@ -31,10 +38,11 @@ contract MockRedeemCaller is IERC1155ReceiverUpgradeable {
 
     function onERC1155Received(address, address, uint256, uint256, bytes calldata)
         external
-        pure
+        view
         override
         returns (bytes4)
     {
+        require(!rejectTransfers, "MockRedeemCaller: transfer rejected");
         return IERC1155ReceiverUpgradeable.onERC1155Received.selector;
     }
 
