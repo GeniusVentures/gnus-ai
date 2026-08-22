@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: shipped
-stopped_at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
-last_updated: "2026-08-22T21:10:06.314Z"
+stopped_at: Phase 13 Plan 01 complete — lifecycle storage foundation landed; SC1 proven; ready for plan 13-02 (GNUSLifecycle facet)
+last_updated: "2026-08-22T21:41:17.260Z"
 progress:
   total_phases: 16
   completed_phases: 12
   total_plans: 32
-  completed_plans: 26
+  completed_plans: 27
   percent: 75
 ---
 
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 13 — time bound erc1155 entitlements
+**Current focus:** Phase 13 — time-bound-erc1155-entitlements
 
 ## Phase Status
 

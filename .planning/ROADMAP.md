@@ -444,7 +444,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 13-01-PLAN.md — Storage foundation: NFT struct append (D1), GNUSLifecycleStorage lib, plug-in interfaces, mocks, legacy-decode upgrade test (SC1)
+- [x] 13-01-PLAN.md — Storage foundation: NFT struct append (D1), GNUSLifecycleStorage lib, plug-in interfaces, mocks, legacy-decode upgrade test (SC1)
 
 **Wave 2** *(blocked on Wave 1; 02/03/04 parallel — disjoint files)*
 
