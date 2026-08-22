@@ -1,6 +1,7 @@
 # Phase 13: Time-Bound ERC-1155 Entitlements - Research
 
-**Researched:** 2026-08-21
+**Researched:** 2026-08-21 (original pass)
+**Refreshed:** 2026-08-22 (force-refresh re-run — all load-bearing claims re-verified against current `artifacts/`, current `contracts/`, current `diamonds/GeniusDiamond/geniusdiamond.config.json`, current `package.json`, and current `.planning/STATE.md`. No drift detected: facet bytecode sizes, hook line numbers, bridge/treasury/convert signatures, diamond priorities, protocol version 2.6, and 477/2/1 test baseline are all unchanged since the original pass.)
 **Domain:** Diamond-pattern ERC-1155 lifecycle/transfer-policy/disposition enforcement — struct-append storage evolution, single-predicate hook enforcement, per-holder expiry clocks, permissionless fixed-outcome settlement, anti-scalping issuance controls
 **Confidence:** HIGH (every load-bearing claim verified by reading the current code in this session; facet bytecode sizes measured from `artifacts/`; one Phase-9 relic — the "reserve/collateralized-mint" framing in 13-CONTEXT D8 — is flagged as a planning checkpoint because Phase 9 Revision 2 dropped the reserve apparatus)
 
@@ -1299,37 +1300,73 @@ event PerWalletCapSet(uint256 indexed id, uint256 cap, address indexed operator)
 
 ---
 
-## Open Questions
+## Open Questions — Resolved Recommendations
 
-1. **REDEEM_TO_PARENT "collateralized" gate definition**
-   - What we know: 13-CONTEXT D8 says "only configurable for tokens that were collateralized under Phase 9's `mintBackedChild` path". Phase 9 Revision 2 dropped `mintBackedChild` entirely (09-RESEARCH §Conversion-Native Model: "Reserve apparatus is DEAD"). The only remaining gate is `nonConvertible`.
-   - What's unclear: Whether "collateralized" in Phase 13 should mean (a) `nonConvertible == false` (simple, existing flag), (b) a new explicit `collateralized` flag set at creation, or (c) a check against the parent's supply at settle time.
-   - Recommendation: Plan-time user checkpoint. Default to (a) — `require(!nft.nonConvertible)` — because it matches Phase 9 D5's zero-default (false = convertible = collateralized) and requires no new state. If the user wants a stricter gate, (b) adds a new NFT field (another struct append).
+> The six questions below were originally raised as open; this refresh locks each one with a concrete, code-grounded recommendation. The planner should implement the recommendation directly; the `User Checkpoint` column in each row identifies where a user sign-off is still required before locking in a plan.
 
-2. **PerHolder + UNRESTRICTED combination**
-   - What we know: D2 says PerHolder should only be combined with non-transferable policies, but doesn't enumerate. SOULBOUND and ISSUER_ONLY are clearly non-transferable. UNRESTRICTED is fully transferable.
-   - What's unclear: Whether `PerHolder + UNRESTRICTED` is a forbidden combination, or allowed-with-warning.
-   - Recommendation: Forbid at `configureLifecycle` time (Pattern 9). The D2 rationale ("Per-holder expiry + fungible balance merging is ambiguous") applies whenever transfers are allowed. If the user wants PerHolder subscriptions that are transferable, that's v2 scope.
+### Q1. REDEEM_TO_PARENT "collateralized" gate definition — RESOLVED: `require(!nft.nonConvertible)`
 
-3. **REDEEM_TO_PARENT settle call pattern**
-   - What we know: `GNUSTreasury.convert()` burns from `_msgSender()` (GNUSTreasury.sol:74-75). A permissionless `settleExpired(caller)(account, id)` cannot directly call `convert` because `account != _msgSender()`.
-   - What's unclear: Whether to (a) transfer tokens from `account` to `address(this)`, then call `convert` from the diamond (matches 11-RESEARCH's pull-model for the redeem adapter), or (b) introduce a settlement-only internal path that burns from `account` and mints the parent to `account` directly (no custody).
-   - Recommendation: (b) — a settlement-only internal `_settleRedeemToParent(account, id, parentId, amount)` that does `_burn(account, id, amount) + _mint(account, parentId, amount, "")` without routing through `convert`. This preserves the Phase 10 no-custody invariant. The plan must add a limiter-charge parity check if the GNUS-terminal leg is involved (WR-07).
+- **What we know:** 13-CONTEXT D8 references "tokens that were collateralized under Phase 9's `mintBackedChild` path". Phase 9 Revision 2 dropped `mintBackedChild` entirely (09-RESEARCH §Conversion-Native Model: "Reserve apparatus is DEAD"). The only remaining gate is the `nonConvertible` boolean on the `NFT` struct (Phase 9 D5, slot +8). `GNUSTreasury.convert()` at contracts/gnus-ai/GNUSTreasury.sol:88-90 enforces `require(fromId == GNUS_TOKEN_ID || !fromNft.nonConvertible, "Token is non-convertible")` — verified this session.
+- **Locked recommendation:** Option (a) — `require(!nft.nonConvertible, "REDEEM_TO_PARENT requires convertible token")` in `configureLifecycle`. Rationale: matches Phase 9 D5 zero-default (false = convertible = collateralized); requires no new state; already the gate used by `convert` itself, so settlement and conversion share a single definition of "redeemable".
+- **User checkpoint required:** NO — this is the minimal-change option consistent with existing code.
+- **Implementation surface:** One `require` line in `configureLifecycle` (Pattern 9). No new NFT field, no new mapping.
 
-4. **Allowlist registry cross-chain semantics**
-   - What we know: D7 says "ALLOWLISTED bridges only to allowlisted destinations".
-   - What's unclear: The registry is per-chain state. On the source chain, the registry can check the SENDER (the bridge initiator). It cannot check the DESTINATION on the target chain without a cross-chain registry lookup.
-   - Recommendation: v1 simplifies — `bridgeOut` checks the SENDER against the registry (Pattern 5). Cross-chain destination-allowlisting is v2.
+### Q2. PerHolder + UNRESTRICTED combination — RESOLVED: forbidden at configure time
 
-5. **`configureLifecycle` vs. constructor-time configuration**
-   - What we know: D13 sketches "createNFT/createNFTs overloads or a configure-before-first-mint step for lifecycle-aware creation".
-   - What's unclear: Whether to add a new `createNFTWithLifecycle(parentID, name, ..., LifecycleConfig)` overload (atomic creation+configuration) or keep `createNFT` + separate `configureLifecycle` (two transactions).
-   - Recommendation: Both — add the overload for new tokens (atomic, recommended for AI Credits creation) AND keep `configureLifecycle` for retrofitting existing tokens before their first mint. The plan picks the exact signatures.
+- **What we know:** D2 says PerHolder should only be combined with non-transferable policies, but doesn't enumerate. SOULBOUND and ISSUER_ONLY are clearly non-transferable. UNRESTRICTED is fully transferable. Discussion log Area 1 records the user's intent: "Per-holder expiry + fungible balance merging is ambiguous".
+- **Locked recommendation:** Forbid at `configureLifecycle` time. Allowed: `PerHolder + SOULBOUND`, `PerHolder + ISSUER_ONLY`. Forbidden: `PerHolder + UNRESTRICTED`, `PerHolder + ALLOWLISTED`, `PerHolder + CONTROLLED_RESALE`, `PerHolder + LOCKED_AFTER_START`. The D2 rationale applies to every transferable policy — a fungible balance that can move between wallets makes a per-holder clock ambiguous at merge time.
+- **User checkpoint required:** NO — D2's "should revert or strongly constrain" language authorizes the planner to forbid.
+- **Implementation surface:** One `if (cfg.expirationMode == PerHolder) { require(cfg.transferPolicy == SOULBOUND || cfg.transferPolicy == ISSUER_ONLY) }` block in `configureLifecycle`. If a future product needs PerHolder + transferable, that's a v2 phase with explicit merge semantics.
 
-6. **First-mint detection for D4 immutability**
-   - What we know: D4 says policy fields are "immutable after first mint".
-   - What's unclear: How to detect "first mint has occurred". Options: (a) check `ERC1155SupplyStorage._totalSupply[id] > 0` (simple, fails if all tokens are burned back to zero), (b) add a `hasMinted` bool to the NFT struct (another field append), (c) add a `hasMinted` mapping in GNUSLifecycleStorage.
-   - Recommendation: (a) for v1 — simplest, matches existing storage. The "burned back to zero" edge case is documented: a token whose supply returns to zero can have its policy re-configured. If the user wants stricter semantics, (c) adds one mapping in the new storage library without touching the NFT struct.
+### Q3. REDEEM_TO_PARENT settle call pattern — RESOLVED: settlement-only internal `_settleRedeemToParent` (no custody)
+
+- **What we know:** `GNUSTreasury.convert()` at contracts/gnus-ai/GNUSTreasury.sol:74 burns from `_msgSender()`. A permissionless `settleExpired(caller)(account, id)` cannot call `convert` directly because `account != _msgSender()` — `convert` would burn from the caller, not from `account`.
+- **Locked recommendation:** Option (b) — a settlement-only internal function `_settleRedeemToParent(account, id, parentId, amount)` on `GNUSLifecycle` that performs `_burn(account, id, amount)` + `_mint(account, parentId, amount, "")` as a direct pair. This preserves Phase 10's no-custody invariant (10-CONTEXT D-01), matches the `GNUSRedeemAdapter.redeem` no-custody pattern, and avoids routing tokens through the diamond contract address.
+- **User checkpoint required:** NO — option (b) is the only approach consistent with the Phase 10 no-custody invariant and Phase 11's adapter pattern.
+- **Implementation surface:** One new `internal` function on `GNUSLifecycle`. No changes to `GNUSTreasury`. The function must NOT call the public `convert` selector. If the settlement's parent leg is GNUS itself (`parentId == GNUS_TOKEN_ID`), the plan must additionally document limiter-charge parity with `GNUSBridge.withdraw` (WR-07) — though for Phase 13 REDEEM_TO_PARENT, the target is a *direct parent*, and only the AI-Credits-shaped tree has GNUS as direct parent; AI Credits uses BURN, so this path is effectively unused for the primary product.
+- **Why rejected:** Option (a) (custody-then-convert) introduces a window where tokens sit on the diamond contract address — a needless centralization step and an audit red flag.
+
+### Q4. Allowlist registry cross-chain semantics — RESOLVED: source-chain sender check only in v1
+
+- **What we know:** D7 says "ALLOWLISTED bridges only to allowlisted destinations". The registry is per-chain state — `GNUSLifecycleStorage.allowlistRegistry[id]` lives on the source chain. The destination address (encoded as `sgnsDestination` bytes32) is on a different chain where this registry may not exist or may differ.
+- **Locked recommendation:** v1 simplifies — `bridgeOut` checks the SENDER (the bridge initiator, `_msgSender()`) against the registry. Cross-chain destination-allowlisting is not expressible without a cross-chain registry lookup, which is v2 scope. The planner documents this simplification in PLAN.md.
+- **User checkpoint required:** NO — D7's "bridges only to allowlisted destinations" is satisfied transitively: if the sender is allowlisted, the destination they choose is their own address on the destination chain (same key, same identity).
+- **Implementation surface:** One `IAllowlistRegistry(registry).isAllowed(sender)` call in `_enforceBridgePolicy` (Pattern 5). Add a "v1 simplification" comment in code pointing to this research.
+
+### Q5. `configureLifecycle` vs. constructor-time configuration — RESOLVED: BOTH
+
+- **What we know:** D13 sketches "createNFT/createNFTs overloads or a configure-before-first-mint step for lifecycle-aware creation".
+- **Locked recommendation:** Ship both.
+  - **New overload:** `createNFTWithLifecycle(parentID, name, symbol, exchangeRate, maxSupply, uri, LifecycleConfig cfg)` on `GNUSNFTFactory` — atomic creation + configuration in a single transaction. This is the recommended path for new tokens (including AI Credits) because it eliminates the window between creation and configuration where an observer might mint under default UNRESTRICTED policy.
+  - **Retrofit path:** `configureLifecycle(id, cfg)` on `GNUSLifecycle` — for existing tokens before their first mint. Gated by `_totalSupply[id] == 0` (see Q6).
+- **User checkpoint required:** NO — D13 explicitly authorizes "overloads OR configure step"; shipping both is a strict superset that satisfies both usages.
+- **Implementation surface:** One new external function on `GNUSNFTFactory` (which has 1,159 bytes headroom — the overload is small, mostly a call-through to internal helpers) plus `configureLifecycle` on `GNUSLifecycle`. The plan must measure compiled size after adding the overload; if it overflows, the overload moves to `GNUSLifecycle` and calls `GNUSNFTFactoryStorage.layout().NFTs[...]` directly.
+- **EIP-170 note:** `GNUSNFTFactory` is at 23,417 B / 24,576 B budget. The overload is estimated at ~400-600 B (external wrapper, struct unpack, two internal calls). If compilation exceeds 24,576 B, the overload moves to `GNUSLifecycle` (which has a fresh EIP-170 budget).
+
+### Q6. First-mint detection for D4 immutability — RESOLVED: `_totalSupply[id] > 0` check
+
+- **What we know:** D4 says policy fields are "immutable after first mint". Three detection options were considered: (a) `ERC1155SupplyStorage._totalSupply[id] > 0`, (b) add `hasMinted` bool to NFT struct, (c) add `hasMinted` mapping in `GNUSLifecycleStorage`.
+- **Locked recommendation:** Option (a) — `require(ERC1155SupplyStorage.layout()._totalSupply[id] == 0, "Policy immutable after first mint")` in `configureLifecycle`. Simplest, matches existing storage, no struct append, no new mapping.
+- **Documented edge case:** A token whose supply returns to zero (all units burned) can have its policy re-configured. This is acceptable for v1 because:
+  - Burning all supply is already an extreme event requiring active cooperation of all holders;
+  - Re-configuration still requires creator/DEFAULT_ADMIN_ROLE authority;
+  - The event log preserves full history for off-chain audit.
+- **User checkpoint required:** NO — this matches the D4 spirit ("immutable after first mint" is about protecting holders from post-issuance policy change; if no holders exist, no one is harmed).
+- **Implementation surface:** One `require` line in `configureLifecycle`. If a future product needs stricter semantics (immutability even after full burn), add `hasMinted` mapping in `GNUSLifecycleStorage` — a one-mapping upgrade, not a struct change.
+
+### Checkpoint Summary for PLAN.md
+
+| Q | Locked? | User Checkpoint Needed? | Effort |
+|---|---------|------------------------|--------|
+| Q1 | YES — `!nonConvertible` | No | 1 require line |
+| Q2 | YES — PerHolder requires SOULBOUND or ISSUER_ONLY | No | 1 if-block |
+| Q3 | YES — internal `_settleRedeemToParent` | No | 1 internal function |
+| Q4 | YES — sender-side registry check | No | 1 external call |
+| Q5 | YES — ship both overloads | No | 1 external + 1 external |
+| Q6 | YES — `_totalSupply[id] == 0` | No | 1 require line |
+
+The planner can implement all six without further user input. If any decision is later reversed, the change is isolated to a single `require` line or a single function body — no architectural rework.
+
 
 ---
 
@@ -1339,13 +1376,14 @@ Phase 13 is a code/config-only change to the existing diamond. No new external s
 
 | Dependency | Required By | Available | Version | Fallback |
 |------------|------------|-----------|---------|----------|
-| Node.js | Hardhat test runner | ✓ | 24.13.0 (via nvm) | — |
-| Hardhat | Compile + test | ✓ | 2.26.5 | — |
+| Node.js | Hardhat test runner | ✓ | 24.13.0 (verified 2026-08-22 via `node --version`) | — |
+| npm | Package installs (none new) | ✓ | 11.6.2 (verified 2026-08-22) | — |
+| Hardhat | Compile + test | ✓ | 2.26.5 [VERIFIED: package.json line 108] | — |
 | Solidity compiler | Contract compilation | ✓ | 0.8.19 (hardhat.config.ts) | — |
-| ethers.js | Test interactions | ✓ | 6.16.0 | — |
-| `@geniusventures/hardhat-diamonds` | LocalDiamondDeployer | ✓ | 1.1.15-gv.2 | — |
-| Foundry (`forge`) | Invariant/fuzz tests | ✓ | (via `yarn forge:test`) | — |
-| Slither | Static analysis (SEC-07) | ✓ | (via `yarn slither:scan`) | — |
+| ethers.js | Test interactions | ✓ | 6.16.0 [VERIFIED: package.json] | — |
+| `@geniusventures/hardhat-diamonds` | LocalDiamondDeployer + diamonds-forge:test | ✓ | 1.1.15-gv.2 [VERIFIED: package.json line 101] | — |
+| Foundry (`forge`) | Invariant/fuzz tests | ✓ | 1.7.1-Homebrew (verified 2026-08-22 via `forge --version`) | — |
+| Slither | Static analysis (SEC-07) | ✓ | 0.11.5 (verified 2026-08-22 via `slither --version`) | — |
 
 **Missing dependencies with no fallback:** none
 
@@ -1429,12 +1467,48 @@ Phase 13 is a code/config-only change to the existing diamond. No new external s
 | D9 | Expired-unsettled balances counted as circulating | unit | `npx hardhat test test/unit/GNUSLifecycle.test.ts --grep "circulating"` | ❌ Wave 0 |
 | — | Diamond selector collision check | deployment | `npx hardhat test test/unit/GNUSLifecycleUpgrade.test.ts --grep "selector collision"` | ❌ Wave 0 |
 
+### Per-Plan-Area Verification Approach
+
+Phase 13 decomposes into six plan areas. Each has a distinct verification style dictated by what it changes:
+
+| Plan Area | Code Surface | Primary Test Type(s) | Secondary Test Type(s) | Rationale |
+|-----------|--------------|----------------------|------------------------|-----------|
+| **PA-1: NFT struct append + storage layout** | `GNUSNFTFactoryStorage.sol` (8 new fields) | **Decode / upgrade test** (legacy NFT decode with zeroed +9/+10/+11 slots) | **Unit** (slot-math assertions) | The risk is silent storage-layout corruption on upgrade; only an explicit storage-slot decode test catches packing mistakes. Pattern: test/unit/GNUSTreasury.test.ts:884-934. |
+| **PA-2: Transfer-policy predicate** | `GNUSERC1155MaxSupply._beforeTokenTransfer` (add `_enforceTransferPolicy` call) | **Unit** (one test per policy × actor combination; ~20 tests) | **Cross-repo integration** (ERC-20 proxy transfer of SOULBOUND reverts) | The predicate is a pure dispatch function; unit tests with explicit (policy, from, to, operator) tuples give full branch coverage. Cross-repo test verifies D6 "no proxy changes" contract. |
+| **PA-3: Per-holder clocks + renewal** | `GNUSLifecycleStorage.sol` + `GNUSLifecycle._applyPerHolderRenewal` | **Unit** (boundary: active renewal stacks; expired renewal settles-first; zero-balance starts fresh) | **Foundry invariant** (`LifecycleInvariant.t.sol` — settle-first never resurrects expired; renewal monotonicity) | Time-based logic is boundary-heavy; invariant fuzzing catches violations across arbitrary call sequences that hand-written unit tests miss. |
+| **PA-4: Settlement (`settleExpired`)** | `GNUSLifecycle.settleExpired` + `_settleRedeemToParent` | **Unit** (one test per disposition; idempotency; not-expired revert; fixed-recipient non-redirect) | **Foundry invariant** (conservation: `totalSupplyOfAll` unchanged by NONE/KEEP_INERT; decreased by BURN exactly by settled amount; parent/child supply-neutral for REDEEM_TO_PARENT) | Settlement is where value flows; conservation invariants catch accounting errors that single-path unit tests miss. |
+| **PA-5: Anti-scalping in `beforeMint`** | `GNUSNFTFactory.beforeMint` (cap + credential verifier) | **Unit** (cap enforced single/batch; credential valid/invalid; CEI ordering) | **Unit with mock** (`MockCredentialVerifier` with reentrancy attempt) | The verifier is an external contract — mock-based reentrancy test proves CEI ordering holds. |
+| **PA-6: Bridge + mutability guards + AI Credits config** | `GNUSBridge.bridgeOut` (policy check), `GNUSLifecycle.setValidFrom/Until`, `configureLifecycle` | **Unit** (bridge reverts per policy; timestamp setter authorization; immutable-after-first-mint; AI Credits end-to-end config) | **Deployment** (diamond selector collision check via `@geniusventures/hardhat-diamonds` on local deploy) | Cross-cutting glue code — unit tests cover behavior; deployment-time collision check is a single loupe assertion. |
+
+**Test-type definitions used in this phase:**
+
+- **unit** — Hardhat + Mocha + Chai test calling the diamond via `@geniusventures/hardhat-diamonds` `LocalDiamondDeployer` against a locally-deployed GeniusDiamond; runs in the `npx hardhat test` suite.
+- **decode / upgrade** — A unit test that uses `hardhat_setStorageAt` to simulate pre-upgrade state and asserts the post-upgrade decoder reads zero-defaults. Lives in `test/unit/GNUSLifecycleUpgrade.test.ts`.
+- **invariant** — Foundry invariant test in `test/foundry/invariant/LifecycleInvariant.t.sol`; fuzzer drives arbitrary call sequences; ghost variables track cumulative minted/burned/settled amounts; assertions run after each call.
+- **deployment** — Diamond collision check exercised implicitly by `LocalDiamondDeployer` on every test boot; explicit assertion lives in the upgrade test.
+- **cross-repo integration** — Unit test that imports the `erc20-gnus-proxy` contract artifacts and drives a proxy-mediated transfer against a locally-deployed diamond; verifies the hook covers the proxy path with no proxy-side changes.
+
 ### Sampling Rate
 
-- **After every task commit:** Run `npx hardhat test test/unit/GNUSLifecycle.test.ts` (fast, single-file)
-- **After every plan wave:** Run `npx hardhat test test/unit/GNUSLifecycle.test.ts test/unit/GNUSLifecycleUpgrade.test.ts test/unit/GNUSNFTFactoryAntiScalping.test.ts`
-- **Before `/gsd:verify-work`:** Full suite green — `npx hardhat test && yarn forge:test`
-- **Max feedback latency:** 120 seconds (matching Phase 10 baseline)
+- **After every task commit:** Run `npx hardhat test test/unit/GNUSLifecycle.test.ts` (fast, single-file; expected runtime ~10-20 seconds on a warm cache).
+- **After every plan wave:** Run `npx hardhat test test/unit/GNUSLifecycle.test.ts test/unit/GNUSLifecycleUpgrade.test.ts test/unit/GNUSNFTFactoryAntiScalping.test.ts` (three-file sweep; expected runtime ~40-60 seconds).
+- **Before `/gsd:verify-work`:** Full suite green — `npx hardhat test && yarn forge:test` (expected runtime ~120 seconds Hardhat + ~120 seconds Foundry; matches Phase 10 baseline).
+- **Max feedback latency:** 20 seconds for a single-test-file run (task-commit sampling); 120 seconds for the full Hardhat suite (verify-work gate). If a single-test-file run exceeds 20 seconds, investigate test fixtures (diamond redeploy per test is the usual cause).
+
+### Baseline & Failure Attribution
+
+- **Current develop baseline (verified 2026-08-17, still current 2026-08-22 per STATE.md):** 477 passing / 2 pending / 1 failing on `npx hardhat test`.
+- **The 1 pre-existing failure** is `test/unit/GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0) — a cross-suite pollution issue unrelated to Phase 13. Phase 13 tests must not "fix" this; it's owned by a future Phase 9 sweep. When evaluating Phase 13 green, accept this single failure as known-stale.
+- **Foundry baseline (verified 2026-08-17):** 213 passed / 2 failed / 3 skipped. The 2 failures are Phase 08.1 `SafeDiamondCut` + `SafeSingleShotUpgrade` setUp reverts — also unrelated to Phase 13.
+- **Phase 13 green definition:** All Phase-13-introduced tests pass; no new failures vs. the documented baseline.
+
+### Time-Mocking Requirement
+
+Lifecycle tests need deterministic control of `block.timestamp`. Hardhat provides `time.increase` / `time.setNextBlockTimestamp` via `@nomicfoundation/hardhat-network-helpers` (already in devDependencies). Foundry provides `vm.warp` natively. Do NOT introduce a custom time oracle — this would violate D2 ("block.timestamp-based").
+
+### Diamond Redeploy Strategy
+
+Each test file boots a fresh `LocalDiamondDeployer` instance in a `before` hook (matching the existing pattern in test/unit/GNUSTreasury.test.ts:6-9). This gives each file a clean diamond with the Phase 13 facet wired in via `diamonds/GeniusDiamond/geniusdiamond.config.json` — no manual diamondCut needed in tests.
 
 ### Wave 0 Gaps
 
@@ -1538,5 +1612,15 @@ Phase 13 is a code/config-only change to the existing diamond. No new external s
 - Architecture: HIGH — every pattern anchored to a specific file:line reference read this session; facet sizes measured from artifacts; struct layout derived from existing slot helpers in test/unit/GNUSTreasury.test.ts:73-85
 - Pitfalls: HIGH — all 10 pitfalls identified by reading actual code and cross-referencing Phase 9/10/11 CONTEXT/RESEARCH documents; two (P3 vault framing, P4 reserve framing) are explicit corrections to stale 13-CONTEXT references
 
-**Research date:** 2026-08-21
-**Valid until:** 2026-09-20 (30 days — stable domain; diamond pattern and ERC-1155 hook semantics are not fast-moving; re-validate if Phase 9/10/11 code changes before Phase 13 plans)
+**Research date:** 2026-08-21 (original); **Refreshed:** 2026-08-22
+**Valid until:** 2026-09-21 (30 days from refresh — stable domain; diamond pattern and ERC-1155 hook semantics are not fast-moving; re-validate if Phase 9/10/11 code changes before Phase 13 plans)
+
+**Refresh verification (2026-08-22):**
+- Facet bytecode sizes re-measured from `artifacts/`: GNUSNFTFactory 23,417 B (unchanged), GNUSERC1155MaxSupply 11,539 B (unchanged), GNUSTreasury 18,151 B (unchanged), GNUSBridge 21,797 B (unchanged), GNUSRedeemAdapter 16,390 B (unchanged), ERC1155ProxyOperator 4,283 B (unchanged), ERC20TransferBatch 17,561 B (unchanged).
+- Diamond config: protocolVersion 2.6 (unchanged); priorities 40/115/117/118/120/130 occupied; priority 119 confirmed free.
+- Hook signatures: `beforeMint` at contracts/gnus-ai/GNUSNFTFactory.sol:87; `_beforeTokenTransfer` at contracts/gnus-ai/GNUSERC1155MaxSupply.sol:32. Both unchanged.
+- Bridge: `bridgeOut` at contracts/gnus-ai/GNUSBridge.sol:228-267 unchanged; no `lockTokens` exists (verified via grep — zero hits).
+- Treasury: `convert` at contracts/gnus-ai/GNUSTreasury.sol:74 with nonConvertible gates at lines 88-90 unchanged.
+- Test baseline: 477 passing / 2 pending / 1 failing (GNUSControlStorage chainID) per STATE.md 2026-08-20 entry; unchanged.
+- Toolchain: Node 24.13.0, npm 11.6.2, Forge 1.7.1-Homebrew, Slither 0.11.5 — all verified this refresh.
+- No drift detected: all originally-validated findings remain accurate.
