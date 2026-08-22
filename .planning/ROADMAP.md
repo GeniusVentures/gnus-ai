@@ -433,10 +433,32 @@ Plans:
 7. AI Credits: direct GNUS child, exchangeRate 1.0, SOULBOUND, BURN, PerHolder expiry; spend/expiry creates zero GNUS/parent/reserve/treasury credit.
 8. Timestamps creator-only mutable post-mint (renewal); policy/disposition/mode/recipient immutable after first mint; all mutations emit events.
 
-**Requirements:** (LIC precursor; Phase 13 requirements to be formalized at plan time)
+**Requirements:** SC1, SC2, SC3, SC4, SC5, SC6, SC7, SC8 (success criteria above serve as requirement IDs), D4, D9
 **Priority:** P1
 **Depends on:** **Phase 9 (hard)** — implemented on completed Phase 9 treasury/reserve code
 **Constraints:** Phase 10 (policy check in lockTokens), Phase 11 (no proxy operator exemptions). ~~Phase 12 (expired-unsettled = circulating)~~ — Phase 12 retired; the "expired-unsettled = circulating" convention is now owned by Phase 13 itself (settlement burns flow through standard `_burn` hooks).
+
+**Plans:** 6 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 13-01-PLAN.md — Storage foundation: NFT struct append (D1), GNUSLifecycleStorage lib, plug-in interfaces, mocks, legacy-decode upgrade test (SC1)
+
+**Wave 2** *(blocked on Wave 1; 02/03/04 parallel — disjoint files)*
+
+- [ ] 13-02-PLAN.md — GNUSLifecycle facet: enums, views, configureLifecycle guards (Q1/Q2/Q6), setters, settleExpired + five-disposition dispatch, renewal + no-custody redeem internals; diamond config priority 119 / protocol 2.7 (SC2, SC5, SC8, D4, D9)
+- [ ] 13-03-PLAN.md — GNUSNFTFactory beforeMint anti-scalping (cap CEI + credential hook), renewal trigger, mintWithCredential + createNFTWithLifecycle overloads, anti-scalping test suite (SC6)
+- [ ] 13-04-PLAN.md — _enforceTransferPolicy predicate in GNUSERC1155MaxSupply._beforeTokenTransfer + full six-policy test matrix incl. NFT_PROXY_OPERATOR_ROLE bypass attempt (SC3)
+
+**Wave 3** *(blocked on 13-02 + 13-03)*
+
+- [ ] 13-05-PLAN.md — Settlement/renewal/mutability behavior matrix + LifecycleInvariant Foundry suite (settle-first + conservation) (SC2, SC5, SC8, D4, D9)
+
+**Wave 4** *(blocked on 13-04 + 13-05)*
+
+- [ ] 13-06-PLAN.md — bridgeOut policy wiring (pre-limiter) + bridge matrix + AI Credits end-to-end + selector-collision assertion (SC4, SC7)
 
 ---
 
