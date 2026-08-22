@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: shipped
-stopped_at: Phase 13 Plan 01 complete — lifecycle storage foundation landed; SC1 proven; ready for plan 13-02 (GNUSLifecycle facet)
-last_updated: "2026-08-22T21:41:17.260Z"
+stopped_at: Phase 13 Plan 02 complete — GNUSLifecycle facet landed at priority 119 / protocol 2.7; ready for plan 13-03 (anti-scalping beforeMint)
+last_updated: "2026-08-22T22:18:34.247Z"
 progress:
   total_phases: 16
   completed_phases: 12
   total_plans: 32
-  completed_plans: 27
+  completed_plans: 28
   percent: 75
 ---
 
@@ -116,6 +116,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-19T19:19:41.679Z
+Last session: 2026-08-22T22:18:34.235Z
 Stopped at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
 Resume file: None
