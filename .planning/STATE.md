@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: shipped
-stopped_at: Phase 11 merged to develop via PR #75 (ec825c1; Codex P1 fix included); proxy half in erc20-gnus-proxy workstream
-last_updated: "2026-08-20T20:05:00.000Z"
+stopped_at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
+last_updated: "2026-08-22T21:10:06.314Z"
 progress:
   total_phases: 16
   completed_phases: 12
-  total_plans: 26
+  total_plans: 32
   completed_plans: 26
   percent: 75
 ---
