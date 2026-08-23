@@ -304,6 +304,8 @@ Plans:
 
 > NOTE: The Success Criteria above reference the SUPERSEDED vault/escrow model. CONTEXT.md (10-CONTEXT.md, D-01..D-22) locks the provenance-relocation model: no vault custody, bridgeOut burns from source chainSupply, bridgeIn mints into destination chainSupply via _mintWithBridgeFee, totalSupplyOfAll() invariant under bridging. LOCK_CONFIRMED state dropped; state machine is NONE → INITIATED → RELEASED via (BridgeOutInitiated event, processedMessages flag). Treat the goal/concerns as intent; CONTEXT as the controlling design.
 
+> **AMENDMENT QUEUED (2026-08-23, post-Phase-13):** `docs/Secure-BridgeIn.md` (SPEC, ingested 2026-08-23) revises the **unreleased** bridgeIn design. The Phase 10 bridge code is merged and tested but **never deployed** (no facet records in `config/networks/sepolia.json` — no GNUSBridge/bridgeIn/setValidatorSet), so this is a pre-deployment design update, NOT a "V2" of a live system. The SPEC amends six locked decisions (D-06 transferId derivation, D-08/D-10 certificate digest shape, D-12 threshold derivation, D-15/D-16 validator-set rotation) toward a rolling API-attestor root + canonical `BridgeMessage` struct + `BRIDGE_CERTIFICATE_V2` digest; two points (D-11, D-13) are already aligned. **Scheduling:** the Phase 10 CONTEXT re-lock (re-locking the six decisions with the SPEC's revisions) and implementation run **after Phase 13 ships** — Phase 13's plan 13-06 also edits `GNUSBridge.sol` (bridgeOut policy wiring), so the two must not run concurrently. Ten requirement candidates staged at `.planning/intel/requirements.md` (REQ-bridge-attestor-v2-storage … REQ-bridge-v2-test-matrix). Cross-repo gate: SuperGenius#363 + #364 must close before production activation (track in `.planning/SUBREPOS.md` when scheduled).
+
 **Plans:** 4/4 plans complete
 
 Plans:
@@ -489,3 +491,4 @@ _Roadmap created: 2026-05-26_
 _Phases 8-12 added: 2026-06-15_
 _Phase 13 added: 2026-08-03 (context locked)_
 _Phase 14 added: 2026-08-03 (ingested from private-network-ai.md)_
+_Phase 10 amendment queued: 2026-08-23 (ingested from Secure-BridgeIn.md — pre-deployment bridgeIn revision, scheduled post-Phase-13)_
