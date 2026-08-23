@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: shipped
-stopped_at: Phase 13 Plan 02 complete — GNUSLifecycle facet landed at priority 119 / protocol 2.7; ready for plan 13-03 (anti-scalping beforeMint)
-last_updated: "2026-08-22T22:18:34.247Z"
+status: in_progress
+stopped_at: Phase 13 plan 13-03 complete (facet split, no delegatecall) — Wave 2 continues with 13-04 (transfer policy)
+last_updated: "2026-08-23T00:00:00.000Z"
 progress:
   total_phases: 16
   completed_phases: 12
   total_plans: 32
-  completed_plans: 28
-  percent: 75
+  completed_plans: 30
+  percent: 79
 ---
 
 # Project State
@@ -40,6 +40,9 @@ See: .planning/PROJECT.md
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
 | 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
+| 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
+| 13    | Time-Bound ERC-1155 Entitlements  | ▶      | 3/6   | 50%      |
+| 14    | Private-Network AI Licensing      | ○      | 0/0   | 0%       |
 
 ## Next Actions
 
@@ -116,6 +119,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-22T22:18:34.235Z
-Stopped at: Phase 11 context gathered — cross-repo split locked; planning restructure required before plan-phase
+Last session: 2026-08-23
+Stopped at: Phase 13 plan 13-03 complete (facet split, no delegatecall) — Wave 2 continues with 13-04 (transfer policy)
 Resume file: None
