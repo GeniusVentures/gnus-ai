@@ -86,6 +86,23 @@ _These are investigation items only — no implementation committed until resear
 - [ ] **LIC-06**: Hybrid-scope redeemability — Hybrid-scope tokens configured with `exchangeRate > 0` and `REDEEM_TO_PARENT` disposition (Phase 13 D8 path), collateralized via Phase 9 `mintBackedChild`. Pure burn-only AI Credits remain non-redeemable.
 - [ ] **LIC-07**: Private-network spend design — resolve how AI credits are spent on SuperGenius against public-canonical balances (bridged burn events vs mirror + periodic settlement). Open design question (PD-7) to be resolved in Phase 14 discuss/plan, informed by Phase 10 bridge vault work.
 
+## v4 Requirements — Secure BridgeIn Amendment (ingested 2026-08-23)
+
+> Source: `docs/Secure-BridgeIn.md` (SPEC). **Pre-deployment update to the unreleased Phase 10 bridge** — the Phase 10 bridgeIn code is merged/tested but never deployed (no facet records in `config/networks/sepolia.json`), so these are revisions to the Phase 10 design, NOT a "V2" of a live system. **Scheduling:** Phase 10 CONTEXT re-lock + implementation run **after Phase 13 ships** (13-06 also edits `GNUSBridge.sol`). Six items amend locked Phase 10 decisions (noted per-item); two align with existing D-11/D-13. Full candidate detail at `.planning/intel/requirements.md`; conflict analysis at `.planning/INGEST-CONFLICTS.md`.
+
+### BridgeIn Amendment
+
+- [ ] **BRIDGE-10**: Rolling-attestor storage — append `bridgeAttestorRoot`, `bridgeAttestorEpoch`, `bridgeAttestorV2Initialized` to `GNUSBridgeValidatorStorage.Layout` (append-only; legacy `validatorMerkleRoot`/`validatorThreshold` preserved byte-for-byte, become dead once active). Diamond storage upgrade test proves existing state decodes.
+- [ ] **BRIDGE-11**: One-time `initializeBridgeAttestorV2(address genesisAttestor)` (onlySuperAdminRole) — bootstraps the rolling root with a single Genesis attestor (one-leaf root, epoch 0, emits `BridgeAttestorSetInitialized`). First successful certificate must advance off Genesis (no permanent Genesis mode).
+- [ ] **BRIDGE-12**: Canonical `BridgeMessage` struct (`srcChainID, sourceBridgeID, sourceTxHash, sourceEventIndex, recipient, amount`) replacing free-form `transferId`; replay message ID derived on-chain via `BRIDGE_MESSAGE_ID_V2` domain + composite key; `sourceEventIndex` disambiguates same-tx events. Replay protection reuses `processedMessages` (D-07 unchanged). **Amends locked D-06.**
+- [ ] **BRIDGE-13**: `BRIDGE_CERTIFICATE_V2` digest — binds `currentAttestorRoot, currentAttestorEpoch, nextAttestorRoot` into the EIP-191 struct hash alongside existing fields; preserves dest-chain + diamond-address binding. **Extends locked D-08/D-10.**
+- [ ] **BRIDGE-14**: `_verifyBridgeAttestorCertificate` replaces `_verifyThresholdCertificate` — strict-ascending signers, per-signer Merkle proof against `currentRoot`, epoch-derived threshold, 16-signature cap, no MMR/multiproof. **Amends locked D-12/D-15.**
+- [ ] **BRIDGE-15**: New `bridgeIn(BridgeMessage calldata, bytes32 nextAttestorRoot, bytes[] calldata signatures, bytes32[][] calldata merkleProofs)` — pause/init → dest/message → replay → digest → cert-verify → (replay-mark + root-update BEFORE mint, CEI) → `_mintWithBridgeFee` (D-22 unchanged) → `BridgeReleased`. Atomic: failed mint reverts root update + replay marker. Root transition installs `nextAttestorRoot` + increments epoch by 1 (emits `BridgeAttestorSetAdvanced`); unchanged root processes claim with no epoch bump.
+- [ ] **BRIDGE-16**: Legacy-selector removal — legacy `bridgeIn(bytes32,uint256,address,uint256,bytes[],bytes32[][])` removed or stubbed to always-revert; `setValidatorSet` removed or converted to an explicitly-named emergency-recovery (requires paused + onlySuperAdminRole + nonzero root + never restores Genesis + increments epoch + emits emergency-reset). **Amends locked D-15.**
+- [ ] **BRIDGE-17**: SuperGenius prerequisites — #363 (slot quorum uses only signature-verified votes) and #364 (slot 0 identifies the API RPC that actually succeeded for that exact claim) must close before production activation. EVM-side work may proceed in parallel; track in `.planning/SUBREPOS.md` when scheduled.
+- [ ] **BRIDGE-18**: Cross-language test vectors — fixed vectors proving the C++ SuperGenius exporter and the Solidity verifier compute identical digests/signatures/proofs (private key, 64-byte SG pubkey, EVM address, roots, epoch, BridgeMessage fields, struct hash, EIP-191 digest, 65-byte r‖s‖v sig, recovered address, Merkle proof). Checked into repo, run in CI.
+- [ ] **BRIDGE-19**: BridgeIn-amendment test matrix — bootstrap, current-root verification, root transitions, replay/domain binding, existing-token behavior, cross-language vectors (source doc lines 654-727). Extends (does not replace) the Phase 10 suite, which covers the legacy path being removed.
+
 ## Out of Scope
 
 | Feature                                   | Reason                                                      |
@@ -143,16 +160,27 @@ _These are investigation items only — no implementation committed until resear
 | LIC-05      | Phase 14   | Pending  |
 | LIC-06      | Phase 14   | Pending  |
 | LIC-07      | Phase 14   | Pending  |
+| BRIDGE-10   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-11   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-12   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-13   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-14   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-15   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-16   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-17   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-18   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-19   | Phase 10 (amendment, post-Phase-13) | Pending  |
 
 **Coverage:**
 
 - v1 requirements: 25 total (22 + PROXY-01/02/03)
 - v2 requirements (SWP): 11 total
 - v3 requirements (LIC): 7 total
-- Mapped to phases: 43
+- v4 requirements (BRIDGE amendment): 10 total
+- Mapped to phases: 53
 - Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-05-26_
-_Last updated: 2026-08-03 — LIC-01..07 ingested from `.planning/private-network-ai.md`_
+_Last updated: 2026-08-23 — BRIDGE-10..19 ingested from `docs/Secure-BridgeIn.md` as a pre-deployment Phase 10 amendment (scheduled post-Phase-13)_
