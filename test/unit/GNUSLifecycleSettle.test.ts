@@ -627,6 +627,329 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                     expect(await geniusDiamond.isTokenActive(id)).to.eq(true);
                 });
             });
+
+            // ================================================================
+            // Task 2 (SC2/SC8/D4): renewal + mutability matrix
+            // ================================================================
+            describe('renewal + mutability matrix (SC2, SC8, D4)', function () {
+                it('validFrom boundary: mint at validFrom - 1 reverts "Sale not started"; at exactly validFrom succeeds', async function () {
+                    const id = await createFundedNFT('ValidFromBoundary', 'VFB');
+                    const validFrom = BigInt((await time.latest()) + 1000);
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({ validFrom, expirationMode: MODE_PER_TOKEN_ID }),
+                    );
+
+                    // One second before the window opens: the facet-level _checkMintPolicy
+                    // gate fires ("Sale not started").
+                    await time.setNextBlockTimestamp(Number(validFrom) - 1);
+                    await expect(
+                        ownerDiamond.mintWithCredential(signer1, id, toWei('1'), '0x', '0x'),
+                    ).to.be.revertedWith('Sale not started');
+
+                    // At exactly validFrom the window is open (inclusive boundary).
+                    await time.setNextBlockTimestamp(Number(validFrom));
+                    await ownerDiamond.mintWithCredential(signer1, id, toWei('1'), '0x', '0x');
+                    expect(await balanceOf(signer1, id)).to.eq(toWei('1'));
+                });
+
+                it('validUntil boundary (PerTokenId): isTokenActive true at validUntil - 1, false at exactly validUntil (exclusive)', async function () {
+                    const id = await createFundedNFT('ValidUntilBoundary', 'VUB');
+                    const validUntil = BigInt((await time.latest()) + 1000);
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({ expirationMode: MODE_PER_TOKEN_ID, validUntil }),
+                    );
+
+                    expect(await geniusDiamond.isTokenActive(id)).to.eq(true);
+                    await time.increaseTo(Number(validUntil) - 1);
+                    expect(await geniusDiamond.isTokenActive(id)).to.eq(true);
+                    // Exclusive boundary: AT validUntil the token is no longer active.
+                    await time.increaseTo(Number(validUntil));
+                    expect(await geniusDiamond.isTokenActive(id)).to.eq(false);
+                });
+
+                it('renewal stacks (D3 first branch): active mint extends the EXISTING clock — clock_new == clock_old + D, not now + D', async function () {
+                    const duration = 1000n;
+                    const id = await createFundedNFT('RenewalStack', 'RNST');
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_HOLDER,
+                            transferPolicy: POLICY_SOULBOUND,
+                            expirationDisposition: DISP_BURN,
+                            defaultDuration: duration,
+                        }),
+                    );
+
+                    // First mint at t0: clock = t0 + D (fresh clock, old expiry 0).
+                    const t0 = BigInt((await time.latest()) + 1);
+                    await time.setNextBlockTimestamp(Number(t0));
+                    await expect(ownerDiamond.mintWithCredential(signer1, id, toWei('5'), '0x', '0x'))
+                        .to.emit(geniusDiamond, 'HolderExpiryUpdated')
+                        .withArgs(id, signer1, 0n, t0 + duration);
+                    expect(await geniusDiamond.holderExpiresAt(id, signer1)).to.eq(t0 + duration);
+
+                    // Active renewal at t1 < t0 + D: the clock STACKS from the existing expiry
+                    // (t0 + D + D). If the implementation reset from now it would be t1 + D,
+                    // which is strictly less — this assertion distinguishes the two.
+                    const t1 = t0 + 100n;
+                    await time.setNextBlockTimestamp(Number(t1));
+                    await expect(ownerDiamond.mintWithCredential(signer1, id, toWei('3'), '0x', '0x'))
+                        .to.emit(geniusDiamond, 'HolderExpiryUpdated')
+                        .withArgs(id, signer1, t0 + duration, t0 + duration + duration);
+                    expect(await geniusDiamond.holderExpiresAt(id, signer1)).to.eq(
+                        t0 + duration + duration,
+                    );
+                    expect(await balanceOf(signer1, id)).to.eq(toWei('8'));
+                });
+
+                it('settle-first renewal (D3 second branch): expired pile settled via mintWithCredential before the new clock starts', async function () {
+                    const duration = 1000n;
+                    const id = await createFundedNFT('SettleFirst', 'SFST');
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_HOLDER,
+                            transferPolicy: POLICY_SOULBOUND,
+                            expirationDisposition: DISP_BURN,
+                            defaultDuration: duration,
+                        }),
+                    );
+
+                    const t0 = BigInt((await time.latest()) + 1);
+                    await time.setNextBlockTimestamp(Number(t0));
+                    await ownerDiamond.mintWithCredential(signer1, id, toWei('5'), '0x', '0x');
+
+                    // Warp past the clock; the renewal mint must settle the expired pile FIRST
+                    // (BURN: 5 minions destroyed), then start a fresh clock at now + D.
+                    const t2 = t0 + duration + 1n;
+                    await time.setNextBlockTimestamp(Number(t2));
+                    const tx = ownerDiamond.mintWithCredential(signer1, id, toWei('2'), '0x', '0x');
+                    await expect(tx)
+                        .to.emit(geniusDiamond, 'Settled')
+                        .withArgs(signer1, id, toWei('5'), DISP_BURN, ethers.ZeroAddress);
+                    await expect(tx)
+                        .to.emit(geniusDiamond, 'HolderExpiryUpdated')
+                        .withArgs(id, signer1, t0 + duration, t2 + duration);
+
+                    // Balance reflects ONLY the new mint — the settled pile is gone.
+                    expect(await balanceOf(signer1, id)).to.eq(toWei('2'));
+                    expect(await geniusDiamond.holderExpiresAt(id, signer1)).to.eq(t2 + duration);
+                });
+
+                it('never resurrects (T-13-05-01): totalSupply after settle-first renewal reflects the burn — expired units are gone for good', async function () {
+                    const duration = 1000n;
+                    const id = await createFundedNFT('NoResurrect', 'NRES');
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_HOLDER,
+                            transferPolicy: POLICY_SOULBOUND,
+                            expirationDisposition: DISP_BURN,
+                            defaultDuration: duration,
+                        }),
+                    );
+
+                    const t0 = BigInt((await time.latest()) + 1);
+                    await time.setNextBlockTimestamp(Number(t0));
+                    await ownerDiamond.mintWithCredential(signer1, id, toWei('5'), '0x', '0x');
+                    expect(await totalSupply(id)).to.eq(toWei('5'));
+
+                    const t2 = t0 + duration + 1n;
+                    await time.setNextBlockTimestamp(Number(t2));
+                    await ownerDiamond.mintWithCredential(signer1, id, toWei('2'), '0x', '0x');
+
+                    // Supply = only the post-settlement mint (2), NOT 5 + 2: the expired 5 were
+                    // burned by the renewal's settle-first step and never resurrected.
+                    expect(await totalSupply(id)).to.eq(toWei('2'));
+
+                    // A later settleExpired must NOT find a resurrected pile: the clock is
+                    // active again (t2 + D), so settling now reverts "Not expired".
+                    await expect(geniusDiamond.settleExpired(signer1, id)).to.be.revertedWith(
+                        'Not expired',
+                    );
+                });
+
+                it('zero-balance fresh clock: fresh holder mint starts clock at now + D', async function () {
+                    const duration = 1000n;
+                    const id = await createFundedNFT('FreshClock', 'FCLK');
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_HOLDER,
+                            transferPolicy: POLICY_SOULBOUND,
+                            expirationDisposition: DISP_BURN,
+                            defaultDuration: duration,
+                        }),
+                    );
+
+                    // signer2 has never held the token (clock 0, balance 0).
+                    const t0 = BigInt((await time.latest()) + 1);
+                    await time.setNextBlockTimestamp(Number(t0));
+                    await expect(ownerDiamond.mintWithCredential(signer2, id, toWei('4'), '0x', '0x'))
+                        .to.emit(geniusDiamond, 'HolderExpiryUpdated')
+                        .withArgs(id, signer2, 0n, t0 + duration);
+                    expect(await geniusDiamond.holderExpiresAt(id, signer2)).to.eq(t0 + duration);
+                    expect(await balanceOf(signer2, id)).to.eq(toWei('4'));
+                });
+
+                it('zero-balance with expired clock: full consumption burn then renewal starts fresh — no Settled, no resurrection', async function () {
+                    const duration = 1000n;
+                    const id = await createFundedNFT('ZeroBalRenew', 'ZBR');
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_HOLDER,
+                            transferPolicy: POLICY_SOULBOUND,
+                            expirationDisposition: DISP_BURN,
+                            defaultDuration: duration,
+                        }),
+                    );
+
+                    // Mint, then the holder spends the FULL balance (consumption burn is
+                    // permitted under SOULBOUND) while the clock is still active.
+                    const t0 = BigInt((await time.latest()) + 1);
+                    await time.setNextBlockTimestamp(Number(t0));
+                    await ownerDiamond.mintWithCredential(signer1, id, toWei('5'), '0x', '0x');
+                    await signer1Diamond['burn(address,uint256,uint256)'](signer1, id, toWei('5'));
+                    expect(await balanceOf(signer1, id)).to.eq(0n);
+
+                    // Warp past the (now meaningless) clock; renew with zero balance: no pile
+                    // to settle (no Settled event), fresh clock at now + D.
+                    const t2 = t0 + duration + 1n;
+                    await time.setNextBlockTimestamp(Number(t2));
+                    const tx = ownerDiamond.mintWithCredential(signer1, id, toWei('2'), '0x', '0x');
+                    await expect(tx).to.not.emit(geniusDiamond, 'Settled');
+                    await expect(tx)
+                        .to.emit(geniusDiamond, 'HolderExpiryUpdated')
+                        .withArgs(id, signer1, t0 + duration, t2 + duration);
+                    expect(await balanceOf(signer1, id)).to.eq(toWei('2'));
+                    expect(await totalSupply(id)).to.eq(toWei('2'));
+                });
+
+                it('creator-only timestamps (D4): creator mutates post-mint with events; random signer reverts; DEFAULT_ADMIN_ROLE holder succeeds', async function () {
+                    const id = await createFundedNFT('TimeMutable', 'TMUT');
+                    const validUntil = BigInt((await time.latest()) + 10000);
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_TOKEN_ID,
+                            validUntil,
+                        }),
+                    );
+                    // Post-mint mutability: mint a unit first so the test proves D4 timestamps
+                    // remain mutable AFTER first mint (policy fields would not be).
+                    await mintToSigner1(id, toWei('1'));
+
+                    // Creator (owner) mutates validFrom post-mint — event carries (id, old, new, operator).
+                    const newValidFrom = BigInt(await time.latest()) + 100n;
+                    await expect(ownerDiamond.setValidFrom(id, newValidFrom))
+                        .to.emit(geniusDiamond, 'ValidFromUpdated')
+                        .withArgs(id, 0n, newValidFrom, owner);
+
+                    // Creator mutates validUntil post-mint.
+                    const creatorNewValidUntil = validUntil + 500n;
+                    await expect(ownerDiamond.setValidUntil(id, creatorNewValidUntil))
+                        .to.emit(geniusDiamond, 'ValidUntilUpdated')
+                        .withArgs(id, validUntil, creatorNewValidUntil, owner);
+
+                    // Random signer (no role, not creator) reverts on both setters.
+                    await expect(signer3Diamond.setValidFrom(id, 0n)).to.be.revertedWith(
+                        'Only creator or admin',
+                    );
+                    await expect(signer3Diamond.setValidUntil(id, validUntil)).to.be.revertedWith(
+                        'Only creator or admin',
+                    );
+
+                    // A non-creator DEFAULT_ADMIN_ROLE holder succeeds (D4: creator-or-admin).
+                    const DEFAULT_ADMIN_ROLE = ethers.ZeroHash;
+                    await ownerDiamond.grantRole(DEFAULT_ADMIN_ROLE, signer1);
+                    const adminNewValidUntil = creatorNewValidUntil + 500n;
+                    await expect(signer1Diamond.setValidUntil(id, adminNewValidUntil))
+                        .to.emit(geniusDiamond, 'ValidUntilUpdated')
+                        .withArgs(id, creatorNewValidUntil, adminNewValidUntil, signer1);
+                });
+
+                it('immutable after first mint (D4): configureLifecycle reverts "Policy immutable after first mint"', async function () {
+                    const id = await createFundedNFT('ImmutablePolicy', 'IMP');
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_TOKEN_ID,
+                            validUntil: BigInt((await time.latest()) + 1000),
+                            expirationDisposition: DISP_BURN,
+                        }),
+                    );
+                    await mintToSigner1(id, toWei('1'));
+
+                    await expect(
+                        ownerDiamond.configureLifecycle(
+                            id,
+                            defaultConfig({ expirationDisposition: DISP_KEEP_INERT }),
+                        ),
+                    ).to.be.revertedWith('Policy immutable after first mint');
+                });
+
+                it('Q2 matrix: PerHolder + transferable policies (UNRESTRICTED/ALLOWLISTED/CONTROLLED_RESALE/LOCKED_AFTER_START) revert', async function () {
+                    const forbidden = [
+                        { name: 'UNRESTRICTED', policy: POLICY_UNRESTRICTED },
+                        { name: 'ALLOWLISTED', policy: POLICY_ALLOWLISTED },
+                        { name: 'CONTROLLED_RESALE', policy: POLICY_CONTROLLED_RESALE },
+                        { name: 'LOCKED_AFTER_START', policy: POLICY_LOCKED_AFTER_START },
+                    ];
+                    for (const { name, policy } of forbidden) {
+                        const id = await createFundedNFT(`Q2Forbid${name}`, `Q2F${policy}`);
+                        await expect(
+                            ownerDiamond.configureLifecycle(
+                                id,
+                                defaultConfig({
+                                    expirationMode: MODE_PER_HOLDER,
+                                    transferPolicy: policy,
+                                    expirationDisposition: DISP_BURN,
+                                    defaultDuration: 1000n,
+                                }),
+                            ),
+                            `PerHolder + ${name} must revert`,
+                        ).to.be.revertedWith('PerHolder requires non-transferable policy');
+                    }
+                });
+
+                it('Q2 matrix: PerHolder + SOULBOUND and PerHolder + ISSUER_ONLY are accepted (LifecycleConfigured emitted)', async function () {
+                    const allowed = [
+                        { name: 'SOULBOUND', policy: POLICY_SOULBOUND },
+                        { name: 'ISSUER_ONLY', policy: POLICY_ISSUER_ONLY },
+                    ];
+                    for (const { name, policy } of allowed) {
+                        const id = await createFundedNFT(`Q2Allow${name}`, `Q2A${policy}`);
+                        const cfg = defaultConfig({
+                            expirationMode: MODE_PER_HOLDER,
+                            transferPolicy: policy,
+                            expirationDisposition: DISP_BURN,
+                            defaultDuration: 1000n,
+                        });
+                        await expect(
+                            ownerDiamond.configureLifecycle(id, cfg),
+                            `PerHolder + ${name} must be accepted`,
+                        )
+                            .to.emit(geniusDiamond, 'LifecycleConfigured')
+                            .withArgs(
+                                id,
+                                [
+                                    cfg.validFrom,
+                                    cfg.validUntil,
+                                    cfg.defaultDuration,
+                                    cfg.expirationMode,
+                                    cfg.transferPolicy,
+                                    cfg.expirationDisposition,
+                                    cfg.expirationRecipient,
+                                    cfg.credentialVerifier,
+                                ],
+                                owner,
+                            );
+                    }
+                });
+            });
         });
     }
 });
