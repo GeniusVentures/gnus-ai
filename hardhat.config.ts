@@ -8,10 +8,26 @@ import '@typechain/hardhat';
 import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
 import 'hardhat-multichain';
-import { HardhatUserConfig, task } from 'hardhat/config';
+import { extendEnvironment, HardhatUserConfig, task } from 'hardhat/config';
 import 'solidity-coverage';
 
+import { installLazyLifecyclePolicyLinker } from './scripts/utils/GNUSLifecyclePolicyLinking';
+
 dotenv.config();
+
+/*
+ * Phase 13 (13-05): install the GNUSLifecyclePolicy library linker in EVERY hardhat process.
+ * The mocha suites deploy + link eagerly in their `before` hooks via
+ * `setupLifecyclePolicyLinking()`, but the `diamonds-forge:test` task deploys the diamond
+ * IN-PROCESS through the framework's DeploymentManager — no per-suite hook ever runs there,
+ * so facets linking GNUSLifecyclePolicy would fail with an unresolved-link error. The lazy
+ * installer patches `ethers.getContractFactory` once per process (deploy-on-first-use, cached)
+ * and is a no-op for tasks that never create a contract factory (compile etc.). It shares
+ * module state with the per-suite installer, so the two never double-deploy or double-patch.
+ */
+extendEnvironment((hre) => {
+	installLazyLifecyclePolicyLinker(hre);
+});
 
 /*
  * Destructuring environment variables required for the configuration.
