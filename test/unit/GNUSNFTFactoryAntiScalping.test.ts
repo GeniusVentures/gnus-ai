@@ -62,9 +62,9 @@ describe('GNUS NFT Factory Anti-Scalping Tests', async function () {
     const LIFECYCLE_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.lifecycle.storage'));
     // mintedPerWallet is the SECOND field of GNUSLifecycleStorage.Layout (offset +1).
     const MINTED_PER_WALLET_OFFSET = 1n;
-    // MockCredentialVerifier storage slots: acceptCredentials = slot 0, reenterOnVerify = slot 1.
+    // MockCredentialVerifier storage slot: acceptCredentials = slot 0 (IN-06 removed the dead
+    // reenterOnVerify driver state).
     const MOCK_ACCEPT_CREDENTIALS_SLOT = 0n;
-    const MOCK_REENTER_ON_VERIFY_SLOT = 1n;
 
     /**
      * Compute the storage slot for mintedPerWallet[tokenId][wallet].
@@ -373,6 +373,30 @@ describe('GNUS NFT Factory Anti-Scalping Tests', async function () {
                     await time.setNextBlockTimestamp(Number(end) + 1);
                     await expect(
                         ownerDiamond.mintWithCredential(signer1, idEnded, toWei('1'), '0x', '0x'),
+                    ).to.be.revertedWith('Sale ended');
+                });
+
+                it('WR-02: legacy factory mint/mintBatch also revert "Sale ended" after the PerTokenId validUntil', async function () {
+                    const now = BigInt(await time.latest());
+                    const start = now + 1000n;
+                    const end = start + 1000n;
+
+                    const idLegacy = await createFundedNFT('LegacySaleEnd', 'LSE');
+                    await ownerDiamond.configureLifecycle(
+                        idLegacy,
+                        defaultConfig({ validFrom: start, expirationMode: 1, validUntil: end }),
+                    );
+
+                    // Mint within the window via the LEGACY path succeeds (creator-or-admin).
+                    await time.setNextBlockTimestamp(Number(start));
+                    await ownerDiamond['mint(address,uint256,uint256,bytes)'](signer1, idLegacy, toWei('1'), '0x');
+
+                    // After validUntil the legacy path must revert too — the hook
+                    // (GNUSLifecyclePolicy.enforceMintGate) is the single window authority and
+                    // gates BOTH issuance paths (WR-02, 13 review).
+                    await time.setNextBlockTimestamp(Number(end) + 1);
+                    await expect(
+                        ownerDiamond['mint(address,uint256,uint256,bytes)'](signer1, idLegacy, toWei('1'), '0x'),
                     ).to.be.revertedWith('Sale ended');
                 });
             });

@@ -190,7 +190,12 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                     const expectedSymbol = 'LGCY';
                     const expectedUri = 'ipfs://legacy-token';
 
-                    await ownerDiamond.createNFT(
+                                        // WR-06 (13 review): derive the id from childCurIndex BEFORE createNFT —
+                    // robust to a shared/cached diamond fixture (the first created token is
+                    // not necessarily id 1).
+                    const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                    const legacyId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
+await ownerDiamond.createNFT(
                         GNUS_TOKEN_ID,
                         expectedName,
                         expectedSymbol,
@@ -198,7 +203,6 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                         expectedMax,
                         expectedUri,
                     );
-                    const legacyId = 1n;
 
                     // Zero the slots that contain Phase 13 fields. nonConvertible (Phase 9, slot
                     // +8 byte 0) shares its slot with validFrom/validUntil/defaultDuration/
@@ -248,7 +252,10 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                 it('storage layout: Phase 13 fields pack into slots +8 (with nonConvertible), +9, +10', async function () {
                     await seedProvenanceIfNeeded();
 
-                    await ownerDiamond.createNFT(
+                                        // WR-06 (13 review): childCurIndex-derived id — see legacy test above.
+                    const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                    const probeId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
+await ownerDiamond.createNFT(
                         GNUS_TOKEN_ID,
                         'PackingProbe',
                         'PACK',
@@ -256,7 +263,6 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                         toWei('1000000'),
                         'ipfs://pack',
                     );
-                    const probeId = 1n;
 
                     // Freshly created token: Phase 13 fields default to zero. Slot +8 still
                     // holds nonConvertible=false at byte 0 (written by createNFT), so the
@@ -342,7 +348,12 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                     await seedProvenanceIfNeeded();
                     await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
-                    await ownerDiamond.createNFT(
+                                        // WR-06 (13 review): derive the id from childCurIndex BEFORE createNFT —
+                    // robust to a shared/cached diamond fixture (the first created token is
+                    // not necessarily id 1).
+                    const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                    const legacyId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
+await ownerDiamond.createNFT(
                         GNUS_TOKEN_ID,
                         'LegacyBehavior',
                         'LBHV',
@@ -350,7 +361,6 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                         toWei('12345'),
                         'ipfs://legacy-behavior',
                     );
-                    const legacyId = 1n;
 
                     // Zero slots +8/+9/+10 to simulate a pre-Phase-13 record. Zeroing +8 also
                     // resets nonConvertible to false — the pre-Phase-9 default — which is
