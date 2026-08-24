@@ -19,6 +19,7 @@ import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 // Create utils object for compatibility
 const utils = { formatEther, id };
@@ -68,6 +69,8 @@ describe('NFT Factory Tests', async function () {
 			let createdParentNFTID: bigint;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,

@@ -6,6 +6,7 @@ import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('ERC1155ProxyOperator Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -26,6 +27,8 @@ describe('ERC1155ProxyOperator Tests', function () {
 	const GNUS_TOKEN_ID = 0;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		// Get signers
 		const signers = await hre.ethers.getSigners();
 		owner = signers[0];

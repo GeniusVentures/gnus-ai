@@ -12,6 +12,7 @@ import {
 	SGNS_DESTINATION_Y_ODD,
 	DEST_CHAIN_ID,
 } from '../utils/bridge-fixtures';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GNUSBridge Enhanced Tests', function () {
 	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
@@ -25,6 +26,8 @@ describe('GNUSBridge Enhanced Tests', function () {
 	let snapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		const config = {
 			diamondName: 'GeniusDiamond',
 			network: 'hardhat',

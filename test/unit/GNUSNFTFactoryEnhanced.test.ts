@@ -8,6 +8,7 @@ import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GNUSNFTFactory Enhanced Tests', function () {
 	const diamondName = 'GeniusDiamond';
@@ -24,6 +25,8 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 	let testSnapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		const config = {
 			diamondName: 'GeniusDiamond',
 			network: 'hardhat',
