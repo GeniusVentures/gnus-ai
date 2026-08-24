@@ -16,6 +16,7 @@ import {
 	IDiamondLoupe__factory,
 	IERC20Upgradeable__factory,
 } from '../../typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
@@ -53,6 +54,8 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 			let snapshotId: string;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,

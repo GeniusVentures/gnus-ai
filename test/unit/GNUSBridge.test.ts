@@ -15,6 +15,7 @@ import hre, { ethers } from 'hardhat';
 import { multichain } from 'hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 chai.use(chaiAsPromised);
 
@@ -58,6 +59,8 @@ describe('GNUS Bridge Tests', async function () {
 			let erc1155ProxyOperator: GeniusDiamond;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,

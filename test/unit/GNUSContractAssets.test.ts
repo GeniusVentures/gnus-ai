@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import type { Signer } from 'ethers';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GNUSContractAssets', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -21,6 +22,8 @@ describe('GNUSContractAssets', function () {
 	let initialSnapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		// Get signers
 		[owner, user1, user2] = await hre.ethers.getSigners();
 		ownerAddress = await owner.getAddress();

@@ -29,6 +29,7 @@ import {
 	SGNS_DESTINATION_Y_ODD,
 	DEST_CHAIN_ID,
 } from '../utils/bridge-fixtures';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 interface GasResult {
 	binCount: number;
@@ -61,6 +62,8 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 		let initialSnapshotId: string;
 
 		before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 			// Deploy Diamond using LocalDiamondDeployer
 			const config = { diamondName: 'GeniusDiamond', network: networkName };
 			const diamondDeployer = await LocalDiamondDeployer.getInstance(hre, config);

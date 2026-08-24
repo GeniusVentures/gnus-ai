@@ -16,6 +16,7 @@ import {
 	computeBridgeInStructHash,
 	signBridgeInCertificate,
 } from '../utils/bridge-certificate';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 /**
  * Phase 10 unit tests — GNUSBridge.bridgeIn + setValidatorSet.
@@ -60,6 +61,8 @@ describe('GNUSBridge bridgeIn', function () {
 	const VALIDATOR_THRESHOLD = 2n;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		const config = {
 			diamondName: 'GeniusDiamond',
 			network: 'hardhat',

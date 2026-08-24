@@ -7,6 +7,7 @@ import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types/GeniusDiamond';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GeniusOwnershipFacet', function () {
 	let diamond: Diamond;
@@ -18,6 +19,8 @@ describe('GeniusOwnershipFacet', function () {
 	let initialSnapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		// Get signers
 		const signers = await hre.ethers.getSigners();
 		owner = signers[0];
