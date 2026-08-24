@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
-last_updated: "2026-08-24T21:35:00.000Z"
+stopped_at: Phase 13 COMPLETE (6/6) — bridge policy gate + AI Credits E2E (SC4/SC7); next per ROADMAP: Phase 14
+last_updated: "2026-08-24T22:10:00.000Z"
 progress:
   total_phases: 16
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 32
-  completed_plans: 31
-  percent: 97
+  completed_plans: 32
+  percent: 81
 ---
 
 # Project State
@@ -41,13 +41,20 @@ See: .planning/PROJECT.md
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
 | 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
-| 13    | Time-Bound ERC-1155 Entitlements  | ▶      | 5/6   | 83%      |
+| 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
 | 14    | Private-Network AI Licensing      | ○      | 0/0   | 0%       |
 
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
 2. Cleanup follow-up (not blocking): full `npx hardhat test` on develop (verified 2026-08-17, Phase 10 work in place) shows **477 passing / 2 pending / 1 failing** — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes 38/38 in isolation on both pre- and post-Phase-10 HEADs. The earlier "25 residual failures" note was stale. Root fix belongs to a Phase 9 sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 213 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
+
+### Phase 13 Decisions Logged (13-06)
+
+- Bridge policy gate v1 (D7/Q4): GNUS_TOKEN_ID + UNRESTRICTED pass; ALLOWLISTED checks the SENDER against the per-token registry (no registry → revert); LOCKED_AFTER_START reverts only when validFrom != 0 && block.timestamp >= validFrom; SOULBOUND/ISSUER_ONLY/CONTROLLED_RESALE hard-revert — gate placed BEFORE checkAndRecordWithdraw so reverted bridges consume no limiter allowance
+- AI Credits SKU uses explicit maxSupply (1M), NOT the plan's maxSupply=0 — the max-supply hook runs after ERC1155Supply's increment, so 0 permits no mints (GNUSBridge base size measured 21,945 B, docs were stale; +766 B after the gate → 22,711 B, 1,865 B EIP-170 headroom)
+- Production linker (13-06): lazy library deploy honors the signer intercepted from getContractFactory(name,{signer}) so GNUSLifecyclePolicy deploys to the RPC target network, not the HRE default
+- Regression baselines re-verified 2026-08-24: Hardhat 564/2/1 (only known-stale GNUSControlStorage chainID), Foundry 215/2/3 (only known Phase 08.1 setUp reverts)
 
 ### Phase 10 Decisions Logged (10-04)
 
@@ -119,6 +126,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-24T21:35:00.000Z
+Last session: 2026-08-24T22:03:30.111Z
 Stopped at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
 Resume file: None
