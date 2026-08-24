@@ -33,7 +33,7 @@
 
 | #   | Phase                    | Goal                                                              | Requirements         | Success Criteria |
 | --- | ------------------------ | ----------------------------------------------------------------- | -------------------- | ---------------- |
-| 13  | Time-Bound Entitlements  | 2/6 | In Progress|  |
+| 13  | Time-Bound Entitlements  | 4/6 | In Progress|  |
 | 14  | Private-Network Licensing| Tenant License NFTs, SKU registry, payment router, hybrid scope   | LIC-01..07           | 7                |
 
 ## Phase Details
@@ -440,7 +440,7 @@ Plans:
 **Depends on:** **Phase 9 (hard)** — implemented on completed Phase 9 treasury/reserve code
 **Constraints:** Phase 10 (policy check in lockTokens), Phase 11 (no proxy operator exemptions). ~~Phase 12 (expired-unsettled = circulating)~~ — Phase 12 retired; the "expired-unsettled = circulating" convention is now owned by Phase 13 itself (settlement burns flow through standard `_burn` hooks).
 
-**Plans:** 2/6 plans executed
+**Plans:** 4/6 plans executed
 
 Plans:
 
@@ -451,8 +451,8 @@ Plans:
 **Wave 2** *(blocked on Wave 1; 02/03/04 parallel — disjoint files)*
 
 - [x] 13-02-PLAN.md — GNUSLifecycle facet: enums, views, configureLifecycle guards (Q1/Q2/Q6), setters, settleExpired + five-disposition dispatch, renewal + no-custody redeem internals; diamond config priority 119 / protocol 2.7 (SC2, SC5, SC8, D4, D9)
-- [ ] 13-03-PLAN.md — GNUSNFTFactory beforeMint anti-scalping (cap CEI + credential hook), renewal trigger, mintWithCredential + createNFTWithLifecycle overloads, anti-scalping test suite (SC6)
-- [ ] 13-04-PLAN.md — _enforceTransferPolicy predicate in GNUSERC1155MaxSupply._beforeTokenTransfer + full six-policy test matrix incl. NFT_PROXY_OPERATOR_ROLE bypass attempt (SC3)
+- [x] 13-03-PLAN.md — GNUSNFTFactory beforeMint anti-scalping (cap CEI + credential hook), renewal trigger, mintWithCredential + createNFTWithLifecycle overloads, anti-scalping test suite (SC6)
+- [x] 13-04-PLAN.md — _enforceTransferPolicy predicate in GNUSERC1155MaxSupply._beforeTokenTransfer + full six-policy test matrix incl. NFT_PROXY_OPERATOR_ROLE bypass attempt (SC3)
 
 **Wave 3** *(blocked on 13-02 + 13-03)*
 
