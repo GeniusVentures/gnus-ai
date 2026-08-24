@@ -33,7 +33,7 @@
 
 | #   | Phase                    | Goal                                                              | Requirements         | Success Criteria |
 | --- | ------------------------ | ----------------------------------------------------------------- | -------------------- | ---------------- |
-| 13  | Time-Bound Entitlements  | 4/6 | In Progress|  |
+| 13  | Time-Bound Entitlements  | 5/6 | In Progress|  |
 | 14  | Private-Network Licensing| Tenant License NFTs, SKU registry, payment router, hybrid scope   | LIC-01..07           | 7                |
 
 ## Phase Details
@@ -440,7 +440,7 @@ Plans:
 **Depends on:** **Phase 9 (hard)** — implemented on completed Phase 9 treasury/reserve code
 **Constraints:** Phase 10 (policy check in lockTokens), Phase 11 (no proxy operator exemptions). ~~Phase 12 (expired-unsettled = circulating)~~ — Phase 12 retired; the "expired-unsettled = circulating" convention is now owned by Phase 13 itself (settlement burns flow through standard `_burn` hooks).
 
-**Plans:** 4/6 plans executed
+**Plans:** 5/6 plans executed
 
 Plans:
 
@@ -456,7 +456,7 @@ Plans:
 
 **Wave 3** *(blocked on 13-02 + 13-03)*
 
-- [ ] 13-05-PLAN.md — Settlement/renewal/mutability behavior matrix + LifecycleInvariant Foundry suite (settle-first + conservation) (SC2, SC5, SC8, D4, D9)
+- [x] 13-05-PLAN.md — Settlement/renewal/mutability behavior matrix + LifecycleInvariant Foundry suite (settle-first + conservation) (SC2, SC5, SC8, D4, D9)
 
 **Wave 4** *(blocked on 13-04 + 13-05)*
 
