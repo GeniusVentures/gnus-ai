@@ -26,23 +26,16 @@ contract MockCredentialVerifier is ICredentialVerifier {
     ///      Tests flip via hardhat_setStorageAt to simulate valid/invalid credential.
     bool public acceptCredentials;
 
-    /// @dev When true, verify performs a reentrant call into the diamond's mintWithCredential
-    ///      before returning. Used by the plan 13-03 CEI reentrancy test to prove the cap
-    ///      increment happens BEFORE the external verifier call.
-    bool public reenterOnVerify;
-
-    /// @dev Driver parameters for the reentrancy attempt, set by the test before triggering mint.
-    address public reenterDiamond;
-    address public reenterTo;
-    uint256 public reenterId;
-    uint256 public reenterAmount;
-
     constructor() {
         acceptCredentials = true;
     }
 
-    /// @notice ICredentialVerifier implementation. Returns acceptCredentials; if reenterOnVerify
-    ///         is set, first performs a reentrant mint attempt against the diamond.
+    /// @notice ICredentialVerifier implementation. Returns acceptCredentials.
+    /// @dev `verify` is `view` per ICredentialVerifier — it cannot perform state-changing
+    ///      reentry. The reentrancy driver is the separate non-view `reenterMint` below,
+    ///      called directly by the plan 13-03 CEI reentrancy test (IN-06, 13 review: the
+    ///      former `reenterOnVerify` / `reenterDiamond` / `reenterTo` / `reenterId` /
+    ///      `reenterAmount` state was dead — verify never read it).
     function verify(
         address /*minter*/,
         uint256 /*tokenId*/,
@@ -56,9 +49,9 @@ contract MockCredentialVerifier is ICredentialVerifier {
     }
 
     /// @notice Thin driver that calls the diamond's mintWithCredential. Tests use this to
-    ///         simulate a credential verifier that attempts reentrancy during the verify call
-    ///         (the mock's state flag reenterOnVerify signals intent; actual reentry is driven
-    ///         by tests through this function so the CEI ordering can be asserted).
+    ///         simulate a credential verifier that attempts reentrancy during the mint flow —
+    ///         actual reentry is driven by tests through this function so the CEI ordering
+    ///         can be asserted.
     function reenterMint(
         address diamond,
         address to,
