@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 13 plan 13-04 complete (transfer policy via GNUSLifecyclePolicy library, SC3) — Wave 3 next (13-05)
-last_updated: "2026-08-24T02:08:10.597Z"
+stopped_at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
+last_updated: "2026-08-24T21:35:00.000Z"
 progress:
   total_phases: 16
   completed_phases: 12
   total_plans: 32
-  completed_plans: 30
-  percent: 75
+  completed_plans: 31
+  percent: 97
 ---
 
 # Project State
@@ -41,7 +41,7 @@ See: .planning/PROJECT.md
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
 | 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
-| 13    | Time-Bound ERC-1155 Entitlements  | ▶      | 3/6   | 50%      |
+| 13    | Time-Bound ERC-1155 Entitlements  | ▶      | 5/6   | 83%      |
 | 14    | Private-Network AI Licensing      | ○      | 0/0   | 0%       |
 
 ## Next Actions
@@ -119,6 +119,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-24T02:08:10.587Z
-Stopped at: Phase 13 plan 13-04 complete (transfer policy via GNUSLifecyclePolicy library, SC3) — Wave 3 next (13-05)
+Last session: 2026-08-24T21:35:00.000Z
+Stopped at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
 Resume file: None

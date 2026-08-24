@@ -149,6 +149,43 @@ the hook's cap increment lands before the reentrant call is counted.
   checker W1).
 - **13-05 / 13-06**: unchanged.
 
+---
+
+## ADDENDUM (2026-08-23, locked with user): cap increment = single write point in the hook
+
+**Decision (option 1 of the two presented):** the per-wallet cap **increment** lives **once, in
+`GNUSERC1155MaxSupply._beforeTokenTransfer`** (the mint branch), NOT in
+`GNUSLifecycleMint._checkMintPolicy`. 13-04 implements this.
+
+**Why this does NOT violate the no-cross-facet / no-delegatecall rule:** `_beforeTokenTransfer`
+is an `internal` function defined on the shared base `GNUSERC1155MaxSupply`, which every facet
+inherits. `_mint` (also internal, from ERC1155Upgradeable) calls it **inline, intra-contract** —
+there is no selector routing, no cross-facet call, no delegatecall. It is the same mechanism the
+existing max-supply check (base `:58-63`) and the withdraw-limiter charge (base `:78`) already
+use. The legacy `GNUSNFTFactory.mint()` path and the `GNUSLifecycleMint.mintWithCredential` path
+**both** funnel through `_mint` → `_beforeTokenTransfer`, so the hook is the single point that
+gates both natively.
+
+**The mechanism:**
+- `_beforeTokenTransfer` mint branch gains: window gate (`validFrom`) + per-wallet cap
+  **check-and-increment** (CEI). Because it fires on every mint on both paths, the legacy path is
+  cap-gated (decision **b**) with a single write — no double-count.
+- `GNUSLifecycleMint._checkMintPolicy` **drops its `mintedPerWallet[id][to] = newTotal` write**
+  (13-03 shipped it there as the only enforcement point; it is now redundant and would
+  double-count). `_checkMintPolicy` keeps the sale-window check and the credential-verifier call
+  only. It may keep a read-only defensive cap assert or drop the cap logic entirely — 13-04
+  chooses and documents.
+- **Ordering note (accepted):** the cap increment now lands inside `_mint` (in the hook), which is
+  *after* the mint facet's credential `view` call. This is safe because `verify` is `view`
+  (STATICCALL) and cannot reenter-with-effect; the mock's `reenterMint` is a separate non-view
+  driver the test calls directly. Strict "cap-before-credential" ordering is traded away for a
+  single write point — accepted by the user.
+
+**Test impact:** the 13-03 anti-scalping suite's cap assertions read `mintedPerWallet` — these
+still hold (the storage write just moves from the facet to the hook). 13-04 must re-run
+`test/unit/GNUSNFTFactoryAntiScalping.test.ts` and confirm the cap tests still pass with the
+increment relocated.
+
 ## Verification gates (unchanged in spirit)
 
 - `yarn compile` clean; **both** `GNUSLifecycle` and `GNUSLifecycleMint` deployedBytecode printed
