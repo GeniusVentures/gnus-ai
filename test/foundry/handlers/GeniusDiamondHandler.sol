@@ -996,6 +996,241 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         return ghost_releasedIdsList.length;
     }
 
+    // ========================================
+    // Phase 13 (13-05): lifecycle settlement handlers
+    // ========================================
+    // Ghost state for the LifecycleInvariant suite. Handler style per Phase 10 (10-04)
+    // logged decision: swallow reverts, track state only.
+
+    /// @dev SUM of minions burned by BURN-disposition settles — BOTH the permissionless
+    ///      settleExpired path AND the settle-first step of a PerHolder renewal mint.
+    uint256 public ghost_totalSettleBurned;
+    /// @dev Successful settleExpired calls (coverage guard, T-13-05-03).
+    uint256 public ghost_settleCalls;
+    /// @dev Successful PerHolder mints via mintWithCredential — every one runs the D3
+    ///      renewal transition (stack or settle-first), so this counts renewal exercises.
+    uint256 public ghost_renewalCalls;
+    /// @dev Incremented when a renewal onto an expired clock leaves MORE than the incoming
+    ///      mint in the holder's balance — i.e. the expired pile was resurrected (T-13-05-01).
+    ///      L1 asserts this stays 0.
+    uint256 public ghost_resurrections;
+
+    /// @dev The PerHolder BURN SOULBOUND token id configured by the invariant setUp (0 = unset).
+    uint256 public lifecyclePerHolderId;
+    /// @dev The PerTokenId BURN token id configured by the invariant setUp (0 = unset).
+    uint256 public lifecyclePerTokenId;
+
+    /// @dev Mint amount bounds — small enough that the handler's 100k ether seed GNUS can
+    ///      fund a whole campaign without a mid-run root mint (which would perturb L2).
+    uint256 internal constant LIFECYCLE_MINT_MIN = 1 ether;
+    uint256 internal constant LIFECYCLE_MINT_MAX = 10 ether;
+    /// @dev vm.warp bound per handler_advanceTime call (+/- 2 days, plan 13-05).
+    uint256 internal constant LIFECYCLE_MAX_WARP = 2 days;
+    /// @dev Backward-warp floor — never warp the clock to (near) zero.
+    uint256 internal constant LIFECYCLE_WARP_FLOOR = 1 days;
+    /// @dev Deterministic seed amounts for seedLifecycleCycle.
+    uint256 internal constant LIFECYCLE_SEED_AMOUNT = 100 ether;
+
+    /**
+     * @notice Configure the lifecycle token ids the handlers drive (called by the invariant
+     *         setUp after creating the tokens on the diamond).
+     * @param perHolderId PerHolder BURN SOULBOUND token id
+     * @param perTokenId PerTokenId BURN token id
+     */
+    function setLifecycleTokens(uint256 perHolderId, uint256 perTokenId) public {
+        lifecyclePerHolderId = perHolderId;
+        lifecyclePerTokenId = perTokenId;
+    }
+
+    /**
+     * @notice Bounded PerHolder mint handler — drives mintWithCredential (the ONLY path that
+     *         runs D3 per-holder renewal) for a fuzz-picked actor.
+     * @dev The handler contract holds DEFAULT_ADMIN_ROLE (granted in setUp), satisfying the
+     *      mintWithCredential creator-or-admin gate; the mint burns the handler's GNUS 1:1
+     *      (tree-neutral) and credits the actor. The token has no credentialVerifier, so the
+     *      credential is ignored (open mint — window + cap still enforced; neither is set).
+     *
+     *      Resurrection detection (L1): when the actor's clock had ALREADY EXPIRED with a
+     *      positive balance, the renewal must settle-first (BURN the pile). Expected
+     *      post-mint balance == exactly the incoming amount; anything more is a resurrection.
+     *
+     * @param actorSeed Seed to select the mint recipient from the bounded actor set
+     * @param amountSeed Seed for the mint amount (bounded [1, 10] ether)
+     */
+    function handler_mintPerHolder(uint256 actorSeed, uint256 amountSeed) public {
+        if (lifecyclePerHolderId == 0) {
+            return;
+        }
+        address holder = actors[actorSeed % actors.length];
+        uint256 amount = _boundUint256(amountSeed, LIFECYCLE_MINT_MIN, LIFECYCLE_MINT_MAX);
+
+        uint64 preClock = _getHolderExpiry(lifecyclePerHolderId, holder);
+        uint256 preBal = _getBalance1155(holder, lifecyclePerHolderId);
+        bool expiredWithPile = preClock != 0 && uint256(preClock) <= block.timestamp && preBal > 0;
+
+        if (!_lifecycleMintTo(holder, lifecyclePerHolderId, amount)) {
+            return;
+        }
+
+        ghost_renewalCalls++;
+        if (expiredWithPile) {
+            // D3 settle-first (BURN disposition): the renewal burned the expired pile before
+            // crediting the new mint. Track the burn for L2 conservation; flag resurrection.
+            ghost_totalSettleBurned += preBal;
+            uint256 postBal = _getBalance1155(holder, lifecyclePerHolderId);
+            if (postBal != amount) {
+                ghost_resurrections++;
+            }
+        }
+
+        console.log("[HANDLER] Mint PerHolder:", lifecyclePerHolderId, amount);
+    }
+
+    /**
+     * @notice Bounded settle handler — permissionless settleExpired for a fuzz-picked actor.
+     * @dev Even seeds settle the PerHolder token, odd seeds the PerTokenId token (the single
+     *      seed drives both choices per plan 13-05's one-seed signature). Reverts (not
+     *      expired) are swallowed per the Phase 10 handler style; the burn quantum is tracked
+     *      via post-call balance diff for L2.
+     * @param actorSeed Seed selecting both the token (parity) and the account (high bits)
+     */
+    function handler_settleExpired(uint256 actorSeed) public {
+        if (lifecyclePerHolderId == 0) {
+            return;
+        }
+        uint256 id = (actorSeed & 1) == 0 ? lifecyclePerHolderId : lifecyclePerTokenId;
+        address account = actors[(actorSeed >> 1) % actors.length];
+
+        uint256 preBal = _getBalance1155(account, id);
+        (bool ok, ) = diamond.call(
+            abi.encodeWithSignature("settleExpired(address,uint256)", account, id)
+        );
+        if (!ok) {
+            return;
+        }
+
+        ghost_settleCalls++;
+        uint256 postBal = _getBalance1155(account, id);
+        if (postBal < preBal) {
+            ghost_totalSettleBurned += preBal - postBal;
+        }
+
+        console.log("[HANDLER] Settle Expired:", id, account);
+    }
+
+    /**
+     * @notice Bounded time-warp handler — vm.warp by up to +/- 2 days per call.
+     * @dev Even seeds warp forward, odd seeds warp backward (floored so the clock never
+     *      approaches zero). Backward warps re-activate unexpired windows but can NEVER
+     *      restore settled (burned) balances or cleared clocks — settlement is final (D4).
+     * @param warpSeed Seed for direction (parity) and magnitude ([0, 2 days])
+     */
+    function handler_advanceTime(uint256 warpSeed) public {
+        uint256 delta = _boundUint256(warpSeed, 0, LIFECYCLE_MAX_WARP);
+        if (warpSeed % 2 == 0) {
+            vm.warp(block.timestamp + delta);
+        } else {
+            uint256 newTs = block.timestamp > delta + LIFECYCLE_WARP_FLOOR
+                ? block.timestamp - delta
+                : LIFECYCLE_WARP_FLOOR;
+            vm.warp(newTs);
+        }
+    }
+
+    /**
+     * @notice Deterministically exercise one full PerHolder mint -> expire -> settle cycle.
+     * @dev The fuzz campaign is shallow (foundry.toml invariant runs/depth) and settles only
+     *      succeed on expired state, so the afterInvariant coverage guards
+     *      (ghost_settleCalls > 0, ghost_renewalCalls > 0) are seeded here regardless of fuzz
+     *      luck — ConservationInvariant.seedConversion precedent (Codex P2). Also funds every
+     *      actor with the PerTokenId token so the settle handler has material once the shared
+     *      validUntil window passes. All mints are tree-neutral (handler GNUS burned 1:1).
+     */
+    function seedLifecycleCycle() public {
+        if (lifecyclePerHolderId == 0 || lifecyclePerTokenId == 0) {
+            return;
+        }
+
+        // Fund every actor with the PerTokenId token (pre-window-end, tree-neutral).
+        for (uint256 i = 0; i < actors.length; i++) {
+            _lifecycleMintTo(actors[i], lifecyclePerTokenId, LIFECYCLE_SEED_AMOUNT);
+        }
+
+        // One PerHolder mint (renewal path) -> warp past the clock -> settle (burn).
+        address holder = actors[1];
+        uint64 duration = _getDefaultDuration(lifecyclePerHolderId);
+        if (!_lifecycleMintTo(holder, lifecyclePerHolderId, LIFECYCLE_SEED_AMOUNT)) {
+            return;
+        }
+        ghost_renewalCalls++;
+
+        vm.warp(block.timestamp + uint256(duration) + 1);
+        (bool ok, ) = diamond.call(
+            abi.encodeWithSignature("settleExpired(address,uint256)", holder, lifecyclePerHolderId)
+        );
+        if (ok) {
+            ghost_settleCalls++;
+            ghost_totalSettleBurned += LIFECYCLE_SEED_AMOUNT;
+        }
+    }
+
+    /**
+     * @notice Mint a lifecycle token to a holder via mintWithCredential as the handler
+     *         (DEFAULT_ADMIN_ROLE satisfies the creator-or-admin gate; no verifier configured).
+     * @param holder Mint recipient
+     * @param id Lifecycle token id
+     * @param amount Minion amount (burns the handler's GNUS 1:1)
+     * @return ok True when the diamond call succeeded
+     */
+    function _lifecycleMintTo(address holder, uint256 id, uint256 amount) internal returns (bool ok) {
+        if (_getGNUSBalance(address(this)) < amount) {
+            return false;
+        }
+        (ok, ) = diamond.call(
+            abi.encodeWithSignature(
+                "mintWithCredential(address,uint256,uint256,bytes,bytes)",
+                holder,
+                id,
+                amount,
+                "",
+                ""
+            )
+        );
+    }
+
+    /**
+     * @notice Read the per-holder expiry clock via the diamond's holderExpiresAt view.
+     * @param id Token id
+     * @param holder Holder address
+     * @return expiry The holder's expiry timestamp (0 = no active clock)
+     */
+    function _getHolderExpiry(uint256 id, address holder) internal view returns (uint64 expiry) {
+        (bool ok, bytes memory data) = diamond.staticcall(
+            abi.encodeWithSignature("holderExpiresAt(uint256,address)", id, holder)
+        );
+        if (!ok) {
+            return 0;
+        }
+        return abi.decode(data, (uint64));
+    }
+
+    /**
+     * @notice Read a token's defaultDuration from getNFTInfo (typed NFT struct decode —
+     *         same pattern as _getChildCurIndex).
+     * @param id Token id
+     * @return duration The configured PerHolder purchase duration in seconds
+     */
+    function _getDefaultDuration(uint256 id) internal view returns (uint64 duration) {
+        (bool ok, bytes memory data) = diamond.staticcall(
+            abi.encodeWithSignature("getNFTInfo(uint256)", id)
+        );
+        if (!ok) {
+            return 0;
+        }
+        NFT memory nft = abi.decode(data, (NFT));
+        return nft.defaultDuration;
+    }
+
     /**
      * @notice Get call summary for debugging
      */
