@@ -35,7 +35,9 @@
  * wired from hardhat.config.ts via `extendEnvironment`, so EVERY hardhat process (including the
  * forge task) carries the linker. The two installers share one module-level state block:
  * whichever runs first installs the patch; the per-suite eager deploy then reuses the cached
- * library address (no double-deploy, no double-patch).
+ * library address for that network (no double-deploy, no double-patch). The cache is keyed
+ * PER NETWORK (WR-05, 13 review) — a process that touches multiple networks gets one library
+ * deployment per chain, never a cross-chain stale address baked into linked bytecode.
  *
  * CONFIG-LOAD SAFETY: this module must NOT `import ... from 'hardhat'` at the top level —
  * hardhat.config.ts imports it during config loading, and the main 'hardhat' entry throws
@@ -57,8 +59,32 @@
 const LIBRARY_NAME = 'GNUSLifecyclePolicy';
 const LIBRARY_FQN = `contracts/gnus-ai/${LIBRARY_NAME}.sol:${LIBRARY_NAME}`;
 
-let linkedLibraryAddress: string | undefined;
+// WR-05 (13 review): the library address cache is keyed PER NETWORK (chain id). A single
+// module-level address broke any process that touches two networks (test-multichain, RPC
+// entry points iterating networks): the library deployed on chain A was baked into facet
+// bytecode "linked" on chain B — a DELEGATECALL stub targeting an address with no code.
+const linkedLibraryAddressByChainKey = new Map<string, string>();
 let linkerInstalled = false;
+
+/**
+ * Resolve the cache key for a network. Prefers the signer's provider (production path — the
+ * library must land where the intercepted signer broadcasts), then the HRE's configured
+ * network (chainId when set, else the network name for chain-id-less local configs).
+ * @param signer Optional explicit signer whose provider identifies the target network.
+ * @param hre Optional explicit HRE; defaults to the runtime HRE.
+ * @returns A stable per-network cache key.
+ */
+async function chainKey(signer?: any, hre?: any): Promise<string> {
+    if (signer?.provider) {
+        const net = await signer.provider.getNetwork();
+        return `chain-${net.chainId.toString()}`;
+    }
+    const env = hre ?? runtimeHre();
+    const chainId = env.network?.config?.chainId;
+    return chainId !== undefined && chainId !== null
+        ? `chain-${chainId.toString()}`
+        : `net-${env.network?.name ?? 'default'}`;
+}
 
 /**
  * Lazily resolve the constructed HRE at RUNTIME (never at module load).
@@ -76,16 +102,19 @@ function runtimeHre(): any {
  * @returns The deployed library address (checksummed-lower hex).
  */
 export async function deployAndLinkLifecyclePolicy(hre?: any): Promise<string> {
-    if (linkedLibraryAddress) {
-        return linkedLibraryAddress;
-    }
     const env = hre ?? runtimeHre();
+    const key = await chainKey(undefined, env);
+    const cached = linkedLibraryAddressByChainKey.get(key);
+    if (cached) {
+        return cached;
+    }
     const [deployer] = await env.ethers.getSigners();
     const factory = await env.ethers.getContractFactory(LIBRARY_NAME, deployer);
     const library = await factory.deploy();
     await library.waitForDeployment();
-    linkedLibraryAddress = (await library.getAddress()).toLowerCase();
-    return linkedLibraryAddress;
+    const address = (await library.getAddress()).toLowerCase();
+    linkedLibraryAddressByChainKey.set(key, address);
+    return address;
 }
 
 /**
@@ -98,15 +127,18 @@ export async function deployAndLinkLifecyclePolicy(hre?: any): Promise<string> {
  * @returns The deployed library address (checksummed-lower hex).
  */
 export async function deployAndLinkLifecyclePolicyWithSigner(signer: any): Promise<string> {
-    if (linkedLibraryAddress) {
-        return linkedLibraryAddress;
+    const key = await chainKey(signer);
+    const cached = linkedLibraryAddressByChainKey.get(key);
+    if (cached) {
+        return cached;
     }
     const env = runtimeHre();
     const factory = await env.ethers.getContractFactory(LIBRARY_NAME, signer);
     const library = await factory.deploy();
     await library.waitForDeployment();
-    linkedLibraryAddress = (await library.getAddress()).toLowerCase();
-    return linkedLibraryAddress;
+    const address = (await library.getAddress()).toLowerCase();
+    linkedLibraryAddressByChainKey.set(key, address);
+    return address;
 }
 
 /**
@@ -140,7 +172,11 @@ function patchGetContractFactory(hre: any, lazyDeploy: boolean): void {
                 if (needsLib) {
                     const isSigner = opts && typeof opts === 'object' && 'provider' in opts;
                     const signer = isSigner ? opts : opts?.signer;
-                    if (!linkedLibraryAddress) {
+                    // WR-05: cache is per network (chain id) — a miss on the CURRENT network's
+                    // key falls through to a fresh deploy even when another network is cached.
+                    const key = await chainKey(signer, hre);
+                    let libraryAddress = linkedLibraryAddressByChainKey.get(key);
+                    if (!libraryAddress) {
                         if (!lazyDeploy) {
                             throw new Error(
                                 `${LIBRARY_NAME} linker installed without a deployed library address — ` +
@@ -156,16 +192,16 @@ function patchGetContractFactory(hre: any, lazyDeploy: boolean): void {
                         // facet bytecode against a library address that does not exist on the
                         // target chain.
                         if (signer) {
-                            await deployAndLinkLifecyclePolicyWithSigner(signer);
+                            libraryAddress = await deployAndLinkLifecyclePolicyWithSigner(signer);
                         } else {
-                            await deployAndLinkLifecyclePolicy(hre);
+                            libraryAddress = await deployAndLinkLifecyclePolicy(hre);
                         }
                     }
                     const base = typeof opts === 'object' && !isSigner ? opts : {};
                     opts = {
                         ...base,
                         signer,
-                        libraries: { ...(base.libraries ?? {}), [LIBRARY_FQN]: linkedLibraryAddress },
+                        libraries: { ...(base.libraries ?? {}), [LIBRARY_FQN]: libraryAddress },
                     };
                 }
             }
@@ -181,8 +217,10 @@ function patchGetContractFactory(hre: any, lazyDeploy: boolean): void {
  * @param libraryAddress The deployed GNUSLifecyclePolicy address.
  * @param hre Optional explicit HRE; defaults to the runtime HRE.
  */
-export function installLifecyclePolicyLinker(libraryAddress: string, hre?: any): void {
-    linkedLibraryAddress = (linkedLibraryAddress ?? libraryAddress).toLowerCase();
+export async function installLifecyclePolicyLinker(libraryAddress: string, hre?: any): Promise<void> {
+    const key = await chainKey(undefined, hre);
+    const existing = linkedLibraryAddressByChainKey.get(key);
+    linkedLibraryAddressByChainKey.set(key, (existing ?? libraryAddress).toLowerCase());
     patchGetContractFactory(hre ?? runtimeHre(), false);
 }
 
@@ -205,6 +243,6 @@ export function installLazyLifecyclePolicyLinker(hre: any): void {
  */
 export async function setupLifecyclePolicyLinking(): Promise<string> {
     const address = await deployAndLinkLifecyclePolicy();
-    installLifecyclePolicyLinker(address);
+    await installLifecyclePolicyLinker(address);
     return address;
 }
