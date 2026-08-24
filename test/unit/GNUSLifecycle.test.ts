@@ -158,9 +158,12 @@ describe('GNUS Lifecycle Tests', async function () {
 
             /**
              * Create a fresh NFT as owner (creator = owner). Returns the new token id
-             * (always 1 for the first createNFT call on this diamond fixture).
+             * (read from childCurIndex BEFORE creation — robust to a shared/cached diamond
+             * fixture; WR-06, 13 review).
              */
             async function createFreshNFT(name: string, symbol: string): Promise<bigint> {
+                const info = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                const childIndex: bigint = info.childCurIndex;
                 await ownerDiamond.createNFT(
                     GNUS_TOKEN_ID,
                     name,
@@ -169,7 +172,7 @@ describe('GNUS Lifecycle Tests', async function () {
                     toWei('1000000'),
                     `ipfs://${symbol.toLowerCase()}`,
                 );
-                return 1n;
+                return (GNUS_TOKEN_ID << 128n) | childIndex;
             }
 
             describe('smoke: deploy + views + configure guards + settleExpired BURN path', function () {
@@ -288,6 +291,52 @@ describe('GNUS Lifecycle Tests', async function () {
                     await expect(ownerDiamond.configureLifecycle(id, cfg)).to.be.revertedWith(
                         'REDEEM_TO_PARENT requires convertible token',
                     );
+                });
+
+                it('(e2) configureLifecycle reverts on out-of-range enum ordinals (WR-01)', async function () {
+                    const id = await createFreshNFT('EnumRange', 'ENR');
+
+                    // expirationMode > PerHolder(2)
+                    await expect(
+                        ownerDiamond.configureLifecycle(id, defaultConfig({ expirationMode: 3 })),
+                    ).to.be.revertedWith('Invalid expirationMode');
+                    // transferPolicy > LOCKED_AFTER_START(5)
+                    await expect(
+                        ownerDiamond.configureLifecycle(id, defaultConfig({ transferPolicy: 6 })),
+                    ).to.be.revertedWith('Invalid transferPolicy');
+                    // expirationDisposition > REDEEM_TO_PARENT(4)
+                    await expect(
+                        ownerDiamond.configureLifecycle(id, defaultConfig({ expirationDisposition: 5 })),
+                    ).to.be.revertedWith('Invalid disposition');
+                    // Nothing was written — the token still reads zero-defaults.
+                    const info = await geniusDiamond.getNFTInfo(id);
+                    expect(info.expirationMode).to.eq(0);
+                    expect(info.transferPolicy).to.eq(0);
+                    expect(info.expirationDisposition).to.eq(0);
+                });
+
+                it('(e3) createNFTWithLifecycle reverts on out-of-range enum ordinals (WR-01)', async function () {
+                    await expect(
+                        ownerDiamond.createNFTWithLifecycle(
+                            GNUS_TOKEN_ID, 'EnumRange2', 'ENR2', toWei('1'), toWei('1000000'),
+                            'ipfs://enr2',
+                            defaultConfig({ expirationMode: 99 }),
+                        ),
+                    ).to.be.revertedWith('Invalid expirationMode');
+                    await expect(
+                        ownerDiamond.createNFTWithLifecycle(
+                            GNUS_TOKEN_ID, 'EnumRange3', 'ENR3', toWei('1'), toWei('1000000'),
+                            'ipfs://enr3',
+                            defaultConfig({ transferPolicy: 99 }),
+                        ),
+                    ).to.be.revertedWith('Invalid transferPolicy');
+                    await expect(
+                        ownerDiamond.createNFTWithLifecycle(
+                            GNUS_TOKEN_ID, 'EnumRange4', 'ENR4', toWei('1'), toWei('1000000'),
+                            'ipfs://enr4',
+                            defaultConfig({ expirationDisposition: 99 }),
+                        ),
+                    ).to.be.revertedWith('Invalid disposition');
                 });
 
                 it('(f) settleExpired reverts "Not expired" on a fresh PerTokenId token', async function () {

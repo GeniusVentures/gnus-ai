@@ -488,6 +488,42 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                     expect(await balanceOf(signer3, id)).to.eq(callerBefore);
                 });
 
+                it('WR-03: ISSUER_ONLY + RETURN_TO_ADDRESS — a THIRD-PARTY settle succeeds (settlement carve-out mirrors SOULBOUND)', async function () {
+                    const id = await createFundedNFT('IssuerReturn', 'IRTR');
+                    const validUntil = BigInt((await time.latest()) + 1000);
+                    await ownerDiamond.configureLifecycle(
+                        id,
+                        defaultConfig({
+                            expirationMode: MODE_PER_TOKEN_ID,
+                            validUntil,
+                            transferPolicy: POLICY_ISSUER_ONLY,
+                            expirationDisposition: DISP_RETURN_TO_ADDRESS,
+                            expirationRecipient: signer2,
+                        }),
+                    );
+                    const amount = toWei('5');
+                    await mintToSigner1(id, amount);
+
+                    // Ordinary ISSUER_ONLY holder-to-holder transfers are STILL blocked for the
+                    // holder as operator (the carve-out is scoped to the fixed recipient).
+                    await expect(
+                        signer1Diamond['safeTransferFrom(address,address,uint256,uint256,bytes)'](
+                            signer1, signer3, id, toWei('1'), '0x',
+                        ),
+                    ).to.be.revertedWith('ISSUER_ONLY: only creator/admin can transfer');
+
+                    await time.increaseTo(Number(validUntil));
+                    // Before the WR-03 carve-out this reverted "ISSUER_ONLY: only creator/admin
+                    // can transfer" because the settle's _safeTransferFrom fires the hook with
+                    // operator == the (permissionless, D9) third-party caller. The fixed-recipient
+                    // settlement carve-out must mirror the SOULBOUND one.
+                    await expect(signer3Diamond.settleExpired(signer1, id))
+                        .to.emit(geniusDiamond, 'Settled')
+                        .withArgs(signer1, id, amount, DISP_RETURN_TO_ADDRESS, signer2);
+                    expect(await balanceOf(signer1, id)).to.eq(0n);
+                    expect(await balanceOf(signer2, id)).to.eq(amount);
+                });
+
                 it('configureLifecycle with RETURN_TO_ADDRESS + zero recipient reverts (Q-gate)', async function () {
                     const id = await createFundedNFT('ReturnNoRecip', 'RNR');
                     await expect(
@@ -538,6 +574,46 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                     expect(await totalSupply(id)).to.eq(childSupplyBefore - amount);
                     expect(await balanceOf(signer1, GNUS_TOKEN_ID)).to.eq(parentBefore + amount);
                     expect(await geniusDiamond.totalSupplyOfAll()).to.eq(globalBefore);
+                });
+
+                it('WR-04: REDEEM_TO_PARENT settlement is not blocked by the parent sale window / per-wallet cap (settlement mint carve-out)', async function () {
+                    await seedProvenanceIfNeeded();
+                    const validUntil = BigInt((await time.latest()) + 1000);
+                    const id = await createNFTWithLifecycle(
+                        'RedeemGated',
+                        'RDTG',
+                        defaultConfig({
+                            expirationMode: MODE_PER_TOKEN_ID,
+                            transferPolicy: POLICY_UNRESTRICTED,
+                            validUntil,
+                            expirationDisposition: DISP_REDEEM_TO_PARENT,
+                        }),
+                    );
+                    const amount = toWei('5');
+                    await mintToSigner1(id, amount);
+
+                    // Hostile parent configuration: a future validFrom on the parent (GNUS) and
+                    // a per-wallet cap of 1 wei (far below the redemption amount). Without the
+                    // WR-04 carve-out the settlement's parent-mint leg would revert
+                    // "Token not yet active" / "Per-wallet mint cap exceeded" and the expired
+                    // pile would be stuck forever.
+                    await ownerDiamond.setValidFrom(GNUS_TOKEN_ID, BigInt((await time.latest()) + 10000));
+                    await ownerDiamond.setPerWalletMintCap(GNUS_TOKEN_ID, 1n);
+
+                    await time.increaseTo(Number(validUntil));
+                    const parentBefore = await balanceOf(signer1, GNUS_TOKEN_ID);
+                    await expect(signer3Diamond.settleExpired(signer1, id))
+                        .to.emit(geniusDiamond, 'Settled')
+                        .withArgs(signer1, id, amount, DISP_REDEEM_TO_PARENT, signer1);
+                    expect(await balanceOf(signer1, GNUS_TOKEN_ID)).to.eq(parentBefore + amount);
+
+                    // The carve-out is transient: re-open the parent window, then a NORMAL mint
+                    // of the parent still hits the per-wallet cap (the flag was cleared after
+                    // the settlement mint).
+                    await ownerDiamond.setValidFrom(GNUS_TOKEN_ID, 0n);
+                    await expect(
+                        ownerDiamond['mint(address,uint256,uint256)'](signer1, GNUS_TOKEN_ID, toWei('2')),
+                    ).to.be.revertedWith('Per-wallet mint cap exceeded');
                 });
 
                 it('configureLifecycle REDEEM_TO_PARENT on a nonConvertible token reverts (Q1)', async function () {
