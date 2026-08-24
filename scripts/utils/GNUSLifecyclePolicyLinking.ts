@@ -43,8 +43,15 @@
  * through a lazily required HRE (or an explicit hre parameter).
  *
  * The monkey-patch is process-local and reversible (recompiling/regenerating typechain is
- * unaffected); it does NOT touch the compile pipeline, the diamonds config, or production
- * deployment scripts (which would call the same two helpers).
+ * unaffected); it does NOT touch the compile pipeline or the diamonds config.
+ *
+ * PRODUCTION COVERAGE (13-06): every hardhat process — including the production RPC deploy /
+ * Safe-proposal entry points (scripts/deploy/rpc/*.ts import 'hardhat', which loads
+ * hardhat.config.ts and installs the lazy linker via extendEnvironment) — gets the patch. The
+ * production strategies create facet factories through `hardhat.ethers.getContractFactory(name,
+ * { signer })` (@geniusventures/diamonds BaseDeploymentStrategy), which the patch intercepts;
+ * when a signer rides along, the lazy library deploy uses IT (deployAndLinkLifecyclePolicyWithSigner)
+ * so the library lands on the RPC target network, not the HRE default.
  */
 
 const LIBRARY_NAME = 'GNUSLifecyclePolicy';
@@ -82,6 +89,27 @@ export async function deployAndLinkLifecyclePolicy(hre?: any): Promise<string> {
 }
 
 /**
+ * Deploy GNUSLifecyclePolicy once per process using an EXPLICIT signer (13-06 production path).
+ * The production RPC deploy flow (RPCDiamondDeployer → @geniusventures/diamonds
+ * BaseDeploymentStrategy) requests facet factories as `getContractFactory(name, { signer })`
+ * with the raw RPC wallet — the lazy linker honors that signer here so the library deployment
+ * is broadcast on the target network, not the HRE default network.
+ * @param signer The signer intercepted from the factory request (RPC wallet / Safe proposer).
+ * @returns The deployed library address (checksummed-lower hex).
+ */
+export async function deployAndLinkLifecyclePolicyWithSigner(signer: any): Promise<string> {
+    if (linkedLibraryAddress) {
+        return linkedLibraryAddress;
+    }
+    const env = runtimeHre();
+    const factory = await env.ethers.getContractFactory(LIBRARY_NAME, signer);
+    const library = await factory.deploy();
+    await library.waitForDeployment();
+    linkedLibraryAddress = (await library.getAddress()).toLowerCase();
+    return linkedLibraryAddress;
+}
+
+/**
  * Shared patch installer. When `lazyDeploy` is true and a linking artifact is requested before
  * the library has been deployed, the library is deployed on the spot against `hre.network` and
  * cached for the rest of the process (the forge in-process deployment path). When false, the
@@ -110,6 +138,8 @@ function patchGetContractFactory(hre: any, lazyDeploy: boolean): void {
                     (byFile: any) => Object.keys(byFile ?? {}).includes(LIBRARY_NAME),
                 );
                 if (needsLib) {
+                    const isSigner = opts && typeof opts === 'object' && 'provider' in opts;
+                    const signer = isSigner ? opts : opts?.signer;
                     if (!linkedLibraryAddress) {
                         if (!lazyDeploy) {
                             throw new Error(
@@ -117,10 +147,20 @@ function patchGetContractFactory(hre: any, lazyDeploy: boolean): void {
                                     'call deployAndLinkLifecyclePolicy() first',
                             );
                         }
-                        await deployAndLinkLifecyclePolicy(hre);
+                        // 13-06: when the intercepted factory call carries an explicit signer
+                        // (production path — RPCDiamondDeployer / SafeProposer strategy pass the
+                        // RPC wallet as { signer }), deploy the library WITH THAT SIGNER so it
+                        // lands on the target network. Falling back to hre.ethers.getSigners()
+                        // would deploy against whatever network the HRE defaults to (the built-in
+                        // hardhat network under the RPC ts-node entry points) and link production
+                        // facet bytecode against a library address that does not exist on the
+                        // target chain.
+                        if (signer) {
+                            await deployAndLinkLifecyclePolicyWithSigner(signer);
+                        } else {
+                            await deployAndLinkLifecyclePolicy(hre);
+                        }
                     }
-                    const isSigner = opts && typeof opts === 'object' && 'provider' in opts;
-                    const signer = isSigner ? opts : opts?.signer;
                     const base = typeof opts === 'object' && !isSigner ? opts : {};
                     opts = {
                         ...base,
