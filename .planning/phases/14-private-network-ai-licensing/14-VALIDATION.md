@@ -3,7 +3,7 @@ phase: 14
 slug: private-network-ai-licensing
 status: draft
 nyquist_compliant: false
-wave_0_complete: false
+wave_0_complete: false  # planner note: Wave-0 gaps are created inside 14-02/14-03 tasks (new files), not a separate wave
 created: 2026-08-25
 ---
 
@@ -40,7 +40,13 @@ created: 2026-08-25
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 14-xx-01 | TBD | TBD | LIC-xx | TBD | TBD | unit | `npx hardhat test test/unit/...` | TBD (planner fills) | ⬜ pending |
+| 14-01-01 | 14-01 | 1 | LIC-07 | T-14-01-02 | stale rail wording removed from spec docs | source assertion (grep) | `grep -c "Banxa" .planning/REQUIREMENTS.md` | ✅ exists | ⬜ pending |
+| 14-01-02 | 14-01 | 1 | LIC-02 | T-14-01-01 | zero-default decode of appended fields; round-trip probe | unit (upgrade probe) | `npx hardhat test test/unit/GNUSLifecycleUpgrade.test.ts` | ✅ extend | ⬜ pending |
+| 14-02-01 | 14-02 | 1 | LIC-03 | T-14-02-01/02 | SKU CRUD role-gated, events emitted | compile + bytecode ≤24,576B | `npx hardhat compile` | ❌ Wave 0 (new) | ⬜ pending |
+| 14-02-02 | 14-02 | 1 | LIC-03 | T-14-02-03 | facet registered at versions["2.6"], never 2.7 | config assertion (grep) | `grep -A4 '"GNUSLicensing"' diamonds/GeniusDiamond/geniusdiamond.config.json` | ✅ exists | ⬜ pending |
+| 14-03-01 | 14-03 | 2 | LIC-04 | T-14-03-01/05 | GNUS-burn payment (totalSupply delta), policy-hook mints | compile + unit | `npx hardhat compile` then `npx hardhat test test/unit/GNUSLicensing.test.ts` | ❌ Wave 0 (new) | ⬜ pending |
+| 14-03-02 | 14-03 | 2 | LIC-01, LIC-03, LIC-04, LIC-05, LIC-06 | T-14-03-01..04 | hierarchy, SKU gating, burn accounting, LicenseActivated on create+renew, hybrid redeem config | unit | `npx hardhat test test/unit/GNUSLicensing.test.ts` | ❌ Wave 0 (new) | ⬜ pending |
+| 14-04-01 | 14-04 | 1 | LIC-05 | T-14-04-01..04 | expired/unprivileged bridgeOut reverts; privileged unexpired passes; burn carve-out intact | unit | `npx hardhat test test/unit/GNUSBridgePolicy.test.ts` | ✅ extend | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
