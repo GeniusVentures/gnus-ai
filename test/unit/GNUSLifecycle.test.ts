@@ -251,6 +251,54 @@ describe('GNUS Lifecycle Tests', async function () {
                     expect(info.credentialVerifier).to.eq(cfg.credentialVerifier);
                 });
 
+                it('(d2) configureLifecycle reverts for PerHolder + balance-retaining disposition (Codex PR #77 P1)', async function () {
+                    const id = await createFreshNFT('PerHolderKeepInert', 'PHK');
+
+                    // PerHolder + NONE: settlement is balance-neutral, so a renewal mint would
+                    // re-activate the whole expired pile under a fresh clock.
+                    await expect(
+                        ownerDiamond.configureLifecycle(
+                            id,
+                            defaultConfig({
+                                expirationMode: 2, // PerHolder
+                                transferPolicy: 1, // SOULBOUND (Q2-satisfying)
+                                expirationDisposition: 0, // NONE — forbidden combination
+                            }),
+                        ),
+                    ).to.be.revertedWith('PerHolder requires balance-removing disposition');
+
+                    // PerHolder + KEEP_INERT: same resurrection loophole.
+                    await expect(
+                        ownerDiamond.configureLifecycle(
+                            id,
+                            defaultConfig({
+                                expirationMode: 2, // PerHolder
+                                transferPolicy: 1, // SOULBOUND
+                                expirationDisposition: 1, // KEEP_INERT — forbidden combination
+                            }),
+                        ),
+                    ).to.be.revertedWith('PerHolder requires balance-removing disposition');
+
+                    // Nothing was written — the token still reads zero-defaults.
+                    const info = await geniusDiamond.getNFTInfo(id);
+                    expect(info.expirationMode).to.eq(0);
+                    expect(info.expirationDisposition).to.eq(0);
+                });
+
+                it('(d3) createNFTWithLifecycle reverts for PerHolder + KEEP_INERT (Codex PR #77 P1)', async function () {
+                    await expect(
+                        ownerDiamond.createNFTWithLifecycle(
+                            GNUS_TOKEN_ID, 'PerHolderKeepInert2', 'PHK2', toWei('1'), toWei('1000000'),
+                            'ipfs://phk2',
+                            defaultConfig({
+                                expirationMode: 2, // PerHolder
+                                transferPolicy: 1, // SOULBOUND
+                                expirationDisposition: 1, // KEEP_INERT — forbidden combination
+                            }),
+                        ),
+                    ).to.be.revertedWith('PerHolder requires balance-removing disposition');
+                });
+
                 it('(d) configureLifecycle reverts for PerHolder + UNRESTRICTED (Q2)', async function () {
                     const id = await createFreshNFT('PerHolderUnrestricted', 'PHU');
 
