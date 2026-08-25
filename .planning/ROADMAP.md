@@ -429,7 +429,7 @@ Plans:
 1. Lifecycle config appended to `NFT` struct (validFrom, validUntil, defaultDuration, expirationMode, transferPolicy, expirationDisposition, expirationRecipient, credentialVerifier); zero-value defaults keep existing tokens active/unrestricted/non-expiring; upgrade test proves decode compatibility.
 2. `ExpirationMode { None, PerTokenId, PerHolder }` with per-holder clocks in `expiresAt[tokenId][holder]` mapping; stacked settle-first renewal (expired balances settled, never resurrected).
 3. All six transfer policies enforced by a single predicate in `_beforeTokenTransfer`; no operator exemptions (NFT_PROXY_OPERATOR_ROLE cannot bypass); ERC-20 proxy covered without changes.
-4. Policy-bound tokens non-bridgeable in v1 (bridging IS a transfer; no vault exemption).
+4. Policy-bound tokens non-bridgeable in v1 (bridging IS a transfer; no vault exemption). (amended 2026-08-25, Phase 14 D-24 — SOULBOUND tokens may bridgeOut when caller holds CREATOR_ROLE/ADMIN_ROLE and the token is unexpired; all other policy-bound tokens remain non-bridgeable)
 5. All five dispositions implemented (NONE, KEEP_INERT, BURN, RETURN_TO_ADDRESS, REDEEM_TO_PARENT); permissionless fixed-outcome `settleExpired()`; REDEEM_TO_PARENT settles to direct parent via Phase 9 reserves, collateralized tokens only.
 6. Anti-scalping: per-wallet mint cap + sale window + generic credential-verifier hook (CEI-ordered) in `beforeMint`.
 7. AI Credits: direct GNUS child, exchangeRate 1.0, SOULBOUND, BURN, PerHolder expiry; spend/expiry creates zero GNUS/parent/reserve/treasury credit.
@@ -466,7 +466,7 @@ Plans:
 
 ## Phase 14: Private-Network AI Licensing
 
-**Goal:** Per-company tenant licensing on the public EVM canonical layer with SuperGenius private-network execution — License NFTs as tenant/network identity, AI Credits as spendable children, payment router for USDC/GNUS/Banxa rails, and hybrid public/private settlement.
+**Goal:** Per-company tenant licensing on the public EVM canonical layer with SuperGenius private-network execution — License NFTs as tenant/network identity, AI Credits as spendable children, GNUS-burn payment router + operator fiat path (D-26), and hybrid public/private settlement.
 
 **Source:** `.planning/private-network-ai.md` + owner resolutions (ingested 2026-08-03; intel at `.planning/intel/`)
 
@@ -475,10 +475,10 @@ Plans:
 1. GNUS AI Product Root token instantiated as the public AI network; per-company License NFTs created as its children; company AI Credits as children of the License NFT; individual AI Credits remain direct product-root children (no Individual License NFT branch).
 2. `NFT` struct gains `networkScope {PublicOnly=0, PrivateOnly, Hybrid}`, `privateNetworkId`, `publicSettlementEnabled` — appended after Phase 13 fields; zero defaults backwards-compatible; upgrade test proves decode.
 3. On-chain Product/SKU registry: minion-denominated `priceInMinions`, `creditAmount`, `duration`, `createsLicense`, `renewsLicense`, `active`. No USD oracle.
-4. Payment router facet: USDC / GNUS-minions / Banxa-confirmed rails all produce equivalent final state (license created/renewed + credits minted/extended + activation event).
+4. Payment router facet: GNUS-minions rail (paid GNUS burned) produces license created/renewed + credits minted/extended + activation event; fiat path is off-chain operator minting (D-26).
 5. `LicenseActivated(companyAdmin, licenseId, privateNetworkId, expiresAt)` emitted on creation and every renewal; SuperGenius consumers derive license state from events alone.
 6. Hybrid-scope tokens redeemable to GNUS via Phase 13's REDEEM_TO_PARENT path (exchangeRate > 0, Phase 9 collateralized); burn-only AI Credits remain non-redeemable.
-7. Private-network spend pattern (bridged burn events vs mirror + periodic settlement) resolved during phase planning; informed by Phase 10 vault design.
+7. RESOLVED (D-07/D-29 2026-08-25): SG spend → GV wallet → existing Phase 10 bridgeIn → ops burn; no new on-chain settlement mechanism. Private-network spend pattern (bridged burn events vs mirror + periodic settlement) resolved during phase planning; informed by Phase 10 vault design.
 
 **Requirements:** LIC-01, LIC-02, LIC-03, LIC-04, LIC-05, LIC-06, LIC-07
 **Priority:** P1
