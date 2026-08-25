@@ -23,7 +23,7 @@ chai.use(chaiAsPromised);
 /**
  * Phase 13 — GNUS Lifecycle smoke tests (Plan 13-02).
  *
- * Proves the GNUSLifecycle facet is registered at priority 119 under protocol 2.7 with
+ * Proves the GNUSLifecycle facet is registered at priority 119 under protocol 2.6 (re-keyed from the planned 2.7 — 2.6 never deployed, same posture as the Phase 11 revert) with
  * no selector collisions, the D13 views revert correctly on uncreated ids, the
  * configureLifecycle gates fire (Q2 PerHolder+UNRESTRICTED, Q1 REDEEM_TO_PARENT on
  * nonConvertible), and settleExpired reverts "Not expired" on a fresh PerTokenId token.
