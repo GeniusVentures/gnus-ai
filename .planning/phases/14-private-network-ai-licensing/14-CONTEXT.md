@@ -37,6 +37,13 @@ Per-company tenant licensing on the public EVM canonical layer with SuperGenius 
 - **D-13:** `companyAdmin` is a data field set at license creation by the creator (operator) and emitted in `LicenseActivated`; admin changes are operator-gated. No on-chain self-managed admin/seat rotation in v1.
 - **D-14:** `LicenseActivated(companyAdmin, licenseId, privateNetworkId, expiresAt)` on creation AND every renewal (LIC-05); SuperGenius consumers derive license state from events alone. License expiry/deactivation is SG-side, driven by events (no new on-chain enforcement beyond PerTokenId validUntil semantics).
 
+### Exploration refinements (2026-08-25 /gsd-explore session)
+- **D-19:** Credits are minted **directly into device wallets** — embedded wallets generated inside the device software that performs the AI. GV (manually or automated, after payment) mints into the identified device wallets. p2p private keys are the true SG-side access control; on-chain data serves billing/renewal/audit only.
+- **D-20:** The per-company child token is a **metadata namespace** (tenant grouping of its AI tokens) — NOT a governed admin object. No on-chain companyAdmin governance machinery (supersedes D-13's admin-change semantics; `companyAdmin` remains at most an event/config data field).
+- **D-21:** Expiry crosses to SuperGenius via the **bridge attestation's EVM RPC lookup** (`holderExpiresAt` / `validUntil`) — NO bridgeOut event/message change in Phase 14. Determinism (snapshot at burn block) is a research question, not a contract change.
+- **D-22:** SG-side timed UTXOs (extensible GeniusUTXO metadata: `expiresAt` field 1, consensus-enforced unspendable-when-expired + pruning; future meta.json URI pointer) are the designated destination — tracked as seed `seeds/sg-extensible-utxo-metadata.md`, implemented in the SuperGenius repo. No app-level lazy-validation interim layer to build.
+- **D-23:** Consider an EVM-side "expired tokens cannot bridgeOut" gate for symmetry with SG-side rejection of past-expiry attestations (placement is a research question; note: EVM mint-side expiry gating already exists — `"Sale ended"` in `enforceMintGate` on both mint paths).
+
 ### Standing project constraints (carried from prior phases)
 - **D-15:** `protocolVersion` stays **2.6** — new facets re-key into `versions["2.6"]` with fromVersions [0.0, 2.4, 2.5]. NEVER bump past 2.6 until 2.6 deploys.
 - **D-16:** Facet-split pattern with no delegatecall trampolines; shared logic in compile-time-linked libraries (GNUSLifecyclePolicy precedent) only.
