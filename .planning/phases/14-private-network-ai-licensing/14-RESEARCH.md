@@ -265,11 +265,13 @@ SG validators perform `eth_call` **pinned to the burn transaction's block number
 | A3 | `LicenseActivated` signature field order is final (companyAdmin, licenseId, privateNetworkId, expiresAt) | LIC-05 | Event is the cross-system contract — changing later breaks SG consumers |
 | A4 | Phase 13 D7 SOULBOUND-bridge amendment is acceptable to the owner (Pitfall 1) | Pitfall 1 | Falls back to per-tenant ALLOWLISTED registries (more deployment overhead) |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Phase 13 D7 amendment (Pitfall 1)** — the single genuinely new decision. Recommend resolving at plan-checkpoint before implementation; recommended answer given above.
-2. **Where does `companyAdmin` live?** Event payload only (zero storage) vs a `licenseId → companyAdmin` storage field for operator reference. D-13/D-20 permit either; recommend event-only + off-chain index, cheapest.
-3. **Renewal SKU pricing across license tiers** — D-04 fields support it; whether renewal price differs per license is product data, not contract design.
+All open questions resolved at `/gsd:discuss-phase` (2026-08-25, D-24/D-25). Resolutions inline below.
+
+1. **Phase 13 D7 amendment (Pitfall 1)** — (RESOLVED by D-24) SOULBOUND bridgeOut is permitted when role-gated: CREATOR_ROLE/ADMIN callers may bridge unexpired SOULBOUND credits; non-privileged holders still revert. Implemented in plan 14-04's `_enforceBridgePolicy` gate (combined with the D-23 expiry check).
+2. **Where does `companyAdmin` live?** — (RESOLVED by D-25) `companyAdmin` is stored in the NFT struct (slot +11, on-chain readable operator-set config field), superseding this document's event-only recommendation. Implemented in plan 14-01 Task 2.
+3. **Renewal SKU pricing across license tiers** — (RESOLVED: not a contract-design question) Renewal price per license tier is product data carried by the D-04 SKU fields (`priceInMinions`, `duration`); no contract work required beyond LIC-03.
 
 ## Environment Availability
 
