@@ -146,6 +146,8 @@ enum TransferPolicy {
 - `ALLOWLISTED` bridges only to allowlisted destinations; `UNRESTRICTED` bridges normally.
 - Expiry is evaluated per-chain against that chain's `block.timestamp`. Tokens that expire while vault-locked arrive inert on the destination and are settled there per disposition. Small cross-chain timestamp skew is accepted and documented.
 
+> **AMENDED 2026-08-25 by Phase 14 D-24:** SOULBOUND tokens may bridgeOut — restricted to CREATOR_ROLE/ADMIN_ROLE callers (operator-mediated mint→bridge into device wallets) and only while unexpired. Other policy-bound tokens remain non-bridgeable. Implemented in Phase 14 plan 14-04 (`GNUSBridge._enforceBridgePolicy`).
+
 ### D8. Expiration dispositions — all five fully implemented in v1
 
 ```solidity
