@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
-last_updated: "2026-08-25T17:55:18.425Z"
+stopped_at: Phase 14 context gathered
+last_updated: "2026-08-25T22:05:16.494Z"
 progress:
   total_phases: 16
   completed_phases: 13
@@ -126,6 +126,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-24T22:03:30.111Z
-Stopped at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
-Resume file: None
+Last session: 2026-08-25T22:05:16.483Z
+Stopped at: Phase 14 context gathered
+Resume file: .planning/phases/14-private-network-ai-licensing/14-CONTEXT.md
