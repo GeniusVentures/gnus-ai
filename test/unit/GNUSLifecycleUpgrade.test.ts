@@ -73,6 +73,9 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
      *       | expirationDisposition(uint8, byte 27) [Phase 13]
      *   +9  expirationRecipient(address, bytes 0-19) [Phase 13]
      *   +10 credentialVerifier(address, bytes 0-19)  [Phase 13]
+     *   +11 companyAdmin(address, bytes 0-19)         [Phase 14, D-25]
+     *   +12 privateNetworkId(uint256, full slot)      [Phase 14, D-03]
+     *   +13 networkScope(uint8, byte 0) + publicSettlementEnabled(bool, byte 1) [Phase 14, D-03]
      *
      * Note: plan 13-01 spec assumed +9/+10/+11 (nonConvertible alone in slot +8), but
      * Solidity packs nonConvertible(bool=1B) together with the following 3×uint64 (24B)
@@ -397,6 +400,89 @@ await ownerDiamond.createNFT(
                     expect(await geniusDiamond['balanceOf(address,uint256)'](signer2, legacyId)).to.eq(
                         toWei('10'),
                     );
+                });
+            });
+
+            describe('Phase 14 append (D-03/D-25)', function () {
+                it('pre-Phase-14 NFT records decode with zero defaults for the D-03/D-25 fields', async function () {
+                    await seedProvenanceIfNeeded();
+                    await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
+
+                    // WR-06: childCurIndex-derived id — robust to shared fixture.
+                    const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                    const legacyId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
+                    await ownerDiamond.createNFT(
+                        GNUS_TOKEN_ID,
+                        'LegacyPhase14',
+                        'L14',
+                        toWei('3'),
+                        toWei('12345'),
+                        'ipfs://legacy-phase14',
+                    );
+
+                    // Zero slots +11/+12/+13 to simulate a record that predates Phase 14.
+                    for (const offset of [11n, 12n, 13n]) {
+                        await provider.send('hardhat_setStorageAt', [
+                            diamondAddress,
+                            nftSlot(legacyId, offset),
+                            ethers.toBeHex(0n, 32),
+                        ]);
+                    }
+
+                    const info = await geniusDiamond.getNFTInfo(legacyId);
+                    expect(info.companyAdmin).to.eq(ethers.ZeroAddress); // unset operator config field
+                    expect(info.privateNetworkId).to.eq(0n); // no private network
+                    expect(info.networkScope).to.eq(0); // NetworkScope.PublicOnly (zero default)
+                    expect(info.publicSettlementEnabled).to.eq(false); // informational flag off
+                });
+
+                it('storage layout: D-03/D-25 fields occupy slots +11 (address), +12 (uint256), +13 (uint8 + bool)', async function () {
+                    await seedProvenanceIfNeeded();
+
+                    const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                    const probeId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
+                    await ownerDiamond.createNFT(
+                        GNUS_TOKEN_ID,
+                        'Phase14Probe',
+                        'P14',
+                        toWei('1'),
+                        toWei('1000000'),
+                        'ipfs://phase14-probe',
+                    );
+
+                    // Slot +11: companyAdmin (address, full slot, D-25).
+                    const companyAdminVal = BigInt('0x00000000000000000000000000000000ABcd0007');
+                    await provider.send('hardhat_setStorageAt', [
+                        diamondAddress,
+                        nftSlot(probeId, 11n),
+                        ethers.toBeHex(companyAdminVal, 32),
+                    ]);
+
+                    // Slot +12: privateNetworkId (uint256, full slot — uint256 cannot share).
+                    const privateNetworkIdVal = 0x4e4554574f524b000000000000000002n; // arbitrary 32B pattern, non-zero
+                    await provider.send('hardhat_setStorageAt', [
+                        diamondAddress,
+                        nftSlot(probeId, 12n),
+                        ethers.toBeHex(privateNetworkIdVal, 32),
+                    ]);
+
+                    // Slot +13: networkScope (uint8, byte 0) + publicSettlementEnabled (bool, byte 1).
+                    // Solidity packs the first declared field at the low-order byte.
+                    const networkScopeVal = 2n; // NetworkScope.Hybrid
+                    const packed13 = networkScopeVal | (0x01n << 8n); // publicSettlementEnabled = true
+                    await provider.send('hardhat_setStorageAt', [
+                        diamondAddress,
+                        nftSlot(probeId, 13n),
+                        ethers.toBeHex(packed13, 32),
+                    ]);
+
+                    const info = await geniusDiamond.getNFTInfo(probeId);
+                    expect(info.companyAdmin.toLowerCase()).to.eq(
+                        '0x00000000000000000000000000000000abcd0007',
+                    );
+                    expect(info.privateNetworkId).to.eq(privateNetworkIdVal);
+                    expect(info.networkScope).to.eq(2); // Hybrid
+                    expect(info.publicSettlementEnabled).to.eq(true);
                 });
             });
         });
