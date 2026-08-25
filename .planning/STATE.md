@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 13 COMPLETE (6/6) — bridge policy gate + AI Credits E2E (SC4/SC7); next per ROADMAP: Phase 14
-last_updated: "2026-08-24T22:10:00.000Z"
+stopped_at: Phase 13 plan 13-05 complete (settlement + invariant acceptance gate, SC2/SC5/SC8/D4/D9) — Wave 4 next (13-06)
+last_updated: "2026-08-25T17:55:18.425Z"
 progress:
   total_phases: 16
   completed_phases: 13
