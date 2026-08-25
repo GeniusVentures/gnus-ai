@@ -1,7 +1,7 @@
 # Phase 14: Private-Network AI Licensing - Context
 
 **Gathered:** 2026-08-25
-**Status:** Ready for planning (2 research-open decisions, see D-09/D-11)
+**Status:** Ready for planning (D-09/D-11 resolved by research — see D-26..D-29; D-24 amends Phase 13 D7)
 
 <domain>
 ## Phase Boundary
@@ -34,7 +34,7 @@ Per-company tenant licensing on the public EVM canonical layer with SuperGenius 
 
 ### License lifecycle
 - **D-12:** License NFTs use **PerTokenId** `validUntil` (the license IS the account object); renewal SKUs extend it. Credits under the license keep Phase 13 PerHolder + BURN. NFT/token creation stays behind the existing CREATOR_ROLE / Genius Ventures multisig ADMIN_ROLE pattern (existing `_CREATOR_ROLE`/`DEFAULT_ADMIN_ROLE` gates in `GNUSNFTFactory`/`GNUSLifecycle`).
-- **D-13:** `companyAdmin` is a data field set at license creation by the creator (operator) and emitted in `LicenseActivated`; admin changes are operator-gated. No on-chain self-managed admin/seat rotation in v1.
+- **D-13:** `companyAdmin` is a data field set at license creation by the creator (operator) and emitted in `LicenseActivated`; admin changes are operator-gated. No on-chain self-managed admin/seat rotation in v1. (Amended by D-25: the field is persisted in the NFT struct.)
 - **D-14:** `LicenseActivated(companyAdmin, licenseId, privateNetworkId, expiresAt)` on creation AND every renewal (LIC-05); SuperGenius consumers derive license state from events alone. License expiry/deactivation is SG-side, driven by events (no new on-chain enforcement beyond PerTokenId validUntil semantics).
 
 ### Exploration refinements (2026-08-25 /gsd-explore session)
@@ -43,6 +43,14 @@ Per-company tenant licensing on the public EVM canonical layer with SuperGenius 
 - **D-21:** Expiry crosses to SuperGenius via the **bridge attestation's EVM RPC lookup** (`holderExpiresAt` / `validUntil`) — NO bridgeOut event/message change in Phase 14. Determinism (snapshot at burn block) is a research question, not a contract change.
 - **D-22:** SG-side timed UTXOs (extensible GeniusUTXO metadata: `expiresAt` field 1, consensus-enforced unspendable-when-expired + pruning; future meta.json URI pointer) are the designated destination — tracked as seed `seeds/sg-extensible-utxo-metadata.md`, implemented in the SuperGenius repo. No app-level lazy-validation interim layer to build.
 - **D-23:** Consider an EVM-side "expired tokens cannot bridgeOut" gate for symmetry with SG-side rejection of past-expiry attestations (placement is a research question; note: EVM mint-side expiry gating already exists — `"Sale ended"` in `enforceMintGate` on both mint paths).
+
+### Research-resolved decisions (2026-08-25 /gsd-plan-phase research + owner sign-off)
+- **D-24 (amends Phase 13 D7):** SOULBOUND tokens MAY `bridgeOut` — gated to CREATOR_ROLE/ADMIN_ROLE callers only (operator-mediated mint→bridge per D-19), and only while unexpired. Rationale: the "same SG address as the holder" rule cannot be enforced on-chain (no proof an sgnsDestination key belongs to the EVM holder); the role gate makes same-address an operational guarantee. The unexpired check in the same `_enforceBridgePolicy` change IS the D-23 expired-bridgeOut gate. Owner: "soulbound should be allowed to bridgeOut if to same address... since this is part of the minting process, it should just require ADMIN_ROLE or CREATOR_ROLE."
+- **D-25 (amends D-13):** `companyAdmin` IS stored in the NFT struct (appended with the D-03 fields) AND emitted in `LicenseActivated` — on-chain readable config field (owner chose storage over the researcher's event-only recommendation). Admin changes remain operator-gated.
+- **D-26:** LIC-04 payment rail = GNUS-only permissionless purchase (paid GNUS burned, D-10) + off-chain operator fiat path (~$20 → GV buys GNUS → CREATOR_ROLE mints). NO USDC or Banxa contract code. LIC-04 and ROADMAP SC4 wording amended accordingly (early docs task).
+- **D-27:** D-11 resolved — permissionless self-serve for credit top-up and renewal SKUs; license NFT creation stays CREATOR_ROLE-gated (D-12).
+- **D-28:** `mintBackedChild` (referenced in D-05) does not exist — Phase 9 pivoted to the conversion-native `convert()` model. Hybrid redeemability plans against `convert()` + Phase 13 REDEEM_TO_PARENT, not a reserve ledger.
+- **D-29:** ROADMAP SC7 (private-spend settlement pattern) is CLOSED by D-07/D-08 — no new mechanism; SG spend → GV wallet → existing Phase 10 bridgeIn → ops burn. Zero contract work.
 
 ### Standing project constraints (carried from prior phases)
 - **D-15:** `protocolVersion` stays **2.6** — new facets re-key into `versions["2.6"]` with fromVersions [0.0, 2.4, 2.5]. NEVER bump past 2.6 until 2.6 deploys.
