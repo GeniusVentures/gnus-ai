@@ -79,12 +79,12 @@ _These are investigation items only — no implementation committed until resear
 ### Licensing
 
 - [x] **LIC-01**: Per-tenant License NFT model — GNUS AI Product Root token serves as the public AI network; per-company License NFTs created as its children; company AI Credits as children of the License NFT. Individual AI Credits remain direct children of the product root (no Individual License NFT branch). License NFT's `privateNetworkId` identifies the SuperGenius private network/tenant for AI processing.
-- [ ] **LIC-02**: NFT struct network-scope fields — append `networkScope` (enum: `PublicOnly`=0, `PrivateOnly`, `Hybrid`), `privateNetworkId`, `publicSettlementEnabled` after Phase 13 lifecycle fields. Append-only; existing token IDs decode with zero defaults (PublicOnly, 0, false) and remain behaviorally unchanged; upgrade test required.
+- [x] **LIC-02**: NFT struct network-scope fields — append `networkScope` (enum: `PublicOnly`=0, `PrivateOnly`, `Hybrid`), `privateNetworkId`, `publicSettlementEnabled` after Phase 13 lifecycle fields. Append-only; existing token IDs decode with zero defaults (PublicOnly, 0, false) and remain behaviorally unchanged; upgrade test required.
 - [x] **LIC-03**: Product/SKU registry — on-chain registry mapping SKUs to fixed minion-denominated prices (`priceInMinions`, `creditAmount`, `duration`, `createsLicense`, `renewsLicense`, `active`). No USD oracle, no `priceUsd` field.
 - [x] **LIC-04**: Payment router facet — accepts GNUS-minions payment only (paid GNUS BURNED per D-10), producing License NFT creation/renewal + AI Credit minting/top-up. Off-chain operator fiat path (~$20 → GV buys GNUS → CREATOR_ROLE mint) per D-26. Payment asset and license/credit assets remain distinct. (amended 2026-08-25, D-26 — no USDC or fiat-onramp contract code)
 - [x] **LIC-05**: `LicenseActivated(companyAdmin, licenseId, privateNetworkId, expiresAt)` event emitted on license creation and every renewal; SuperGenius consumers derive license state from events alone.
 - [x] **LIC-06**: Hybrid-scope redeemability — Hybrid-scope tokens configured with `exchangeRate > 0` and `REDEEM_TO_PARENT` disposition (Phase 13 D8 path), collateralized via the existing Phase 9 `GNUSTreasury.convert()` conversion-native model. Hybrid redeemability is provided by Phase 13 REDEEM_TO_PARENT settlement plus Phase 9 `convert()` collateralization; the Phase 9 backed-child mint helper referenced by the original text never shipped. Pure burn-only AI Credits remain non-redeemable. (amended 2026-08-25, D-28 — Phase 9 convert() model; the backed-child mint helper does not exist)
-- [ ] **LIC-07**: Private-network spend design — resolve how AI credits are spent on SuperGenius against public-canonical balances (bridged burn events vs mirror + periodic settlement). Open design question (PD-7) to be resolved in Phase 14 discuss/plan, informed by Phase 10 bridge vault work. **RESOLVED by D-07/D-08** — SG spend → GV wallet → existing Phase 10 bridgeIn → ops burn; `publicSettlementEnabled` is an informational flag consumed by the SG side; no new on-chain settlement mechanism.
+- [x] **LIC-07**: Private-network spend design — resolve how AI credits are spent on SuperGenius against public-canonical balances (bridged burn events vs mirror + periodic settlement). Open design question (PD-7) to be resolved in Phase 14 discuss/plan, informed by Phase 10 bridge vault work. **RESOLVED by D-07/D-08** — SG spend → GV wallet → existing Phase 10 bridgeIn → ops burn; `publicSettlementEnabled` is an informational flag consumed by the SG side; no new on-chain settlement mechanism.
 
 ## v4 Requirements — Secure BridgeIn Amendment (ingested 2026-08-23)
 
@@ -154,12 +154,12 @@ _These are investigation items only — no implementation committed until resear
 | PROXY-02    | Phase 11 (erc20-gnus-proxy repo) | Pending  |
 | PROXY-03    | Phase 11   | Pending  |
 | LIC-01      | Phase 14   | Complete |
-| LIC-02      | Phase 14   | Pending  |
+| LIC-02      | Phase 14   | Complete |
 | LIC-03      | Phase 14   | Complete |
 | LIC-04      | Phase 14   | Complete |
 | LIC-05      | Phase 14   | Complete |
 | LIC-06      | Phase 14   | Complete |
-| LIC-07      | Phase 14   | Pending  |
+| LIC-07      | Phase 14   | Complete |
 | BRIDGE-10   | Phase 10 (amendment, post-Phase-13) | Pending  |
 | BRIDGE-11   | Phase 10 (amendment, post-Phase-13) | Pending  |
 | BRIDGE-12   | Phase 10 (amendment, post-Phase-13) | Pending  |
