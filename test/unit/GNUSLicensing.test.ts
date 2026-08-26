@@ -585,6 +585,27 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
             });
 
+            it('LIC-03 (sku0 sentinel): createLicense under SKU id 0 reverts "SKU id zero is reserved"', async function () {
+                await creatorDiamond.configureSKU(0n, licenseSku());
+                const rootInfoBefore = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                // SKU id 0 writing into licenseSku would collide with the not-a-license
+                // sentinel read by renewLicense/purchaseCredits (bricked license).
+                await expect(
+                    creatorDiamond.createLicense(0n, {
+                        name: 'Sentinel Collision License',
+                        symbol: 'SENT-LIC',
+                        newuri: 'ipfs://sentinel/license',
+                        companyAdmin,
+                        privateNetworkId: PRIVATE_NETWORK_ID + 1n, // uniqueness registry
+                        networkScope: NETWORK_SCOPE_PRIVATE_ONLY,
+                        publicSettlementEnabled: false,
+                    }),
+                ).to.be.revertedWith('SKU id zero is reserved');
+                // No NFT was created.
+                const rootInfoAfter = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                expect(rootInfoAfter.childCurIndex).to.eq(rootInfoBefore.childCurIndex);
+            });
+
             // ---------------- LIC-06: hybrid redeemability (config only, D-05/D-28) ----------------
 
             it('LIC-06: exchangeRate>0 + REDEEM_TO_PARENT token redeems via the existing Phase 13 settle path', async function () {
