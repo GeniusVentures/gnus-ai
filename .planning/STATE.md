@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-08-26T23:10:37.777Z"
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-08-26T23:40:00.000Z"
 progress:
   total_phases: 17
   completed_phases: 14
   total_plans: 41
-  completed_plans: 39
-  percent: 95
+  completed_plans: 40
+  percent: 98
 ---
 
 # Project State
@@ -43,7 +43,13 @@ See: .planning/PROJECT.md
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
 | 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
 | 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
-| 15    | Secure BridgeIn (Ph10 Amendment)  | ○      | 2/4   | 50%      |
+| 15    | Secure BridgeIn (Ph10 Amendment)  | ○      | 3/4   | 75%      |
+
+### Phase 15 Decisions Logged (15-03)
+
+- 15-03: Off-chain reference computes the FLAT 13-field abi.encode while the chain computes the D-02 split bytes.concat — byte-identity PROVEN by vector leg V1 (flat == split == fixture structHash), never assumed; BRIDGE-18 fixture freezes keys/roots/proofs/digests over the C++ conformance environment (31337 / 0x1111...11) with on-chain legs re-signed over LIVE chainid + deployed diamondAddress
+- 15-03: Digest-mismatch negatives run at GENESIS epoch with a single signature (foreign recovery always passes strict-ascending, always fails membership → deterministic 'Not a registered attestor'); R4 (old root after rotation, 2 active sigs) asserts bare reversion per the Phase-10 precedent; D9 sorts native-vote-bytes garbage recoveries off-chain so ordering passes and membership is the pinned failure
+- 15-03: [GAS] A1 answer — 16-of-32 certificate bridgeIn = 313,844 gas; fee-replica pairing proves mint() and bridgeIn() post-fee balances identical (no twin drift, Pitfall 1); suite 42 passing, 15-01 regression 10 passing, zero contract-source touches
 
 ### Phase 15 Decisions Logged (15-02)
 
@@ -151,6 +157,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-26T23:09:32.880Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-08-26T23:40:00.000Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None
