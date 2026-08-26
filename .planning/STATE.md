@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-08-26T22:58:00.000Z"
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-08-26T23:10:37.777Z"
 progress:
   total_phases: 17
   completed_phases: 14
   total_plans: 41
-  completed_plans: 38
-  percent: 93
+  completed_plans: 39
+  percent: 95
 ---
 
 # Project State
@@ -43,7 +43,14 @@ See: .planning/PROJECT.md
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
 | 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
 | 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
-| 15    | Secure BridgeIn (Ph10 Amendment)  | ○      | 1/4   | 25%      |
+| 15    | Secure BridgeIn (Ph10 Amendment)  | ○      | 2/4   | 50%      |
+
+### Phase 15 Decisions Logged (15-02)
+
+- 15-02: Transfer event in GNUSBridgeAttestor is a LOCAL topic0-identical declaration (GNUSLicensingPurchase.sol precedent) — Solidity 0.8.19 cannot emit through a non-inherited imported interface (qualified event access is 0.8.21+); the plan's "import IERC20Upgradeable" wording is unimplementable at this compiler pin (Rule 3 deviation, semantics unchanged)
+- 15-02: V2 certificate path live — split-encode BRIDGE_CERTIFICATE_V2 digest (D-02) compiled clean on the first try (research A4 frame-sensitivity check resolved), bridgeIn CEI root-transition before fee-mint (D-07), per-signer proofs vs currentRoot ONLY (T-15-10); GNUSBridgeAttestor 21,536 B / GNUSBridge 19,938 B (probe-exact); legacy 0x0bee6121/0x1abd0f1e fully removed from source + ABI (D-06; BRIDGE-16 complete)
+- 15-02: bridgeIn carries NO D-24 policy gate and NO limiter charge by design (GNUS_TOKEN_ID-only mint is the Phase-13 predicate's carve-out; bridge-in never charged the withdrawal limiter — bridgeOut-only) — the D-07 carry-forward is satisfied by Task 2's byte-for-byte preservation of bridgeOut/_enforceBridgePolicy (GNUSBridgePolicy.test.ts 13 passing)
+- 15-02: EXPECTED RED window opens — test/unit/GNUSBridgeIn.test.ts + Foundry Bridge/Conservation setUp now target removed selectors; rewrites owned by 15-03/15-04, full-suite baseline gate at end of 15-04
 
 ### Phase 15 Decisions Logged (15-01)
 
@@ -144,6 +151,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-26T22:58:00.000Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-08-26T23:09:32.880Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None

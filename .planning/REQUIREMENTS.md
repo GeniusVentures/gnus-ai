@@ -94,11 +94,11 @@ _These are investigation items only — no implementation committed until resear
 
 - [x] **BRIDGE-10**: Rolling-attestor storage — append `bridgeAttestorRoot`, `bridgeAttestorEpoch`, `bridgeAttestorV2Initialized` to `GNUSBridgeValidatorStorage.Layout` (append-only; legacy `validatorMerkleRoot`/`validatorThreshold` preserved byte-for-byte, become dead once active). Diamond storage upgrade test proves existing state decodes.
 - [x] **BRIDGE-11**: One-time `initializeBridgeAttestorV2(address genesisAttestor)` (onlySuperAdminRole) — bootstraps the rolling root with a single Genesis attestor (one-leaf root, epoch 0, emits `BridgeAttestorSetInitialized`). First successful certificate must advance off Genesis (no permanent Genesis mode).
-- [ ] **BRIDGE-12**: Canonical `BridgeMessage` struct (`srcChainID, sourceBridgeID, sourceTxHash, sourceEventIndex, recipient, amount`) replacing free-form `transferId`; replay message ID derived on-chain via `BRIDGE_MESSAGE_ID_V2` domain + composite key; `sourceEventIndex` disambiguates same-tx events. Replay protection reuses `processedMessages` (D-07 unchanged). **Amends locked D-06.**
-- [ ] **BRIDGE-13**: `BRIDGE_CERTIFICATE_V2` digest — binds `currentAttestorRoot, currentAttestorEpoch, nextAttestorRoot` into the EIP-191 struct hash alongside existing fields; preserves dest-chain + diamond-address binding. **Extends locked D-08/D-10.**
-- [ ] **BRIDGE-14**: `_verifyBridgeAttestorCertificate` replaces `_verifyThresholdCertificate` — strict-ascending signers, per-signer Merkle proof against `currentRoot`, epoch-derived threshold, 16-signature cap, no MMR/multiproof. **Amends locked D-12/D-15.**
-- [ ] **BRIDGE-15**: New `bridgeIn(BridgeMessage calldata, bytes32 nextAttestorRoot, bytes[] calldata signatures, bytes32[][] calldata merkleProofs)` — pause/init → dest/message → replay → digest → cert-verify → (replay-mark + root-update BEFORE mint, CEI) → `_mintWithBridgeFee` (D-22 unchanged) → `BridgeReleased`. Atomic: failed mint reverts root update + replay marker. Root transition installs `nextAttestorRoot` + increments epoch by 1 (emits `BridgeAttestorSetAdvanced`); unchanged root processes claim with no epoch bump.
-- [ ] **BRIDGE-16**: Legacy-selector removal — legacy `bridgeIn(bytes32,uint256,address,uint256,bytes[],bytes32[][])` removed or stubbed to always-revert; `setValidatorSet` removed or converted to an explicitly-named emergency-recovery (requires paused + onlySuperAdminRole + nonzero root + never restores Genesis + increments epoch + emits emergency-reset). **Amends locked D-15.**
+- [x] **BRIDGE-12**: Canonical `BridgeMessage` struct (`srcChainID, sourceBridgeID, sourceTxHash, sourceEventIndex, recipient, amount`) replacing free-form `transferId`; replay message ID derived on-chain via `BRIDGE_MESSAGE_ID_V2` domain + composite key; `sourceEventIndex` disambiguates same-tx events. Replay protection reuses `processedMessages` (D-07 unchanged). **Amends locked D-06.**
+- [x] **BRIDGE-13**: `BRIDGE_CERTIFICATE_V2` digest — binds `currentAttestorRoot, currentAttestorEpoch, nextAttestorRoot` into the EIP-191 struct hash alongside existing fields; preserves dest-chain + diamond-address binding. **Extends locked D-08/D-10.**
+- [x] **BRIDGE-14**: `_verifyBridgeAttestorCertificate` replaces `_verifyThresholdCertificate` — strict-ascending signers, per-signer Merkle proof against `currentRoot`, epoch-derived threshold, 16-signature cap, no MMR/multiproof. **Amends locked D-12/D-15.**
+- [x] **BRIDGE-15**: New `bridgeIn(BridgeMessage calldata, bytes32 nextAttestorRoot, bytes[] calldata signatures, bytes32[][] calldata merkleProofs)` — pause/init → dest/message → replay → digest → cert-verify → (replay-mark + root-update BEFORE mint, CEI) → `_mintWithBridgeFee` (D-22 unchanged) → `BridgeReleased`. Atomic: failed mint reverts root update + replay marker. Root transition installs `nextAttestorRoot` + increments epoch by 1 (emits `BridgeAttestorSetAdvanced`); unchanged root processes claim with no epoch bump.
+- [x] **BRIDGE-16**: Legacy-selector removal — legacy `bridgeIn(bytes32,uint256,address,uint256,bytes[],bytes32[][])` removed or stubbed to always-revert; `setValidatorSet` removed or converted to an explicitly-named emergency-recovery (requires paused + onlySuperAdminRole + nonzero root + never restores Genesis + increments epoch + emits emergency-reset). **Amends locked D-15.**
 - [ ] **BRIDGE-17**: SuperGenius prerequisites — #363 (slot quorum uses only signature-verified votes) and #364 (slot 0 identifies the API RPC that actually succeeded for that exact claim) must close before production activation. EVM-side work may proceed in parallel; track in `.planning/SUBREPOS.md` when scheduled.
 - [ ] **BRIDGE-18**: Cross-language test vectors — fixed vectors proving the C++ SuperGenius exporter and the Solidity verifier compute identical digests/signatures/proofs (private key, 64-byte SG pubkey, EVM address, roots, epoch, BridgeMessage fields, struct hash, EIP-191 digest, 65-byte r‖s‖v sig, recovered address, Merkle proof). Checked into repo, run in CI.
 - [ ] **BRIDGE-19**: BridgeIn-amendment test matrix — bootstrap, current-root verification, root transitions, replay/domain binding, existing-token behavior, cross-language vectors (source doc lines 654-727). Extends (does not replace) the Phase 10 suite, which covers the legacy path being removed.
@@ -162,11 +162,11 @@ _These are investigation items only — no implementation committed until resear
 | LIC-07      | Phase 14   | Complete |
 | BRIDGE-10   | Phase 15   | Complete |
 | BRIDGE-11   | Phase 15   | Complete |
-| BRIDGE-12   | Phase 15   | Pending  |
-| BRIDGE-13   | Phase 15   | Pending  |
-| BRIDGE-14   | Phase 15   | Pending  |
-| BRIDGE-15   | Phase 15   | Pending  |
-| BRIDGE-16   | Phase 15   | Pending  |
+| BRIDGE-12   | Phase 15   | Complete |
+| BRIDGE-13   | Phase 15   | Complete |
+| BRIDGE-14   | Phase 15   | Complete |
+| BRIDGE-15   | Phase 15   | Complete |
+| BRIDGE-16   | Phase 15   | Complete |
 | BRIDGE-17   | Phase 15   | Pending  |
 | BRIDGE-18   | Phase 15   | Pending  |
 | BRIDGE-19   | Phase 15   | Pending  |
