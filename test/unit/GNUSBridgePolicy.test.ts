@@ -307,6 +307,99 @@ describe('GNUS Bridge Policy Tests (Phase 13 D7/SC4)', async function () {
                 expect(usageAfterRevert).to.eq(usageBefore); // unchanged — policy check fires BEFORE checkAndRecordWithdraw
             });
 
+            /**
+             * Phase 14 — D-24 SOULBOUND operator-mediated bridge + D-23 expiry gate.
+             *
+             * SOULBOUND credits may bridge out ONLY when the caller holds CREATOR_ROLE or
+             * DEFAULT_ADMIN_ROLE (D-24 mint→bridge transport) AND the entitlement is unexpired
+             * (D-23: PerTokenId validUntil / PerHolder holderExpiresAt, mirroring the "Sale
+             * ended" analogue). The gate runs inside _enforceBridgePolicy BEFORE the limiter
+             * charge + burn, so an expired revert consumes no limiter allowance. The Phase 13
+             * D5 expired-burn settlement carve-out is untouched (regression below).
+             */
+            describe('Phase 14 D-24/D-23 SOULBOUND bridge gate', function () {
+                const CREATOR_ROLE = ethers.id('CREATOR_ROLE');
+
+                /** Mint a SOULBOUND child to a specific recipient (creator = owner). */
+                async function createSoulboundNFT(
+                    name: string,
+                    symbol: string,
+                    overrides: Partial<Parameters<typeof defaultConfig>[0]> = {},
+                    mintTo: string = signer1,
+                ): Promise<bigint> {
+                    return createConfiguredNFT(name, symbol, defaultConfig({
+                        transferPolicy: 1,
+                        ...overrides,
+                    }), mintTo);
+                }
+
+                it('unexpired SOULBOUND bridges for a DEFAULT_ADMIN caller (D-24)', async function () {
+                    const id = await createSoulboundNFT('P14SoulAdmin', 'PSA', {}, owner);
+                    const srcChainId = (await geniusDiamond.protocolInfo())[2];
+                    await expect(bridgeOutFrom(ownerDiamond, toWei('3'), id))
+                        .to.emit(geniusDiamond, 'BridgeOutInitiated')
+                        .withArgs(owner, id, toWei('3'), srcChainId, BigInt(DEST_CHAIN_ID), SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD);
+                    expect(await geniusDiamond['balanceOf(address,uint256)'](owner, id)).to.eq(toWei('7'));
+                });
+
+                it('unexpired SOULBOUND bridges for a CREATOR_ROLE caller (D-24)', async function () {
+                    await ownerDiamond.grantRole(CREATOR_ROLE, signer1);
+                    const id = await createSoulboundNFT('P14SoulCreator', 'PSC');
+                    await expect(bridgeOutFrom(signer1Diamond, toWei('2'), id)).to.emit(
+                        geniusDiamond,
+                        'BridgeOutInitiated',
+                    );
+                    expect(await geniusDiamond['balanceOf(address,uint256)'](signer1, id)).to.eq(toWei('8'));
+                });
+
+                it('expired PerTokenId SOULBOUND bridge reverts "License expired" even for admin (D-23)', async function () {
+                    const until = BigInt(await time.latest()) + 5000n;
+                    const id = await createSoulboundNFT('P14ExpPTI', 'PEP', { expirationMode: 1, validUntil: until }, owner);
+                    await time.increaseTo(Number(until) + 1);
+                    await expect(bridgeOutFrom(ownerDiamond, toWei('1'), id)).to.be.revertedWith('License expired');
+                });
+
+                it('expired PerHolder SOULBOUND bridge reverts "License expired" even for admin (D-23)', async function () {
+                    const id = await createSoulboundNFT('P14ExpPH', 'PEH', { expirationMode: 2, defaultDuration: 1000n, expirationDisposition: 2 }, owner);
+                    const expiry = await geniusDiamond.holderExpiresAt(id, owner);
+                    expect(expiry).to.be.gt(0n);
+                    await time.increaseTo(Number(expiry) + 1);
+                    await expect(bridgeOutFrom(ownerDiamond, toWei('1'), id)).to.be.revertedWith('License expired');
+                });
+
+                it('limiter NOT charged on an expired-gate revert (D-23 ordering proof)', async function () {
+                    await ownerDiamond.grantRole(CREATOR_ROLE, signer1);
+                    const id = await createSoulboundNFT('P14ExpLim', 'PEL', { expirationMode: 2, defaultDuration: 1000n, expirationDisposition: 2 });
+                    // Warm the limiter via a successful UNRESTRICTED child bridge.
+                    const idFree = await createConfiguredNFT('P14ExpLimFree', 'PLF', defaultConfig());
+                    await bridgeOutFrom(signer1Diamond, toWei('2'), idFree);
+                    const [usageBefore] = await geniusDiamond.getAccountWithdrawStatus(signer1);
+                    expect(usageBefore).to.eq(toWei('2'));
+
+                    const expiry = await geniusDiamond.holderExpiresAt(id, signer1);
+                    await time.increaseTo(Number(expiry) + 1);
+                    await expect(bridgeOutFrom(signer1Diamond, toWei('1'), id)).to.be.revertedWith('License expired');
+                    const [usageAfter] = await geniusDiamond.getAccountWithdrawStatus(signer1);
+                    expect(usageAfter).to.eq(usageBefore); // expiry gate fires BEFORE checkAndRecordWithdraw
+                });
+
+                it('expired-burn settlement carve-out untouched — settleExpired still succeeds (Phase 13 D5)', async function () {
+                    const id = await createSoulboundNFT('P14Settle', 'PST', {
+                        expirationMode: 2,
+                        defaultDuration: 1000n,
+                        expirationDisposition: 2, // BURN
+                    });
+                    const expiry = await geniusDiamond.holderExpiresAt(id, signer1);
+                    await time.increaseTo(Number(expiry) + 1);
+                    // Bridge still blocked post-expiry (settlement is the only exit)...
+                    await ownerDiamond.grantRole(CREATOR_ROLE, signer1);
+                    await expect(bridgeOutFrom(signer1Diamond, toWei('1'), id)).to.be.revertedWith('License expired');
+                    // ...while the permissionless expired-burn settlement still runs.
+                    await geniusDiamond.connect(signers[2]).settleExpired(signer1, id);
+                    expect(await geniusDiamond['balanceOf(address,uint256)'](signer1, id)).to.eq(0n);
+                });
+            });
+
             /** Deploy a fresh MockAllowlistRegistry and return its address + contract. */
             async function deployMockRegistry() {
                 const factory = await ethers.getContractFactory('MockAllowlistRegistry');
