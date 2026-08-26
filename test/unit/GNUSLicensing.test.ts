@@ -536,6 +536,23 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 );
             });
 
+            it('LIC-05 (CR-01): renewal of a NON-license token reverts "Not a license token"', async function () {
+                const [, creditTokenId] = await deployLicenseFixture();
+                await buyerDiamond.approve(diamondAddress, LICENSE_PRICE);
+                // A created but non-license NFT (the company credit token) — forged
+                // validUntil extension / LicenseActivated path must be closed.
+                await expect(buyerDiamond.renewLicense(SKU_ID_RENEWAL, creditTokenId)).to.be.revertedWith(
+                    'Not a license token',
+                );
+                // The product root itself is not a license either.
+                await expect(buyerDiamond.renewLicense(SKU_ID_RENEWAL, GNUS_TOKEN_ID)).to.be.revertedWith(
+                    'Not a license token',
+                );
+                // No burn happened.
+                const supplyBefore = await geniusDiamond['totalSupply()']();
+                expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
+            });
+
             // ---------------- LIC-06: hybrid redeemability (config only, D-05/D-28) ----------------
 
             it('LIC-06: exchangeRate>0 + REDEEM_TO_PARENT token redeems via the existing Phase 13 settle path', async function () {
