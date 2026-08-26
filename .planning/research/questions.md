@@ -16,3 +16,9 @@
    public/private allocation fixed in the SKU by the operator, buyer-chosen at purchase
    time, or both (SKU defines allowed range, buyer picks within it)? Consider griefing,
    refund handling, and GNUS-burn accounting implications of buyer-chosen splits.
+
+> **RESOLVED 2026-08-25 (Phase 14.1 / plan 14-05):** fixed-in-SKU — the operator configures
+> `creditAmount` (private leg) and `publicCreditAmount` (public leg); buyers pick among SKUs,
+> not within a purchase. Rationale: no new purchase-path parameter (D-27 permissionless),
+> single `_burnPayment` covers both legs (D-10 exact-burn), no buyer-chosen griefing/refund
+> surface. Buyer-chosen split (SKU-defines-range variant) deferred.
