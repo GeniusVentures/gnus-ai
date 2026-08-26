@@ -40,13 +40,18 @@ created: 2026-08-25
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 14-01-01 | 14-01 | 1 | LIC-07 | T-14-01-02 | stale rail wording removed from spec docs | source assertion (grep) | `grep -c "Banxa" .planning/REQUIREMENTS.md` | ✅ exists | ⬜ pending |
-| 14-01-02 | 14-01 | 1 | LIC-02 | T-14-01-01 | zero-default decode of appended fields; round-trip probe | unit (upgrade probe) | `npx hardhat test test/unit/GNUSLifecycleUpgrade.test.ts` | ✅ extend | ⬜ pending |
-| 14-02-01 | 14-02 | 1 | LIC-03 | T-14-02-01/02 | SKU CRUD role-gated, events emitted | compile + bytecode ≤24,576B | `npx hardhat compile` | ❌ Wave 0 (new) | ⬜ pending |
-| 14-02-02 | 14-02 | 1 | LIC-03 | T-14-02-03 | facet registered at versions["2.6"], never 2.7 | config assertion (grep) | `grep -A4 '"GNUSLicensing"' diamonds/GeniusDiamond/geniusdiamond.config.json` | ✅ exists | ⬜ pending |
-| 14-03-01 | 14-03 | 2 | LIC-04 | T-14-03-01/05 | GNUS-burn payment (totalSupply delta), policy-hook mints | compile + unit | `npx hardhat compile` then `npx hardhat test test/unit/GNUSLicensing.test.ts` | ❌ Wave 0 (new) | ⬜ pending |
-| 14-03-02 | 14-03 | 2 | LIC-01, LIC-03, LIC-04, LIC-05, LIC-06 | T-14-03-01..04 | hierarchy, SKU gating, burn accounting, LicenseActivated on create+renew, hybrid redeem config | unit | `npx hardhat test test/unit/GNUSLicensing.test.ts` | ❌ Wave 0 (new) | ⬜ pending |
-| 14-04-01 | 14-04 | 1 | LIC-05 | T-14-04-01..04 | expired/unprivileged bridgeOut reverts; privileged unexpired passes; burn carve-out intact | unit | `npx hardhat test test/unit/GNUSBridgePolicy.test.ts` | ✅ extend | ⬜ pending |
+| 14-01-01 | 14-01 | 1 | LIC-07 | T-14-01-02 | stale rail wording removed from spec docs | source assertion (grep) | `grep -c "Banxa" .planning/REQUIREMENTS.md` | ✅ exists | ✅ green |
+| 14-01-02 | 14-01 | 1 | LIC-02 | T-14-01-01 | zero-default decode of appended fields; round-trip probe | unit (upgrade probe) | `npx hardhat test test/unit/GNUSLifecycleUpgrade.test.ts` | ✅ extend | ✅ green |
+| 14-02-01 | 14-02 | 1 | LIC-03 | T-14-02-01/02 | SKU CRUD role-gated, events emitted | compile + bytecode ≤24,576B | `npx hardhat compile` | ❌ Wave 0 (new) | ✅ green |
+| 14-02-02 | 14-02 | 1 | LIC-03 | T-14-02-03 | facet registered at versions["2.6"], never 2.7 | config assertion (grep) | `grep -A4 '"GNUSLicensing"' diamonds/GeniusDiamond/geniusdiamond.config.json` | ✅ exists | ✅ green |
+| 14-03-01 | 14-03 | 2 | LIC-04 | T-14-03-01/05 | GNUS-burn payment (totalSupply delta), policy-hook mints | compile + unit | `npx hardhat compile` then `npx hardhat test test/unit/GNUSLicensing.test.ts` | ❌ Wave 0 (new) | ✅ green |
+| 14-03-02 | 14-03 | 2 | LIC-01, LIC-03, LIC-04, LIC-05, LIC-06 | T-14-03-01..04 | hierarchy, SKU gating, burn accounting, LicenseActivated on create+renew, hybrid redeem config | unit | `npx hardhat test test/unit/GNUSLicensing.test.ts` | ❌ Wave 0 (new) | ✅ green |
+| 14-04-01 | 14-04 | 1 | LIC-05 | T-14-04-01..04 | expired/unprivileged bridgeOut reverts; privileged unexpired passes; burn carve-out intact | unit | `npx hardhat test test/unit/GNUSBridgePolicy.test.ts` | ✅ extend | ✅ green |
+
+| 14-05-01 | 14-05 | 3 | LIC-01, LIC-04 | T-14-05-01/02 | zero/duplicate network id rejection; lazy propagation + mismatch revert | unit | `npx hardhat test test/unit/GNUSLicensing.test.ts` | ✅ extend | ✅ green |
+| 14-05-02 | 14-05 | 3 | LIC-01, LIC-04 | T-14-05-03..06 | split-mint SKU: both legs in one tx, ONE price burn; public leg network-zero; no-leg SKU gate | unit | `npx hardhat test test/unit/GNUSLicensing.test.ts` | ✅ extend | ✅ green |
+
+*(14-05 gap-closure rows verified 2026-08-25: 22 passing licensing suite; full suite 601/2/1 at known baselines.)*
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
