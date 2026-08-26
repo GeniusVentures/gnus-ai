@@ -150,6 +150,14 @@ The following decisions are **proposed** by `docs/Secure-BridgeIn.md` (SPEC, cla
 - **Conflicts with:** None — but introduces an external dependency on SuperGenius-repo work that must land before the new bridge design can be considered secure in production.
 - **Scope:** proposed new phase (cross-repo dependency)
 
+> **OWNER RULING 2026-08-26:** #363/#364 are NOT local blockers — they are being fixed in
+> parallel in the SuperGenius repo. EVM-side Phase 15 work proceeds concurrently; the issues
+> gate **production activation only** (BRIDGE-17). #364 is already CLOSED; #363 remains OPEN.
+> Also verified 2026-08-26: the six engaged Phase 10 decisions (D-06/D-08/D-10/D-12/D-15/D-16)
+> are **NOT deprecated** — shipped `GNUSBridge.sol` implements them verbatim (digest `:384-393`,
+> threshold `:423`, `setValidatorSet` `:499`); no later phase amended them. The Phase 15 CONTEXT
+> must amend them explicitly. Scheduled as ROADMAP §Phase 15 (2026-08-26).
+
 ---
 
 ## Existing Locked Decisions (unchanged)

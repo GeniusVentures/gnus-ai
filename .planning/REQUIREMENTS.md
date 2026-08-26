@@ -160,16 +160,16 @@ _These are investigation items only — no implementation committed until resear
 | LIC-05      | Phase 14   | Complete |
 | LIC-06      | Phase 14   | Complete |
 | LIC-07      | Phase 14   | Complete |
-| BRIDGE-10   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-11   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-12   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-13   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-14   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-15   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-16   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-17   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-18   | Phase 10 (amendment, post-Phase-13) | Pending  |
-| BRIDGE-19   | Phase 10 (amendment, post-Phase-13) | Pending  |
+| BRIDGE-10   | Phase 15   | Pending  |
+| BRIDGE-11   | Phase 15   | Pending  |
+| BRIDGE-12   | Phase 15   | Pending  |
+| BRIDGE-13   | Phase 15   | Pending  |
+| BRIDGE-14   | Phase 15   | Pending  |
+| BRIDGE-15   | Phase 15   | Pending  |
+| BRIDGE-16   | Phase 15   | Pending  |
+| BRIDGE-17   | Phase 15   | Pending  |
+| BRIDGE-18   | Phase 15   | Pending  |
+| BRIDGE-19   | Phase 15   | Pending  |
 
 **Coverage:**
 
