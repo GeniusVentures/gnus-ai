@@ -34,7 +34,7 @@
 | #   | Phase                    | Goal                                                              | Requirements         | Success Criteria |
 | --- | ------------------------ | ----------------------------------------------------------------- | -------------------- | ---------------- |
 | 13  | Time-Bound Entitlements  | 6/6 | Complete   | 2026-08-24 |
-| 14  | Private-Network Licensing| Tenant License NFTs, SKU registry, payment router, hybrid scope   | LIC-01..07           | 7                |
+| 14  | Private-Network Licensing| 4/4 | Complete   | 2026-08-26 |
 
 ## Phase Details
 
@@ -485,19 +485,19 @@ Plans:
 **Depends on:** Phase 13 (lifecycle/transfer/disposition mechanisms); transitively Phase 9 (reserves) and Phase 10 (bridge)
 **Open design question:** PD-7 private-spend settlement pattern (`.planning/intel/decisions.md`) — RESOLVED by D-07/D-29 (see 14-CONTEXT.md)
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
 
 **Wave 1**
 
-- [ ] 14-01-PLAN.md — Docs amendments (LIC-04/SC4 rewording D-26, SC7 closure D-29) + D-03/D-25 NFT struct append + slot-probe upgrade test (LIC-02, LIC-07)
-- [ ] 14-02-PLAN.md — GNUSLicensingTypes/Storage + SKU registry facet + diamond config at 2.6 (LIC-03)
-- [ ] 14-04-PLAN.md — GNUSBridge D-24/D-23 gate (SOULBOUND privileged bridgeOut + expired-holder revert) + policy test matrix
+- [x] 14-01-PLAN.md — Docs amendments (LIC-04/SC4 rewording D-26, SC7 closure D-29) + D-03/D-25 NFT struct append + slot-probe upgrade test (LIC-02, LIC-07)
+- [x] 14-02-PLAN.md — GNUSLicensingTypes/Storage + SKU registry facet + diamond config at 2.6 (LIC-03)
+- [x] 14-04-PLAN.md — GNUSBridge D-24/D-23 gate (SOULBOUND privileged bridgeOut + expired-holder revert) + policy test matrix
 
 **Wave 2** *(blocked on 14-01 + 14-02)*
 
-- [ ] 14-03-PLAN.md — GNUSLicensingPurchase facet (GNUS-burn rail, license create/renew, LicenseActivated) + unit suite (LIC-01, LIC-03, LIC-04, LIC-05, LIC-06)
+- [x] 14-03-PLAN.md — GNUSLicensingPurchase facet (GNUS-burn rail, license create/renew, LicenseActivated) + unit suite (LIC-01, LIC-03, LIC-04, LIC-05, LIC-06)
 
 ---
 
