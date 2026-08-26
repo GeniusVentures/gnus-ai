@@ -833,6 +833,34 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 );
             });
 
+            it('gap-closure (WR-03): public-only SKU purchases without the private child token existing', async function () {
+                const [licenseId, creditTokenId] = await deployLicenseFixture();
+                const publicTokenId = await createPublicCreditToken(licenseId);
+                // Erase the private first-child record (slot +6 packs childCurIndex bytes 0-15
+                // + nftCreated byte 16 — the token has no children, so the created flag is the
+                // only set bit). Poisons exactly the WR-03 "private token missing" scenario.
+                await assertSlotMath(licenseId); // trust gate for the storage write
+                await provider.send('hardhat_setStorageAt', [diamondAddress, nftSlot(creditTokenId, 6n), ethers.ZeroHash]);
+                // (getNFTInfo reverts on un-created ids — the successful public-only purchase
+                // below is itself the proof the flag read back false.)
+
+                await creatorDiamond.configureSKU(SKU_ID_PUBLIC_ONLY, {
+                    priceInMinions: CREDIT_PRICE,
+                    creditAmount: 0n,
+                    duration: THIRTY_DAYS_SECONDS,
+                    createsLicense: false,
+                    renewsLicense: false,
+                    active: true,
+                    publicCreditAmount: CREDIT_AMOUNT,
+                });
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                await buyerDiamond.purchaseCredits(SKU_ID_PUBLIC_ONLY, licenseId, deviceWallet);
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, publicTokenId)).to.eq(
+                    CREDIT_AMOUNT,
+                );
+            });
+
             it('gap-closure: a credit SKU mints no legs reverts at configureSKU time', async function () {
                 await expect(
                     creatorDiamond.configureSKU(SKU_ID_SPLIT, {
