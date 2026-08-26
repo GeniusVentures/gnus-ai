@@ -501,8 +501,36 @@ Plans:
 
 ---
 
+## Phase 15: Secure BridgeIn (Phase 10 Amendment)
+
+**Goal:** Replace the manual validator-set bridgeIn surface with the rolling API-attestor certificate design from `docs/Secure-BridgeIn.md` (PD-BR-1..8) — rolling attestor root rotated as a side-effect of `bridgeIn`, canonical `BridgeMessage` identity, domain-separated `BRIDGE_CERTIFICATE_V2` digest, epoch-derived thresholds, and legacy-selector removal. Pre-deployment amendment: the legacy path has not shipped to a production network, so selector removal is a config/upgrade action, not a migration.
+
+**Source:** `docs/Secure-BridgeIn.md` (SPEC, 784 lines) → PD-BR-1..8 in `.planning/intel/decisions.md`; requirements BRIDGE-10..19 (queued 2026-08-23, scheduled post-Phase-13 — Phases 13/14 complete)
+
+**Amendment scope (verified 2026-08-26, owner-directed):** PD-BR-1..8 amend locked Phase 10 decisions D-06/D-08/D-10/D-12/D-15/D-16. These were checked and are **NOT deprecated** — the shipped `GNUSBridge.sol` implements them verbatim (digest = seven D-08/D-10 fields at `:384-393`; `validatorThreshold` gate at `:423`; `setValidatorSet(newRoot, newThreshold) onlySuperAdminRole` at `:499`). Phase 15 CONTEXT must therefore explicitly supersede/amend them per decision; no silent drift. D-01..D-05, D-07, D-09, D-11, D-13, D-14, D-17, D-20..D-22 carry forward unchanged (PD-BR-5/PD-BR-7 are aligned extensions, not conflicts).
+
+**Success Criteria:**
+
+1. BRIDGE-10/11: rolling-attestor storage appended (legacy validator storage preserved byte-for-byte, becomes dead once active); one-time `initializeBridgeAttestorV2` Genesis bootstrap; first certificate advances off Genesis — no permanent single-signature mode.
+2. BRIDGE-12: canonical `BridgeMessage` + `BRIDGE_MESSAGE_ID_V2` composite replay key (amends D-06); replay protection reuses `processedMessages` (D-07 unchanged).
+3. BRIDGE-13: `BRIDGE_CERTIFICATE_V2` digest binding `currentAttestorRoot/Epoch`, `nextAttestorRoot` (extends D-08/D-10); dest-chain + diamond-address binding preserved.
+4. BRIDGE-14: strict-ascending per-signer-Merkle-proof verification, epoch-derived thresholds, 16-signature cap (amends D-12/D-15).
+5. BRIDGE-15: atomic new `bridgeIn` — replay-mark + root transition before mint (CEI); failed mint reverts root update.
+6. BRIDGE-16: legacy `bridgeIn` selector removed/stubbed; `setValidatorSet` removed or converted to named emergency-recovery (paused + superAdmin + never restores Genesis).
+7. BRIDGE-18: cross-language test vectors (C++ SuperGenius exporter ↔ Solidity verifier) checked in and run in CI; BRIDGE-19 amendment test matrix extends (not replaces) the Phase 10 legacy suite.
+8. BRIDGE-17: SuperGenius#363/#364 tracked in parallel in the SuperGenius repo (owner ruling 2026-08-26: NOT local blockers — EVM work proceeds concurrently); both must be closed before production activation.
+
+**Requirements:** BRIDGE-10, BRIDGE-11, BRIDGE-12, BRIDGE-13, BRIDGE-14, BRIDGE-15, BRIDGE-16, BRIDGE-17, BRIDGE-18, BRIDGE-19
+**Priority:** P1 (pre-deployment security revision)
+**Depends on:** Phase 10 (bridgeIn surface), Phase 13 (bridge policy gate — D-24 privileged bridgeOut must survive the selector change)
+
+**Plans:** none yet
+
+---
+
 _Roadmap created: 2026-05-26_
 _Phases 8-12 added: 2026-06-15_
 _Phase 13 added: 2026-08-03 (context locked)_
 _Phase 14 added: 2026-08-03 (ingested from private-network-ai.md)_
 _Phase 10 amendment queued: 2026-08-23 (ingested from Secure-BridgeIn.md — pre-deployment bridgeIn revision, scheduled post-Phase-13)_
+_Phase 15 added: 2026-08-26 (schedules the queued Phase 10 amendment; D-06/D-08/D-10/D-12/D-15/D-16 verified NOT deprecated; #363/#364 ruled parallel non-blockers by owner)_
