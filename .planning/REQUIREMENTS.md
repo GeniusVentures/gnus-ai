@@ -100,8 +100,8 @@ _These are investigation items only — no implementation committed until resear
 - [x] **BRIDGE-15**: New `bridgeIn(BridgeMessage calldata, bytes32 nextAttestorRoot, bytes[] calldata signatures, bytes32[][] calldata merkleProofs)` — pause/init → dest/message → replay → digest → cert-verify → (replay-mark + root-update BEFORE mint, CEI) → `_mintWithBridgeFee` (D-22 unchanged) → `BridgeReleased`. Atomic: failed mint reverts root update + replay marker. Root transition installs `nextAttestorRoot` + increments epoch by 1 (emits `BridgeAttestorSetAdvanced`); unchanged root processes claim with no epoch bump.
 - [x] **BRIDGE-16**: Legacy-selector removal — legacy `bridgeIn(bytes32,uint256,address,uint256,bytes[],bytes32[][])` removed or stubbed to always-revert; `setValidatorSet` removed or converted to an explicitly-named emergency-recovery (requires paused + onlySuperAdminRole + nonzero root + never restores Genesis + increments epoch + emits emergency-reset). **Amends locked D-15.**
 - [ ] **BRIDGE-17**: SuperGenius prerequisites — #363 (slot quorum uses only signature-verified votes) and #364 (slot 0 identifies the API RPC that actually succeeded for that exact claim) must close before production activation. EVM-side work may proceed in parallel; track in `.planning/SUBREPOS.md` when scheduled.
-- [ ] **BRIDGE-18**: Cross-language test vectors — fixed vectors proving the C++ SuperGenius exporter and the Solidity verifier compute identical digests/signatures/proofs (private key, 64-byte SG pubkey, EVM address, roots, epoch, BridgeMessage fields, struct hash, EIP-191 digest, 65-byte r‖s‖v sig, recovered address, Merkle proof). Checked into repo, run in CI.
-- [ ] **BRIDGE-19**: BridgeIn-amendment test matrix — bootstrap, current-root verification, root transitions, replay/domain binding, existing-token behavior, cross-language vectors (source doc lines 654-727). Extends (does not replace) the Phase 10 suite, which covers the legacy path being removed.
+- [x] **BRIDGE-18**: Cross-language test vectors — fixed vectors proving the C++ SuperGenius exporter and the Solidity verifier compute identical digests/signatures/proofs (private key, 64-byte SG pubkey, EVM address, roots, epoch, BridgeMessage fields, struct hash, EIP-191 digest, 65-byte r‖s‖v sig, recovered address, Merkle proof). Checked into repo, run in CI.
+- [x] **BRIDGE-19**: BridgeIn-amendment test matrix — bootstrap, current-root verification, root transitions, replay/domain binding, existing-token behavior, cross-language vectors (source doc lines 654-727). Extends (does not replace) the Phase 10 suite, which covers the legacy path being removed.
 
 ## Out of Scope
 
@@ -168,8 +168,8 @@ _These are investigation items only — no implementation committed until resear
 | BRIDGE-15   | Phase 15   | Complete |
 | BRIDGE-16   | Phase 15   | Complete |
 | BRIDGE-17   | Phase 15   | Pending  |
-| BRIDGE-18   | Phase 15   | Pending  |
-| BRIDGE-19   | Phase 15   | Pending  |
+| BRIDGE-18   | Phase 15   | Complete |
+| BRIDGE-19   | Phase 15   | Complete |
 
 **Coverage:**
 
