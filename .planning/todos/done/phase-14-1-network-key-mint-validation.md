@@ -1,6 +1,11 @@
 ---
 title: "Phase 14.1: network-key mint validation (privateNetworkId = Ed25519 pubkey)"
 date: 2026-08-25
+status: CLOSED (plan 14-05, 2026-08-25) — research question #5 resolved: per-leg amounts are
+  FIXED IN THE SKU (operator-configured; buyer picks among SKUs, never supplies amounts —
+  preserves D-27 permissionlessness and D-10 exact-burn). Buyer-chosen splits at purchase are
+  DEFERRED. Implemented as `creditAmount` (private leg, semantics unchanged) + appended
+  `publicCreditAmount` (public leg).
 priority: P1
 source: /gsd-explore 2026-08-25 (see notes/network-pubkey-identity.md)
 ---
