@@ -82,6 +82,26 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
     const SKU_ID_HYBRID_CREDIT = 4n;
     const HYBRID_CREDIT_AMOUNT = toWei('50');
 
+    // Phase 14 gap-closure (plan 14-05) — split-mint SKUs + network-key validation.
+    const SKU_ID_SPLIT = 5n;
+    const SKU_ID_PUBLIC_ONLY = 6n;
+    const PRIVATE_LEG = toWei('2.5');
+    const PUBLIC_LEG = toWei('2.5');
+    const ROGUE_NETWORK_ID = 99n;
+    const PUBLIC_CHILD_INDEX = 1n; // test-side mirror of _PUBLIC_CHILD_INDEX
+
+    // keccak256("gnus.ai.nft.factory.storage") — NFT struct mapping base slot
+    // (slot-math helper pattern from GNUSLifecycleUpgrade.test.ts).
+    const FACTORY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.nft.factory.storage'));
+
+    /** Storage slot of NFTs[tokenId] + offset (verified layout: +11 companyAdmin, +12 privateNetworkId). */
+    function nftSlot(tokenId: bigint, offset: bigint): string {
+        const mappingSlot = ethers.keccak256(
+            ethers.AbiCoder.defaultAbiCoder().encode(['uint256', 'uint256'], [tokenId, FACTORY_STORAGE_SLOT]),
+        );
+        return ethers.toBeHex(BigInt(mappingSlot) + offset, 32);
+    }
+
     for (const [networkName, provider] of networkProviders.entries()) {
         describe(`Chain: ${networkName}  Diamond: ${diamondName}`, function () {
             let diamond: Diamond;
@@ -182,6 +202,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                     createsLicense: false,
                     renewsLicense: false,
                     active: true,
+                    publicCreditAmount: 0n,
                 };
             }
 
@@ -193,6 +214,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                     createsLicense: true,
                     renewsLicense: false,
                     active: true,
+                    publicCreditAmount: 0n,
                 };
             }
 
@@ -204,6 +226,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                     createsLicense: false,
                     renewsLicense: true,
                     active: true,
+                    publicCreditAmount: 0n,
                 };
             }
 
@@ -286,7 +309,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                     .to.be.revertedWith('Only creator or admin');
             });
 
-            it('LIC-03: getSKU round-trips all seven D-04 fields', async function () {
+            it('LIC-03: getSKU round-trips all eight D-04 fields (incl. gap-closure publicCreditAmount)', async function () {
                 await creatorDiamond.configureSKU(SKU_ID_CREDIT, creditSku());
                 const sku = await geniusDiamond.getSKU(SKU_ID_CREDIT);
                 expect(sku.priceInMinions).to.eq(CREDIT_PRICE);
@@ -295,6 +318,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 expect(sku.createsLicense).to.eq(false);
                 expect(sku.renewsLicense).to.eq(false);
                 expect(sku.active).to.eq(true);
+                expect(sku.publicCreditAmount).to.eq(0n); // append-only zero default
             });
 
             it('LIC-03: setSKUActive(false) then purchase reverts "SKU inactive"', async function () {
@@ -526,6 +550,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                     createsLicense: false,
                     renewsLicense: false,
                     active: true,
+                    publicCreditAmount: 0n,
                 });
                 const rootInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
                 const licenseChildIndex: bigint = rootInfo.childCurIndex;
@@ -591,6 +616,208 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
             function licenseIdOf(creditTokenId: bigint): bigint {
                 return creditTokenId >> 128n;
             }
+
+            // ---------------- Phase 14 gap-closure: network-key mint validation ----------------
+
+            /**
+             * Slot-math sanity check: read the fixture license's companyAdmin (slot +11) via
+             * eth_getStorageAt and assert it equals the padded address BEFORE trusting any
+             * poison write through nftSlot() (GNUSLifecycleUpgrade.test.ts pattern).
+             */
+            async function assertSlotMath(licenseId: bigint) {
+                const raw = await provider.send('eth_getStorageAt', [diamondAddress, nftSlot(licenseId, 11n)]);
+                expect(ethers.getAddress('0x' + raw.slice(26))).to.eq(companyAdmin);
+            }
+
+            /** Poison a token's privateNetworkId (slot +12) with the given value. */
+            async function poisonNetworkId(tokenId: bigint, value: bigint) {
+                await provider.send('hardhat_setStorageAt', [
+                    diamondAddress,
+                    nftSlot(tokenId, 12n),
+                    ethers.toBeHex(value, 32),
+                ]);
+                const readBack = await provider.send('eth_getStorageAt', [diamondAddress, nftSlot(tokenId, 12n)]);
+                expect(BigInt(readBack)).to.eq(value); // confirm the write landed
+            }
+
+            /** Create the license's SECOND child (public credits token) and return its id. */
+            async function createPublicCreditToken(licenseId: bigint): Promise<bigint> {
+                await creatorDiamond.createNFTWithLifecycle(
+                    licenseId,
+                    'Acme Public Credits',
+                    'ACME-PUB',
+                    EXCHANGE_RATE_ONE,
+                    SKU_MAX_SUPPLY,
+                    'ipfs://acme/public-credits',
+                    companyCreditsConfig(),
+                );
+                return (licenseId << 128n) | PUBLIC_CHILD_INDEX;
+            }
+
+            it('gap-closure: createLicense reverts on privateNetworkId == 0', async function () {
+                await creatorDiamond.configureSKU(SKU_ID_LICENSE, licenseSku());
+                await expect(
+                    creatorDiamond.createLicense(SKU_ID_LICENSE, {
+                        name: 'ZeroNet',
+                        symbol: 'ZERO',
+                        newuri: 'ipfs://zero',
+                        companyAdmin,
+                        privateNetworkId: 0n,
+                        networkScope: NETWORK_SCOPE_PRIVATE_ONLY,
+                        publicSettlementEnabled: false,
+                    }),
+                ).to.be.revertedWith('Private network id required');
+            });
+
+            it('gap-closure: a network id can be claimed by exactly ONE license', async function () {
+                const [licenseId] = await deployLicenseFixture();
+                expect(licenseId).to.not.eq(0n); // fixture sanity
+
+                // Duplicate claim of PRIVATE_NETWORK_ID reverts.
+                await expect(
+                    creatorDiamond.createLicense(SKU_ID_LICENSE, {
+                        name: 'Dup Lic',
+                        symbol: 'DUP',
+                        newuri: 'ipfs://dup',
+                        companyAdmin,
+                        privateNetworkId: PRIVATE_NETWORK_ID,
+                        networkScope: NETWORK_SCOPE_PRIVATE_ONLY,
+                        publicSettlementEnabled: false,
+                    }),
+                ).to.be.revertedWith('Network id already licensed');
+
+                // A DIFFERENT network id succeeds.
+                const rootInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
+                const childIndex: bigint = rootInfo.childCurIndex;
+                await creatorDiamond.createLicense(SKU_ID_LICENSE, {
+                    name: 'Other Lic',
+                    symbol: 'OTHER',
+                    newuri: 'ipfs://other',
+                    companyAdmin,
+                    privateNetworkId: PRIVATE_NETWORK_ID + 1n,
+                    networkScope: NETWORK_SCOPE_PRIVATE_ONLY,
+                    publicSettlementEnabled: false,
+                });
+                const otherId = (GNUS_TOKEN_ID << 128n) | childIndex;
+                expect((await geniusDiamond.getNFTInfo(otherId)).privateNetworkId).to.eq(PRIVATE_NETWORK_ID + 1n);
+            });
+
+            it('gap-closure: purchase lazily propagates the license privateNetworkId onto the credit token', async function () {
+                const [licenseId, creditTokenId] = await deployLicenseFixture();
+                // Fixture credit token starts at the zero default.
+                expect((await geniusDiamond.getNFTInfo(creditTokenId)).privateNetworkId).to.eq(0n);
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                await buyerDiamond.purchaseCredits(SKU_ID_CREDIT, licenseId, deviceWallet);
+
+                expect((await geniusDiamond.getNFTInfo(creditTokenId)).privateNetworkId).to.eq(PRIVATE_NETWORK_ID);
+            });
+
+            it('gap-closure: a credit token with a mismatched network id reverts the purchase', async function () {
+                const [licenseId, creditTokenId] = await deployLicenseFixture();
+                await assertSlotMath(licenseId); // trust gate for the poison write
+                await poisonNetworkId(creditTokenId, ROGUE_NETWORK_ID);
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                const supplyBefore = await geniusDiamond['totalSupply()']();
+                await expect(
+                    buyerDiamond.purchaseCredits(SKU_ID_CREDIT, licenseId, deviceWallet),
+                ).to.be.revertedWith('Credit network mismatch');
+                expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, creditTokenId)).to.eq(0n);
+            });
+
+            it('gap-closure: split-mint SKU mints BOTH legs in one transaction with ONE price burn', async function () {
+                const [licenseId, creditTokenId] = await deployLicenseFixture();
+                const publicTokenId = await createPublicCreditToken(licenseId);
+                await creatorDiamond.configureSKU(SKU_ID_SPLIT, {
+                    priceInMinions: CREDIT_PRICE,
+                    creditAmount: PRIVATE_LEG,
+                    duration: THIRTY_DAYS_SECONDS,
+                    createsLicense: false,
+                    renewsLicense: false,
+                    active: true,
+                    publicCreditAmount: PUBLIC_LEG,
+                });
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                const supplyBefore = await geniusDiamond['totalSupply()']();
+                await buyerDiamond.purchaseCredits(SKU_ID_SPLIT, licenseId, deviceWallet);
+
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, creditTokenId)).to.eq(PRIVATE_LEG);
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, publicTokenId)).to.eq(PUBLIC_LEG);
+                // D-10 exact-delta: totalSupply delta == price regardless of the leg split.
+                expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore - CREDIT_PRICE);
+                // The public leg NEVER carries a network key.
+                expect((await geniusDiamond.getNFTInfo(publicTokenId)).privateNetworkId).to.eq(0n);
+            });
+
+            it('gap-closure: a poisoned public-leg token (nonzero network id) reverts the split purchase', async function () {
+                const [licenseId] = await deployLicenseFixture();
+                const publicTokenId = await createPublicCreditToken(licenseId);
+                await assertSlotMath(licenseId); // trust gate for the poison write
+                await poisonNetworkId(publicTokenId, ROGUE_NETWORK_ID);
+                await creatorDiamond.configureSKU(SKU_ID_SPLIT, {
+                    priceInMinions: CREDIT_PRICE,
+                    creditAmount: PRIVATE_LEG,
+                    duration: THIRTY_DAYS_SECONDS,
+                    createsLicense: false,
+                    renewsLicense: false,
+                    active: true,
+                    publicCreditAmount: PUBLIC_LEG,
+                });
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                const supplyBefore = await geniusDiamond['totalSupply()']();
+                await expect(
+                    buyerDiamond.purchaseCredits(SKU_ID_SPLIT, licenseId, deviceWallet),
+                ).to.be.revertedWith('Public credit network mismatch');
+                expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
+            });
+
+            it('gap-closure: public-only SKU mints ONLY the public leg; private clock untouched', async function () {
+                const [licenseId, creditTokenId] = await deployLicenseFixture();
+                const publicTokenId = await createPublicCreditToken(licenseId);
+                await creatorDiamond.configureSKU(SKU_ID_PUBLIC_ONLY, {
+                    priceInMinions: CREDIT_PRICE,
+                    creditAmount: 0n,
+                    duration: THIRTY_DAYS_SECONDS,
+                    createsLicense: false,
+                    renewsLicense: false,
+                    active: true,
+                    publicCreditAmount: CREDIT_AMOUNT,
+                });
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                await buyerDiamond.purchaseCredits(SKU_ID_PUBLIC_ONLY, licenseId, deviceWallet);
+
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, creditTokenId)).to.eq(0n);
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, publicTokenId)).to.eq(CREDIT_AMOUNT);
+                // Zero-amount private leg: no renewal clock started on the private token.
+                expect(await geniusDiamond.holderExpiresAt(creditTokenId, deviceWallet)).to.eq(0n);
+                // But the public token's own clock runs.
+                const now = BigInt(await time.latest());
+                expect(await geniusDiamond.holderExpiresAt(publicTokenId, deviceWallet)).to.eq(
+                    now + THIRTY_DAYS_SECONDS,
+                );
+            });
+
+            it('gap-closure: a credit SKU mints no legs reverts at configureSKU time', async function () {
+                await expect(
+                    creatorDiamond.configureSKU(SKU_ID_SPLIT, {
+                        priceInMinions: CREDIT_PRICE,
+                        creditAmount: 0n,
+                        duration: THIRTY_DAYS_SECONDS,
+                        createsLicense: false,
+                        renewsLicense: false,
+                        active: true,
+                        publicCreditAmount: 0n,
+                    }),
+                ).to.be.revertedWith('SKU mints no credits');
+                // License/renewal SKUs are unaffected by the new gate (zero credit fields legal).
+                await creatorDiamond.configureSKU(SKU_ID_LICENSE, licenseSku());
+                await creatorDiamond.configureSKU(SKU_ID_RENEWAL, renewalSku());
+            });
         });
     }
 });
