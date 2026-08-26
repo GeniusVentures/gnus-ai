@@ -2,8 +2,8 @@
 phase: 15
 slug: secure-bridgein-phase-10-amendment
 status: draft
-nyquist_compliant: false
-wave_0_complete: false  # planner note: Wave-0 gaps are created inside 15-03/15-04 tasks (new files + rework), not a separate wave
+nyquist_compliant: true
+wave_0_complete: false  # flips true during execution: Wave-0 gaps are created inside 15-03/15-04 tasks (new files + rework), not a separate wave
 created: 2026-08-26
 ---
 
@@ -41,8 +41,8 @@ created: 2026-08-26
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 15-01-01 | 15-01 | 1 | BRIDGE-10 | T-15-01 register | storage append decodes at slots +3..+6; legacy slots +1/+2 frozen | unit (storage probe, Phase-9/14 pattern) | `npx hardhat test test/unit/GNUSBridgeAttestorIn.test.ts` | ❌ Wave 0 (new) | ⬜ pending |
-| 15-01-02 | 15-01 | 1 | BRIDGE-11, 16 | T-15-0x EoP | one-time init + threshold bounds 2..16 + emergency never-Genesis shape | unit + boundary tests | same | ❌ Wave 0 (new) | ⬜ pending |
+| 15-01-01 | 15-01 | 1 | BRIDGE-10 | T-15-01 register | storage append decodes at slots +3..+6; legacy slots +1/+2 frozen | unit (storage probe, Phase-9/14 pattern) | `npx hardhat test test/unit/GNUSBridgeAttestorUpgrade.test.ts` * | ❌ Wave 0 (new) | ⬜ pending |
+| 15-01-02 | 15-01 | 1 | BRIDGE-11, 16 | T-15-0x EoP | one-time init + threshold bounds 2..16 + emergency never-Genesis shape | unit + boundary tests | `npx hardhat test test/unit/GNUSBridgeAttestorUpgrade.test.ts` * | ❌ Wave 0 (new) | ⬜ pending |
 | 15-01-03 | 15-01 | 1 | BRIDGE-10 | T-15-0x upgrade | facet registered at `versions["2.6"]` priority 116; ABI/typechain regenerated | compile + config assertion | `yarn compile` + node ABI check | ✅ exists | ⬜ pending |
 | 15-02-01 | 15-02 | 2 | BRIDGE-12, 13 | T-15-0x spoofing | BridgeMessage + messageId derivation + BRIDGE_CERTIFICATE_V2 split-encode digest | compile + unit | `yarn compile` then attestor suite | ❌ Wave 0 (new) | ⬜ pending |
 | 15-02-02 | 15-02 | 2 | BRIDGE-14, 15, 16 | T-15-0x tampering/DoS | verify matrix (8 SPEC rows); CEI root-transition atomicity; legacy selector removal + loupe proof | compile + unit | `yarn compile` + attestor suite + bytecode asserts | ❌ Wave 0 (new) | ⬜ pending |
@@ -54,6 +54,8 @@ created: 2026-08-26
 | 15-04-04 | 15-04 | 4 | all | — | full-suite baseline gate at known baselines | full suite | `npx hardhat test && yarn forge:test` | ✅ exists | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+
+*\* Task-time gate for 15-01 tasks is compile + storage/upgrade probe (`GNUSBridgeAttestorUpgrade.test.ts`); the definitive behavioral coverage for these requirements arrives with the wave-3 `GNUSBridgeAttestorIn.test.ts` matrix (rows 15-03-01/02).*
 
 ---
 
@@ -81,11 +83,11 @@ created: 2026-08-26
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 10 min
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 10 min
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved at planning (plan-checker iteration 2 — no blockers; warnings resolved, `wave_0_complete` flips true when the 15-03/15-04 task files land during execution)
