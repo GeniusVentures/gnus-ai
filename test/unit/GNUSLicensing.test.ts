@@ -567,6 +567,24 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
             });
 
+            it('LIC-05 (PR-78 P1): credits purchase under a NON-license token reverts "Not a license token"', async function () {
+                const [, creditTokenId] = await deployLicenseFixture();
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                // A created but non-license NFT (the company credit token) — must not be
+                // usable as a mint target for a global credit SKU (topping up unrelated,
+                // potentially redeemable, child tokens).
+                await expect(buyerDiamond.purchaseCredits(SKU_ID_CREDIT, creditTokenId, deviceWallet)).to.be.revertedWith(
+                    'Not a license token',
+                );
+                // The product root itself is not a license either.
+                await expect(buyerDiamond.purchaseCredits(SKU_ID_CREDIT, GNUS_TOKEN_ID, deviceWallet)).to.be.revertedWith(
+                    'Not a license token',
+                );
+                // No burn happened.
+                const supplyBefore = await geniusDiamond['totalSupply()']();
+                expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
+            });
+
             // ---------------- LIC-06: hybrid redeemability (config only, D-05/D-28) ----------------
 
             it('LIC-06: exchangeRate>0 + REDEEM_TO_PARENT token redeems via the existing Phase 13 settle path', async function () {
