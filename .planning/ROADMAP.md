@@ -34,7 +34,7 @@
 | #   | Phase                    | Goal                                                              | Requirements         | Success Criteria |
 | --- | ------------------------ | ----------------------------------------------------------------- | -------------------- | ---------------- |
 | 13  | Time-Bound Entitlements  | 6/6 | Complete   | 2026-08-24 |
-| 14  | Private-Network Licensing| 4/4 | Complete   | 2026-08-26 |
+| 14  | Private-Network Licensing| 5/5 | Complete   | 2026-08-26 |
 
 ## Phase Details
 
@@ -485,7 +485,7 @@ Plans:
 **Depends on:** Phase 13 (lifecycle/transfer/disposition mechanisms); transitively Phase 9 (reserves) and Phase 10 (bridge)
 **Open design question:** PD-7 private-spend settlement pattern (`.planning/intel/decisions.md`) — RESOLVED by D-07/D-29 (see 14-CONTEXT.md)
 
-**Plans:** 4/4 plans complete
+**Plans:** 5/5 plans complete
 
 Plans:
 

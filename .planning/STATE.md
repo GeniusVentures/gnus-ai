@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 14 context gathered
-last_updated: "2026-08-26T00:23:46.032Z"
+stopped_at: Completed 14-05-PLAN.md (Phase 14 complete)
+last_updated: "2026-08-26T02:10:00.000Z"
 progress:
   total_phases: 16
-  completed_phases: 14
-  total_plans: 36
-  completed_plans: 36
-  percent: 88
+  completed_phases: 15
+  total_plans: 42
+  completed_plans: 42
+  percent: 92
 ---
 
 # Project State
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 13 — time-bound-erc1155-entitlements
+**Current focus:** Phase 14 complete (5/5 plans) — next per ROADMAP: Phase 15
 
 ## Phase Status
 
@@ -42,7 +42,10 @@ See: .planning/PROJECT.md
 | 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
 | 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
-| 14    | Private-Network AI Licensing      | ○      | 0/0   | 0%       |
+| 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
+
+### Phase 14 Decisions Logged (14-05)
+- 14-05: split-mint per-leg amounts are FIXED IN THE SKU (research question #5 resolved) — buyer-chosen splits deferred; zero-amount legs skip renewal clock and mint (no zero-mint clocks); networkIdToLicense uniqueness registry (claim pre-creation, write at finalization)
 
 ## Next Actions
 
@@ -126,6 +129,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-26T00:23:46.024Z
+Last session: 2026-08-26T01:24:26.146Z
 Stopped at: Phase 14 context gathered
 Resume file: None
