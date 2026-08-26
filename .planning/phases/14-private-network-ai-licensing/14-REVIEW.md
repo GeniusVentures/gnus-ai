@@ -18,7 +18,7 @@ findings:
   warning: 3
   info: 3
   total: 7
-status: issues_found
+status: fixed
 ---
 
 # Phase 14: Code Review Report
@@ -37,6 +37,8 @@ One Critical finding: `renewLicense` is permissionless but performs exactly the 
 ## Critical Issues
 
 ### CR-01: Permissionless `renewLicense` mutates `validUntil` on ANY created NFT — bypasses role-gated `setValidUntil` and forges `LicenseActivated`
+
+**Status:** Fixed — see 14-REVIEW-FIX.md
 
 **File:** `contracts/gnus-ai/GNUSLicensingPurchase.sol:347-364`
 **Issue:** `renewLicense(skuId, licenseId)` requires only (a) an active `renewsLicense` SKU and (b) `NFTs[licenseId].nftCreated`. It never verifies the target is a license NFT — there is no check against `GNUSLicensingStorage.layout().licenseSku[licenseId] != 0` (the governing-license registry that IS written in `_finalizeLicense:328` but never read anywhere in the codebase), no check that the NFT was created via `createLicense`, and no parent/scope check. Consequences for any buyer with `priceInMinions` GNUS:
@@ -60,6 +62,8 @@ require(ls.licenseSku[licenseId] != 0, "Not a license token");
 
 ### WR-01: `purchaseCredits` has no license-expiry gate — credits are purchasable under an EXPIRED license
 
+**Status:** Fixed — see 14-REVIEW-FIX.md
+
 **File:** `contracts/gnus-ai/GNUSLicensingPurchase.sol:165-168`
 **Issue:** The license lookup checks only `licenseNft.nftCreated`. The license's PerTokenId `validUntil` is never consulted. A tenant whose license expired long ago can still permissionlessly buy and mint fresh PerHolder credits under it (the shared hook's "Sale ended" gate keys on the CREDIT token's own `validUntil`, which is 0 in PerHolder mode, so nothing stops the mint). CONTEXT D-14 says expiry enforcement is SG-side, but D-23's rationale ("expired value must not reach SuperGenius") argues symmetric EVM-side gating; at minimum the purchase path should not mint new private-network entitlements for an expired network identity. Either gate here or record the decision explicitly in CONTEXT.
 
@@ -74,12 +78,16 @@ require(
 
 ### WR-02: `licenseSku` registry is write-only — dead storage that masks CR-01
 
+**Status:** Fixed — see 14-REVIEW-FIX.md
+
 **File:** `contracts/gnus-ai/GNUSLicensingStorage.sol:19-20`, `contracts/gnus-ai/GNUSLicensingPurchase.sol:328`
 **Issue:** `licenseSku[licenseId] = skuId` is written in `_finalizeLicense` and documented as "renewal SKUs look up their governing license", but no code path ever reads it (grep across `contracts/gnus-ai/` confirms the only non-declaration reference is the write). It is dead state today and its unusedness is precisely what allowed CR-01. If the governing-SKU semantics are deferred, annotate as such; otherwise consume it (see CR-01 fix).
 
 **Fix:** Read it in `renewLicense` as the license-identity check (CR-01), or remove/re-document the mapping until it has a consumer.
 
 ### WR-03: Public-only SKU still hard-requires the private first-child token and runs its verifier with `amount = 0`
+
+**Status:** Fixed — see 14-REVIEW-FIX.md
 
 **File:** `contracts/gnus-ai/GNUSLicensingPurchase.sol:166-168, 182-187`
 **Issue:** For a `creditAmount == 0` SKU (public-only), the code still requires `(licenseId << 128) | 0` to exist (`_ERR_CREDIT_TOKEN_MISSING`) and still calls its credential verifier with `sku.creditAmount == 0` — a verifier leg for a leg that will never be minted. Two effects: (a) operators must create a private credit token even for pure-public offerings; (b) a verifier with an `amount > 0` expectation rejects valid public-only purchases, while a permissive verifier is consulted with meaningless arguments. The private-leg existence check and verifier call should be inside the `sku.creditAmount > 0` guard (the network-id propagation, by contrast, is reasonable to keep unconditional since it binds the token for future use).
@@ -90,17 +98,23 @@ require(
 
 ### IN-01: Unused import `IERC20Upgradeable` in GNUSLicensingPurchase
 
+**Status:** Fixed — see 14-REVIEW-FIX.md
+
 **File:** `contracts/gnus-ai/GNUSLicensingPurchase.sol:4`
 **Issue:** The import is referenced only in comments (lines 124, 129); the local topic-equal `Transfer`/`Approval` declarations make it unnecessary. Dead import.
 **Fix:** Delete line 4.
 
 ### IN-02: `networkScope` is not propagated/validated on credit tokens — only `privateNetworkId`
 
+**Status:** Fixed — see 14-REVIEW-FIX.md
+
 **File:** `contracts/gnus-ai/GNUSLicensingPurchase.sol:174-178`
 **Issue:** A license created `PrivateOnly`/`Hybrid` propagates its network id onto the credit token, but the credit token's own `networkScope` remains the zero default (`PublicOnly`). Downstream consumers reading token-level scope see "public" on a private-network-bound credit. Cosmetic today (no on-chain scope consumer), but an inconsistent record.
 **Fix:** Also propagate/validate `networkScope` in the same block, or document that scope is license-level only.
 
 ### IN-03: Misleading test name — "renewal by a non-governing SKU" tests a wrong-TYPE SKU, not a non-governing renewal SKU
+
+**Status:** Fixed — see 14-REVIEW-FIX.md
 
 **File:** `test/unit/GNUSLicensing.test.ts:530-537`
 **Issue:** The test reverts on `SKU does not renew licenses` (a credit SKU — type gate), which is fine, but no test covers the actual governing relationship (renewing a license through an unrelated `renewsLicense` SKU, or — once CR-01 is fixed — renewing a non-license token). Rename and extend after the CR-01 fix.
