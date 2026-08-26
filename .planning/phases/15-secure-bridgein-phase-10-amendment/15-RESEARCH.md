@@ -382,19 +382,22 @@ function emergencyRecoverAttestorSet(bytes32 newRoot) external onlySuperAdminRol
 
 **Everything else in this research is VERIFIED (local probe/compile/codebase/framework-source) or CITED (docs/Secure-BridgeIn.md, decisions.md, planning artifacts).**
 
-## Open Questions
+## Open Questions (RESOLVED 2026-08-26 — all three adopted into 15-CONTEXT.md)
 
 1. **Active-threshold bounds in `setBridgeAttestorActiveThreshold`** (PD-BR-2 revised allows override but does not set bounds)
    - What we know: SPEC fixes GENESIS=1, ACTIVE=2, MAX=16; owner allows a superAdmin override with genesis pinned at 1.
    - What's unclear: whether the override may go below 2 (a 1-of-N active threshold would recreate single-signer risk under superAdmin control) or above 16 (unusable — cert cap rejects it anyway).
    - Recommendation: enforce `newThreshold >= ACTIVE_ATTESTOR_THRESHOLD (2)` AND `<= MAX_ATTESTOR_SIGNATURES (16)`; reverts "Active threshold below floor" / "Active threshold above signature cap" (probe implements exactly this).
+   - RESOLVED: CONTEXT D-03 — bounds 2 <= newThreshold <= 16.
 2. **Genesis bootstrap wiring on upgrade**
    - What we know: `initializeBridgeAttestorV2(genesisAttestor)` is one-time, onlySuperAdminRole; the genesis address is an out-of-band owner input; fresh 2.6 local deploys would auto-run any configured `deployInit`.
    - What's unclear: whether the owner wants config `upgradeInit`/`deployInit` wiring (requires hardcoding the genesis address in `geniusdiamond.config.json` — it would also execute automatically on every new-chain deploy).
    - Recommendation: NO config init — manual superAdmin call after the cut, documented in the deployment runbook; keeps the genesis address out of the repo and the operator in the loop.
+   - RESOLVED: CONTEXT D-04 — no config init; manual post-cut superAdmin call.
 3. **Legacy `bridgeIn`: full selector removal vs always-revert stub**
    - What we know: SPEC allows either; removal is automatic via the registry diff; a stub keeps a self-describing revert but costs bytecode and ABI surface in the size-constrained facet; no live chain has the selector yet.
    - Recommendation: full removal (delete from source; nothing to remove on sepolia; future callers get the diamond fallback revert). Choose the stub only if the owner wants an explicit "use V2 bridgeIn" revert message.
+   - RESOLVED: CONTEXT D-06 — full removal, not a stub.
 
 ## Environment Availability
 
