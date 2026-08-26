@@ -92,8 +92,8 @@ _These are investigation items only — no implementation committed until resear
 
 ### BridgeIn Amendment
 
-- [ ] **BRIDGE-10**: Rolling-attestor storage — append `bridgeAttestorRoot`, `bridgeAttestorEpoch`, `bridgeAttestorV2Initialized` to `GNUSBridgeValidatorStorage.Layout` (append-only; legacy `validatorMerkleRoot`/`validatorThreshold` preserved byte-for-byte, become dead once active). Diamond storage upgrade test proves existing state decodes.
-- [ ] **BRIDGE-11**: One-time `initializeBridgeAttestorV2(address genesisAttestor)` (onlySuperAdminRole) — bootstraps the rolling root with a single Genesis attestor (one-leaf root, epoch 0, emits `BridgeAttestorSetInitialized`). First successful certificate must advance off Genesis (no permanent Genesis mode).
+- [x] **BRIDGE-10**: Rolling-attestor storage — append `bridgeAttestorRoot`, `bridgeAttestorEpoch`, `bridgeAttestorV2Initialized` to `GNUSBridgeValidatorStorage.Layout` (append-only; legacy `validatorMerkleRoot`/`validatorThreshold` preserved byte-for-byte, become dead once active). Diamond storage upgrade test proves existing state decodes.
+- [x] **BRIDGE-11**: One-time `initializeBridgeAttestorV2(address genesisAttestor)` (onlySuperAdminRole) — bootstraps the rolling root with a single Genesis attestor (one-leaf root, epoch 0, emits `BridgeAttestorSetInitialized`). First successful certificate must advance off Genesis (no permanent Genesis mode).
 - [ ] **BRIDGE-12**: Canonical `BridgeMessage` struct (`srcChainID, sourceBridgeID, sourceTxHash, sourceEventIndex, recipient, amount`) replacing free-form `transferId`; replay message ID derived on-chain via `BRIDGE_MESSAGE_ID_V2` domain + composite key; `sourceEventIndex` disambiguates same-tx events. Replay protection reuses `processedMessages` (D-07 unchanged). **Amends locked D-06.**
 - [ ] **BRIDGE-13**: `BRIDGE_CERTIFICATE_V2` digest — binds `currentAttestorRoot, currentAttestorEpoch, nextAttestorRoot` into the EIP-191 struct hash alongside existing fields; preserves dest-chain + diamond-address binding. **Extends locked D-08/D-10.**
 - [ ] **BRIDGE-14**: `_verifyBridgeAttestorCertificate` replaces `_verifyThresholdCertificate` — strict-ascending signers, per-signer Merkle proof against `currentRoot`, epoch-derived threshold, 16-signature cap, no MMR/multiproof. **Amends locked D-12/D-15.**
@@ -160,8 +160,8 @@ _These are investigation items only — no implementation committed until resear
 | LIC-05      | Phase 14   | Complete |
 | LIC-06      | Phase 14   | Complete |
 | LIC-07      | Phase 14   | Complete |
-| BRIDGE-10   | Phase 15   | Pending  |
-| BRIDGE-11   | Phase 15   | Pending  |
+| BRIDGE-10   | Phase 15   | Complete |
+| BRIDGE-11   | Phase 15   | Complete |
 | BRIDGE-12   | Phase 15   | Pending  |
 | BRIDGE-13   | Phase 15   | Pending  |
 | BRIDGE-14   | Phase 15   | Pending  |

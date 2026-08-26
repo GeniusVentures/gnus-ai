@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 14-05-PLAN.md (Phase 14 complete)
-last_updated: "2026-08-26T02:10:00.000Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-08-26T22:58:00.000Z"
 progress:
-  total_phases: 16
-  completed_phases: 15
-  total_plans: 42
-  completed_plans: 42
-  percent: 92
+  total_phases: 17
+  completed_phases: 14
+  total_plans: 41
+  completed_plans: 38
+  percent: 93
 ---
 
 # Project State
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 14 complete (5/5 plans) — next per ROADMAP: Phase 15
+**Current focus:** Phase 15 — secure-bridgein-phase-10-amendment
 
 ## Phase Status
 
@@ -43,8 +43,17 @@ See: .planning/PROJECT.md
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
 | 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
 | 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
+| 15    | Secure BridgeIn (Ph10 Amendment)  | ○      | 1/4   | 25%      |
+
+### Phase 15 Decisions Logged (15-01)
+
+- 15-01: `activeBridgeAttestorThreshold()` returns the EFFECTIVE epoch-derived threshold (1 at Genesis epoch 0, stored override at epoch > 0) per D-03 — the stored default 2 is asserted via the raw slot +6 probe; plan's Task-3 "getter == 2" reading conflated override with effective value
+- 15-01: emergency recovery requires an initialized V2 set + one-shot init ⇒ epoch 0 structurally unreachable (Genesis unrecoverable, T-15-04); emergency writes epoch = old+1, never touches the init flag
+- 15-01: GNUSBridgeAttestor registered at priority 116 / versions["2.6"] / fromVersions [0.0, 2.4, 2.5], no deployInit/upgradeInit (genesis address stays out of the repo, D-04); facet 16,795 B, GNUSBridge unchanged at 23,276 B; full Hardhat suite 616/2/1 (baseline 606/2/1 + 10 new)
+- 15-01: BRIDGE-16 left pending — conversion half done here, legacy-selector removal half is Plan 15-02 (which also claims BRIDGE-16)
 
 ### Phase 14 Decisions Logged (14-05)
+
 - 14-05: split-mint per-leg amounts are FIXED IN THE SKU (research question #5 resolved) — buyer-chosen splits deferred; zero-amount legs skip renewal clock and mint (no zero-mint clocks); networkIdToLicense uniqueness registry (claim pre-creation, write at finalization)
 
 ## Quick Tasks
@@ -135,6 +144,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-26T01:24:26.146Z
-Stopped at: Phase 14 context gathered
+Last session: 2026-08-26T22:58:00.000Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
