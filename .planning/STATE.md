@@ -47,6 +47,12 @@ See: .planning/PROJECT.md
 ### Phase 14 Decisions Logged (14-05)
 - 14-05: split-mint per-leg amounts are FIXED IN THE SKU (research question #5 resolved) — buyer-chosen splits deferred; zero-amount legs skip renewal clock and mint (no zero-mint clocks); networkIdToLicense uniqueness registry (claim pre-creation, write at finalization)
 
+## Quick Tasks
+
+| Date | Slug | Description | Status |
+| ---- | ---- | ----------- | ------ |
+| 2026-08-26 | sku0-sentinel-guard | createLicense rejects SKU id 0 (licenseSku sentinel collision) | ✓ complete |
+
 ## Next Actions
 
 1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
