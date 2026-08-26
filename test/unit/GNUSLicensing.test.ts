@@ -389,6 +389,20 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 );
             });
 
+            it('LIC-04 (WR-01): purchase under an EXPIRED license reverts "License expired"', async function () {
+                const [licenseId, creditTokenId] = await deployLicenseFixture();
+                const licenseUntil = (await geniusDiamond.getNFTInfo(licenseId)).validUntil;
+                await time.setNextBlockTimestamp(Number(licenseUntil + EXPIRY_GRACE_SECONDS));
+
+                await buyerDiamond.approve(diamondAddress, CREDIT_PRICE);
+                const supplyBefore = await geniusDiamond['totalSupply()']();
+                await expect(
+                    buyerDiamond.purchaseCredits(SKU_ID_CREDIT, licenseId, deviceWallet),
+                ).to.be.revertedWith('License expired');
+                expect(await geniusDiamond['totalSupply()']()).to.eq(supplyBefore);
+                expect(await geniusDiamond['balanceOf(address,uint256)'](deviceWallet, creditTokenId)).to.eq(0n);
+            });
+
             // ---------------- LIC-01: hierarchy (D-02) ----------------
 
             it('LIC-01: license is a direct child of the product root; non-creator createLicense reverts', async function () {
