@@ -541,7 +541,7 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 );
             });
 
-            it('LIC-05: renewal by a non-governing SKU reverts; payment burn is the renew rail', async function () {
+            it('LIC-05: a credit SKU cannot renew (type gate); payment burn is the renew rail', async function () {
                 const [licenseId] = await deployLicenseFixture();
                 await buyerDiamond.approve(diamondAddress, LICENSE_PRICE);
                 // SKU_ID_CREDIT is a credit SKU — cannot drive renewals.
@@ -742,6 +742,10 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 await buyerDiamond.purchaseCredits(SKU_ID_CREDIT, licenseId, deviceWallet);
 
                 expect((await geniusDiamond.getNFTInfo(creditTokenId)).privateNetworkId).to.eq(PRIVATE_NETWORK_ID);
+                // IN-02: the license's networkScope propagates alongside the network id.
+                expect((await geniusDiamond.getNFTInfo(creditTokenId)).networkScope).to.eq(
+                    BigInt(NETWORK_SCOPE_PRIVATE_ONLY),
+                );
             });
 
             it('gap-closure: a credit token with a mismatched network id reverts the purchase', async function () {
