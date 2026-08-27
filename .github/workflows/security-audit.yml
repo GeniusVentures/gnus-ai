@@ -36,25 +36,14 @@ jobs:
       HAS_SOCKET: ${{ secrets.SOCKET_CLI_API_TOKEN != '' }}
     steps:
       # contracts/gnus-ai is a submodule and carries most of the .sol surface
-      # slither analyzes (81 contracts locally), so it IS fetched — but via
-      # the explicit init below rather than checkout's `submodules: recursive`:
-      # recursive also fetches .devcontainer, whose pinned gitlink (812ae69)
-      # exists only on a local develop branch (DiamondsLab/diamonds-devcontainer
-      # is pull-only for this account), failing checkout with "not our ref".
-      # No CI step consumes .devcontainer; once that gitlink reaches the
-      # remote, `submodules: recursive` can replace the explicit init below.
+      # slither analyzes (81 contracts locally) — recursive checkout is
+      # required for parity with the local gate. All three pinned submodules
+      # now resolve: .devcontainer points at the GeniusVentures copy
+      # (fast-forwarded with the DEP-01 pin + eslint mirror commits).
       - name: Checkout
         uses: actions/checkout@v5
-
-      # Both repos are public: the inline insteadOf rewrites their git@ SSH
-      # URLs to anonymous https for this one command only (a manual step gets
-      # none of checkout's own submodule auth wiring); --depth=1 matches
-      # checkout's submodule fetch depth.
-      - name: Init submodules (CI surface only)
-        run: |
-          git -c url."https://github.com/".insteadOf="git@github.com:" \
-            submodule update --init --depth=1 \
-            contracts/gnus-ai diamonds/GeniusDiamond
+        with:
+          submodules: recursive
 
       - name: Set up Node 24
         uses: actions/setup-node@v4
