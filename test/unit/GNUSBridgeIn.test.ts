@@ -85,7 +85,6 @@ describe('GNUSBridge bridgeIn (post-removal V2 surface)', function () {
 	let geniusDiamond: GeniusDiamond;
 	let owner: SignerWithAddress;
 	let user1: SignerWithAddress;
-	let user2: SignerWithAddress;
 	let initialSnapshotId: string;
 	let snapshotId: string;
 
@@ -252,7 +251,7 @@ describe('GNUSBridge bridgeIn (post-removal V2 surface)', function () {
 
 		geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, diamondAddress, hre.ethers);
 
-		[owner, user1, user2] = await ethers.getSigners();
+		[owner, user1] = await ethers.getSigners();
 
 		// Seed the provenance counter so the global-cap check in the fee-mint
 		// replica can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
