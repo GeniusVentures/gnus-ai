@@ -2,18 +2,21 @@ import { ethers } from 'hardhat';
 import type { BaseWallet } from 'ethers';
 
 /**
- * Bridge-in certificate helpers (Phase 10 — Lock/Release Bridge Vault).
+ * Bridge-in certificate helpers (Phase 10 — Lock/Release Bridge Vault; extended
+ * by Phase 15 — Secure BridgeIn amendment).
  *
- * Pure utility module (no Hardhat network calls). Produces EIP-191 wrapped
- * ECDSA certificates that round-trip against the on-chain verifier in
- * `contracts/gnus-ai/GNUSBridge.sol::bridgeIn` / `_verifyThresholdCertificate`.
+ * Pure utility module (no Hardhat network calls). The V2 helpers below produce
+ * EIP-191 wrapped ECDSA certificates that round-trip against the on-chain
+ * verifier in `contracts/gnus-ai/GNUSBridgeAttestor.sol`: the on-chain twin of
+ * `computeBridgeInStructHashV2` is `_bridgeInDigestV2`, and the sorted+proofed
+ * certificate shape feeds `_verifyBridgeAttestorCertificate` via `bridgeIn`.
  *
  * References:
- *  - CONTEXT D-08 — digest binds transferId, srcChainID, destChainID, diamond,
- *    recipient, tokenId, amount (cross-chain, cross-diamond replay protection).
- *  - CONTEXT D-10 — validators sign an EVM-compatible digest, EIP-191 wrapped.
- *  - CONTEXT D-13 — signatures must be submitted sorted strictly ascending by
- *    recovered address (duplicate-proof).
+ *  - CONTEXT D-08/D-10 — validators sign an EVM-compatible digest, EIP-191
+ *    wrapped, binding the dest chain and the diamond (cross-chain,
+ *    cross-diamond replay protection).
+ *  - CONTEXT D-13 (extended by PD-BR-5) — signatures must be submitted sorted
+ *    strictly ascending by recovered address (duplicate-proof, cap 16).
  *  - RESEARCH Pitfall 1 — do NOT manually prepend the EIP-191 prefix;
  *    `wallet.signMessage` applies it internally.
  *  - RESEARCH Pitfall 3 — merkle leaf is `keccak256(abi.encodePacked(address))`
@@ -23,87 +26,35 @@ import type { BaseWallet } from 'ethers';
  * `SignEVM` (see 10-RESEARCH.md §"SuperGenius-Side EVM Envelope Signer") — keep
  * it readable and side-effect free.
  *
+ * RETAINED-FOR-HISTORY (Phase 10 block): the Phase 10 V1 digest/signature
+ * exports (`BridgeInMessage`, `computeBridgeInStructHash`,
+ * `signBridgeInCertificate`) were DELETED — their on-chain counterpart
+ * (`GNUSBridge.sol::bridgeIn` / `_verifyThresholdCertificate`) was removed by
+ * Phase 15 D-06 and they had zero consumers left. `aggregateCertificate` (the
+ * ascending-sort/duplicate-guard aggregator) and `buildValidatorMerkleTree`
+ * remain live: `aggregateCertificateV2` delegates to the former and every V2
+ * certificate builder consumes the latter (the aggregation and tree
+ * conventions are shared across V1/V2).
+ *
  * Phase 15 (Secure BridgeIn amendment) extends the module additively with the
  * V2 helpers (BRIDGE_MESSAGE_ID_V2 composite replay key + BRIDGE_CERTIFICATE_V2
  * rolling-root digest + the genesis/active attestor certificate builder).
- * The Phase 10 exports above stay untouched — the rewritten legacy suite may
- * still import them. This file REMAINS the reference implementation for the
- * SuperGenius C++ exporter's V2 `SignEVM`: every V2 helper below mirrors
- * `contracts/gnus-ai/GNUSBridgeAttestor.sol` field-for-field (the on-chain
- * twin of `computeBridgeInStructHashV2` is `_bridgeInDigestV2`), and the
+ * This file REMAINS the reference implementation for the SuperGenius C++
+ * exporter's V2 `SignEVM`: every V2 helper below mirrors
+ * `contracts/gnus-ai/GNUSBridgeAttestor.sol` field-for-field, and the
  * checked-in vectors in `test/fixtures/bridge-attestor-vectors.json` are the
  * cross-language parity contract (BRIDGE-18 / D-08).
  */
-
-/**
- * Fields committed into the bridge-in digest. Field ORDER and TYPES are
- * load-bearing — they must match `_bridgeInDigest` in GNUSBridge.sol:
- *
- *   structHash = keccak256(abi.encode(
- *       transferId, srcChainID, destChainID, diamondAddress,
- *       recipient, tokenId, amount
- *   ))
- */
-export interface BridgeInMessage {
-	/** Source-chain burn transaction hash (replay-protection key). */
-	transferId: string;
-	/** Chain ID the bridge-out was initiated on. */
-	srcChainID: bigint;
-	/** Chain ID the bridge-in is executing on (== block.chainid on the test chain). */
-	destChainID: bigint;
-	/** Diamond address (== address(this) on the diamond). */
-	diamondAddress: string;
-	/** Recipient of the minted tokens. */
-	recipient: string;
-	/** Token ID — always 0n for GNUS (D-14). */
-	tokenId: bigint;
-	/** PRE-FEE amount of tokens to bridge in. */
-	amount: bigint;
-}
-
-/**
- * Computes the structHash (pre-EIP-191) for a bridge-in message.
- *
- * Must produce byte-identical output to the on-chain `keccak256(abi.encode(...))`
- * in `_bridgeInDigest`. Exported so tests can recover signer addresses off-chain
- * (via `aggregateCertificate`) using the same digest the diamond will compute.
- */
-export function computeBridgeInStructHash(message: BridgeInMessage): string {
-	const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
-		['bytes32', 'uint256', 'uint256', 'address', 'address', 'uint256', 'uint256'],
-		[
-			message.transferId,
-			message.srcChainID,
-			message.destChainID,
-			message.diamondAddress,
-			message.recipient,
-			message.tokenId,
-			message.amount,
-		],
-	);
-	return ethers.keccak256(encoded);
-}
-
-/**
- * Signs a bridge-in message with the given validator wallet.
- *
- * Returns the 65-byte EIP-191 wrapped signature `r‖s‖v` as a hex string.
- * `wallet.signMessage` applies the `"\x19Ethereum Signed Message:\n32"` prefix
- * internally — do NOT prepend it manually (RESEARCH Pitfall 1).
- */
-export async function signBridgeInCertificate(
-	wallet: BaseWallet,
-	message: BridgeInMessage,
-): Promise<string> {
-	const structHash = computeBridgeInStructHash(message);
-	return wallet.signMessage(ethers.getBytes(structHash));
-}
 
 /**
  * Recovers each signer's address from the EIP-191 wrapped structHash and
  * returns the signatures sorted strictly ascending by recovered address
  * (per CONTEXT D-13). Throws on duplicate signers — the on-chain verifier
  * would revert anyway; failing fast in the helper surfaces the bug earlier.
+ *
+ * RETAINED-FOR-HISTORY (Phase 10): the V1 digest/signature callers were deleted
+ * with Phase 15 D-06; this aggregator stays because `aggregateCertificateV2`
+ * delegates to it — the aggregation semantics are V1/V2-identical.
  */
 export async function aggregateCertificate(
 	signatures: string[],
@@ -204,7 +155,9 @@ export function buildValidatorMerkleTree(validatorAddresses: string[]): {
 
 // ---------------------------------------------------------------------------
 // Phase 15 — V2 attestor certificate helpers (BRIDGE-12..15, D-02/D-03).
-// Additive only: everything above is the frozen Phase 10 surface.
+// The Phase 10 V1 digest/signature exports were deleted (D-06 removed their
+// on-chain twin); aggregateCertificate + buildValidatorMerkleTree above are
+// retained-for-history AND live (V2 delegation / shared tree convention).
 // ---------------------------------------------------------------------------
 
 /**
