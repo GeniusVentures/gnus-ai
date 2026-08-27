@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-08-26T23:40:00.000Z"
+stopped_at: Completed 15-04-PLAN.md
+last_updated: "2026-08-27T00:21:21.000Z"
 progress:
   total_phases: 17
-  completed_phases: 14
-  total_plans: 41
-  completed_plans: 40
-  percent: 98
+  completed_phases: 16
+  total_plans: 42
+  completed_plans: 42
+  percent: 94
 ---
 
 # Project State
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 15 — secure-bridgein-phase-10-amendment
+**Current focus:** Phase 15 complete (4/4) — next: Phase 7 (Dependency Hardening / audit gate)
 
 ## Phase Status
 
@@ -43,7 +43,15 @@ See: .planning/PROJECT.md
 | 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
 | 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
 | 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
-| 15    | Secure BridgeIn (Ph10 Amendment)  | ○      | 3/4   | 75%      |
+| 15    | Secure BridgeIn (Ph10 Amendment)  | ✓      | 4/4   | 100%     |
+
+### Phase 15 Decisions Logged (15-04)
+
+- 15-04: Legacy-selector removal is proven through the diamond LOUPE, not the typechain — facetAddress(0x0bee6121/0x1abd0f1e) == zero across all facets, bridge facet's selector list contains neither, all four V2 selectors resolve to one facet; hex selector literals only so the zero-legacy-reference grep gate cannot match its own assertions
+- 15-04: [Rule 3] Both Foundry invariant setUps add setChainID(block.chainid) — the Foundry harness never set the diamond's chainID (default 0), so every bridgeIn would revert at the dest-chain guard; the Phase-10 campaign had the same latent gap, so the soundness invariant now reaches the certificate verifier for the first time
+- 15-04: Handler derives the V2 messageId off-chain (keccak over BRIDGE_MESSAGE_ID_V2 + four identity fields) in lockstep with _bridgeMessageId; slot formula unchanged (mapping at field index 0), only the key derivation changed; pseudo next-root = keccak256(abi.encode(seed)) never equals the one-leaf Genesis root so epoch-0 calls die in verification
+- 15-04: Exporter doc (docs/Secure-BridgeIn-Exporter-ABI.md) pins the FLAT 13-field abi.encode as the C++ contract with the on-chain split-encode documented as byte-identical BY PROOF (vector leg V1), never by assumption; BRIDGE-17 gate recorded there §5 (#363 OPEN / #364 CLOSED — both required before production activation)
+- 15-04: Phase-exit baselines — Hardhat 661/2/1 (only known-stale GNUSControlStorage chainID), Foundry 215/2/3 (only known Phase 08.1 setUp reverts), GNUSBridge 19,938 B / GNUSBridgeAttestor 21,536 B under EIP-170
 
 ### Phase 15 Decisions Logged (15-03)
 
@@ -77,8 +85,8 @@ See: .planning/PROJECT.md
 
 ## Next Actions
 
-1. Phases 6, 08.2, and 9 complete. Next phase per ROADMAP: Phase 10 (bridge vault). Phase 7 audit gate is unblocked once Phases 10-14 land.
-2. Cleanup follow-up (not blocking): full `npx hardhat test` on develop (verified 2026-08-17, Phase 10 work in place) shows **477 passing / 2 pending / 1 failing** — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes 38/38 in isolation on both pre- and post-Phase-10 HEADs. The earlier "25 residual failures" note was stale. Root fix belongs to a Phase 9 sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 213 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
+1. Phase 15 complete (4/4 plans, 2026-08-27). All implementation phases 8-15 landed; Phase 7 (Dependency Hardening / audit gate) is the remaining remediation phase. BRIDGE-17 stays Pending by design — production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed); tracking record: docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md.
+2. Cleanup follow-up (not blocking): full `npx hardhat test` on develop (phase-exit baseline, verified 2026-08-27 at end of Phase 15) shows **661 passing / 2 pending / 1 failing** — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes in isolation. Root fix belongs to a Phase 9-style sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 215 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -157,6 +165,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-26T23:40:00.000Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-08-27T00:21:21.000Z
+Stopped at: Completed 15-04-PLAN.md
 Resume file: None
