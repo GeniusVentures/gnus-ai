@@ -203,6 +203,15 @@ every value byte-for-byte from the frozen inputs.** At runtime the exporter subs
 LIVE `block.chainid` and deployed diamond address into the digest (environment-bound
 fields); roots, proofs, and the messageId are environment-independent.
 
+**Signer ordering.** Each vector's `signers` array is recorded **strictly ascending by
+recovered address** — the exact submission order §2.3 requires (vector 1 records attestor-2
+`0x1697...` before attestor-1 `0x335B...`). The `attestorSet` array order is INDEPENDENT of
+signer order: leaf order fixes the merkle root (`0x0391da16...`) and must never be reordered;
+only the `signers` arrays carry the ordering contract (recorded in the fixture's
+`constants.signerOrdering`). The on-chain round-trip leg V5 in
+`test/unit/GNUSBridgeAttestorIn.test.ts` submits vector 1 in the recorded order, so a fixture
+that drifts out of order fails CI with `Signers not strictly ascending`.
+
 `test/utils/bridge-certificate.ts` is the executable reference — `computeBridgeMessageId`,
 `computeBridgeInStructHashV2` (flat form), `signBridgeInCertificateV2`,
 `aggregateCertificateV2`, and `buildValidatorMerkleTree` mirror the facet field-for-field.

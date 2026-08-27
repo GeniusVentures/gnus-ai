@@ -11,7 +11,8 @@
 		"BRIDGE_CERTIFICATE_V2": "0x0c9113fc73963b588d64629e34320173d476269c17e86929f707794e43f12c5b",
 		"GNUS_TOKEN_ID": "0",
 		"merkleLeafConvention": "keccak256(abi.encodePacked(evmAddress)) — 20-byte packed (Pitfall 3)",
-		"signatureConvention": "65-byte r||s||v, EIP-191 wrapped, low-s canonical"
+		"signatureConvention": "65-byte r||s||v, EIP-191 wrapped, low-s canonical",
+		"signerOrdering": "vectors[].signers are recorded strictly ascending by recovered EVM address — the exact submission order the on-chain verifier requires (GNUSBridgeAttestor._verifyBridgeAttestorCertificate, 'Signers not strictly ascending'). attestorSet leaf order is INDEPENDENT of signer order (leaf order determines the merkle root); only the signers arrays carry the ordering contract."
 	},
 	"genesisKey": {
 		"privateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
@@ -88,18 +89,6 @@
 			"eip191Digest": "0x8c2880aa8766eb8d3c5d89e491ca6239052713ad8a46b9f1efd25d3e19329bf7",
 			"signers": [
 				{
-					"role": "attestor-1",
-					"privateKey": "0x3b36681d87da59b000dc67aed5cc1403610a941b3caa9071cba8152a1961e446",
-					"sgPublicKey64": "0x50e5db25943ea1c1a60850db703ccdab0f59c90397d82475c51285ccee993f5822b8e30f26100036e69e4bfa2a320dd01d22e0639afc0e69e7045bf4130d4a91",
-					"evmAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a",
-					"signature": "0xc0545ab3bdb1b54415dc6813c126f8cb7da98191687790a53f1f944782ee694d7deac0f25887a70306051ee1705c8b2349451a8e76d7d05a08ab747283f3ccde1b",
-					"recoveredAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a",
-					"merkleProof": [
-						"0x76fe0c65883a7a92058d1fd063246db7c8ba41016811c35ff49f76008f4e658f",
-						"0x2ab4d84c2bf58e339dab9168d3c0daf0ebfc09b95b1c51ca75911cfcabf8a803"
-					]
-				},
-				{
 					"role": "attestor-2",
 					"privateKey": "0xc95fb1dd9aa14dcd7f41628918d7aa846720a4f4591ad87c8b2ed6de0588115f",
 					"sgPublicKey64": "0x15f8e20e896fd135891ddce46d143a5538a6191db52e768f717704ed2c2861e90f852f3e7a8bd710ba604f2562ee2ce480aa7fb0d08e70f8982a6333ee996481",
@@ -108,6 +97,18 @@
 					"recoveredAddress": "0x16972DdFB46814cCaB30e8Fc94aD3A3317ECC493",
 					"merkleProof": [
 						"0x7e51907506f5d2f4f730404a2bc6b8743145a8df9cac12faa62caf54b0fba7e0",
+						"0x2ab4d84c2bf58e339dab9168d3c0daf0ebfc09b95b1c51ca75911cfcabf8a803"
+					]
+				},
+				{
+					"role": "attestor-1",
+					"privateKey": "0x3b36681d87da59b000dc67aed5cc1403610a941b3caa9071cba8152a1961e446",
+					"sgPublicKey64": "0x50e5db25943ea1c1a60850db703ccdab0f59c90397d82475c51285ccee993f5822b8e30f26100036e69e4bfa2a320dd01d22e0639afc0e69e7045bf4130d4a91",
+					"evmAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a",
+					"signature": "0xc0545ab3bdb1b54415dc6813c126f8cb7da98191687790a53f1f944782ee694d7deac0f25887a70306051ee1705c8b2349451a8e76d7d05a08ab747283f3ccde1b",
+					"recoveredAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a",
+					"merkleProof": [
+						"0x76fe0c65883a7a92058d1fd063246db7c8ba41016811c35ff49f76008f4e658f",
 						"0x2ab4d84c2bf58e339dab9168d3c0daf0ebfc09b95b1c51ca75911cfcabf8a803"
 					]
 				}

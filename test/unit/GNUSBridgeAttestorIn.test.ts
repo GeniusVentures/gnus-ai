@@ -41,6 +41,11 @@ import type { AttestorMerkleTree } from '../utils/bridge-certificate';
  *       + recipient balance (environment-bound re-sign, plan 15-03 Task 2(b)(iii)).
  *   V4. native SuperGenius-style vote-bytes signature (non-EIP-191, over the
  *       raw structHash) never verifies (PD-BR-7).
+ *   V5. on-chain round-trip for the ACTIVE vector — bootstrap → genesis
+ *       transition via vector 0 → active-root-claim via vector 1, submitted in
+ *       the FIXTURE-RECORDED signers order. Pins the strictly-ascending
+ *       recording invariant (CR-01) against the on-chain verifier: a fixture
+ *       that drifts out of order reverts "Signers not strictly ascending".
  *
  * BRIDGE-19 amendment matrix (Task 3, SPEC :657-707 — 36 checkpoints):
  *   Bootstrap (SPEC :657-665):
@@ -581,6 +586,86 @@ describe('GNUSBridgeAttestor bridgeIn (V2 certificates)', function () {
 					[[]],
 				),
 			).to.be.revertedWith('Not a registered attestor');
+		});
+
+		it('V5: on-chain round-trip — the fixture active-root-claim certificate claims at the active epoch in the RECORDED signer order (CR-01 ordering contract)', async function () {
+			const genesisVector = fixture.vectors[0];
+			const activeVector = fixture.vectors[1];
+
+			// The recorded signers array must itself be strictly ascending — the
+			// submission order the fixture conveys (constants.signerOrdering; the
+			// on-chain check below is the enforcement, this is the diagnostic).
+			const recordedAddresses = activeVector.signers.map((s) => BigInt(s.recoveredAddress));
+			for (let i = 1; i < recordedAddresses.length; i++) {
+				expect(
+					recordedAddresses[i],
+					`${activeVector.name}: signers[${i}] must be > signers[${i - 1}] (strictly ascending)`,
+				).to.be.greaterThan(recordedAddresses[i - 1]);
+			}
+
+			// Bootstrap + genesis transition exactly as V3: the fixture genesis key
+			// installs the 3-attestor root 0x0391da16... at epoch 1.
+			const genesis = new Wallet(fixture.genesisKey.privateKey);
+			await geniusDiamond.initializeBridgeAttestorV2(genesis.address);
+			const genesisLiveCert = certFromVector(genesisVector, liveEnvironment());
+			const genesisSig = await signBridgeInCertificateV2(genesis, genesisLiveCert);
+			const genesisSorted = await aggregateCertificateV2(
+				[genesisSig],
+				computeBridgeInStructHashV2(genesisLiveCert),
+			);
+			await geniusDiamond.bridgeIn(
+				messageTupleFromVector(genesisVector),
+				genesisVector.nextRoot,
+				genesisSorted,
+				[[]], // single-leaf genesis tree: proof == []
+			);
+			expect(await geniusDiamond.bridgeAttestorRoot()).to.equal(activeVector.currentRoot);
+			expect(await geniusDiamond.bridgeAttestorEpoch()).to.equal(ACTIVE_EPOCH);
+
+			// Active-root claim (2-of-3, unchanged root): re-sign each RECORDED
+			// signer over the live environment and submit IN THE RECORDED ARRAY
+			// ORDER with its recorded merkle proof — deliberately NOT re-sorted by
+			// aggregateCertificateV2. If the fixture ever records its signers out of
+			// strictly-ascending order again, the verifier rejects this leg with
+			// "Signers not strictly ascending" (the CR-01 regression).
+			const activeLiveCert = certFromVector(activeVector, liveEnvironment());
+			const orderedSigs: string[] = [];
+			const orderedProofs: string[][] = [];
+			for (const signer of activeVector.signers) {
+				const wallet = new Wallet(signer.privateKey);
+				orderedSigs.push(await signBridgeInCertificateV2(wallet, activeLiveCert));
+				orderedProofs.push(signer.merkleProof);
+			}
+
+			const tx = await geniusDiamond.bridgeIn(
+				messageTupleFromVector(activeVector),
+				activeVector.nextRoot,
+				orderedSigs,
+				orderedProofs,
+			);
+
+			// Claim-only: BridgeReleased carries the env-independent messageId and
+			// the pre-fee amount; NO advance event and NO epoch bump (R1 semantics).
+			await expect(tx)
+				.to.emit(geniusDiamond, 'BridgeReleased')
+				.withArgs(
+					activeVector.messageId,
+					activeVector.message.recipient,
+					BigInt(activeVector.message.amount),
+					BigInt(activeVector.message.srcChainID),
+					localChainId,
+				);
+			await expect(tx).to.not.emit(geniusDiamond, 'BridgeAttestorSetAdvanced');
+			expect(await geniusDiamond.bridgeAttestorEpoch()).to.equal(ACTIVE_EPOCH);
+			expect(await geniusDiamond.bridgeAttestorRoot()).to.equal(activeVector.currentRoot);
+
+			// Both vector mints (V3's genesis leg minted to the same frozen recipient
+			// within THIS test) landed: 1000 + 750e18 raw units, fee is 0 by default.
+			expect(
+				await geniusDiamond['balanceOf(address)'](activeVector.message.recipient),
+			).to.equal(
+				BigInt(genesisVector.message.amount) + BigInt(activeVector.message.amount),
+			);
 		});
 	});
 
