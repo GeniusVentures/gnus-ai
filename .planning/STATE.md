@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 07 — dependency-hardening
+**Current focus:** Remediation arc complete — Phase 7 closed 2026-08-27 (4/4 plans); remaining tracked item: BRIDGE-17 production-activation gate
 
 ## Phase Status
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 | 4     | Access Control & Observability    | ✓      | 1/1   | 100%     |
 | 5     | Circuit Breaker & Performance     | ✓      | 1/1   | 100%     |
 | 6     | Test Coverage                     | ✓      | 2/2   | 100%     |
-| 7     | Dependency Hardening              | ○      | 2/4   | 50%      |
+| 7     | Dependency Hardening              | ✓      | 4/4   | 100%     |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
@@ -86,6 +86,15 @@ See: .planning/PROJECT.md
 - 07-03: chained `yarn security-check` honesty note — the chain stops at snyk (exit 1) today, long before slither's 255; per-sub-command execution + this disposition table IS the D-08 record; the aggregate chain goes green only when the three routing events above are dispositioned by their owners
 - 07-03: socket CI precondition — `npx socket ci` (no --org flag exists on the ci alias) will reproduce the 404 until the token's default org is set; the workflow therefore invokes the proven `npx socket scan create --report --org genius-ventures .` form (documented deviation, Task 2)
 
+### Phase 7 Decisions Logged (07-04)
+
+- 07-04: D-06 ROADMAP criterion 2 rewritten from the stale "All 22 requirements" to the remediation-arc set (DEBT-01..06, SEC-01..08, PERF-01..02, TEST-01..03, QUAL-01, DEP-01 — 21 items) with the explicit BRIDGE-17 carve-out ("Pending by design — SuperGenius#363 gate"); criterion 3 added covering the D-08 audit gate + CI workflow (.github/workflows/security-audit.yml, tokenless hard gate + secret-conditional snyk/socket); D-01 sequencing note added as plain text ("Executed last per D-01; Phases 9-15 complete 2026-08-27") — gsd-sdk parses no dependency fields (07-RESEARCH OQ4)
+- 07-04: probe-then-flip rule enforced (T-07-15) — all 13 probes executed with captured output BEFORE any flip, 13/13 passed; 12 boxes flipped (DEP-01 was already [x] from 07-01, probe re-verified this run); full probe evidence pasted in commit 34f167c body, not asserted from memory
+- 07-04: remediation arc closed 21/21 — zero unchecked DEBT/SEC/PERF/TEST/QUAL/DEP boxes remain in REQUIREMENTS.md; boundary intact: BRIDGE-17 stays [ ] BY DESIGN, SWP-02/03/06/07/09 + PROXY-01/02/03 untouched (D-06/Pitfall 7); traceability table synced mechanically (Status ← checkbox state, all arcs)
+- 07-04: advisory-fix decision cross-references the 07-01/07-03 sections above (@diamondslab/hardhat-multichain 1.1.0 rename, eslint 10.9.1 supported-line bump, semgrep stub removal — owner ruling "the audit gate must exit 0 without waivers"); PROJECT.md Key Decisions row added pointing at that record, not duplicating it
+- 07-04: phase-exit gate (deterministic hard gates) — `yarn install --immutable` exit 0; `yarn npm audit --severity moderate` exit 0; Hardhat 665/2/1 with the sole failure exactly GNUSControlStorage "should return initial protocol info" (07-01's corrected baseline — the plan's 661 figure is the stale one); Foundry 215/2/3 with exactly the two Phase 08.1 setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut); `yarn slither:scan --fail-none` exit 0 with findings exactly the 3 known Phase-9 FPs (07-03's corrected spelling — `--fail-high` provably exits 255 on slither 0.11.5); slither run LAST per Pitfall 4
+- 07-04: [D-09 ROUTING EVENT — recorded, not fixed] Forge run 1 (this task) hit a non-baseline third failure: AccessControlInvariant.t.sol `invariant_revokingUnownedRoleIsSafe` — "User3 should not have UPGRADER_ROLE" (214 passed / 3 failed / 3 skipped); immediate re-run on the identical tree did NOT reproduce it (215/2/3, known-stale set only). Classification: flaky invariant — GeniusDiamondHandler.handler_grantRole (handlers/GeniusDiamondHandler.sol:535) can grant roles[3]=UPGRADER_ROLE to actors including user3 (:88) while the invariant (AccessControlInvariant.t.sol:276) asserts user3 never holds it; `invariant = { runs = 5, depth = 10 }` carries no seed. Zero test/source changes made (Task 1 is verification-only); root fix (seed the invariant config or align the invariant with the handler's grant surface) belongs to the Foundry suite's owning phase
+
 ### Phase 15 Decisions Logged (15-04)
 
 - 15-04: Legacy-selector removal is proven through the diamond LOUPE, not the typechain — facetAddress(0x0bee6121/0x1abd0f1e) == zero across all facets, bridge facet's selector list contains neither, all four V2 selectors resolve to one facet; hex selector literals only so the zero-legacy-reference grep gate cannot match its own assertions
@@ -126,8 +135,10 @@ See: .planning/PROJECT.md
 
 ## Next Actions
 
-1. Phase 15 complete (4/4 plans, 2026-08-27). All implementation phases 8-15 landed; Phase 7 (Dependency Hardening / audit gate) is the remaining remediation phase. BRIDGE-17 stays Pending by design — production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed); tracking record: docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md.
-2. Cleanup follow-up (not blocking): full `npx hardhat test` (07-01-verified baseline, re-captured 2026-08-27 twice — deterministic) shows **665 passing / 2 pending / 1 failing** (the earlier "661" record was stale, matching 07-RESEARCH Pitfall 6's orchestrator observation; 07-01-SUMMARY.md has the evidence) — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes in isolation. Root fix belongs to a Phase 9-style sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 215 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
+1. BRIDGE-17 tracking (sole deliberate remainder): production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed) — gate record at docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md; track in .planning/SUBREPOS.md when scheduled.
+2. Milestone close-out is the next GSD step — all 17 phases complete (remediation arc closed 2026-08-27): `/gsd:complete-milestone`, then `/gsd:verify-work 07`.
+3. Recorded follow-ups — on-record 07-03 D-09 audit output awaiting owner routing (no work started): (a) snyk 23 medium+ transitive finding-set + OSV 115-advisory set need an owner dependency-refresh decision in an owning phase (STATE 07-03 disposition table); (b) git-secrets 37 hits incl. the three "privateKey" fixture fields at test/fixtures/bridge-attestor-vectors.json:26,32,38 awaiting owner review — no suppressions added; (c) slither triage-capable-upgrade follow-up (root cause of the --fail-none-only severity gate); (d) semgrep `unsafe-external-call` pattern-parse fix + the promotion-to-hard-gate condition (baseline stability across runs).
+4. Test-suite cleanup (not blocking, pre-existing): Hardhat single failure `GNUSControlStorage.test.ts` "should return initial protocol info" (chainID 31337 vs 0, cross-suite pollution — passes in isolation; root fix = idempotent shared provenance initializer, Phase 9-style sweep); Foundry Phase 08.1 Safe setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut); NEW 07-04 record — AccessControlInvariant flaky failure (STATE 07-04 routing event).
 
 ### Phase 13 Decisions Logged (13-06)
 
