@@ -83,7 +83,7 @@ jobs:
       # Exact parity with the local gate version that produced the committed
       # 3-FP disposition baseline (07-03 Task 1).
       - name: Install slither 0.11.5
-        run: pip install slither==0.11.5
+        run: pip install slither-analyzer==0.11.5
 
       # Slither drives forge build for this repo (foundry.toml + remappings).
       - name: Install Foundry toolchain
