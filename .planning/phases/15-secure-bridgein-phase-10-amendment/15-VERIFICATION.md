@@ -5,7 +5,7 @@ status: passed
 score: 8/8 must-haves verified
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
+  previous_status: "gaps_found"  # quoted: phase.complete substring-scans for the bare unquoted form
   previous_score: 7/8
   gaps_closed:
     - "BRIDGE-18 vector conformance defect (CR-01): vectors[1].signers reordered strictly ascending + V5 on-chain round-trip leg + ordering invariant in fixture constants and doc §3 (commit 0a9f912)"
