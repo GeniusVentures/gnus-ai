@@ -524,13 +524,13 @@ Plans:
 **Priority:** P1 (pre-deployment security revision)
 **Depends on:** Phase 10 (bridgeIn surface), Phase 13 (bridge policy gate — D-24 privileged bridgeOut must survive the selector change)
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete (BRIDGE-17 remains Pending by design — production activation gated on SuperGenius#363 closing; see docs/Secure-BridgeIn-Exporter-ABI.md §5)
 
 Plans:
 - [x] 15-01-PLAN.md — V2 storage append (slots +3..+6) + GNUSBridgeAttestor admin facet skeleton (init/threshold/emergency) + config registration at priority 116/2.6 + slot-probe upgrade test
 - [x] 15-02-PLAN.md — V2 certificate path (BridgeMessage, split-encode BRIDGE_CERTIFICATE_V2 digest, verifier, CEI bridgeIn with inline fee-mint) + legacy bridgeIn/setValidatorSet removal from GNUSBridge
 - [x] 15-03-PLAN.md — V2 test utils, BRIDGE-18 checked-in vectors + flat/split equivalence proof, BRIDGE-19 SPEC 657-727 matrix suite
-- [ ] 15-04-PLAN.md — legacy suite rewrite + Foundry handler/invariant retarget + exporter ABI/digest spec + BRIDGE-17 gate + full-suite baseline gate
+- [x] 15-04-PLAN.md — legacy suite rewrite + Foundry handler/invariant retarget + exporter ABI/digest spec + BRIDGE-17 gate + full-suite baseline gate
 
 ---
 
