@@ -7,7 +7,7 @@
 // is signed and sent directly via ethers over the configured RPC URL.
 import hre, { ethers } from 'hardhat';
 import '@geniusventures/hardhat-diamonds';
-import 'hardhat-multichain';
+import '@diamondslab/hardhat-multichain';
 
 import {
 	DeploymentRepository,

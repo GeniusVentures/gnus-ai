@@ -10,7 +10,7 @@ import chai, { assert, expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { JsonRpcProvider } from 'ethers';
 import hre from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@diamondslab/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
 import { GeniusOwnershipFacet, IERC20Upgradeable__factory } from '../../typechain-types';
