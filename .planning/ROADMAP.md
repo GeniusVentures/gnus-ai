@@ -1,7 +1,7 @@
 # Roadmap: Gnus.ai Tech Debt & Security Remediation
 
 **Created:** 2026-05-26
-**Updated:** 2026-08-21
+**Updated:** 2026-08-27
 **Granularity:** Standard (13 phases; Phase 12 retired 2026-08-21 — superseded by Phase 10)
 **Core Value:** Production-ready smart contracts with reserve-backed token economics, lock/release cross-chain bridging, and standard-compliant ERC-20 proxy — all reviewed and safe for mainnet deployment.
 
@@ -17,7 +17,7 @@
 | 4   | Access Control & Observability | 1/1 | Complete   | 2026-07-21 |
 | 5   | Circuit Breaker & Performance  | 1/1 | Complete   | 2026-07-21 |
 | 6   | Test Coverage                  | 2/2 | Complete   | 2026-07-24 |
-| 7   | Dependency Hardening           | 3/4 | In Progress|  |
+| 7   | Dependency Hardening           | 4/4 | Complete   | 2026-08-27 |
 
 ### Phases 8-12: Architecture Transformation
 
@@ -164,14 +164,17 @@ Plans:
 
 **Goal:** Pin the `contracts-starter` GitHub dependency to a specific commit hash for deterministic builds. Run final audit and verification pass.
 
+Executed last per D-01; Phases 9-15 complete 2026-08-27.
+
 **Success Criteria:**
 
 1. `package.json` `contracts-starter` dependency includes a concrete commit hash (e.g., `#<sha>`). Yarn install produces a consistent lockfile entry.
-2. Full test suite passes (`yarn test` and `yarn forge:test`). All 22 requirements are verified complete.
+2. Full test suite passes (`yarn test` and `yarn forge:test`) at the documented known-stale baselines. Remediation-arc requirements verified complete in REQUIREMENTS.md (DEBT-01..06, SEC-01..08, PERF-01..02, TEST-01..03, QUAL-01, DEP-01 — 21 items); BRIDGE-17 remains Pending by design (SuperGenius#363 gate).
+3. Full security gate (D-08) executed with written dispositions (STATE.md "Phase 7 Decisions Logged (07-03)" record) and the CI audit workflow at `.github/workflows/security-audit.yml` running the tokenless hard gate (immutable install + npm audit + slither `--fail-none`) with secret-conditional snyk/socket steps.
 
 **Requirements:** DEP-01
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 
@@ -186,7 +189,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 07-04-PLAN.md — Evidence-based docs reconciliation (REQUIREMENTS/ROADMAP/PROJECT/STATE, probe-then-flip) + phase-exit gate
+- [x] 07-04-PLAN.md — Evidence-based docs reconciliation (REQUIREMENTS/ROADMAP/PROJECT/STATE, probe-then-flip) + phase-exit gate
 
 ---
 

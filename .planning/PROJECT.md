@@ -29,30 +29,10 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 - ✓ DevOps security tooling: Slither, Snyk, Semgrep, OSV-Scanner, Socket Security
 - ✓ Lock/release bridging via provenance relocation — threshold-ECDSA `bridgeIn` certificate verification, replay-protected via `processedMessages`, global-supply conserving (BRIDGE-02/03/04) — Validated in Phase 10: Lock/Release Bridge Vault — `contracts/gnus-ai/GNUSBridge.sol`, `contracts/gnus-ai/GNUSBridgeValidatorStorage.sol`
 - ✓ Secure BridgeIn V2 — rolling API-attestor root rotated as a side-effect of `bridgeIn`, canonical `BridgeMessage` identity, domain-separated `BRIDGE_CERTIFICATE_V2` split-encode digest, epoch-derived thresholds (2..16 override), strict-ascending per-signer Merkle proofs, CEI atomic root transition, emergency recovery, legacy-selector removal (BRIDGE-10..16, 18, 19) — Validated in Phase 15: Secure BridgeIn (Phase 10 Amendment) — `contracts/gnus-ai/GNUSBridgeAttestor.sol`, `test/fixtures/bridge-attestor-vectors.json`, `docs/Secure-BridgeIn-Exporter-ABI.md`
+- ✓ Tech-debt & security remediation arc closed (DEBT-01..06, SEC-01..08, PERF-01..02, TEST-01..03, QUAL-01, DEP-01 — 21 items) — Validated across Phases 1-7; every checkbox reconciled on source-level probe evidence in 07-04 (probe-then-flip, REQUIREMENTS.md synced) — key artifacts: `package.json` contracts-starter commit pin (`#commit=bf67b736…`, immutable-install green), `.github/workflows/security-audit.yml` CI audit gate (tokenless-hard + secret-conditional scanners), `.planning/STATE.md` "Phase 7 Decisions Logged (07-03)" disposition record
 
 ### Active
 
-- [ ] **DEBT-01**: Remove GeniusAI facet — OpenEscrow code is dead; escrow moved to SuperGenius chain. Remove `contracts/gnus-ai/GeniusAI.sol`, `contracts/gnus-ai/GeniusAIStorage.sol`, and facet from `diamonds/GeniusDiamond/geniusdiamond.config.json`
-- [ ] **DEBT-02**: Remove `hardhat/console.sol` import and `console.log()` call from `contracts/gnus-ai/DiamondInitFacet.sol` (line 4, line 46). Replace with event emission.
-- [ ] **DEBT-03**: Standardize all contract pragmas to `^0.8.19` (currently mixed: `^0.8.0`, `^0.8.2`, `^0.8.19`)
-- [ ] **DEBT-04**: Remove duplicate `_setupRole`/`_grantRole` calls for same roles in `DiamondInitFacet.diamondInitialize250()` (lines 51-57)
-- [ ] **DEBT-05**: Consolidate duplicated `onlySuperAdminRole` modifier — `DiamondInitFacet.sol` (line 34) duplicates `GeniusAccessControl.sol` (line 73)
-- [ ] **DEBT-06**: Remove commented-out network configs from `hardhat.config.ts` (lines 237-241, 282-324)
-- [ ] **SEC-01**: Fix `ERC20TransferBatch.mintBatch()` payable without ETH use (`contracts/gnus-ai/ERC20TransferBatch.sol:42`). Add `require(msg.value == 0)` guard.
-- [ ] **SEC-02**: Add input validation to `GNUSBridge.withdraw()` — validate `amount >= exchangeRate` and `exchangeRate > 0` to prevent division truncation losses (`contracts/gnus-ai/GNUSBridge.sol:156`)
-- [ ] **SEC-03**: Add input validation to `GNUSBridge.bridgeOut()` — validate `destChainID != chainID` to prevent self-bridging
-- [ ] **SEC-04**: Add array length validation to `GNUSControl.banTransferorBatch()` and `allowTransferorBatch()` — require `tokenIds.length == bannedAddresses.length` (`contracts/gnus-ai/GNUSControl.sol:81-109`)
-- [ ] **SEC-05**: Add `onlySuperAdminRole` modifier to `DiamondInitFacet.diamondInitialize250()`
-- [ ] **SEC-06**: Emit events when super admin bypasses withdrawal limiter (`GNUSBridge.sol:159`, `GNUSERC1155MaxSupply.sol:57`, `ERC20TransferBatch.sol:155`)
-- [ ] **SEC-07**: Enable Slither static analysis on all production contracts — remove `contracts/gnus-ai/` from `slither.config.json` filter_paths
-- [ ] **SEC-08**: Add diamond-level emergency pause mechanism — circuit breaker for all state-changing operations
-- [ ] **PERF-01**: Merge double loop in `GNUSERC1155MaxSupply._beforeTokenTransfer()` into single loop (`contracts/gnus-ai/GNUSERC1155MaxSupply.sol:33-73`)
-- [ ] **PERF-02**: Cap `binCount` maximum in `GNUSWithdrawLimiterStorage.setDefaultBinCount()` to bound worst-case gas
-- [ ] **TEST-01**: Replace stub fuzz tests in `test/foundry/fuzz/ExampleFuzz.t.sol` with real fuzz tests or remove file
-- [ ] **TEST-02**: Complete NFTFactory 2nd-gen child token burn assertions (`test/unit/NFTFactory.test.ts:371,375,522`)
-- [ ] **TEST-03**: Add banned transferor getter to `GNUSControlStorage.sol` and corresponding test coverage
-- [ ] **QUAL-01**: Add `supportsInterface` override to `DiamondInitFacet.sol` (matching pattern in other facets)
-- [ ] **DEP-01**: Pin `contracts-starter` to a specific commit hash in `package.json`
 - [ ] **BRIDGE-17**: SuperGenius production-activation gate — #363 (slot quorum uses only signature-verified votes) and #364 (slot 0 identifies the API RPC that succeeded) must close before bridgeIn activation; #364 closed, #363 OPEN. Gate record: `docs/Secure-BridgeIn-Exporter-ABI.md` §5
 
 ### Out of Scope
@@ -101,6 +81,7 @@ No mainnet deployments exist. The `mainnet.json`, `base.json`, `bsc.json`, and `
 | Standardize on Solidity 0.8.19    | Compiler config already uses 0.8.19; pragmas should match                           | — Pending     |
 | Exact version pinning (no ranges) | Supply chain security; prevents unintended dependency updates                       | ✓ Implemented |
 | 7-day minimum package age check   | Supply chain security; blocks brand-new unvetted packages                           | ✓ Implemented |
+| In-phase deprecation-advisory fixes (hardhat-multichain → @diamondslab/hardhat-multichain 1.1.0; eslint supported-line bump; semgrep stub removal) | Owner ruling 2026-08-27 — the audit gate must exit 0 without waivers | ✓ Implemented |
 
 ## Evolution
 
@@ -123,4 +104,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-08-27 after Phase 15 completion_
+_Last updated: 2026-08-27 after Phase 7 completion (remediation arc closed; BRIDGE-17 sole deliberate remainder)_
