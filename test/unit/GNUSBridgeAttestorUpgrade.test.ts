@@ -8,7 +8,13 @@ import hre, { ethers } from 'hardhat';
 import { Wallet } from 'ethers';
 import type { HDNodeWallet } from 'ethers';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import {
+	buildAttestorCertificate,
+	buildValidatorMerkleTree,
+} from '../utils/bridge-certificate';
+import type { AttestorMerkleTree } from '../utils/bridge-certificate';
 
 /**
  * Phase 15 unit tests — BRIDGE-10 storage-append slot probe + the GNUSBridgeAttestor
@@ -27,7 +33,10 @@ import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePo
  *      owner bootstrap writes the one-leaf Genesis root at epoch 0, init flag 1, threshold 2;
  *      a second call reverts with the one-shot revert string (D-04).
  *   3. setBridgeAttestorActiveThreshold: 1 reverts at the floor, 17 at the cap, 5 succeeds
- *      and emits BridgeAttestorActiveThresholdSet(2, 5) with slot +6 reading 5 (D-03).
+ *      and emits BridgeAttestorActiveThresholdSet(2, 5) with slot +6 reading 5 (D-03);
+ *      the override also GOVERNS live certificate verification (WR-01, 15 review) —
+ *      threshold 3 rejects a 2-of-3 certificate ("Below threshold") and accepts 3-of-3 —
+ *      and a forced zero at slot +6 at epoch > 0 yields the effective default 2 (zero-guard).
  *   4. emergencyRecoverAttestorSet: unpaused reverts; after emergencyPause() a nonzero root
  *      succeeds, emits BridgeAttestorEmergencyReset(0, 1, oldRoot, newRoot), leaves slot +5
  *      == 1, sets epoch to 1; a subsequent initializeBridgeAttestorV2 still reverts
@@ -58,6 +67,11 @@ describe('GNUSBridgeAttestor V2 upgrade', function () {
 	const THRESHOLD_FLOOR_REVERT = 1n;
 	const THRESHOLD_CAP_REVERT = 17n;
 	const THRESHOLD_VALID = 5n;
+	const THRESHOLD_OVERRIDE = 3n; // WR-01: 2-of-3 fails, 3-of-3 passes
+	const GENESIS_EPOCH = 0n; // slot +4 value written by initializeBridgeAttestorV2
+	const ACTIVE_EPOCH = 1n; // epoch after the one-signature genesis transition
+	const SRC_CHAIN_ID = 137n; // != localChainId (cross-chain guard, SPEC :490)
+	const WR01_CLAIM_AMOUNT = toWei(10);
 
 	let geniusDiamond: GeniusDiamond;
 	let owner: SignerWithAddress;
@@ -65,6 +79,12 @@ describe('GNUSBridgeAttestor V2 upgrade', function () {
 	let initialSnapshotId: string;
 	let snapshotId: string;
 	let diamondAddress: string;
+	let localChainId: bigint;
+
+	// WR-01 live-verification attestor set: a 3-attestor active tree (fresh random
+	// wallets per suite run — the GNUSBridgeAttestorIn.test.ts pattern).
+	let attestors: HDNodeWallet[];
+	let activeTree: AttestorMerkleTree;
 
 	/// Raw storage slot at base + offset, 32-byte zero-padded hex.
 	function attestorSlot(offset: bigint): string {
@@ -106,6 +126,14 @@ describe('GNUSBridgeAttestor V2 upgrade', function () {
 		geniusDiamond = await loadDiamondContract<GeniusDiamond>(diamond, diamondAddress, hre.ethers);
 
 		[owner, user1] = await ethers.getSigners();
+
+		// Record the live chain id (the WR-01 leg re-points the diamond's chainID
+		// inside the test so bridgeIn's destination-chain check passes).
+		localChainId = (await ethers.provider.getNetwork()).chainId;
+
+		// WR-01 live-verification attestor set: a 3-attestor active tree.
+		attestors = [Wallet.createRandom(), Wallet.createRandom(), Wallet.createRandom()];
+		activeTree = buildValidatorMerkleTree(attestors.map((a) => a.address));
 
 		// Seed the provenance counter (scaffold guard — this suite never mints, but re-runs
 		// against a cached diamond must not revert). Guarded by a storage probe.
@@ -205,6 +233,111 @@ describe('GNUSBridgeAttestor V2 upgrade', function () {
 				.to.emit(geniusDiamond, 'BridgeAttestorActiveThresholdSet')
 				.withArgs(ACTIVE_ATTESTOR_THRESHOLD, THRESHOLD_VALID);
 			expect(await readSlot(SLOT_ACTIVE_THRESHOLD)).to.equal(THRESHOLD_VALID);
+		});
+
+		it('governs LIVE verification (WR-01): threshold 3 rejects a 2-of-3 certificate and accepts 3-of-3', async function () {
+			// Bootstrap + one-signature genesis transition onto the 3-attestor tree
+			// (epoch 1, default active threshold 2) — the GNUSBridgeAttestorIn
+			// transitionTo pattern, inlined so this suite stays self-contained.
+			const genesis = Wallet.createRandom();
+			await geniusDiamond.initializeBridgeAttestorV2(genesis.address);
+			await geniusDiamond.setChainID(localChainId);
+			const genesisTree = buildValidatorMerkleTree([genesis.address]);
+			const transitionMessage = {
+				srcChainID: SRC_CHAIN_ID,
+				sourceBridgeID: ethers.zeroPadValue('0xabcd', 32),
+				sourceTxHash: ethers.id('wr01-genesis-transition'),
+				sourceEventIndex: 0n,
+				recipient: owner.address, // sink — keeps the user1 balance assertion clean
+				amount: WR01_CLAIM_AMOUNT,
+			};
+			const transitionCert = await buildAttestorCertificate(
+				transitionMessage,
+				[genesis],
+				genesisTree,
+				GENESIS_EPOCH,
+				activeTree.root,
+				{ destChainID: localChainId, diamondAddress },
+			);
+			await geniusDiamond.bridgeIn(
+				transitionMessage,
+				activeTree.root,
+				transitionCert.sortedSigs,
+				transitionCert.merkleProofs,
+			);
+			expect(await geniusDiamond.bridgeAttestorEpoch()).to.equal(ACTIVE_EPOCH);
+
+			// RAISE the override — the verifier must enforce the STORED value, not the
+			// init default (a regression that ignores the override fails here).
+			await geniusDiamond.setBridgeAttestorActiveThreshold(THRESHOLD_OVERRIDE);
+			expect(await geniusDiamond.activeBridgeAttestorThreshold()).to.equal(THRESHOLD_OVERRIDE);
+
+			// 2-of-3 at threshold 3 -> "Below threshold".
+			const twoOfThreeMessage = {
+				srcChainID: SRC_CHAIN_ID,
+				sourceBridgeID: ethers.zeroPadValue('0xabcd', 32),
+				sourceTxHash: ethers.id('wr01-two-of-three'),
+				sourceEventIndex: 0n,
+				recipient: user1.address,
+				amount: WR01_CLAIM_AMOUNT,
+			};
+			const twoOfThree = await buildAttestorCertificate(
+				twoOfThreeMessage,
+				[attestors[0], attestors[1]],
+				activeTree,
+				ACTIVE_EPOCH,
+				activeTree.root,
+				{ destChainID: localChainId, diamondAddress },
+			);
+			await expect(
+				geniusDiamond.bridgeIn(
+					twoOfThreeMessage,
+					activeTree.root,
+					twoOfThree.sortedSigs,
+					twoOfThree.merkleProofs,
+				),
+			).to.be.revertedWith('Below threshold');
+
+			// 3-of-3 at threshold 3 -> releases.
+			const threeOfThreeMessage = {
+				srcChainID: SRC_CHAIN_ID,
+				sourceBridgeID: ethers.zeroPadValue('0xabcd', 32),
+				sourceTxHash: ethers.id('wr01-three-of-three'),
+				sourceEventIndex: 0n,
+				recipient: user1.address,
+				amount: WR01_CLAIM_AMOUNT,
+			};
+			const threeOfThree = await buildAttestorCertificate(
+				threeOfThreeMessage,
+				attestors,
+				activeTree,
+				ACTIVE_EPOCH,
+				activeTree.root,
+				{ destChainID: localChainId, diamondAddress },
+			);
+			await expect(
+				geniusDiamond.bridgeIn(
+					threeOfThreeMessage,
+					activeTree.root,
+					threeOfThree.sortedSigs,
+					threeOfThree.merkleProofs,
+				),
+			)
+				.to.emit(geniusDiamond, 'BridgeReleased')
+				.withArgs(threeOfThree.messageId, user1.address, WR01_CLAIM_AMOUNT, SRC_CHAIN_ID, localChainId);
+			expect(
+				await geniusDiamond['balanceOf(address)'](user1.address),
+			).to.equal(WR01_CLAIM_AMOUNT);
+		});
+
+		it('zero-guard fallback (WR-01): a forced zero at slot +6 at epoch > 0 yields the effective default 2', async function () {
+			await bootstrapGenesis();
+			// Force the active epoch (slot +4) so the getter takes the override path,
+			// then zero the override (slot +6) — the zero-guard must fall back to 2.
+			await writeSlot(SLOT_ATTESTOR_EPOCH, ethers.toBeHex(ACTIVE_EPOCH, 32));
+			await writeSlot(SLOT_ACTIVE_THRESHOLD, ethers.ZeroHash);
+			expect(await readSlot(SLOT_ACTIVE_THRESHOLD)).to.equal(0n); // the FALLBACK fired, not the slot
+			expect(await geniusDiamond.activeBridgeAttestorThreshold()).to.equal(ACTIVE_ATTESTOR_THRESHOLD);
 		});
 	});
 
