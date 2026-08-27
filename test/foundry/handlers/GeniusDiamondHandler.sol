@@ -268,7 +268,7 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
      *
      * RATIONALE:
      * - Tests total supply increases correctly
-     * - Validates max supply cap enforcement (10 billion GNUS)
+     * - Validates max supply cap enforcement (50 million GNUS)
      * - Ensures mint events are emitted with correct data
      * - Verifies role-based access control for minting
      * - Checks balance updates are atomic with supply changes
