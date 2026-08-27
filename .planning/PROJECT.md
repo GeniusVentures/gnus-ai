@@ -28,6 +28,7 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 - ✓ Dual test framework: Hardhat/Mocha + Foundry with fuzz/invariant testing
 - ✓ DevOps security tooling: Slither, Snyk, Semgrep, OSV-Scanner, Socket Security
 - ✓ Lock/release bridging via provenance relocation — threshold-ECDSA `bridgeIn` certificate verification, replay-protected via `processedMessages`, global-supply conserving (BRIDGE-02/03/04) — Validated in Phase 10: Lock/Release Bridge Vault — `contracts/gnus-ai/GNUSBridge.sol`, `contracts/gnus-ai/GNUSBridgeValidatorStorage.sol`
+- ✓ Secure BridgeIn V2 — rolling API-attestor root rotated as a side-effect of `bridgeIn`, canonical `BridgeMessage` identity, domain-separated `BRIDGE_CERTIFICATE_V2` split-encode digest, epoch-derived thresholds (2..16 override), strict-ascending per-signer Merkle proofs, CEI atomic root transition, emergency recovery, legacy-selector removal (BRIDGE-10..16, 18, 19) — Validated in Phase 15: Secure BridgeIn (Phase 10 Amendment) — `contracts/gnus-ai/GNUSBridgeAttestor.sol`, `test/fixtures/bridge-attestor-vectors.json`, `docs/Secure-BridgeIn-Exporter-ABI.md`
 
 ### Active
 
@@ -52,6 +53,7 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 - [ ] **TEST-03**: Add banned transferor getter to `GNUSControlStorage.sol` and corresponding test coverage
 - [ ] **QUAL-01**: Add `supportsInterface` override to `DiamondInitFacet.sol` (matching pattern in other facets)
 - [ ] **DEP-01**: Pin `contracts-starter` to a specific commit hash in `package.json`
+- [ ] **BRIDGE-17**: SuperGenius production-activation gate — #363 (slot quorum uses only signature-verified votes) and #364 (slot 0 identifies the API RPC that succeeded) must close before bridgeIn activation; #364 closed, #363 OPEN. Gate record: `docs/Secure-BridgeIn-Exporter-ABI.md` §5
 
 ### Out of Scope
 
@@ -121,4 +123,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-08-19 after Phase 10 completion_
+_Last updated: 2026-08-27 after Phase 15 completion_
