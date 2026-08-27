@@ -42,7 +42,7 @@
 
 ### Dependencies
 
-- [ ] **DEP-01**: Pin `contracts-starter` to a specific commit hash in `package.json` — currently pointed at `https://github.com/mudgen/diamond-2-hardhat.git` without a commit reference.
+- [x] **DEP-01**: Pin `contracts-starter` to a specific commit hash in `package.json` — currently pointed at `https://github.com/mudgen/diamond-2-hardhat.git` without a commit reference.
 
 ### Safe Wallet Proposer
 
@@ -138,7 +138,7 @@ _These are investigation items only — no implementation committed until resear
 | TEST-02     | Phase 6    | Complete |
 | TEST-03     | Phase 6    | Complete |
 | QUAL-01     | Phase 2    | Pending  |
-| DEP-01      | Phase 7    | Pending  |
+| DEP-01      | Phase 7    | Complete |
 | SWP-01      | Phase 08.1 | Complete |
 | SWP-02      | Phase 08.1 | Pending  |
 | SWP-03      | Phase 08.1 | Pending  |
