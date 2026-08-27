@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-08-27T21:36:15.357Z"
+stopped_at: Blocked at 07-02 Task 3 (SOCKET_CLI_API_TOKEN placement pending)
+last_updated: "2026-08-27T22:21:42.655Z"
 progress:
   total_phases: 17
   completed_phases: 15
   total_plans: 45
   completed_plans: 42
-  percent: 93
+  percent: 88
 ---
 
 # Project State
@@ -54,6 +54,13 @@ See: .planning/PROJECT.md
 - 07-01: eslint-10 behavior proof — `--fix-dry-run` on hardhat.config.ts + GNUSBridge.test.ts byte-identical to the 9.39.5 capture (56 pre-existing findings, exit 1 both sides)
 - 07-01: fresh Hardhat baseline is **665 passing / 2 pending / 1 failing** (deterministic across 2 runs; failure set identical-in-kind = only GNUSControlStorage chainID) — the previously recorded 661 is stale, matching 07-RESEARCH Pitfall 6's orchestrator observation; 07-03/07-04 gates should use 665. Foundry unchanged at 215/2/3 (only Phase 08.1 Safe setUp reverts)
 - 07-01: `.devcontainer` is a nested submodule — its pin + eslint mirror landed as diamonds-devcontainer commits b1f1dd3 + 812ae69 with gitlink bumps (repo's established pattern)
+
+### Phase 7 Decisions Logged (07-02)
+
+- 07-02: owner ruling — snyk:test dropped from the D-08 security-check chain (Snyk free tier has no workable token issuance in this environment; personal API tokens expire ~90 days, too fragile for 07-03 CI wiring); snyk:test script + snyk devDependency left dormant in package.json; dependency-CVE coverage carried by osv:scan (OSV: CVE+GHSA+ecosystem advisories) + `yarn npm audit --severity moderate` (commit 362f57e)
+- 07-02: owner ruling — Socket stays in the gate with a ≤90-day token refresh runbook: owner refreshes SOCKET_CLI_API_TOKEN at most quarterly; 07-03 MUST store it as a GitHub Actions secret with expiry tracked
+- 07-02: brew legitimacy gate discharged by dossier checkpoint — semgrep 1.174.0 / osv-scanner 2.5.1 / git-secrets 1.3.0 installed from homebrew/core (all cross-checked to official upstreams; returntocorp→semgrep org rename verified as redirect); zero installs ran before owner approval
+- 07-02: git-secrets registered repo-local in gnus-ai .git/config with the canonical blockchain pattern set from .devcontainer/scripts/setup-security.sh (14 prohibited + 23 allowed) plus --register-aws (17/25 final); `git secrets --install -f` intentionally skipped per T-07-07 — husky stays the only hook mechanism; parent TokenContracts config untouched
 
 ### Phase 15 Decisions Logged (15-04)
 
@@ -175,6 +182,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-27T21:35:21Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-08-27T22:21:32.889Z
+Stopped at: Blocked at 07-02 Task 3 — awaiting owner placement of SOCKET_CLI_API_TOKEN in gnus-ai/.env (SNYK_TOKEN requirement dropped by owner ruling; commit 362f57e landed the gate-scope change)
 Resume file: None
