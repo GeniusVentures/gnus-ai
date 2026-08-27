@@ -7,7 +7,7 @@ import '@nomicfoundation/hardhat-web3-v4';
 import '@typechain/hardhat';
 import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
-import 'hardhat-multichain';
+import '@diamondslab/hardhat-multichain';
 import { extendEnvironment, HardhatUserConfig, task } from 'hardhat/config';
 import 'solidity-coverage';
 
