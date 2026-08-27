@@ -17,7 +17,7 @@
 | 4   | Access Control & Observability | 1/1 | Complete   | 2026-07-21 |
 | 5   | Circuit Breaker & Performance  | 1/1 | Complete   | 2026-07-21 |
 | 6   | Test Coverage                  | 2/2 | Complete   | 2026-07-24 |
-| 7   | Dependency Hardening           | 1/4 | In Progress|  |
+| 7   | Dependency Hardening           | 2/4 | In Progress|  |
 
 ### Phases 8-12: Architecture Transformation
 
@@ -171,14 +171,14 @@ Plans:
 
 **Requirements:** DEP-01
 
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 
 **Wave 1**
 
 - [x] 07-01-PLAN.md — DEP-01 commit pin (root + devcontainer) + in-phase advisory fixes (multichain rename to @diamondslab 1.1.0, eslint support bump, semgrep stub removal) + full-matrix no-op proof
-- [ ] 07-02-PLAN.md — Security toolchain prerequisites: brew installs behind a blocking legitimacy checkpoint + SNYK/Socket token acquisition (autonomous: false)
+- [x] 07-02-PLAN.md — Security toolchain prerequisites: brew installs behind a blocking legitimacy checkpoint + SNYK/Socket token acquisition (autonomous: false)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

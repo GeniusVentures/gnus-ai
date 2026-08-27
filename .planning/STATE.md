@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Blocked at 07-02 Task 3 (SNYK_TOKEN + SOCKET_CLI_API_TOKEN placement pending; snyk:test restored per superseding ruling 59dd883)
-last_updated: "2026-08-27T22:21:42.655Z"
+stopped_at: 07-02 complete (D-08 gate unblocked — tokens in git-ignored .env + GeniusVentures org secrets); Wave 2 07-03 next
+last_updated: "2026-08-27T22:40:55Z"
 progress:
   total_phases: 17
   completed_phases: 15
   total_plans: 45
-  completed_plans: 42
+  completed_plans: 43
   percent: 88
 ---
 
 # Project State
 
 **Project:** Gnus.ai Smart Contracts — Tech Debt & Security Remediation
-**Last Updated:** 2026-07-02
+**Last Updated:** 2026-08-27
 
 ## Project Reference
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 | 4     | Access Control & Observability    | ✓      | 1/1   | 100%     |
 | 5     | Circuit Breaker & Performance     | ✓      | 1/1   | 100%     |
 | 6     | Test Coverage                     | ✓      | 2/2   | 100%     |
-| 7     | Dependency Hardening              | ○      | 1/4   | 25%      |
+| 7     | Dependency Hardening              | ○      | 2/4   | 50%      |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
@@ -58,11 +58,12 @@ See: .planning/PROJECT.md
 ### Phase 7 Decisions Logged (07-02)
 
 - 07-02: owner ruling — snyk:test dropped from the D-08 security-check chain (Snyk free tier has no workable token issuance in this environment; personal API tokens expire ~90 days, too fragile for 07-03 CI wiring); snyk:test script + snyk devDependency left dormant in package.json; dependency-CVE coverage carried by osv:scan (OSV: CVE+GHSA+ecosystem advisories) + `yarn npm audit --severity moderate` (commit 362f57e)
-- 07-02: owner ruling — Socket stays in the gate with a ≤90-day token refresh runbook: owner refreshes SOCKET_CLI_API_TOKEN at most quarterly; 07-03 MUST store it as a GitHub Actions secret with expiry tracked
+- 07-02: owner ruling — Socket stays in the gate with a ≤90-day token refresh runbook: owner refreshes SOCKET_CLI_API_TOKEN at most quarterly; 07-03 MUST store it as a GitHub Actions secret with expiry tracked *(superseded — see CORRECTION below)*
 - 07-02: brew legitimacy gate discharged by dossier checkpoint — semgrep 1.174.0 / osv-scanner 2.5.1 / git-secrets 1.3.0 installed from homebrew/core (all cross-checked to official upstreams; returntocorp→semgrep org rename verified as redirect); zero installs ran before owner approval
 - 07-02: git-secrets registered repo-local in gnus-ai .git/config with the canonical blockchain pattern set from .devcontainer/scripts/setup-security.sh (14 prohibited + 23 allowed) plus --register-aws (17/25 final); `git secrets --install -f` intentionally skipped per T-07-07 — husky stays the only hook mechanism; parent TokenContracts config untouched
 - 07-02 SUPERSESSION (owner ruling 2026-08-27, commit 59dd883, supersedes the snyk-drop entry above / 362f57e): corrected owner information — Snyk Free and Team users CAN authenticate CLI and CI/CD runs with their personal user token (stored as a GitHub Actions secret, used as SNYK_TOKEN); Free does NOT provide general REST API access or separate machine/service accounts. The earlier "no workable free-tier token issuance" rationale was wrong; the ~90-day PAT expiry is accepted as a managed runbook item, not a disqualifier. `yarn snyk:test` is RESTORED to the security-check chain (7 sub-commands, full composition). Known failure mode: Snyk Free-tier monthly test cap (~200–400 OSS tests/month per Snyk docs) — a CI run failing on quota must be recognizable, not mysterious
-- 07-02: dual-token refresh runbook — BOTH SNYK_TOKEN and SOCKET_CLI_API_TOKEN refreshed by the owner at most every ≤90 days, each stored as a GitHub Actions secret with expiry tracked; 07-03 MUST consume this (commit 59dd883 + this log are the record)
+- 07-02: dual-token refresh runbook — BOTH SNYK_TOKEN and SOCKET_CLI_API_TOKEN refreshed by the owner at most every ≤90 days, each stored as a GitHub Actions secret with expiry tracked; 07-03 MUST consume this (commit 59dd883 + this log are the record) *(superseded — see CORRECTION below)*
+- 07-02 CORRECTION (owner, 2026-08-27 — "there is no <= 90 day expiry, that was for PAT only"; retracts every ≤90-day/expiry-tracking claim in this section): SNYK_TOKEN and SOCKET_CLI_API_TOKEN carry NO forced expiry — no quarterly refresh cadence, no expiry tracking for 07-03. Tokens rotate on-demand only (revocation or quota 401). Rotation provenance = `gh secret list --org GeniusVentures` updated_at (SNYK_TOKEN 2026-08-27T22:34:35Z, SOCKET_CLI_API_TOKEN 2026-08-27T22:34:36Z, visibility ALL — set org-wide by owner ruling this plan). Failure modes 07-03 must surface recognizably: Snyk Free monthly test cap (~200–400 OSS tests/month) and unexpected 401 on revocation — never silent skips
 
 ### Phase 15 Decisions Logged (15-04)
 
