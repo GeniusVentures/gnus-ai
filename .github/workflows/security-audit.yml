@@ -103,6 +103,10 @@ jobs:
       - name: Semgrep static analysis (advisory baseline)
         continue-on-error: true
         run: |
+          # CR-01 (07-REVIEW): without pipefail, bash -e takes tee's exit 0 and
+          # this step can never fail — which would make the documented
+          # promotion-to-hard-gate path a gate that cannot go red.
+          set -o pipefail
           pip install semgrep
           yarn semgrep:scan | tee semgrep-scan.log
 
