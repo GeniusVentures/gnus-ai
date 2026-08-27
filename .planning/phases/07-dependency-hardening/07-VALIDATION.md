@@ -46,7 +46,7 @@ Task rows are keyed to plan IDs once PLAN.md files land (Phase-15 pattern). Requ
 | TBD-at-planning | — | — | DEP-01 | T-07-xx / — | Pinned descriptor present and canonical | smoke (greppable observable) | `grep -c '#commit=bf67b736ad5fa3366551f599e204784856fb3069' package.json` → `1` | ✅ the command itself | ⬜ pending |
 | TBD-at-planning | — | — | DEP-01 | — | Lockfile deterministic post-pin | smoke | `yarn install --immutable` → exit 0 | ✅ (verified green pre-pin) | ⬜ pending |
 | TBD-at-planning | — | — | DEP-01 | — | Zero drift (no code change under test) | regression | `git diff yarn.lock` → exactly 2 descriptor lines, resolution+checksum byte-identical; `yarn test` / `yarn forge:test` within tolerance | ✅ existing suites | ⬜ pending |
-| TBD-at-planning | — | — | audit gate (STATE 09-05) | — | Each security sub-command executed with disposition | smoke/manual-hybrid | `yarn security-check` (after prerequisites) with disposition table; slither findings == 3 known Phase-9 false-positives | ❌ prerequisites task | ⬜ pending |
+| TBD-at-planning | — | — | audit gate (STATE 09-05) | — | Each security sub-command executed with disposition | smoke/manual-hybrid | `yarn security-check` (after prerequisites) with disposition table; slither findings == 3 known Phase-9 false-positives; `yarn npm audit --severity moderate` exits 0 after in-phase advisory fixes (owner ruling 2026-08-27: fix, not waive) | ❌ prerequisites task | ⬜ pending |
 | TBD-at-planning | — | — | final pass (SC2) | — | Remediation arc fully closed in docs | observable check | remediation-arc checkbox count → 21/21 `[x]`; BRIDGE-17 remains `[ ]`; ROADMAP criterion references remediation set | ✅ the command itself | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
@@ -66,8 +66,6 @@ Task rows are keyed to plan IDs once PLAN.md files land (Phase-15 pattern). Requ
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
 | SNYK_TOKEN + SOCKET_CLI_API_TOKEN acquisition | audit gate | Human-gated credential issuance; tokens absent from `.env` | Owner obtains tokens and places them in `.env` before the audit task runs; record disposition if intentionally narrowed |
-| Disposition of the 2 moderate deprecation-class advisories (eslint; hardhat-multichain → `@diamondslab/hardhat-multichain` rename) | audit gate | Waiver-vs-rename is an owner risk decision (in-phase renames carry behavioral risk) | Record waiver-with-note or schedule follow-up; `yarn npm audit --severity moderate` exit 1 with exactly these 2 advisories is the tolerated state |
-| CI wiring in-phase vs follow-up | audit gate | RESEARCH open question #2 — STATE 09-05 assigns CI wiring to Phase 7; CONTEXT D-08 describes the local command gate | Owner ruling at planning; if in-phase, the workflow file lands in the repo that owns CI for this nested layout |
 
 ---
 
