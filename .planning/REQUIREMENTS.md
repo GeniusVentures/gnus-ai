@@ -7,28 +7,28 @@
 
 ### Technical Debt
 
-- [ ] **DEBT-01**: Remove GeniusAI facet — delete `GeniusAI.sol`, `GeniusAIStorage.sol`, and remove from diamond config. Escrow moved to SuperGenius chain.
+- [x] **DEBT-01**: Remove GeniusAI facet — delete `GeniusAI.sol`, `GeniusAIStorage.sol`, and remove from diamond config. Escrow moved to SuperGenius chain.
 - [x] **DEBT-02**: Remove `hardhat/console.sol` import and `console.log()` from `DiamondInitFacet.sol`. Replace with event emission.
 - [x] **DEBT-03**: Standardize all contract pragmas to `^0.8.19` (currently mixed: `^0.8.0`, `^0.8.2`, `^0.8.19`).
-- [ ] **DEBT-04**: Remove duplicate `_setupRole`/`_grantRole` calls in `DiamondInitFacet.diamondInitialize250()` (lines 51-57).
-- [ ] **DEBT-05**: Remove duplicated `onlySuperAdminRole` modifier from `DiamondInitFacet.sol` — use inherited modifier from `GeniusAccessControl.sol`.
-- [ ] **DEBT-06**: Remove commented-out network configuration blocks from `hardhat.config.ts` (lines 237-241, 282-324).
+- [x] **DEBT-04**: Remove duplicate `_setupRole`/`_grantRole` calls in `DiamondInitFacet.diamondInitialize250()` (lines 51-57).
+- [x] **DEBT-05**: Remove duplicated `onlySuperAdminRole` modifier from `DiamondInitFacet.sol` — use inherited modifier from `GeniusAccessControl.sol`.
+- [x] **DEBT-06**: Remove commented-out network configuration blocks from `hardhat.config.ts` (lines 237-241, 282-324).
 
 ### Security
 
-- [ ] **SEC-01**: Fix `ERC20TransferBatch.mintBatch()` — marked `payable` but does not use ETH. Add `require(msg.value == 0, "ETH not accepted")`.
-- [ ] **SEC-02**: Add input validation to `GNUSBridge.withdraw()` — validate `amount >= exchangeRate` and `exchangeRate > 0` to prevent division truncation losses.
-- [ ] **SEC-03**: Add input validation to `GNUSBridge.bridgeOut()` — validate `destChainID != chainID` to prevent self-bridging.
-- [ ] **SEC-04**: Add array length validation to `GNUSControl.banTransferorBatch()` and `allowTransferorBatch()` — `tokenIds.length == bannedAddresses.length`.
+- [x] **SEC-01**: Fix `ERC20TransferBatch.mintBatch()` — marked `payable` but does not use ETH. Add `require(msg.value == 0, "ETH not accepted")`.
+- [x] **SEC-02**: Add input validation to `GNUSBridge.withdraw()` — validate `amount >= exchangeRate` and `exchangeRate > 0` to prevent division truncation losses.
+- [x] **SEC-03**: Add input validation to `GNUSBridge.bridgeOut()` — validate `destChainID != chainID` to prevent self-bridging.
+- [x] **SEC-04**: Add array length validation to `GNUSControl.banTransferorBatch()` and `allowTransferorBatch()` — `tokenIds.length == bannedAddresses.length`.
 - [x] **SEC-05**: Add `onlySuperAdminRole` modifier to `DiamondInitFacet.diamondInitialize250()`.
 - [x] **SEC-06**: Emit events when super admin bypasses withdrawal limiter in three code paths (`GNUSBridge.sol:159`, `GNUSERC1155MaxSupply.sol:57`, `ERC20TransferBatch.sol:155`).
 - [x] **SEC-07**: Enable Slither static analysis on all production contracts — remove `contracts/gnus-ai/` from `slither.config.json` filter_paths. Run scan and fix findings.
-- [ ] **SEC-08**: Add diamond-level emergency pause mechanism — circuit breaker halting all state-changing operations.
+- [x] **SEC-08**: Add diamond-level emergency pause mechanism — circuit breaker halting all state-changing operations.
 
 ### Performance
 
-- [ ] **PERF-01**: Merge double loop in `GNUSERC1155MaxSupply._beforeTokenTransfer()` into single loop — aggregate GNUS amounts and validate transferors in one pass.
-- [ ] **PERF-02**: Cap `binCount` maximum in `GNUSWithdrawLimiterStorage.setDefaultBinCount()` and fix type inconsistency (default `uint256` vs per-account `uint32`).
+- [x] **PERF-01**: Merge double loop in `GNUSERC1155MaxSupply._beforeTokenTransfer()` into single loop — aggregate GNUS amounts and validate transferors in one pass.
+- [x] **PERF-02**: Cap `binCount` maximum in `GNUSWithdrawLimiterStorage.setDefaultBinCount()` and fix type inconsistency (default `uint256` vs per-account `uint32`).
 
 ### Testing
 
@@ -38,7 +38,7 @@
 
 ### Quality
 
-- [ ] **QUAL-01**: Add `supportsInterface()` override to `DiamondInitFacet.sol` — check both parent contracts and `LibDiamond.diamondStorage().supportedInterfaces`, matching pattern in other facets.
+- [x] **QUAL-01**: Add `supportsInterface()` override to `DiamondInitFacet.sol` — check both parent contracts and `LibDiamond.diamondStorage().supportedInterfaces`, matching pattern in other facets.
 
 ### Dependencies
 
@@ -118,26 +118,26 @@ _These are investigation items only — no implementation committed until resear
 
 | Requirement | Phase      | Status   |
 | ----------- | ---------- | -------- |
-| DEBT-01     | Phase 2    | Pending  |
+| DEBT-01     | Phase 2    | Complete |
 | DEBT-02     | Phase 1    | Complete |
 | DEBT-03     | Phase 1    | Complete |
-| DEBT-04     | Phase 2    | Pending  |
-| DEBT-05     | Phase 2    | Pending  |
-| DEBT-06     | Phase 1    | Pending  |
-| SEC-01      | Phase 3    | Pending  |
-| SEC-02      | Phase 3    | Pending  |
-| SEC-03      | Phase 3    | Pending  |
-| SEC-04      | Phase 3    | Pending  |
+| DEBT-04     | Phase 2    | Complete |
+| DEBT-05     | Phase 2    | Complete |
+| DEBT-06     | Phase 1    | Complete |
+| SEC-01      | Phase 3    | Complete |
+| SEC-02      | Phase 3    | Complete |
+| SEC-03      | Phase 3    | Complete |
+| SEC-04      | Phase 3    | Complete |
 | SEC-05      | Phase 4    | Complete |
 | SEC-06      | Phase 4    | Complete |
 | SEC-07      | Phase 4    | Complete |
-| SEC-08      | Phase 5    | Pending  |
-| PERF-01     | Phase 5    | Pending  |
-| PERF-02     | Phase 5    | Pending  |
+| SEC-08      | Phase 5    | Complete |
+| PERF-01     | Phase 5    | Complete |
+| PERF-02     | Phase 5    | Complete |
 | TEST-01     | Phase 6    | Complete |
 | TEST-02     | Phase 6    | Complete |
 | TEST-03     | Phase 6    | Complete |
-| QUAL-01     | Phase 2    | Pending  |
+| QUAL-01     | Phase 2    | Complete |
 | DEP-01      | Phase 7    | Complete |
 | SWP-01      | Phase 08.1 | Complete |
 | SWP-02      | Phase 08.1 | Pending  |
@@ -183,4 +183,4 @@ _These are investigation items only — no implementation committed until resear
 ---
 
 _Requirements defined: 2026-05-26_
-_Last updated: 2026-08-23 — BRIDGE-10..19 ingested from `docs/Secure-BridgeIn.md` as a pre-deployment Phase 10 amendment (scheduled post-Phase-13)_
+_Last updated: 2026-08-27 — remediation-arc reconciliation (Phase 7 plan 07-04): 12 boxes flipped to [x] on source-level probe evidence (DEBT-01/04/05/06, SEC-01/02/03/04/08, PERF-01/02, QUAL-01); DEP-01 probe re-verified (flipped by 07-01); traceability synced to checkbox state for all arcs. BRIDGE-17 remains [ ] Pending by design (SuperGenius#363 gate — docs/Secure-BridgeIn-Exporter-ABI.md §5); SWP/PROXY boxes untouched per D-06_
