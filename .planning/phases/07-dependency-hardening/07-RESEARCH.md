@@ -401,23 +401,29 @@ jobs:
 | A8 | CI workflow creation belongs inside Phase 7 rather than a follow-up | Open Questions | Medium — STATE 09-05 says Phase 7 "owns wiring it into the audit gate", but CONTEXT D-08 describes only the local command gate; needs user confirmation |
 | A9 | gitleaks is a viable git-secrets alternative if git-secrets is awkward on macOS/arm64 | Alternatives Considered | Low — only relevant if the primary route stalls |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+_All four questions were closed by owner rulings on 2026-08-27 (plan-review session); each RESOLVED line cites where the ruling is implemented. Stored recommendation lines are retained verbatim as research history — where a ruling diverges from one (Q3), the RESOLVED line is authoritative._
 
 1. **Token acquisition for snyk + socket (D-08 blocker)**
    - What we know: `SNYK_TOKEN` and `SOCKET_CLI_API_TOKEN` are absent from `.env`; 2 of 5 blocked sub-commands need them; the pre-push hook already tolerates snyk absence.
    - What's unclear: who owns obtaining them and by when; whether CI GitHub-secrets is the target home instead of local `.env`.
    - Recommendation: planner surfaces as a `checkpoint:human-verify` prerequisite task; without tokens the "no narrowing" mandate is unachievable and must escalate, not silently skip.
+   - **RESOLVED:** owner routes acquisition through 07-02 — Task 3 (`checkpoint:human-action`) places both tokens in the git-ignored `.env`; local `.env` (not GitHub secrets) is the target home, with CI secrets optional in 07-03's secret-conditional steps; a refusal escalates as an explicit D-08 blocker, never a silent skip.
 2. **Is CI wiring in-phase or follow-up?**
    - What we know: STATE 09-05 assigns Phase 7 ownership of wiring slither into the audit gate; no workflows exist; official actions verified available.
    - What's unclear: whether the user wants workflow authoring inside this phase or the local gate only (D-08's literal text is command-level).
    - Recommendation: include a minimal workflow (install/immutable + audit-with-baseline + slither-with-flags + osv + semgrep) as a discrete plan, sequenced after the local gate is green — user confirms scope at plan review.
+   - **RESOLVED:** owner ruling 2026-08-27 — CI wiring is IN-SCOPE this phase; 07-03 Task 2 authors `.github/workflows/security-audit.yml` (tokenless hard gate + secret-conditional snyk/socket steps), sequenced after the local gate (wave 2).
 3. **Disposition of the 2 deprecation advisories**
    - What we know: audit exits 1 on them; both are rename/deprecation class, not CVEs; one (hardhat-multichain → `@diamondslab/hardhat-multichain`) is a direct dependency upgrade with behavioral risk.
    - What's unclear: user appetite for in-phase dependency renames vs documented waiver.
    - Recommendation: waiver-with-note this phase; queue renames as future maintenance (consistent with zero-drift philosophy).
+   - **RESOLVED:** owner ruling 2026-08-27 OVERRIDES the stored waiver recommendation above — both advisories are FIXED in-phase (07-01 Task 2: `@diamondslab/hardhat-multichain` 1.1.0 rename + eslint supported-line bump + semgrep stub removal) so `yarn npm audit --severity moderate` exits 0 with zero waivers.
 4. **ROADMAP blocked-by annotation (discretion item) — now moot?**
    - What we know: Phases 9–15 are all complete, so no routing needs to skip Phase 7 anymore; `gsd-sdk query roadmap.get-phase "7"` parses no dependency fields (success_criteria also unparsed — plain text).
    - Recommendation: honor D-01's letter with a plain-text sequencing note ("executed last per D-01; Phases 9–15 complete 2026-08-27") during the D-06 rewrite — no functional marker exists to match.
+   - **RESOLVED:** the plain-text sequencing note lands in 07-04 Task 3 under the Phase 7 goal during the D-06 criterion rewrite; no functional blocked-by marker is added (`gsd-sdk` parses no dependency fields).
 
 ## Environment Availability
 

@@ -171,6 +171,23 @@ Plans:
 
 **Requirements:** DEP-01
 
+**Plans:** 4 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 07-01-PLAN.md — DEP-01 commit pin (root + devcontainer) + in-phase advisory fixes (multichain rename to @diamondslab 1.1.0, eslint support bump, semgrep stub removal) + full-matrix no-op proof
+- [ ] 07-02-PLAN.md — Security toolchain prerequisites: brew installs behind a blocking legitimacy checkpoint + SNYK/Socket token acquisition (autonomous: false)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 07-03-PLAN.md — Full D-08 audit gate with written dispositions + CI security-audit workflow (tokenless-hard gates, secret-conditional snyk/socket)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 07-04-PLAN.md — Evidence-based docs reconciliation (REQUIREMENTS/ROADMAP/PROJECT/STATE, probe-then-flip) + phase-exit gate
+
 ---
 
 ## Investigation Items (Post-Remediation)
@@ -376,16 +393,21 @@ Plans:
 
 - **`escrowed` is dead** — nothing is ever escrowed under provenance relocation; there is no
   vault balance to count.
+
 - **`pendingInbound` is un-knowable on-chain** — the destination chain first learns of a bridge
   when `bridgeIn` executes (via the validator certificate); there is no pending window to record.
+
 - **"lock and release operations" don't exist** — Phase 10 replaced them with
   `bridgeOut`/`bridgeIn`, which already update `chainSupply[block.chainid]` atomically.
+
 - **The surviving bookkeeping is already shipped** (Phase 9): `GNUSTreasuryStorage.Layout`
   holds `globalSupply` + `chainSupply[chainid]` + `ownChainId`; `GNUSTreasury.totalSupplyOfAll()`
   and `setSisterChainSupply()` provide the global counter and the reconciliation valve.
+
 - **Per-token-per-chain accounting is redundant** — every child minion is backed 1:1 by GNUS
   (Phase 9 conversion-native model), so child supply is derived from GNUS supply, not tracked
   independently.
+
 - **Criterion 5 (don't override `totalSupply()`)** is already satisfied — nothing overrides it.
 
 **Carried forward (deferred, not lost):**
@@ -393,6 +415,7 @@ Plans:
 - Source-side in-flight visibility (`pendingOutbound`) — Phase 10 left the hooks
   (`BridgeOutInitiated` event, `INITIATED` state, `processedMessages`) should a future phase
   want an on-chain in-flight ledger. Not currently required by any consumer.
+
 - Phase 13 v2 "active supply" metric keyed off `isTokenActive` — tracked in 13-CONTEXT.md
   `<deferred>`; does not need this phase.
 
@@ -527,6 +550,7 @@ Plans:
 **Plans:** 4/4 plans complete (BRIDGE-17 remains Pending by design — production activation gated on SuperGenius#363 closing; see docs/Secure-BridgeIn-Exporter-ABI.md §5)
 
 Plans:
+
 - [x] 15-01-PLAN.md — V2 storage append (slots +3..+6) + GNUSBridgeAttestor admin facet skeleton (init/threshold/emergency) + config registration at priority 116/2.6 + slot-probe upgrade test
 - [x] 15-02-PLAN.md — V2 certificate path (BridgeMessage, split-encode BRIDGE_CERTIFICATE_V2 digest, verifier, CEI bridgeIn with inline fee-mint) + legacy bridgeIn/setValidatorSet removal from GNUSBridge
 - [x] 15-03-PLAN.md — V2 test utils, BRIDGE-18 checked-in vectors + flat/split equivalence proof, BRIDGE-19 SPEC 657-727 matrix suite
