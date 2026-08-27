@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 15-04-PLAN.md
-last_updated: "2026-08-27T20:05:49.701Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-08-27T21:36:15.357Z"
 progress:
   total_phases: 17
   completed_phases: 15
   total_plans: 45
-  completed_plans: 41
-  percent: 88
+  completed_plans: 42
+  percent: 93
 ---
 
 # Project State
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 15 complete (4/4) — next: Phase 7 (Dependency Hardening / audit gate)
+**Current focus:** Phase 07 — dependency-hardening
 
 ## Phase Status
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 | 4     | Access Control & Observability    | ✓      | 1/1   | 100%     |
 | 5     | Circuit Breaker & Performance     | ✓      | 1/1   | 100%     |
 | 6     | Test Coverage                     | ✓      | 2/2   | 100%     |
-| 7     | Dependency Hardening              | ○      | 0/0   | 0%       |
+| 7     | Dependency Hardening              | ○      | 1/4   | 25%      |
 | 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
 | 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
 | 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
@@ -44,6 +44,16 @@ See: .planning/PROJECT.md
 | 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
 | 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
 | 15    | Secure BridgeIn (Ph10 Amendment)  | ✓      | 4/4   | 100%     |
+
+### Phase 7 Decisions Logged (07-01)
+
+- 07-01: DEP-01 closed with a zero-drift pin — `#commit=bf67b736ad5fa3366551f599e204784856fb3069` appended in root + .devcontainer manifests; yarn re-keyed exactly 2 descriptor lines, resolution + checksum byte-identical; `yarn install --immutable` green
+- 07-01: audit sub-gate exits 0 with zero advisories and zero waivers (owner ruling 2026-08-27 satisfied): @diamondslab/hardhat-multichain 1.1.0 rename (verified DiamondsLab rename successor) + inert semgrep npm stub removed (zero-imports gate)
+- 07-01: [Rule 3] rename blast radius was 27 source files importing `{ multichain } from 'hardhat-multichain'` (planning expected only the config comment) — mechanical specifier retarget; `npx hardhat help test-multichain` proves task registration under the renamed plugin
+- 07-01: owner escalation ladder for the eslint deprecation (whole 9.x line is registry-EOL): checkpoint 1 approved eslint 10.9.1; its proof crashed twice (config-load @eslint/js missing → declared @eslint/js 10.0.1 + @eslint/eslintrc 3.3.6 as direct deps [Rule 1: config always imported them undeclared]; then typescript-eslint 8.51.0 FlatESLint API incompat) → checkpoint 2 approved Option A: @typescript-eslint 8.51.0 → 8.68.0 (same-major); A+ declined so eslint-plugin-promise stays 7.2.1 (residual YN0060, same class as pre-existing hardhat/@types/chai warnings)
+- 07-01: eslint-10 behavior proof — `--fix-dry-run` on hardhat.config.ts + GNUSBridge.test.ts byte-identical to the 9.39.5 capture (56 pre-existing findings, exit 1 both sides)
+- 07-01: fresh Hardhat baseline is **665 passing / 2 pending / 1 failing** (deterministic across 2 runs; failure set identical-in-kind = only GNUSControlStorage chainID) — the previously recorded 661 is stale, matching 07-RESEARCH Pitfall 6's orchestrator observation; 07-03/07-04 gates should use 665. Foundry unchanged at 215/2/3 (only Phase 08.1 Safe setUp reverts)
+- 07-01: `.devcontainer` is a nested submodule — its pin + eslint mirror landed as diamonds-devcontainer commits b1f1dd3 + 812ae69 with gitlink bumps (repo's established pattern)
 
 ### Phase 15 Decisions Logged (15-04)
 
@@ -86,7 +96,7 @@ See: .planning/PROJECT.md
 ## Next Actions
 
 1. Phase 15 complete (4/4 plans, 2026-08-27). All implementation phases 8-15 landed; Phase 7 (Dependency Hardening / audit gate) is the remaining remediation phase. BRIDGE-17 stays Pending by design — production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed); tracking record: docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md.
-2. Cleanup follow-up (not blocking): full `npx hardhat test` on develop (phase-exit baseline, verified 2026-08-27 at end of Phase 15) shows **661 passing / 2 pending / 1 failing** — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes in isolation. Root fix belongs to a Phase 9-style sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 215 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
+2. Cleanup follow-up (not blocking): full `npx hardhat test` (07-01-verified baseline, re-captured 2026-08-27 twice — deterministic) shows **665 passing / 2 pending / 1 failing** (the earlier "661" record was stale, matching 07-RESEARCH Pitfall 6's orchestrator observation; 07-01-SUMMARY.md has the evidence) — the single failure is `GNUSControlStorage.test.ts` "should return initial protocol info" (`chainID` 31337 vs 0), a cross-suite pollution issue: the file passes in isolation. Root fix belongs to a Phase 9-style sweep: make the shared provenance initializer idempotent so suites don't leak chainID/supply state into each other. Foundry side (verified same day via `yarn forge:test`): 215 passed / 2 failed / 3 skipped — the 2 failures are the Phase 08.1 SafeDiamondCut + SafeSingleShotUpgrade setUp reverts, unchanged from Phase 9's record.
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -165,6 +175,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-27T00:21:21.000Z
-Stopped at: Completed 15-04-PLAN.md
+Last session: 2026-08-27T21:35:21Z
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None
