@@ -81,22 +81,32 @@ contract ConservationInvariant is GeniusDiamondTestBase {
         targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
         targetContract(address(handler));
 
-        // Configure a deterministic validator set so handler_bridgeIn's diamond
-        // call doesn't immediately revert with "Validator set not configured".
-        // The fuzzer's certificates are random garbage and will never pass
-        // signature verification against this fixed root — but registering the
-        // selector proves the call path itself doesn't break I1 / I2 / I5 even
-        // when it reverts (T-10-F02 mitigation: explicit configuration beats
-        // vacuous success on an unconfigured set).
+        // Bootstrap the V2 attestor set with a fixed deterministic Genesis address
+        // (Plan 15-04, D-10 — replaces the removed legacy admin root setter) so
+        // handler_bridgeIn's diamond call doesn't immediately revert with "Bridge
+        // attestor V2 not initialized". The fuzzer's certificates are random garbage
+        // and will never pass signature verification against this fixed one-leaf
+        // root — but registering the selector proves the call path itself doesn't
+        // break I1 / I2 / I5 even when it reverts (T-10-F02 mitigation: explicit
+        // bootstrap beats vacuous reversion on an unconfigured set).
         vm.prank(owner);
-        (bool validatorSetConfigured, ) = diamond.call(
+        (bool attestorBootstrapped, ) = diamond.call(
             abi.encodeWithSignature(
-                "setValidatorSet(bytes32,uint256)",
-                bytes32(uint256(0xdeadbeef)),
-                uint256(1)
+                "initializeBridgeAttestorV2(address)",
+                address(uint160(uint256(0xdeadbeef)))
             )
         );
-        require(validatorSetConfigured, "setValidatorSet failed in setUp");
+        require(attestorBootstrapped, "initializeBridgeAttestorV2 failed in setUp");
+
+        // Point the diamond's configured chainID at the live chain so the V2
+        // bridgeIn destination-chain guard passes and the campaign reaches the
+        // certificate verifier (the Hardhat suites' setChainID(localChainId)
+        // pattern, Phase 10 decision 10-03; mirrors BridgeInvariant.setUp).
+        vm.prank(owner);
+        (bool chainIdAliased, ) = diamond.call(
+            abi.encodeWithSignature("setChainID(uint256)", block.chainid)
+        );
+        require(chainIdAliased, "setChainID failed in setUp");
 
         treeSupplyAtSeed = _treeSupply();
         globalSupplyAtSeed = _totalSupplyOfAll();
