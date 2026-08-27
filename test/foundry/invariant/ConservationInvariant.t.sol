@@ -175,6 +175,15 @@ contract ConservationInvariant is GeniusDiamondTestBase {
      *      luck so the invariant remains meaningful if the handler is later
      *      extended to submit valid certificates (e.g., for bridge-pair
      *      round-trip testing).
+     *
+     *      PRECONDITION: bridgeFee == 0 (IN-05, 15 review). The ghosts accumulate
+     *      PRE-fee amounts while totalSupplyOfAll() accrues POST-fee amounts inside
+     *      _mintWithBridgeFee — the identity holds only while the bridge fee is zero
+     *      (true today: no handler sets a fee; same caveat applies to I2's
+     *      ghost_totalMinted term, whose mint path also routes through the fee-mint).
+     *      If the handler is ever extended to set fees, the ghosts must track
+     *      post-fee deltas (read totalSupplyOfAll() before/after, like the Hardhat
+     *      E4 row) instead.
      */
     function invariant_bridgePairConservation() public view {
         uint256 expected = globalSupplyAtSeed +
