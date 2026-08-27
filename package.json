@@ -51,7 +51,7 @@
     "ci-perf-monitor": "node scripts/devops/ci-perf-monitor.js",
     "sign-artifacts": "npx ts-node scripts/devops/sign-artifacts.ts",
     "emergency-bypass": "npx ts-node scripts/devops/emergency-bypass.ts",
-    "security-check": "yarn audit && yarn socket:scan && yarn osv:scan && yarn semgrep:scan && yarn slither:scan && yarn git-secrets:scan",
+    "security-check": "yarn audit && yarn snyk:test && yarn socket:scan && yarn osv:scan && yarn semgrep:scan && yarn slither:scan && yarn git-secrets:scan",
     "security-tool-update": "npx ts-node scripts/devops/security-tool-updater.ts",
     "provenance-check": "npx ts-node scripts/devops/provenance-validator.ts",
     "slsa-attest": "npx ts-node scripts/devops/slsa-attestation.ts generate",
