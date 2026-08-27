@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import {GeniusDiamondTestBase, IGNUSBridgeOut} from "../base/GeniusDiamondTestBase.sol";
 import {NFT} from "../../../contracts/gnus-ai/GNUSNFTFactoryStorage.sol";
+import {BridgeMessage} from "../../../contracts/gnus-ai/GNUSBridgeAttestor.sol";
 import {console} from "forge-std/console.sol";
 
 /**
@@ -39,12 +40,17 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     // ghost_bridgeInSuccesses / ghost_totalBridgedInAmount / ghost_releasedIds(List)
     // only update when the diamond call succeeded — the invariant_noValidCertFromFuzzedSigs
     // soundness property asserts ghost_bridgeInSuccesses stays at zero for the random-cert
-    // campaign (BRIDGE-03).
+    // campaign (BRIDGE-03). Phase 15 (15-04): the replay keys are now V2 messageIds.
     uint256 public ghost_bridgeInCalls;
     uint256 public ghost_bridgeInSuccesses;
     uint256 public ghost_totalBridgedInAmount;
     mapping(bytes32 => bool) public ghost_releasedIds;
     bytes32[] public ghost_releasedIdsList;
+
+    // Phase 15 (15-04): V2 composite replay-key domain — must equal the private
+    // constant in GNUSBridgeAttestor.sol so the handler-derived messageId matches
+    // the on-chain _bridgeMessageId (keeps the invariant slot formula in lockstep).
+    bytes32 private constant GNUS_BRIDGE_MESSAGE_ID_V2 = keccak256("GNUS_BRIDGE_MESSAGE_ID_V2");
 
     // Phase 10 (IN-03): dedicated role-op counter. Previously handler_grantRole
     // incremented ghost_totalCollectionsCreated, corrupting any invariant that
@@ -394,38 +400,50 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
 
     /**
      * @notice Bounded bridgeIn handler — the fuzzer's entry point for the destination-side
-     *         bridge release path (Phase 10, BRIDGE-02/BRIDGE-03/BRIDGE-04).
-     * @dev Always submits a deterministic-but-invalid certificate built from the fuzz `seed`:
+     *         bridge release path (Phase 15 V2 certificate path, BRIDGE-02/BRIDGE-03/BRIDGE-04).
+     * @dev Always submits a deterministic-but-invalid V2 certificate built from the fuzz `seed`:
      *      a single random 65-byte signature with an empty merkle proof. The soundness
      *      invariant (BridgeInvariant.invariant_noValidCertFromFuzzedSigs) asserts this
      *      handler NEVER succeeds — if `ghost_bridgeInSuccesses` ever becomes non-zero,
-     *      the signature recovery or merkle verification in GNUSBridge._verifyThresholdCertificate
-     *      is broken. Handlers swallow reverts; failed calls are still tracked via
-     *      `ghost_bridgeInCalls` for the coverage guard.
+     *      the signature recovery or merkle verification in
+     *      GNUSBridgeAttestor._verifyBridgeAttestorCertificate is broken. Handlers swallow
+     *      reverts; failed calls are still tracked via `ghost_bridgeInCalls` for the
+     *      coverage guard.
+     *
+     *      V2 shape (Plan 15-04, D-10): the message is the canonical BridgeMessage tuple
+     *      and the replay key is the V2 messageId, derived off-chain here exactly as
+     *      GNUSBridgeAttestor._bridgeMessageId does (keccak256 over
+     *      (GNUS_BRIDGE_MESSAGE_ID_V2, srcChainID, sourceBridgeID, sourceTxHash,
+     *      sourceEventIndex)) so the ghost ids stay in lockstep with the diamond's
+     *      processedMessages keys. nextRoot = keccak256(abi.encode(seed)) is a
+     *      seed-derived pseudo-root that is never bytes32(0) and never equal to the
+     *      Genesis one-leaf root, so epoch-0 calls get past the genesis-advance gate
+     *      and die in verification — the campaign's failure point stays inside the
+     *      verifier, preserving the soundness invariant's meaning.
      *
      * INPUT BOUNDS:
      * - amount: Bounded to [1, 1_000_000 ether] via forge-std `bound`
      * - srcChainID: Bounded to [1, 1000]; must differ from block.chainid (same-chain guard)
      * - recipient: Must not be the zero address
-     * - transferId / seed: Unbounded fuzz inputs (transferId is the replay-protection key)
+     * - sourceTxHash / seed: Unbounded fuzz inputs (sourceTxHash is a message-identity field)
      *
      * GHOST VARIABLE UPDATES (on success only):
      * - ghost_bridgeInSuccesses: incremented
      * - ghost_totalBridgedInAmount: incremented by post-call `amount`
-     * - ghost_releasedIds[transferId]: set to true
-     * - ghost_releasedIdsList: transferId appended (for invariant-time iteration)
+     * - ghost_releasedIds[messageId]: set to true (V2 composite replay key)
+     * - ghost_releasedIdsList: messageId appended (for invariant-time iteration)
      *
      * ALWAYS INCREMENTED:
      * - ghost_bridgeInCalls: incremented unconditionally (attempt counter)
      *
-     * @param transferId Replay-protection key for the release
+     * @param sourceTxHash Source transaction hash (a BridgeMessage identity field)
      * @param srcChainID Source chain id (fuzzed, bounded to 1..1000, != block.chainid)
      * @param recipient Release recipient (fuzzed, assumed non-zero)
      * @param amount Release amount (fuzzed, bounded to [1, 1_000_000 ether])
-     * @param seed Seed material for the deterministic-but-invalid certificate
+     * @param seed Seed material for the pseudo next-root and the invalid certificate
      */
     function handler_bridgeIn(
-        bytes32 transferId,
+        bytes32 sourceTxHash,
         uint256 srcChainID,
         address recipient,
         uint256 amount,
@@ -436,24 +454,37 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
         vm.assume(srcChainID != block.chainid);
         vm.assume(recipient != address(0));
 
+        BridgeMessage memory message = BridgeMessage({
+            srcChainID: srcChainID,
+            sourceBridgeID: bytes32(seed),
+            sourceTxHash: sourceTxHash,
+            sourceEventIndex: 0,
+            recipient: recipient,
+            amount: amount
+        });
+        bytes32 nextRoot = keccak256(abi.encode(seed));
+
         // Deterministic-but-invalid certificate: a single 65-byte signature built from
-        // the fuzz seed (r, s, v=27) with an empty merkle proof. The validator set
-        // configured by the invariant setUp uses a fixed nonzero root, so this random
-        // signature should never pass ECDSA recovery + merkle membership.
+        // the fuzz seed (r, s, v=27) with an empty merkle proof. The attestor set
+        // bootstrapped by the invariant setUp uses the fixed one-leaf Genesis root, so
+        // this random signature should never pass ECDSA recovery + merkle membership.
         bytes[] memory sigs = new bytes[](1);
         sigs[0] = abi.encodePacked(bytes32(seed), bytes32(seed ^ 1), uint8(27));
         bytes32[][] memory proofs = new bytes32[][](1);
         proofs[0] = new bytes32[](0);
 
+        // V2 composite replay key, derived identically to _bridgeMessageId on-chain.
+        bytes32 messageId = keccak256(
+            abi.encode(GNUS_BRIDGE_MESSAGE_ID_V2, srcChainID, bytes32(seed), sourceTxHash, uint256(0))
+        );
+
         ghost_bridgeInCalls++;
 
         (bool ok, ) = diamond.call(
             abi.encodeWithSignature(
-                "bridgeIn(bytes32,uint256,address,uint256,bytes[],bytes32[][])",
-                transferId,
-                srcChainID,
-                recipient,
-                amount,
+                "bridgeIn((uint256,bytes32,bytes32,uint256,address,uint256),bytes32,bytes[],bytes32[][])",
+                message,
+                nextRoot,
                 sigs,
                 proofs
             )
@@ -461,11 +492,11 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
 
         if (ok) {
             // Reaching this branch means the fuzzer stumbled on a valid certificate
-            // against the configured validator set — that is a finding (BRIDGE-03).
+            // against the bootstrapped attestor root — that is a finding (BRIDGE-03).
             ghost_bridgeInSuccesses++;
             ghost_totalBridgedInAmount += amount;
-            ghost_releasedIds[transferId] = true;
-            ghost_releasedIdsList.push(transferId);
+            ghost_releasedIds[messageId] = true;
+            ghost_releasedIdsList.push(messageId);
         }
         // NOTE: invariant tests must add `handler_bridgeIn.selector` to their
         // targetSelector allowlist (see BridgeInvariant.setUp and
@@ -987,9 +1018,10 @@ contract GeniusDiamondHandler is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice Number of successfully-released bridge transferIds (for invariant iteration)
+     * @notice Number of successfully-released bridge messageIds (for invariant iteration)
      * @dev BridgeInvariant.invariant_processedMessagesIffReleased walks this list to
-     *      verify the diamond's processedMessages mapping is set for every released id.
+     *      verify the diamond's processedMessages mapping is set for every released
+     *      V2 messageId (Plan 15-04).
      * @return length of ghost_releasedIdsList
      */
     function getReleasedIdsLength() external view returns (uint256) {

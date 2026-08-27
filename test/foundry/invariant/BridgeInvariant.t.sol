@@ -7,30 +7,34 @@ import {console} from "forge-std/console.sol";
 
 /**
  * @title BridgeInvariant
- * @notice Invariant tests for the Phase 10 destination-side bridge release path
+ * @notice Invariant tests for the destination-side bridge release path
  *         (BRIDGE-02 CEI correctness, BRIDGE-03 signature soundness).
  * @dev Fuzzes `handler_bridgeIn` on the GeniusDiamondHandler against a fixed,
- *      deterministic validator set and asserts two properties the unit suite
- *      cannot prove across the full reachable state space:
+ *      deterministic Genesis attestor root and asserts two properties the unit
+ *      suite cannot prove across the full reachable state space:
  *
  *      invariant_processedMessagesIffReleased (BRIDGE-02, CEI correctness):
- *          For every transferId the handler recorded as successfully released
- *          (BridgeReleased emitted by GNUSBridge.bridgeIn), the diamond's
- *          `processedMessages[transferId]` storage slot reads as `true`. The
+ *          For every messageId the handler recorded as successfully released
+ *          (BridgeReleased emitted by GNUSBridgeAttestor.bridgeIn), the diamond's
+ *          `processedMessages[messageId]` storage slot reads as `true`. The
  *          forward direction (released ⇒ processed) is the load-bearing check
- *          — if the CEI ordering in GNUSBridge.bridgeIn ever drifts, this
- *          invariant catches it.
+ *          — if the CEI ordering in GNUSBridgeAttestor.bridgeIn ever drifts,
+ *          this invariant catches it. Plan 15-04 (D-10): the key derivation is
+ *          now the V2 composite messageId the handler derives off-chain in
+ *          lockstep with `_bridgeMessageId`; the mapping slot FORMULA is
+ *          UNCHANGED (mapping at field index 0 of the Layout struct).
  *
  *      invariant_noValidCertFromFuzzedSigs (BRIDGE-03, soundness):
- *          The handler always submits a deterministic-but-invalid certificate
- *          (random 65-byte sig with empty proof). The validator set in setUp
- *          uses a fixed nonzero merkle root, so NO fuzzed signature should
- *          ever verify. `ghost_bridgeInSuccesses == 0` after the campaign
- *          proves that no single-signature garbage certificate with an EMPTY
- *          proof verifies against a fixed root. It does NOT exercise
- *          multi-level merkle proof paths or the malformed-v/s revert
- *          matrix — those are covered by the unit suite
- *          (test/unit/GNUSBridgeIn.test.ts), not by this invariant.
+ *          The handler always submits a deterministic-but-invalid V2 certificate
+ *          (random 65-byte sig with empty proof, seed-derived pseudo next-root).
+ *          The attestor set bootstrapped in setUp uses a fixed nonzero one-leaf
+ *          Genesis root, so NO fuzzed signature should ever verify.
+ *          `ghost_bridgeInSuccesses == 0` after the campaign proves that no
+ *          single-signature garbage certificate with an EMPTY proof verifies
+ *          against a fixed root. It does NOT exercise multi-level merkle proof
+ *          paths or the malformed-v/s revert matrix — those are covered by the
+ *          unit suites (test/unit/GNUSBridgeAttestorIn.test.ts and
+ *          test/unit/GNUSBridgeIn.test.ts), not by this invariant.
  *
  *      afterInvariant (coverage guard, T-10-F01):
  *          Asserts `ghost_bridgeInCalls > 0` so the campaign actually
@@ -39,12 +43,14 @@ import {console} from "forge-std/console.sol";
  */
 contract BridgeInvariant is GeniusDiamondTestBase {
     /// @dev Must match the constant in GNUSBridgeValidatorStorage.sol. Used to
-    ///      compute the per-key mapping slot for `processedMessages[transferId]`
+    ///      compute the per-key mapping slot for `processedMessages[messageId]`
     ///      reads via `vm.load`. The mapping slot formula is:
     ///      `keccak256(abi.encode(key, mapping_slot_position))` where the
     ///      `mapping_slot_position` here is the layout position of the
     ///      `processedMessages` field (field index 0) inside the Layout struct
-    ///      stored at `GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION`.
+    ///      stored at `GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION`. Plan 15-04: only
+    ///      the KEY derivation changed (transferId -> V2 messageId); the formula
+    ///      is byte-for-byte the Phase 10 one.
     bytes32 internal constant GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION =
         keccak256("gnus.ai.bridge.validator.storage");
 
@@ -53,7 +59,7 @@ contract BridgeInvariant is GeniusDiamondTestBase {
     function setUp() public override {
         super.setUp();
 
-        // Seed the provenance counter so bridgeIn's downstream _mintWithBridgeFee
+        // Seed the provenance counter so bridgeIn's downstream fee-mint replica
         // cap check can run. Idempotent: if already seeded, the call reverts and
         // we continue (mirrors ConservationInvariant.setUp).
         vm.prank(owner);
@@ -64,26 +70,38 @@ contract BridgeInvariant is GeniusDiamondTestBase {
             console.log("[SETUP] Provenance already initialized on fork; continuing");
         }
 
+        // Point the diamond's configured chainID at the live chain so the V2
+        // bridgeIn destination-chain guard passes and the campaign reaches the
+        // certificate verifier (the Hardhat suites' setChainID(localChainId)
+        // pattern, Phase 10 decision 10-03). Without this the calls would all
+        // revert at "Wrong destination chain" and the soundness invariant would
+        // only ever test the chain guard.
+        vm.prank(owner);
+        (bool chainIdAliased, ) = diamond.call(
+            abi.encodeWithSignature("setChainID(uint256)", block.chainid)
+        );
+        require(chainIdAliased, "setChainID failed in setUp");
+
         handler = new GeniusDiamondHandler();
         handler.setUp();
 
-        // Configure a deterministic validator set on the diamond. The merkle root
-        // can be ANY fixed nonzero value — the handler's fuzzed certificates are
-        // random garbage and will never produce a valid proof against it. The
-        // threshold of 1 is the simplest non-trivial configuration that still
-        // exercises the threshold check path (T-10-F02 mitigation: proves the
-        // invariant isn't passing vacuously because the validator set is
-        // unconfigured — an unconfigured set would revert with "Validator set
-        // not configured" before ever reaching signature verification).
+        // Bootstrap the V2 attestor set with a fixed deterministic Genesis
+        // address (Plan 15-04, D-10 — replaces the removed legacy admin root
+        // setter). The one-leaf root is then fixed and nonzero — the same
+        // non-vacuity property the old fixed root provided (T-10-F02): an
+        // unbootstrapped set would revert with "Bridge attestor V2 not
+        // initialized" before ever reaching signature verification. The epoch-0
+        // threshold of 1 still exercises the threshold check path, and the
+        // handler's seed-derived pseudo next-roots get past the genesis-advance
+        // gate so the failure point stays inside the verifier.
         vm.prank(owner);
-        (bool validatorSetConfigured, ) = diamond.call(
+        (bool attestorBootstrapped, ) = diamond.call(
             abi.encodeWithSignature(
-                "setValidatorSet(bytes32,uint256)",
-                bytes32(uint256(0xdeadbeef)),
-                uint256(1)
+                "initializeBridgeAttestorV2(address)",
+                address(uint160(uint256(0xdeadbeef)))
             )
         );
-        require(validatorSetConfigured, "setValidatorSet failed in setUp");
+        require(attestorBootstrapped, "initializeBridgeAttestorV2 failed in setUp");
 
         // Target only the bridgeIn handler. The other supply-relevant handlers
         // are exercised by ConservationInvariant; this suite isolates the
@@ -99,13 +117,13 @@ contract BridgeInvariant is GeniusDiamondTestBase {
     }
 
     /**
-     * @notice BRIDGE-02 / CEI correctness: every transferId the handler recorded
-     *         as released must have `processedMessages[transferId] == true` in the
+     * @notice BRIDGE-02 / CEI correctness: every messageId the handler recorded
+     *         as released must have `processedMessages[messageId] == true` in the
      *         diamond's validator storage.
      * @dev Iterates the handler's ghost_releasedIdsList (bounded by successful
      *      bridgeIn calls, which are bounded by campaign gas). For each id,
      *      computes the mapping slot directly:
-     *          slot = keccak256(abi.encode(transferId, GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION))
+     *          slot = keccak256(abi.encode(messageId, GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION))
      *      This is the standard Solidity mapping slot formula when the mapping
      *      is the FIRST field of a struct stored at the layout position (offset 0).
      *      If the struct field order changes in GNUSBridgeValidatorStorage, this
@@ -114,9 +132,9 @@ contract BridgeInvariant is GeniusDiamondTestBase {
     function invariant_processedMessagesIffReleased() public view {
         uint256 released = handler.getReleasedIdsLength();
         for (uint256 i = 0; i < released; i++) {
-            bytes32 transferId = handler.ghost_releasedIdsList(i);
+            bytes32 messageId = handler.ghost_releasedIdsList(i);
             bytes32 slot = keccak256(
-                abi.encode(transferId, GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION)
+                abi.encode(messageId, GNUS_BRIDGE_VALIDATOR_STORAGE_POSITION)
             );
             bytes32 stored = vm.load(address(diamond), slot);
             assertEq(
@@ -129,21 +147,21 @@ contract BridgeInvariant is GeniusDiamondTestBase {
 
     /**
      * @notice BRIDGE-03 / signature soundness: no fuzzed signature ever verifies.
-     * @dev The handler always submits a deterministic-but-invalid certificate
-     *      (one random 65-byte sig, empty proof) against a fixed nonzero merkle
-     *      root. If `ghost_bridgeInSuccesses` is non-zero after the campaign,
-     *      `_verifyThresholdCertificate` accepted a garbage certificate — a
-     *      critical soundness failure in either ECDSA recovery or merkle
-     *      membership verification. Scope: this campaign only proves the
-     *      single-sig / empty-proof / fixed-root case. Multi-level merkle proof
-     *      paths and the malformed-v/s revert matrix are covered by the unit
-     *      suite (test/unit/GNUSBridgeIn.test.ts), not by this invariant.
+     * @dev The handler always submits a deterministic-but-invalid V2 certificate
+     *      (one random 65-byte sig, empty proof, seed-derived next-root) against
+     *      the fixed nonzero one-leaf Genesis root. If `ghost_bridgeInSuccesses`
+     *      is non-zero after the campaign, `_verifyBridgeAttestorCertificate`
+     *      accepted a garbage certificate — a critical soundness failure in
+     *      either ECDSA recovery or merkle membership verification. Scope: this
+     *      campaign only proves the single-sig / empty-proof / fixed-root case.
+     *      Multi-level merkle proof paths and the malformed-v/s revert matrix
+     *      are covered by the unit suites, not by this invariant.
      */
     function invariant_noValidCertFromFuzzedSigs() public view {
         assertEq(
             handler.ghost_bridgeInSuccesses(),
             0,
-            "BRIDGE-03 violated: fuzzer forged a valid certificate against the fixed validator root"
+            "BRIDGE-03 violated: fuzzer forged a valid certificate against the fixed attestor root"
         );
     }
 
