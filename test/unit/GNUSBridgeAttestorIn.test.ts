@@ -101,6 +101,8 @@ import type { AttestorMerkleTree } from '../utils/bridge-certificate';
  *     E4. globalSupply/chainSupply deltas are post-fee-correct.
  *     E5. BridgeReleased reports the pre-fee amount.
  *     E6. pause check occurs before certificate work.
+ *     E7. the mint leg still runs enforceMintGate — perWalletMintCap[0] is
+ *         enforced AND consumed by bridge-in mints (WR-02 coupling, 15 review).
  *   Plus: the fee-replica pairing mint() vs bridgeIn() (Pitfall 1) and the
  *   [GAS] 16-signature certificate measurement (research A1).
  *
@@ -1350,6 +1352,40 @@ describe('GNUSBridgeAttestor bridgeIn (V2 certificates)', function () {
 					[],
 				),
 			).to.be.revertedWith('GNUSControl: contract paused');
+		});
+
+		it('E7: the mint leg still runs enforceMintGate — perWalletMintCap[GNUS_TOKEN_ID] is consumed by the first bridge-in and enforced against the second (WR-02)', async function () {
+			await transitionToActive();
+			// The bridgeIn mint leg inherits the lifecycle mint gate via
+			// _mint -> _beforeTokenTransfer -> GNUSLifecyclePolicy.enforceMintGate —
+			// there is NO GNUS_TOKEN_ID carve-out there (unlike the D-24 transfer-policy
+			// predicate). Cap the recipient's wallet at exactly one DEFAULT_AMOUNT and
+			// prove BOTH halves of the coupling: consumption (the first claim fills the
+			// allowance) and enforcement (the second claim reverts on the cap).
+			await geniusDiamond.setPerWalletMintCap(GNUS_TOKEN_ID, DEFAULT_AMOUNT);
+
+			const first = makeMessage(); // recipient user1, amount DEFAULT_AMOUNT
+			const firstCert = await activeCert(first, [attestors[0], attestors[1]]);
+			await geniusDiamond.bridgeIn(
+				messageTuple(first),
+				activeTree.root,
+				firstCert.sortedSigs,
+				firstCert.merkleProofs,
+			);
+			// The first claim minted AND consumed the full per-wallet allowance.
+			expect(await geniusDiamond['balanceOf(address)'](user1.address)).to.equal(DEFAULT_AMOUNT);
+
+			const second = makeMessage(); // fresh source event, same recipient/amount
+			const secondCert = await activeCert(second, [attestors[0], attestors[1]]);
+			await expect(
+				geniusDiamond.bridgeIn(
+					messageTuple(second),
+					activeTree.root,
+					secondCert.sortedSigs,
+					secondCert.merkleProofs,
+				),
+			).to.be.revertedWith('Per-wallet mint cap exceeded');
+			expect(await geniusDiamond['balanceOf(address)'](user1.address)).to.equal(DEFAULT_AMOUNT);
 		});
 	});
 
