@@ -46,10 +46,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Public repos — the runner image's git@ -> https rewrite fetches them
-      # anonymously; --depth=1 matches checkout's own submodule fetch depth.
+      # Both repos are public: the inline insteadOf rewrites their git@ SSH
+      # URLs to anonymous https for this one command only (a manual step gets
+      # none of checkout's own submodule auth wiring); --depth=1 matches
+      # checkout's submodule fetch depth.
       - name: Init submodules (CI surface only)
-        run: git submodule update --init --depth=1 contracts/gnus-ai diamonds/GeniusDiamond
+        run: |
+          git -c url."https://github.com/".insteadOf="git@github.com:" \
+            submodule update --init --depth=1 \
+            contracts/gnus-ai diamonds/GeniusDiamond
 
       - name: Set up Node 24
         uses: actions/setup-node@v4
