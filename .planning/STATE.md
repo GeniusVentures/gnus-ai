@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-stopped_at: "Blocked at 07-02 Task 3 — awaiting owner placement of BOTH tokens in gnus-ai/.env (SNYK_TOKEN + SOCKET_CLI_API_TOKEN; snyk:test restored per superseding ruling, commit 59dd883)"
+stopped_at: "Phase 7 complete (4/4) — shipped as PR #80 (ready for review; @codex review comment posted); next: triage PR #80, then plan Phase 08"
 last_updated: "2026-08-27T23:34:36.015Z"
 progress:
   total_phases: 17
