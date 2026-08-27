@@ -1455,7 +1455,7 @@ __metadata:
     chai: "npm:4.5.0"
     chai-as-promised: "npm:7.1.2"
     chalk: "npm:5.6.2"
-    contracts-starter: "https://github.com/mudgen/diamond-2-hardhat.git"
+    contracts-starter: "https://github.com/mudgen/diamond-2-hardhat.git#commit=bf67b736ad5fa3366551f599e204784856fb3069"
     dotenv: "npm:16.6.1"
     eslint: "npm:9.39.2"
     eslint-config-prettier: "npm:9.1.2"
@@ -4880,7 +4880,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"contracts-starter@https://github.com/mudgen/diamond-2-hardhat.git":
+"contracts-starter@https://github.com/mudgen/diamond-2-hardhat.git#commit=bf67b736ad5fa3366551f599e204784856fb3069":
   version: 1.0.0
   resolution: "contracts-starter@https://github.com/mudgen/diamond-2-hardhat.git#commit=bf67b736ad5fa3366551f599e204784856fb3069"
   checksum: 10c0/bb02edc42733588af6ad2344d2f9d4da62892d2b95edd9674c2bf6718854ab97fc39553ab84181897b8b5474130414f4db72da6ee01b1366c0d3b4685ecc4f9e
