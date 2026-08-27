@@ -17,7 +17,7 @@
 | 4   | Access Control & Observability | 1/1 | Complete   | 2026-07-21 |
 | 5   | Circuit Breaker & Performance  | 1/1 | Complete   | 2026-07-21 |
 | 6   | Test Coverage                  | 2/2 | Complete   | 2026-07-24 |
-| 7   | Dependency Hardening           | 2/4 | In Progress|  |
+| 7   | Dependency Hardening           | 3/4 | In Progress|  |
 
 ### Phases 8-12: Architecture Transformation
 
@@ -171,7 +171,7 @@ Plans:
 
 **Requirements:** DEP-01
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 
@@ -182,7 +182,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 07-03-PLAN.md — Full D-08 audit gate with written dispositions + CI security-audit workflow (tokenless-hard gates, secret-conditional snyk/socket)
+- [x] 07-03-PLAN.md — Full D-08 audit gate with written dispositions + CI security-audit workflow (tokenless-hard gates, secret-conditional snyk/socket)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
