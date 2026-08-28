@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
 import { ethers } from 'hardhat';
-import { multichain } from '@diamondslab/hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,
