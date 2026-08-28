@@ -39,6 +39,16 @@ jobs:
         with:
           submodules: recursive
 
+      # Not for forge tests — the diamonds-hardhat-foundry plugin shells out to
+      # `forge config --json` while loading hardhat.config.ts (foundry.toml
+      # exists), so NO hardhat command starts without the binary on PATH.
+      # Pinned to the version the team runs locally (Homebrew 1.7.1).
+      - name: Install Foundry (plugin config-load dependency)
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.7.1
+          cache: true
+
       - name: Set up Node 24
         uses: actions/setup-node@v4
         with:
