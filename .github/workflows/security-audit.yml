@@ -8,6 +8,11 @@
 # Baseline this gate tolerates is committed in .planning/STATE.md under
 # "Phase 7 Decisions Logged (07-03)": zero npm-audit advisories, exactly 3
 # slither false positives, 13 semgrep INFO-lint findings in one file.
+# WR-01 closure (2026-08-28): the 23 medium+ snyk transitives were fixed at
+# the source via range-qualified resolutions in package.json (semver-
+# compatible bumps only — no direct dependency changed), so the snyk step
+# below is a zero-finding hard gate: red now means a NEWLY published
+# advisory, nothing recorded.
 
 name: security-audit
 
