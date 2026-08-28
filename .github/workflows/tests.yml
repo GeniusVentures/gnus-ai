@@ -76,5 +76,10 @@ jobs:
       - name: Ensure .env placeholder for defenderClients
         run: touch .env
 
+      # Test files import { Diamond } from '@geniusventures/diamonds at runtime;
+      # its defenderClients module calls process.loadEnvFile('.env') at import
+      # time and ENOENT-crashes when the file is absent (.env is gitignored).
+      # Fixed at the source in @geniusventures/diamonds 1.3.4-gv (existsSync
+      # guard) — no placeholder file needed.
       - name: Run Hardhat unit suite
         run: yarn test

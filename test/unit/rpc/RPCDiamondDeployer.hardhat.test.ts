@@ -1,6 +1,17 @@
 import '@geniusventures/hardhat-diamonds';
 import { expect } from 'chai';
+import hre from 'hardhat';
 import { RPCDiamondDeployer } from '../../../scripts/setup/RPCDiamondDeployer';
+
+// CI runners have no .env, so chainManager's sepolia rpcUrl resolves to ''
+// there. Tests that need a URL pass one via createConfigFromHardhat's
+// overrides (its public seam); the loader test asserts flow-through equality
+// against the ambient config instead of assuming secrets are present.
+const HERMETIC_RPC_URL = 'http://127.0.0.1:8545';
+
+type ChainManagerLike = {
+	chainManager: { chains: Record<string, { rpcUrl?: string }> };
+};
 
 describe('RPCDiamondDeployer - Hardhat Integration', function () {
 	this.timeout(60000);
@@ -42,9 +53,11 @@ describe('RPCDiamondDeployer - Hardhat Integration', function () {
 				expect(networkConfig).to.have.property('rpcUrl');
 				expect(networkConfig.name).to.equal('sepolia');
 				expect(networkConfig.chainId).to.equal(11155111);
-				// Check that we got a valid RPC URL (should be from .env file)
-				expect(networkConfig.rpcUrl).to.be.a('string').that.is.not.empty;
-				expect(networkConfig.rpcUrl).to.match(/^https?:\/\//);
+				// rpcUrl flows through from the ambient chainManager config
+				// (env-derived) — assert equality, not a live-looking value
+				const configuredRpcUrl = (hre.config as unknown as ChainManagerLike).chainManager
+					.chains.sepolia?.rpcUrl;
+				expect(networkConfig.rpcUrl).to.equal(configuredRpcUrl ?? '');
 			} catch (error) {
 				expect.fail(`Failed to load network configuration: ${(error as Error).message}`);
 			}
@@ -67,15 +80,15 @@ describe('RPCDiamondDeployer - Hardhat Integration', function () {
 					'GeniusDiamond',
 					'sepolia',
 					testPrivateKey,
+					{ rpcUrl: HERMETIC_RPC_URL },
 				);
 
 				expect(config).to.be.an('object');
 				expect(config.diamondName).to.equal('GeniusDiamond');
 				expect(config.networkName).to.equal('sepolia');
 				expect(config.chainId).to.equal(11155111);
-				// Check that we got a valid RPC URL (should be from .env file)
-				expect(config.rpcUrl).to.be.a('string').that.is.not.empty;
-				expect(config.rpcUrl).to.match(/^https?:\/\//);
+				// The override wins over the (env-derived) chainManager value
+				expect(config.rpcUrl).to.equal(HERMETIC_RPC_URL);
 				expect(config.privateKey).to.equal(testPrivateKey);
 				expect(config.deploymentsPath).to.equal('diamonds');
 				expect(config.contractsPath).to.equal('contracts/gnus-ai');
@@ -128,6 +141,7 @@ describe('RPCDiamondDeployer - Hardhat Integration', function () {
 					'GeniusDiamond',
 					'sepolia',
 					testPrivateKey,
+					{ rpcUrl: HERMETIC_RPC_URL },
 				);
 
 				// Mock the provider to avoid network calls
@@ -158,6 +172,7 @@ describe('RPCDiamondDeployer - Hardhat Integration', function () {
 					'GeniusDiamond',
 					'sepolia',
 					testPrivateKey,
+					{ rpcUrl: HERMETIC_RPC_URL },
 				);
 
 				// Mock the provider to avoid network calls
