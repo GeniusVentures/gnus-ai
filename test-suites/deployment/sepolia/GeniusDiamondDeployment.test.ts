@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { multichain } from '@diamondslab/hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,

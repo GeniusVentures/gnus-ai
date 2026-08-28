@@ -25,7 +25,7 @@ import { assert } from 'chai';
 import { debug } from 'debug';
 import { formatEther, id, JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { multichain } from '@diamondslab/hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 
 // Create utils object for compatibility
