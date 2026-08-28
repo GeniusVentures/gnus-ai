@@ -66,6 +66,11 @@ describe('GNUSControlStorage Tests', function () {
 
 	describe('Storage layout and protocol info', function () {
 		it('should return initial protocol info', async function () {
+			// Bridge suites alias the shared diamond's chainID to the local
+			// chain (GNUSBridgeIn scaffold) and that mutation intentionally
+			// outlives their snapshots — normalize it before asserting
+			// defaults (same reset as the zero-chain-ID edge case below).
+			await geniusDiamond.setChainID(0);
 			const info = await geniusDiamond.protocolInfo();
 
 			// Should have protocol version set during initialization

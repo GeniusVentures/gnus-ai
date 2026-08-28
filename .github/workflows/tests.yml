@@ -1,0 +1,62 @@
+# CI test gate — Hardhat unit suite only.
+#
+# Scope is deliberately narrower than the local `test:all` gate:
+#   - `yarn test` (npx hardhat test) runs entirely on the in-process hardhat
+#     network — no RPC endpoints, no API keys, no funded accounts, so the
+#     gate is tokenless and green on forks by construction.
+#   - Foundry (`yarn forge:test`) is EXCLUDED: the diamonds-forge wrapper
+#     deploys against a live localhost node, which CI does not host.
+#   - Sepolia/Safe smoke paths stay manual (SWP-11 / Phase 08.1).
+#
+# Closes the v1.0 milestone-audit CI-TEST-EXEC warning: the BRIDGE-18
+# conformance vectors, the E7 matrix pin, and the full regression suite were
+# previously machine-enforced only via precommit.
+
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # least privilege — nothing publishes
+
+jobs:
+  hardhat:
+    name: hardhat unit tests
+    runs-on: ubuntu-latest
+    steps:
+      # contracts/gnus-ai and diamonds/GeniusDiamond are submodules and carry
+      # the entire .sol surface plus the deploy config — recursive checkout is
+      # required to compile (same parity note as security-audit.yml).
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      # packageManager field resolves yarn 4.10.3.
+      - name: Enable corepack
+        run: corepack enable
+
+      # DEP-01 determinism gate — hard fail on any lockfile drift.
+      - name: Install dependencies (immutable)
+        run: yarn install --immutable
+
+      # diamond-typechain-types is generated (gitignored) — the suites import
+      # it, so compile + ABI/typechain generation must precede the test run.
+      - name: Compile contracts and generate typechain
+        run: yarn compile
+
+      - name: Run Hardhat unit suite
+        run: yarn test
