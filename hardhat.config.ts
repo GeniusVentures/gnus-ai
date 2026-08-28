@@ -1,17 +1,33 @@
 import * as dotenv from 'dotenv';
 
-import '@diamondslab/diamonds-hardhat-foundry';
-import '@diamondslab/hardhat-diamonds';
+import '@geniusventures/diamonds-hardhat-foundry';
+import '@geniusventures/hardhat-diamonds';
 import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-web3-v4';
 import '@typechain/hardhat';
 import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
-import 'hardhat-multichain';
-import { HardhatUserConfig, task } from 'hardhat/config';
+import '@geniusventures/hardhat-multichain';
+import { extendEnvironment, HardhatUserConfig, task } from 'hardhat/config';
 import 'solidity-coverage';
 
+import { installLazyLifecyclePolicyLinker } from './scripts/utils/GNUSLifecyclePolicyLinking';
+
 dotenv.config();
+
+/*
+ * Phase 13 (13-05): install the GNUSLifecyclePolicy library linker in EVERY hardhat process.
+ * The mocha suites deploy + link eagerly in their `before` hooks via
+ * `setupLifecyclePolicyLinking()`, but the `diamonds-forge:test` task deploys the diamond
+ * IN-PROCESS through the framework's DeploymentManager — no per-suite hook ever runs there,
+ * so facets linking GNUSLifecyclePolicy would fail with an unresolved-link error. The lazy
+ * installer patches `ethers.getContractFactory` once per process (deploy-on-first-use, cached)
+ * and is a no-op for tasks that never create a contract factory (compile etc.). It shares
+ * module state with the per-suite installer, so the two never double-deploy or double-patch.
+ */
+extendEnvironment((hre) => {
+	installLazyLifecyclePolicyLinker(hre);
+});
 
 /*
  * Destructuring environment variables required for the configuration.
@@ -335,6 +351,13 @@ const config: HardhatUserConfig = {
 	diamonds: {
 		paths: {
 			GeniusDiamond: {
+				deploymentsPath: 'diamonds',
+				contractsPath: 'contracts/gnus-ai',
+			},
+			// Phase 9 (09-04): second diamond instance for cross-chain provenance tests.
+			// Points at the SAME source tree + config as GeniusDiamond; the
+			// LocalDiamondDeployer separates instances via `localDiamondDeployerKey`.
+			GeniusDiamondChainB: {
 				deploymentsPath: 'diamonds',
 				contractsPath: 'contracts/gnus-ai',
 			},

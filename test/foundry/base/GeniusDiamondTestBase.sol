@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {DiamondFuzzBase} from "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+import {DiamondFuzzBase} from "@geniusventures/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
 import {DiamondDeployment} from "../helpers/DiamondDeployment.sol";
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";

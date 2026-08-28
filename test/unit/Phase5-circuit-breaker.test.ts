@@ -1,11 +1,12 @@
 import {
 	LocalDiamondDeployer,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('Phase 5: Circuit Breaker & Performance', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -19,6 +20,8 @@ describe('Phase 5: Circuit Breaker & Performance', function () {
 	let snapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		const signers = await hre.ethers.getSigners();
 		owner = signers[0];
 		user = signers[1];
@@ -199,8 +202,9 @@ describe('Phase 5: Circuit Breaker & Performance', function () {
 					'mint(address,uint256,uint256,bytes)'
 				](user.address, kChildId, kChildMintAmount, '0x');
 
-			// bridgeOut converts childAmount/exchangeRate = 100/2 = 50 GNUS-equivalent,
-			// far exceeding the 1 GNUS limit. Before CR-03 this bypassed the limiter.
+			// bridgeOut charges the full child amount in minions (100 > 1 GNUS limit).
+			// Before CR-03 this bypassed the limiter; Phase 9 dropped the /exchangeRate
+			// division because child balances are already minion-denominated (D1/D2).
 			await expect(
 				geniusDiamond
 					.connect(user)
@@ -216,10 +220,12 @@ describe('Phase 5: Circuit Breaker & Performance', function () {
 					'mint(address,uint256,uint256,bytes)'
 				](owner.address, kChildId, kChildMintAmount, '0x');
 
-			// convAmount = 100/2 = 50 GNUS-equivalent; owner bypasses the limiter and
+			// convAmount = 100 minions (Phase 9: bridgeOut charges `amount` directly —
+			// child balances are minion-denominated, no exchange-rate division);
+			// owner bypasses the limiter and
 			// must emit the audit event. The event is declared in a library and is not in
 			// the diamond typechain ABI, so parse the raw log topic instead.
-			const kExpectedConvAmount = 50;
+			const kExpectedConvAmount = 100;
 			const tx = await geniusDiamond
 				.connect(owner)
 				.bridgeOut(kChildMintAmount, kChildId, kDestChainID, kSgnsDestination, false);

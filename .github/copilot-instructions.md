@@ -11,11 +11,11 @@ GNUS.ai is an **ERC-2535 Diamond Standard** smart contract system implementing a
 
 **Architecture Philosophy**: Modular facet-based upgradability using Diamond proxy pattern. Each facet handles distinct functionality (ownership, access control, NFT factory, AI escrow, bridge operations).
 
-**Diamond Management System**: Uses the `@diamondslab` package suite providing comprehensive tooling for ERC-2535 Diamond development:
+**Diamond Management System**: Uses the `@geniusventures` package suite providing comprehensive tooling for ERC-2535 Diamond development:
 
-- **@diamondslab/hardhat-diamonds**: Deployment, ABI generation, configuration management
-- **@diamondslab/diamonds-hardhat-foundry**: Foundry integration, fuzz testing base contracts
-- **@diamondslab/diamonds-monitor**: Runtime monitoring and analytics
+- **@geniusventures/hardhat-diamonds**: Deployment, ABI generation, configuration management
+- **@geniusventures/diamonds-hardhat-foundry**: Foundry integration, fuzz testing base contracts
+- **@geniusventures/diamonds-monitor**: Runtime monitoring and analytics
 
 ## Critical Development Workflows
 
@@ -26,8 +26,13 @@ GNUS.ai is an **ERC-2535 Diamond Standard** smart contract system implementing a
 yarn clean-compile
 
 # Run Hardhat tests across multiple chains
-yarn test                          # Alias for test-multichain
-yarn test-multichain test/unit/*.test.ts --chains sepolia,polygon_amoy
+# NOTE: pass NO positional test path. The bare command (mocha's default spec) is the
+# only form that reliably includes the subdirectory suites (test/unit/safe/, test/unit/rpc/):
+#   - `test/unit/*.test.ts`   silently skips them (one-level glob)
+#   - `"test/unit/**/*.test.ts"` (quoted) fails: hardhat treats it as a literal path (MODULE_NOT_FOUND)
+#   - `test/unit/**/*.test.ts` (unquoted) depends on shell globstar (fails on macOS bash 3.2)
+yarn test                          # Alias for test-multichain, full suite via mocha default spec
+yarn test-multichain --chains sepolia,polygon_amoy
 
 # Foundry fuzz tests (use for property-based testing)
 yarn forge:test                    # Basic Foundry tests
@@ -47,7 +52,7 @@ yarn coverage                      # Hardhat coverage via Solidity Coverage
 - **deployInit/upgradeInit**: Init function signatures for deployment/upgrades
 - **fromVersions**: Specifies which versions can upgrade to current
 
-**@diamondslab Hardhat Tasks** (from `@diamondslab/hardhat-diamonds`):
+**@geniusventures Hardhat Tasks** (from `@geniusventures/hardhat-diamonds`):
 
 ```bash
 # Generate combined Diamond ABI from all facets
@@ -77,7 +82,7 @@ After modifying facets, ALWAYS run `yarn clean-compile` to regenerate Diamond AB
 import {
   LocalDiamondDeployer,
   loadDiamondContract,
-} from "@diamondslab/hardhat-diamonds/dist/utils";
+} from "@geniusventures/hardhat-diamonds/dist/utils";
 
 describe("Contract Tests", function () {
   const networkNames = process.argv[
@@ -114,7 +119,7 @@ describe("Contract Tests", function () {
 **Foundry/Solidity Tests** - Extend DiamondFuzzBase:
 
 ```solidity
-import {DiamondFuzzBase} from "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+import {DiamondFuzzBase} from "@geniusventures/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
 import {DiamondDeployment} from "../helpers/DiamondDeployment.sol"; // Auto-generated
 
 contract MyTest is DiamondFuzzBase {
@@ -204,7 +209,7 @@ yarn forge:fmt:check     # Solidity formatting
 
 **Hardhat Tests** (TypeScript):
 
-- Use `LocalDiamondDeployer.getInstance()` from `@diamondslab/hardhat-diamonds`
+- Use `LocalDiamondDeployer.getInstance()` from `@geniusventures/hardhat-diamonds`
 - Multiton pattern: one deployment per network, reused across tests
 - Load contracts with `loadDiamondContract<T>()` for full type safety
 

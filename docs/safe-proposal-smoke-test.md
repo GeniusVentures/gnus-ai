@@ -23,7 +23,7 @@ cat diamonds/GeniusDiamond/deployments/geniusdiamond-sepolia-11155111.json | jq 
 
 ## 2. Dry-Run Command
 
-> **How these scripts run:** The `@diamondslab/diamonds` library loads Hardhat's plugin
+> **How these scripts run:** The `@geniusventures/diamonds` library loads Hardhat's plugin
 > context at import time, so every `*-rpc.ts` entry script imports `hardhat` first (so it
 > runs under plain `npx ts-node`, not only `npx hardhat run`). Pass `--transpile-only`
 > because the library's Hardhat type-augmentations don't merge under ts-node's full

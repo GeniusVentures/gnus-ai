@@ -1,7 +1,7 @@
 import {
 	LocalDiamondDeployer,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
@@ -12,6 +12,7 @@ import {
 	MockNonPayable,
 	TransferHelperWrapper,
 } from '../../typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('TransferHelper Library Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -27,6 +28,8 @@ describe('TransferHelper Library Tests', function () {
 	let testSnapshot: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		// Get signers
 		[owner, addr1, addr2] = await hre.ethers.getSigners();
 

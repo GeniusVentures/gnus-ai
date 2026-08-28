@@ -19,7 +19,7 @@
  * @module scripts/setup/strategies/EncodeOnlyRPCDeploymentStrategy
  */
 
-import { RPCDeploymentStrategy, Diamond, type FacetCuts } from '@diamondslab/diamonds';
+import { RPCDeploymentStrategy, Diamond, type FacetCuts } from '@geniusventures/diamonds';
 import chalk from 'chalk';
 import { dirname, join } from 'path';
 import { mkdirSync, writeFileSync } from 'fs';

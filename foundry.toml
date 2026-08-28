@@ -39,7 +39,7 @@ exclude_paths = ["test/foundry"]
 
 # Remappings for dependencies
 remappings = [
-    "@diamondslab/=node_modules/@diamondslab/",
+    "@geniusventures/=node_modules/@geniusventures/",
     "@gnus.ai/=node_modules/@gnus.ai/",
     "@helpers/=test/foundry/helpers/",
     "contracts-starter/=node_modules/contracts-starter/",
@@ -65,7 +65,7 @@ wrap_comments = true
 # RPC endpoints for forking
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC_URL}"
-sepolia = "${SEPOLIA_RPC_URL}"
+sepolia = "${SEPOLIA_RPC}"
 hardhat = "http://localhost:${HARDHAT_PORT}"
 
 # Etherscan API keys for verification

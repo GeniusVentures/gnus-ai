@@ -1,19 +1,20 @@
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import chai, { assert, expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { JsonRpcProvider } from 'ethers';
 import hre from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { getInterfaceID, toWei } from '../../scripts/utils/helpers';
 import { GeniusOwnershipFacet, IERC20Upgradeable__factory } from '../../typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 chai.use(chaiAsPromised);
 
@@ -57,6 +58,8 @@ describe('Multichain GNUS ERC20 Hybrid Tests', async function () {
 			// let erc1155ProxyOperator: GeniusDiamond;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				console.log('Starting GNUSERC20 test setup...');
 
 				// Ensure diamond ABI is generated before any tests run

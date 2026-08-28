@@ -1,20 +1,21 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 chai.use(chaiAsPromised);
 
@@ -31,7 +32,6 @@ describe('GNUS Bridge Tests', async function () {
 			networkProviders.set('hardhat', ethers.provider as any);
 		}
 	} else if (process.argv.includes('test') || process.argv.includes('coverage')) {
-		networkProviders.set('hardhat', ethers.provider as any);
 		networkProviders.set('hardhat', ethers.provider as any);
 	}
 
@@ -52,10 +52,15 @@ describe('GNUS Bridge Tests', async function () {
 
 			let ethersMultichain: typeof ethers;
 			let snapshotId: string;
+			// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
+			const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
+			let deployedDiamondAddress: string;
 
 			let erc1155ProxyOperator: GeniusDiamond;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,
@@ -68,6 +73,7 @@ describe('GNUS Bridge Tests', async function () {
 				await diamondDeployer.setVerbose(true);
 				diamond = await diamondDeployer.getDiamondDeployed();
 				const deployedDiamondData = diamond.getDeployedDiamondData();
+			deployedDiamondAddress = deployedDiamondData.DiamondAddress! || '';
 
 				// Load the Diamond contract using the utility function
 				geniusDiamond = await loadDiamondContract<GeniusDiamond>(
@@ -211,17 +217,32 @@ describe('GNUS Bridge Tests', async function () {
 				).to.be.revertedWith('ERC20: decreased allowance below zero');
 			});
 
-			// Withdraw Limiter Integration Tests
+			// Withdraw Limiter Integration Tests (Phase 9: re-homed from withdraw() to
+			// GNUSTreasury.convert() — the GNUS-terminal leg charges the limiter exactly
+			// once, in minions, per WR-07/D4).
 			describe('Withdraw Limiter Integration', function () {
 				let nftID: bigint;
-				let exchangeRate: number;
 
 				beforeEach(async function () {
+					// Seed the provenance counter so the global-cap check in
+					// _mintWithBridgeFee can run (reverts when uninitialized, D8/Pitfall 4).
+					// The GeniusDiamond fixture is shared (cached) across suites, so a prior
+					// suite may already have seeded the one-shot SetSeedSupply — guard on
+					// provenanceInitialized (slot +1).
+					const initialized = await provider.send('eth_getStorageAt', [
+						deployedDiamondAddress,
+						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+					]);
+					if (BigInt(initialized) === 0n) {
+						await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
+					}
+
 					// Create NFT for testing
 					nftID = 1n;
-					// Exchange rate of 10 means: minting 1 NFT costs 10 GNUS, withdrawing 1 NFT gives 0.1 GNUS
-					exchangeRate = 10;
-					// Set max supply high enough for all tests (2M NFTs)
+					// exchangeRate is display-only under the conversion-native model (D2);
+					// no rate math occurs in any state transition.
+					const exchangeRate = 10;
+					// Set max supply high enough for all tests
 					await ownerDiamond.createNFT(
 						0n,
 						'Test NFT',
@@ -231,12 +252,12 @@ describe('GNUS Bridge Tests', async function () {
 						'ipfs://test',
 					);
 
-					// Mint GNUS tokens to owner first (to burn when minting NFTs)
-					// Need 50,000 GNUS to mint 5000 NFTs (5000 * 10 = 50,000)
+					// Mint GNUS tokens to owner first (to burn when minting NFTs).
+					// Minion-for-minion: minting 5000 child minions burns exactly 5000 GNUS (D1).
 					const mintTx = await ownerDiamond['mint(address,uint256)'](owner, toWei('50000'));
 					await mintTx.wait();
 
-					// Owner mints NFTs to signer1 (burns 50,000 GNUS from owner)
+					// Owner mints NFTs to signer1 (burns 5,000 GNUS from owner)
 					await ownerDiamond['mint(address,uint256,uint256,bytes)'](
 						signer1,
 						nftID,
@@ -245,90 +266,84 @@ describe('GNUS Bridge Tests', async function () {
 					);
 				});
 
-				// Test that withdraw() triggers the limiter check
-				it('should trigger limiter on withdraw', async function () {
-					const withdrawAmount = toWei('1000'); // 1000 NFTs
-					const gnusEquivalent = toWei('100'); // 1000 / 10 = 100 GNUS
+				// Test that convert() to GNUS triggers the limiter check
+				it('should trigger limiter on convert', async function () {
+					const convertAmount = toWei('1000'); // 1000 child minions -> 1000 GNUS (1:1)
 
 					// Get initial status
 					const initialStatus = await geniusDiamond.getAccountWithdrawStatus(signer1);
 
-					// First withdrawal should succeed
-					await signer1Diamond.withdraw(withdrawAmount, nftID);
+					// First conversion should succeed
+					await signer1Diamond.convert(nftID, 0n, convertAmount, signer1);
 
-					// Check status shows usage increased by GNUS equivalent
+					// Check status shows usage increased by the minion amount
 					const finalStatus = await geniusDiamond.getAccountWithdrawStatus(signer1);
 					const usageIncrease = finalStatus.currentUsage - initialStatus.currentUsage;
-					expect(usageIncrease).to.equal(gnusEquivalent);
+					expect(usageIncrease).to.equal(convertAmount);
 				});
 
-				// Test that withdraw() calculates GNUS amount from exchange rate before checking limit
-				it('should calculate GNUS amount from exchange rate', async function () {
-					const withdrawAmount = toWei('500'); // 500 NFTs
-					const expectedGNUS = toWei('50'); // 500 / 10 = 50 GNUS
+				// Test that convert() charges the limiter in minions (rate never applied, D1/D2)
+				it('should charge the limiter in minions (1:1, rate never applied)', async function () {
+					const convertAmount = toWei('500'); // 500 child minions
 
-					// Perform withdrawal
-					await signer1Diamond.withdraw(withdrawAmount, nftID);
+					// Perform conversion
+					await signer1Diamond.convert(nftID, 0n, convertAmount, signer1);
 
-					// Check that limiter recorded the correct GNUS amount
+					// Check that limiter recorded the exact minion amount
 					const status = await geniusDiamond.getAccountWithdrawStatus(signer1);
-					expect(status.currentUsage).to.equal(expectedGNUS);
+					expect(status.currentUsage).to.equal(convertAmount);
 				});
 
 				// Test that super admin can bypass limiter
 				it('should allow super admin bypass', async function () {
-					// Mint plenty of GNUS to owner
-					// Need 15M GNUS to mint 1.5M NFTs (1.5M * exchangeRate of 10)
-					await ownerDiamond['mint(address,uint256)'](owner, toWei('15000000'));
+					// Mint plenty of GNUS to owner, then convert to child minions (1:1)
+					await ownerDiamond['mint(address,uint256)'](owner, toWei('150000'));
 
 					// Mint NFTs to owner (super admin)
 					await ownerDiamond['mint(address,uint256,uint256,bytes)'](
 						owner,
 						nftID,
-						toWei('1500000'),
+						toWei('150000'),
 						'0x',
 					);
 
-					// Super admin withdraws more than default limit (1.5M NFTs / 10 = 150k GNUS > 100k limit)
-					const hugeWithdrawal = toWei('1500000'); // 1.5M NFTs = 150,000 GNUS
-					await expect(ownerDiamond.withdraw(hugeWithdrawal, nftID)).to.not.be.reverted;
+					// Super admin converts more than the default limit (150k GNUS > 100k limit)
+					const hugeConversion = toWei('150000');
+					await expect(ownerDiamond.convert(nftID, 0n, hugeConversion, owner)).to.not.be
+						.reverted;
 
 					// Check that super admin usage is NOT recorded
 					const status = await geniusDiamond.getAccountWithdrawStatus(owner);
 					expect(status.currentUsage).to.equal(0n);
 				});
 
-				// Test that withdraw() reverts with clear message when limit exceeded
+				// Test that convert() reverts with clear message when limit exceeded
 				it('should revert with clear message when limit exceeded', async function () {
-					// Default limit is 100,000 GNUS
-					// With exchangeRate 10, need 1,000,000 NFTs to get 100k GNUS (1M / 10 = 100k)
-					// Mint enough GNUS to owner first: need 10.55M GNUS to mint 1.055M NFTs
-					await ownerDiamond['mint(address,uint256)'](owner, toWei('10550000'));
-
-					// Mint additional NFTs to signer1: already have 5000, need 1,055,000 more
+					// Default limit is 100,000 GNUS. signer1 starts with 5,000 child minions;
+					// mint 100,000 more so they can reach the limit.
+					await ownerDiamond['mint(address,uint256)'](owner, toWei('100000'));
 					await ownerDiamond['mint(address,uint256,uint256,bytes)'](
 						signer1,
 						nftID,
-						toWei('1055000'),
+						toWei('100000'),
 						'0x',
 					);
 
-					// Now signer1 has 1,060,000 NFTs total
-					// Withdraw close to limit (950,000 NFTs = 95,000 GNUS)
-					await signer1Diamond.withdraw(toWei('950000'), nftID); // 95k GNUS
+					// Convert close to limit (95,000 GNUS)
+					await signer1Diamond.convert(nftID, 0n, toWei('95000'), signer1);
 
-					// Try to exceed limit (60,000 NFTs = 6,000 GNUS, total would be 101k)
-					await expect(signer1Diamond.withdraw(toWei('60000'), nftID)).to.be.revertedWith(
-						'Withdrawal limit exceeded for time window',
-					);
+					// Try to exceed limit (6,000 more; total would be 101,000 > 100,000)
+					await expect(
+						signer1Diamond.convert(nftID, 0n, toWei('6000'), signer1),
+					).to.be.revertedWith('Withdrawal limit exceeded for time window');
 				});
 
-				// Additional test: Verify multiple small withdrawals accumulate
-				it('should accumulate multiple small withdrawals', async function () {
-					// Make 3 small withdrawals
-					await signer1Diamond.withdraw(toWei('1000'), nftID); // 100 GNUS (1000/10)
-					await signer1Diamond.withdraw(toWei('500'), nftID); // 50 GNUS (500/10)
-					await signer1Diamond.withdraw(toWei('800'), nftID); // 80 GNUS (800/10)
+				// Additional test: Verify multiple small conversions accumulate
+				it('should accumulate multiple small conversions', async function () {
+					// Make 3 small conversions
+					await signer1Diamond.convert(nftID, 0n, toWei('100'), signer1);
+					await signer1Diamond.convert(nftID, 0n, toWei('50'), signer1);
+					await signer1Diamond.convert(nftID, 0n, toWei('80'), signer1);
 
 					// Total should be 230 GNUS
 					const status = await geniusDiamond.getAccountWithdrawStatus(signer1);
@@ -337,12 +352,13 @@ describe('GNUS Bridge Tests', async function () {
 				});
 
 				// Additional test: Verify limiter can be disabled
-				it('should allow unlimited withdrawals when limiter disabled', async function () {
+				it('should allow unlimited conversions when limiter disabled', async function () {
 					// Disable limiter
 					await ownerDiamond.setLimiterEnabled(false);
 
-					// Withdraw all 5000 NFTs = 500 GNUS (no limit)
-					await expect(signer1Diamond.withdraw(toWei('5000'), nftID)).to.not.be.reverted; // 500 GNUS
+					// Convert all 5000 child minions (no limit)
+					await expect(signer1Diamond.convert(nftID, 0n, toWei('5000'), signer1)).to.not.be
+						.reverted;
 
 					// Re-enable for other tests
 					await ownerDiamond.setLimiterEnabled(true);

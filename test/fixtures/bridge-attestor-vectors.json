@@ -1,0 +1,118 @@
+{
+	"version": 1,
+	"description": "BRIDGE-18 cross-language bridge-attestor certificate vectors. Frozen field/key/proof values; structHash/eip191Digest/signatures are bound to the frozen chainid (31337) and diamondAddress (0x1111...11) — the off-chain C++ (SuperGenius SignEVM) conformance constants. On-chain round-trips re-derive the structHash and re-sign against the LIVE chainid and deployed diamondAddress (environment-bound fields, plan 15-03 Task 2(b)(iii)).",
+	"environment": {
+		"chainid": "31337",
+		"diamondAddress": "0x1111111111111111111111111111111111111111",
+		"recipient": "0x2222222222222222222222222222222222222222"
+	},
+	"constants": {
+		"BRIDGE_MESSAGE_ID_V2": "0xcad6f4b492a613b2322ad77e106df9e952c4686b8455874b7af1d7508943a434",
+		"BRIDGE_CERTIFICATE_V2": "0x0c9113fc73963b588d64629e34320173d476269c17e86929f707794e43f12c5b",
+		"GNUS_TOKEN_ID": "0",
+		"merkleLeafConvention": "keccak256(abi.encodePacked(evmAddress)) — 20-byte packed (Pitfall 3)",
+		"signatureConvention": "65-byte r||s||v, EIP-191 wrapped, low-s canonical",
+		"signerOrdering": "vectors[].signers are recorded strictly ascending by recovered EVM address — the exact submission order the on-chain verifier requires (GNUSBridgeAttestor._verifyBridgeAttestorCertificate, 'Signers not strictly ascending'). attestorSet leaf order is INDEPENDENT of signer order (leaf order determines the merkle root); only the signers arrays carry the ordering contract."
+	},
+	"genesisKey": {
+		"privateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+		"sgPublicKey64": "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5",
+		"evmAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+		"note": "Hardhat well-known account #0 — NEVER used for transactions (Phase-10 vector convention)."
+	},
+	"attestorSet": [
+		{
+			"role": "attestor-1",
+			"privateKey": "0x3b36681d87da59b000dc67aed5cc1403610a941b3caa9071cba8152a1961e446",
+			"sgPublicKey64": "0x50e5db25943ea1c1a60850db703ccdab0f59c90397d82475c51285ccee993f5822b8e30f26100036e69e4bfa2a320dd01d22e0639afc0e69e7045bf4130d4a91",
+			"evmAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a"
+		},
+		{
+			"role": "attestor-2",
+			"privateKey": "0xc95fb1dd9aa14dcd7f41628918d7aa846720a4f4591ad87c8b2ed6de0588115f",
+			"sgPublicKey64": "0x15f8e20e896fd135891ddce46d143a5538a6191db52e768f717704ed2c2861e90f852f3e7a8bd710ba604f2562ee2ce480aa7fb0d08e70f8982a6333ee996481",
+			"evmAddress": "0x16972DdFB46814cCaB30e8Fc94aD3A3317ECC493"
+		},
+		{
+			"role": "attestor-3",
+			"privateKey": "0x72d7bc92958b1397723f432c84c2eb8a92774762cb649f49bd5a6b9995fabe75",
+			"sgPublicKey64": "0x894ae9397dcb04075eee7932aaf77e68e91c20f40f14f46d40d1734eac78ab938dfb1c32a0edef00ec89f6433145e633946a8c1ddd691d6d2bd915363bb9e095",
+			"evmAddress": "0x300eE6A0EAd93D97B0681A8725DFd14762451f46"
+		}
+	],
+	"vectors": [
+		{
+			"name": "genesis-transition",
+			"description": "Genesis (epoch 0) one-leaf root advancing to the 3-attestor API set — one valid Genesis signature, threshold 1.",
+			"currentRoot": "0xe9707d0e6171f728f7473c24cc0432a9b07eaaf1efed6a137a4a8c12c79552d9",
+			"currentEpoch": "0",
+			"nextRoot": "0x0391da16d4db46f9cee5ff7dc344bb164357d82ec8c7835c3536b13d9206598d",
+			"message": {
+				"srcChainID": "1",
+				"sourceBridgeID": "0x0000000000000000000000000000000000000000000000000000000000001111",
+				"sourceTxHash": "0x000000000000000000000000000000000000000000000000000000000000aaaa",
+				"sourceEventIndex": "0",
+				"recipient": "0x2222222222222222222222222222222222222222",
+				"amount": "1000"
+			},
+			"messageId": "0x8f29ad1ab53c3f3bd9b4cb2148594706614c5b3d3602018d7ea4e55ef143b9dc",
+			"structHash": "0xfda8d4cdaa33126b7dcfaaae6034dab21b619a8e098488b8fc2f019a2d81d4e5",
+			"eip191Digest": "0xd4805265e9067208796c789dd9472f5e8e152e15652d21c70062f0fbd504fdee",
+			"signers": [
+				{
+					"role": "genesis",
+					"privateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+					"sgPublicKey64": "0x8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5",
+					"evmAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+					"signature": "0x9c80560ec0d1a0ebe83b5163e9a7e66f521f51085c2a6d447cad39b56206be996cf5573e176c38b1a1eb86706d60aa5ee432eb58a325acbc96b19418b84d45451c",
+					"recoveredAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+					"merkleProof": []
+				}
+			]
+		},
+		{
+			"name": "active-root-claim",
+			"description": "Active-set (epoch 1) claim against the 3-attestor root with an unchanged nextRoot — 2-of-3 signatures, no epoch bump.",
+			"currentRoot": "0x0391da16d4db46f9cee5ff7dc344bb164357d82ec8c7835c3536b13d9206598d",
+			"currentEpoch": "1",
+			"nextRoot": "0x0391da16d4db46f9cee5ff7dc344bb164357d82ec8c7835c3536b13d9206598d",
+			"message": {
+				"srcChainID": "137",
+				"sourceBridgeID": "0x0000000000000000000000000000000000000000000000000000000000002222",
+				"sourceTxHash": "0x000000000000000000000000000000000000000000000000000000000000bbbb",
+				"sourceEventIndex": "3",
+				"recipient": "0x2222222222222222222222222222222222222222",
+				"amount": "750000000000000000000"
+			},
+			"messageId": "0x9cfa863f9e3518bd4e8190f129bafe06c6d783bcda7ba8ab85f6a70a83382c98",
+			"structHash": "0x97048cca33ab00126c687647355d37b052ed9353df3c60b888e42d3e0900f72f",
+			"eip191Digest": "0x8c2880aa8766eb8d3c5d89e491ca6239052713ad8a46b9f1efd25d3e19329bf7",
+			"signers": [
+				{
+					"role": "attestor-2",
+					"privateKey": "0xc95fb1dd9aa14dcd7f41628918d7aa846720a4f4591ad87c8b2ed6de0588115f",
+					"sgPublicKey64": "0x15f8e20e896fd135891ddce46d143a5538a6191db52e768f717704ed2c2861e90f852f3e7a8bd710ba604f2562ee2ce480aa7fb0d08e70f8982a6333ee996481",
+					"evmAddress": "0x16972DdFB46814cCaB30e8Fc94aD3A3317ECC493",
+					"signature": "0x7775d03d4c63ffe5bb4e045faab2d91112e722a3c62b664873a879f9916a77c91d010df3ca15516b4d8671309bd68927fb236b9ddeb996e2c0b0d856ab44f6611b",
+					"recoveredAddress": "0x16972DdFB46814cCaB30e8Fc94aD3A3317ECC493",
+					"merkleProof": [
+						"0x7e51907506f5d2f4f730404a2bc6b8743145a8df9cac12faa62caf54b0fba7e0",
+						"0x2ab4d84c2bf58e339dab9168d3c0daf0ebfc09b95b1c51ca75911cfcabf8a803"
+					]
+				},
+				{
+					"role": "attestor-1",
+					"privateKey": "0x3b36681d87da59b000dc67aed5cc1403610a941b3caa9071cba8152a1961e446",
+					"sgPublicKey64": "0x50e5db25943ea1c1a60850db703ccdab0f59c90397d82475c51285ccee993f5822b8e30f26100036e69e4bfa2a320dd01d22e0639afc0e69e7045bf4130d4a91",
+					"evmAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a",
+					"signature": "0xc0545ab3bdb1b54415dc6813c126f8cb7da98191687790a53f1f944782ee694d7deac0f25887a70306051ee1705c8b2349451a8e76d7d05a08ab747283f3ccde1b",
+					"recoveredAddress": "0x335B5C686e615E01462F73742C73b31Db3F3D57a",
+					"merkleProof": [
+						"0x76fe0c65883a7a92058d1fd063246db7c8ba41016811c35ff49f76008f4e658f",
+						"0x2ab4d84c2bf58e339dab9168d3c0daf0ebfc09b95b1c51ca75911cfcabf8a803"
+					]
+				}
+			]
+		}
+	]
+}

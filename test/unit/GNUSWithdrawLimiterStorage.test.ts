@@ -1,20 +1,21 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 chai.use(chaiAsPromised);
 
@@ -47,6 +48,8 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 			let snapshotId: string;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,
@@ -184,7 +187,7 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 					// 3. Current bin receives the withdrawal amount
 					// Will be implemented once checkAndRecordWithdraw is available
 					// const withdrawAmount = toWei('1000');
-					// await expect(geniusDiamond.connect(user1).withdraw(withdrawAmount, nftId))
+					// await expect(geniusDiamond.connect(user1).convert(withdrawAmount, nftId)) // Phase 9: use convert(...) instead
 					//   .to.emit(geniusDiamond, 'WithdrawRecorded');
 					// const state = await geniusDiamond.getAccountWithdrawStatus(user1.address);
 					// expect(state.baseTimestamp).to.be.gt(0);
@@ -247,7 +250,7 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 					const requestedAmount2 = toWei('6000'); // Should fail (95000 + 6000 > 100000)
 
 					// Will implement actual revert test once checkAndRecordWithdraw is available
-					// await expect(geniusDiamond.connect(user1).withdraw(requestedAmount2, nftId))
+					// await expect(geniusDiamond.connect(user1).convert(requestedAmount2, nftId)) // Phase 9: use convert(...) instead
 					//   .to.be.revertedWith('Withdrawal limit exceeded for time window');
 				});
 			});

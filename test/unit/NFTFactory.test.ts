@@ -5,20 +5,21 @@ import { GNUS_TOKEN_ID } from '../../scripts/common';
 import { iObjToString } from '../../scripts/utils/iObjToString';
 import { logEvents } from '../../scripts/utils/logEvents';
 
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { assert, expect } from 'chai';
 import { debug } from 'debug';
 import { formatEther, id, JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 // Create utils object for compatibility
 const utils = { formatEther, id };
@@ -31,6 +32,8 @@ chai.use(chaiAsPromised);
 describe('NFT Factory Tests', async function () {
 	const diamondName = 'GeniusDiamond';
 	const log: debug.Debugger = debug(`GNUSDeploy:log:${diamondName}`);
+	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
+	const TREASURY_STORAGE_SLOT = hre.ethers.keccak256(hre.ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 	this.timeout(0); // Extended indefinitely for diamond deployment time
 
 	const networkProviders = multichain.getProviders() || new Map<string, JsonRpcProvider>();
@@ -66,6 +69,8 @@ describe('NFT Factory Tests', async function () {
 			let createdParentNFTID: bigint;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,
@@ -109,6 +114,19 @@ describe('NFT Factory Tests', async function () {
 				}
 
 				ownerDiamond = geniusDiamond.connect(ownerSigner);
+
+				// Seed the provenance counter so the global-cap check in
+				// _mintWithBridgeFee can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
+				// The GeniusDiamond fixture is shared (cached) across suites, so a prior
+				// suite may already have seeded the one-shot SetSeedSupply — guard on
+				// provenanceInitialized (slot +1).
+				const initialized = await provider.send('eth_getStorageAt', [
+					deployedDiamondData.DiamondAddress!,
+					hre.ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+				]);
+				if (BigInt(initialized) === 0n) {
+					await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
+				}
 
 				snapshotId = await provider.send('evm_snapshot', []);
 			});
@@ -368,21 +386,60 @@ describe('NFT Factory Tests', async function () {
 					'0x', // Additional data
 				);
 
-				// TODO This needs an assert to check the transaction is successful.
+				// Assert the mint transaction succeeded (receipt status === 1)
+				const receipt = await tx.wait();
+				assert(
+					receipt !== null && receipt.status === 1,
+					'Child NFT mint transaction should succeed',
+				);
+
 				// Log the transaction events for debugging
 				await logEvents(tx);
+			});
 
-				// TODO This begins is a different test that needs to be added.
+			// Test case to validate the correct amount of GNUS is burned for a 1st gen (direct child of GNUS) mint
+			it('Should burn correct GNUS supply for 1st gen (direct child of GNUS) NFT mint', async () => {
+				// Self-contained setup: each mocha test must not share mutable locals.
+				await ownerDiamond['mint(address,uint256)'](signer1, toWei(1000));
+				await ownerDiamond.grantRole(utils.id('CREATOR_ROLE'), signer1);
+				await ownerDiamond.grantRole(utils.id('MINTER_ROLE'), signer1);
+
+				// Derive the next parent NFT ID from on-chain state
+				const GNUSNFTInfo = await signer1Diamond.getNFTInfo(GNUS_TOKEN_ID);
+				const newParentNFTID = GNUSNFTInfo.childCurIndex;
+
+				// Create a fresh parent NFT with the same exchange rate as the previous test
+				await signer1Diamond.createNFT(
+					GNUS_TOKEN_ID,
+					'TEST GAME',
+					'TESTGAME',
+					2.0, // Exchange rate: 2.0 tokens for 1 GNUS token
+					toWei(50000000 * 2),
+					'',
+				);
+
+				// Snapshot GNUS supply before the mint
+				const startingSupply = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
+
+				// Perform an identical 1st-gen child mint (signer2 recipient, 5 tokens)
+				await signer1Diamond['mint(address,uint256,uint256,bytes)'](
+					signer2, // Recipient address
+					newParentNFTID, // Parent NFT ID
+					toWei(5), // Amount to mint
+					'0x', // Additional data
+				);
+
 				// Retrieve the ending supply of GNUS tokens
 				const endingSupply = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
 
 				// Calculate the burned supply as the difference between starting and ending supply
 				const burntSupply = startingSupply - endingSupply;
 
-				// Assert that the burned supply matches the expected value based on the exchange rate
+				// Assert that the burned supply matches the minted minion amount (1:1, D1 —
+				// the exchange rate is display-only and never applied in state transitions)
 				assert(
-					BigInt(burntSupply) === toWei(5.0 * 2.0), // Exchange rate: 2.0 GNUS burned per minted token
-					`Burnt Supply should equal minted * exchange rate (5.0*2.0), but equals ${burntSupply.toString()}`,
+					BigInt(burntSupply) === toWei(5.0),
+					`Burnt Supply should equal minted minions (5.0, 1:1), but equals ${burntSupply.toString()}`,
 				);
 
 				// Log the total GNUS burned for debugging
@@ -467,7 +524,9 @@ describe('NFT Factory Tests', async function () {
 				// Retrieve the starting supply of GNUS tokens
 				debuglog(`Starting GNUS Supply: ${utils.formatEther(startingSupply)}`);
 
-				// Now attempt to mint more tokens than allowed, expecting rejection
+				// Now attempt to mint more tokens than allowed, expecting rejection.
+				// Phase 9 (D6): depth >= 2 mints hit the depth gate before the max-supply
+				// check, so the revert reason is the depth-gate message.
 				await expect(
 					signer1Diamond['mintBatch(address,uint256[],uint256[],bytes)'](
 						signer2, // Recipient address
@@ -475,61 +534,64 @@ describe('NFT Factory Tests', async function () {
 						[101, 101, 101], // Exceeding amounts (over the 100 supply limit)
 						'0x', // Additional data
 					),
-				).to.be.eventually.rejectedWith(Error, 'Max Supply for NFT would be exceeded');
-
-				// Mint valid amounts for child NFTs
-				const tx = await signer1Diamond['mintBatch(address,uint256[],uint256[],bytes)'](
-					signer2, // Recipient address
-					[addr1childNFT1, addr1childNFT2, addr1childNFT3], // Child NFT IDs
-					[50, 1, 1], // Valid amounts
-					'0x', // Additional data
+				).to.be.eventually.rejectedWith(
+					Error,
+					'Direct children only; use convert() for descendants',
 				);
 
-				// Verify minted amounts for each child NFT
+				// Mint valid amounts for child NFTs.
+				// Phase 9 (D6): minting a depth >= 2 id reverts with the depth gate — deeper
+				// issuance goes through GNUSTreasury.convert() from the parent holder.
+				await expect(
+					signer1Diamond['mintBatch(address,uint256[],uint256[],bytes)'](
+						signer2, // Recipient address
+						[addr1childNFT1, addr1childNFT2, addr1childNFT3], // Child NFT IDs
+						[50, 1, 1], // Amounts within the 100-supply limit
+						'0x', // Additional data
+					),
+				).to.be.eventually.rejectedWith(
+					Error,
+					'Direct children only; use convert() for descendants',
+				);
+
+				// Deeper issuance via convert: signer1 holds 1,000 GNUS; converting GNUS ->
+				// grandchild directly is allowed (convert is permissionless on holdings, D3).
+				await signer1Diamond.convert(GNUS_TOKEN_ID, addr1childNFT1, 52, signer1);
+
+				// Verify converted amounts (1:1 minions)
 				const nft1Balance = await signer1Diamond['balanceOf(address,uint256)'](
-					signer2,
+					signer1,
 					addr1childNFT1,
 				);
-				const nft2Balance = await signer1Diamond['balanceOf(address,uint256)'](
-					signer2,
-					addr1childNFT2,
-				);
-				const nft3Balance = await signer1Diamond['balanceOf(address,uint256)'](
-					signer2,
-					addr1childNFT3,
-				);
 
-				assert(nft1Balance === 50n, 'First child NFT balance should be 50');
-				assert(nft2Balance === 1n, 'Second child NFT balance should be 1');
-				assert(nft3Balance === 1n, 'Third child NFT balance should be 1');
-
-				// Log the transaction events for debugging
-				await logEvents(tx);
+				assert(nft1Balance === 52n, 'First child NFT balance should be 52 (converted 1:1)');
 
 				// Retrieve the ending supply of GNUS tokens
 				const endingSupply = await geniusDiamond['totalSupply(uint256)'](GNUS_TOKEN_ID);
-				// Calculate the burned supply as the difference between starting and ending supply
+				// Calculate the supply delta as the difference between starting and ending supply.
+				// The batch mint reverted (depth gate) and convert() is supply-neutral tree-wide
+				// (D3): free GNUS decreased only by the 52 wei converted into the grandchild.
 				const burntSupply = startingSupply - endingSupply;
-				const expectedBurn = toWei((50 + 1 + 1) * 2.0); // Total minted tokens * exchange rate (2.0)
 				// Debug logging
 				// Log NFT info after creation
 				const parentNFTInfo = await signer1Diamond.getNFTInfo(newParentNFTID);
 				console.log('Parent NFT exchange rate:', parentNFTInfo.exchangeRate.toString());
 				console.log('Starting supply:', utils.formatEther(startingSupply));
 				console.log('Ending supply:', utils.formatEther(endingSupply));
-				console.log('Expected burn:', utils.formatEther(expectedBurn));
 
-				// TODO This is not currently true because GNUSNFTFactory contract does not burn for 2nd gen child tokens.
-				// Assert the correct amount of GNUS tokens were burned (based on exchange rate)
-				// assert(burntSupply.eq(expectedBurn),
-				//   `Incorrect burn amount. Expected ${utils.formatEther(expectedBurn)}, got ${utils.formatEther(burntSupply)}`);
+				// Phase 9 (D3/D6): depth >= 2 mints revert; convert() moves exactly the
+				// converted minion amount out of free GNUS into the grandchild supply.
+				assert(
+					burntSupply === 52n,
+					`2nd gen issuance via convert should move exactly 52 minions out of free GNUS, but moved ${utils.formatEther(burntSupply)}`,
+				);
 
 				// Log the total GNUS burned for debugging
 				debuglog(`Total GNUS burned: ${utils.formatEther(burntSupply)}`);
 
 				// Verify no other signers received tokens
 				for (let i = 0; i < 3; i++) {
-					if (i === 2) continue; // Skip signer2 (recipient)
+					if (i === 1) continue; // Skip signer1 (converter/recipient)
 					const balance1 = await signer1Diamond['balanceOf(address,uint256)'](
 						signers[i].address,
 						addr1childNFT1,

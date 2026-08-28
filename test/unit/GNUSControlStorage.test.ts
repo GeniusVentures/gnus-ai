@@ -1,11 +1,12 @@
 import {
 	LocalDiamondDeployer,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GNUSControlStorage Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -24,6 +25,8 @@ describe('GNUSControlStorage Tests', function () {
 	const NFT_TOKEN_ID_2 = 2;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		// Get signers
 		const signers = await hre.ethers.getSigners();
 		owner = signers[0]; // Owner has SUPER_ADMIN_ROLE by default
@@ -127,10 +130,10 @@ describe('GNUSControlStorage Tests', function () {
 
 	describe('Global banned transferors', function () {
 		it('should ban address globally', async function () {
-			await geniusDiamond.banTransferorForAll(await user1.getAddress());
+			const addr = await user1.getAddress();
+			await geniusDiamond.banTransferorForAll(addr);
 
-			// TODO: Add check when there's a getter function for banned status
-			// Currently we can only check via transfer attempt or event
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(true);
 		});
 
 		it('should emit AddToGlobalBlackList event', async function () {
@@ -140,10 +143,14 @@ describe('GNUSControlStorage Tests', function () {
 		});
 
 		it('should allow address globally after ban', async function () {
-			await geniusDiamond.banTransferorForAll(await user1.getAddress());
-			await geniusDiamond.allowTransferorForAll(await user1.getAddress());
+			const addr = await user1.getAddress();
+			await geniusDiamond.banTransferorForAll(addr);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(true);
+
+			await geniusDiamond.allowTransferorForAll(addr);
 
 			// Address should now be allowed
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(false);
 		});
 
 		it('should emit RemoveFromGlobalBlackList event', async function () {
@@ -155,11 +162,18 @@ describe('GNUSControlStorage Tests', function () {
 		});
 
 		it('should ban multiple addresses globally', async function () {
-			await geniusDiamond.banTransferorForAll(await user1.getAddress());
-			await geniusDiamond.banTransferorForAll(await user2.getAddress());
-			await geniusDiamond.banTransferorForAll(await user3.getAddress());
+			const addr1 = await user1.getAddress();
+			const addr2 = await user2.getAddress();
+			const addr3 = await user3.getAddress();
+
+			await geniusDiamond.banTransferorForAll(addr1);
+			await geniusDiamond.banTransferorForAll(addr2);
+			await geniusDiamond.banTransferorForAll(addr3);
 
 			// All addresses should be banned globally
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr1)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr2)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr3)).to.equal(true);
 		});
 
 		it('should revert if non-admin tries to ban globally', async function () {
@@ -179,12 +193,15 @@ describe('GNUSControlStorage Tests', function () {
 
 	describe('Token-specific banned transferors', function () {
 		it('should ban address for specific token', async function () {
+			const addr = await user1.getAddress();
 			const tokenIds = [NFT_TOKEN_ID_1];
-			const addresses = [await user1.getAddress()];
+			const addresses = [addr];
 
 			await geniusDiamond.banTransferorBatch(tokenIds, addresses);
 
 			// Address should be banned for NFT_TOKEN_ID_1 only
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr)).to.equal(false);
 		});
 
 		it('should emit AddToBlackList event', async function () {
@@ -197,13 +214,17 @@ describe('GNUSControlStorage Tests', function () {
 		});
 
 		it('should allow address for specific token after ban', async function () {
+			const addr = await user1.getAddress();
 			const tokenIds = [NFT_TOKEN_ID_1];
-			const addresses = [await user1.getAddress()];
+			const addresses = [addr];
 
 			await geniusDiamond.banTransferorBatch(tokenIds, addresses);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+
 			await geniusDiamond.allowTransferorBatch(tokenIds, addresses);
 
 			// Address should now be allowed for NFT_TOKEN_ID_1
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(false);
 		});
 
 		it('should emit RemoveFromBlackList event', async function () {
@@ -218,25 +239,30 @@ describe('GNUSControlStorage Tests', function () {
 		});
 
 		it('should ban multiple addresses for multiple tokens', async function () {
+			const addr1 = await user1.getAddress();
+			const addr2 = await user2.getAddress();
+			const addr3 = await user3.getAddress();
 			const tokenIds = [NFT_TOKEN_ID_1, NFT_TOKEN_ID_2, GNUS_TOKEN_ID];
-			const addresses = [
-				await user1.getAddress(),
-				await user2.getAddress(),
-				await user3.getAddress(),
-			];
+			const addresses = [addr1, addr2, addr3];
 
 			await geniusDiamond.banTransferorBatch(tokenIds, addresses);
 
 			// Each address should be banned for corresponding token
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr1)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr2)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr3)).to.equal(true);
 		});
 
 		it('should handle same address for multiple tokens', async function () {
+			const addr = await user1.getAddress();
 			const tokenIds = [NFT_TOKEN_ID_1, NFT_TOKEN_ID_2];
-			const addresses = [await user1.getAddress(), await user1.getAddress()];
+			const addresses = [addr, addr];
 
 			await geniusDiamond.banTransferorBatch(tokenIds, addresses);
 
 			// user1 should be banned for both tokens
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr)).to.equal(true);
 		});
 
 		it('should revert if non-admin tries to ban for token', async function () {
@@ -255,6 +281,66 @@ describe('GNUSControlStorage Tests', function () {
 
 			await expect(geniusDiamond.connect(user2).allowTransferorBatch(tokenIds, addresses))
 				.to.be.reverted;
+		});
+	});
+
+	describe('getBannedTransferor view', function () {
+		it('should report per-token ban set by banTransferorBatch', async function () {
+			const addr = await user1.getAddress();
+
+			await geniusDiamond.banTransferorBatch([NFT_TOKEN_ID_1], [addr]);
+
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr)).to.equal(false);
+		});
+
+		it('should report unbanned after allowTransferorBatch', async function () {
+			const addr = await user1.getAddress();
+
+			await geniusDiamond.banTransferorBatch([NFT_TOKEN_ID_1], [addr]);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+
+			await geniusDiamond.allowTransferorBatch([NFT_TOKEN_ID_1], [addr]);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(false);
+		});
+
+		it('should report global ban via tokenId 0 and via any other tokenId', async function () {
+			const addr = await user1.getAddress();
+
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(false);
+
+			await geniusDiamond.banTransferorForAll(addr);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(true);
+
+			await geniusDiamond.allowTransferorForAll(addr);
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, addr)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr)).to.equal(false);
+		});
+
+		it('should round-trip batch bans across multiple token/address pairs', async function () {
+			const addr1 = await user1.getAddress();
+			const addr2 = await user2.getAddress();
+
+			await geniusDiamond.banTransferorBatch(
+				[NFT_TOKEN_ID_1, NFT_TOKEN_ID_2],
+				[addr1, addr2],
+			);
+
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr1)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr2)).to.equal(true);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr1)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr2)).to.equal(false);
+
+			await geniusDiamond.allowTransferorBatch(
+				[NFT_TOKEN_ID_1, NFT_TOKEN_ID_2],
+				[addr1, addr2],
+			);
+
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr1)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr2)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_2, addr1)).to.equal(false);
+			expect(await geniusDiamond.getBannedTransferor(NFT_TOKEN_ID_1, addr2)).to.equal(false);
 		});
 	});
 
@@ -295,6 +381,8 @@ describe('GNUSControlStorage Tests', function () {
 			await geniusDiamond.banTransferorForAll(hre.ethers.ZeroAddress);
 
 			// Zero address should be banned globally
+			expect(await geniusDiamond.getBannedTransferor(GNUS_TOKEN_ID, hre.ethers.ZeroAddress)).to
+				.equal(true);
 		});
 
 		it('should handle empty batch operations', async function () {
@@ -330,6 +418,11 @@ describe('GNUSControlStorage Tests', function () {
 			await geniusDiamond.banTransferorBatch(tokenIds, addresses);
 
 			// All 10 addresses should be banned for corresponding tokens
+			for (let i = 0; i < 10; i++) {
+				expect(await geniusDiamond.getBannedTransferor(tokenIds[i], addresses[i])).to.equal(
+					true,
+				);
+			}
 		});
 	});
 });

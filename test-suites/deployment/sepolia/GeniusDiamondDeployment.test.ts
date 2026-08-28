@@ -1,10 +1,10 @@
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,

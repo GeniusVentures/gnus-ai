@@ -1,16 +1,19 @@
-import { Diamond } from '@diamondslab/diamonds';
+import { Diamond } from '@geniusventures/diamonds';
 import {
 	loadDiamondContract,
 	LocalDiamondDeployer,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GNUSNFTFactory Enhanced Tests', function () {
 	const diamondName = 'GeniusDiamond';
+	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
+	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 	let diamond: Diamond;
 	let diamondAddress: string;
 	let geniusDiamond: GeniusDiamond;
@@ -22,6 +25,8 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 	let testSnapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		const config = {
 			diamondName: 'GeniusDiamond',
 			network: 'hardhat',
@@ -39,6 +44,18 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 		);
 
 		[owner, creator, user1, user2] = await ethers.getSigners();
+
+		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
+		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4). The GeniusDiamond
+		// fixture is shared (cached) across suites, so a prior suite may already have
+		// seeded the one-shot SetSeedSupply — guard on provenanceInitialized (slot +1).
+		const initialized = await hre.network.provider.send('eth_getStorageAt', [
+			diamondAddress,
+			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+		]);
+		if (BigInt(initialized) === 0n) {
+			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
+		}
 
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
@@ -343,7 +360,7 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 	describe('Minting with Exchange Rates', function () {
 		it('should burn correct amount of GNUS when minting child NFT', async function () {
-			// Create NFT with exchange rate of 2
+			// Create NFT with exchange rate of 2 (display-only under Phase 9, D2)
 			await geniusDiamond
 				.connect(creator)
 				.createNFT(0, 'Rate 2 NFT', 'R2', 2, 10000, 'ipfs://r2');
@@ -353,13 +370,13 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 			const initialBalance = await geniusDiamond['balanceOf(address)'](creator.address);
 
-			// Mint 10 NFTs (should burn 20 GNUS)
+			// Mint 10 child minions (burns exactly 10 GNUS, 1:1 — rate never applied, D1)
 			await geniusDiamond
 				.connect(creator)
 				['mint(address,uint256,uint256,bytes)'](user1.address, 1, 10, '0x');
 
 			const finalBalance = await geniusDiamond['balanceOf(address)'](creator.address);
-			expect(initialBalance - finalBalance).to.equal(20); // 10 * 2
+			expect(initialBalance - finalBalance).to.equal(10); // 1:1 minion burn
 		});
 
 		it('should revert when creator has insufficient GNUS to burn', async function () {
@@ -367,14 +384,14 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 				.connect(creator)
 				.createNFT(0, 'Expensive NFT', 'EXP', 100, 10000, 'ipfs://exp');
 
-			// Mint only 50 GNUS (need 1000 for 10 NFTs at rate 100)
+			// Mint only 50 GNUS (need 1,000 for 1,000 minions at the 1:1 minion burn)
 			await geniusDiamond['mint(address,uint256)'](creator.address, 50);
 
 			await expect(
 				geniusDiamond
 					.connect(creator)
-					['mint(address,uint256,uint256,bytes)'](user1.address, 1, 10, '0x'),
-			).to.be.revertedWith('Not enough GNUS_TOKEN to burn');
+					['mint(address,uint256,uint256,bytes)'](user1.address, 1, 1000, '0x'),
+			).to.be.revertedWith('Not enough GNUS_TOKEN to convert');
 		});
 
 		it('should only allow creator or admin to mint NFT', async function () {

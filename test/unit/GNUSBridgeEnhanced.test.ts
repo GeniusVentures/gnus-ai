@@ -1,7 +1,7 @@
 import {
 	LocalDiamondDeployer,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import hre, { ethers } from 'hardhat';
@@ -12,8 +12,11 @@ import {
 	SGNS_DESTINATION_Y_ODD,
 	DEST_CHAIN_ID,
 } from '../utils/bridge-fixtures';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('GNUSBridge Enhanced Tests', function () {
+	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
+	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 	let geniusDiamond: GeniusDiamond;
 	let owner: SignerWithAddress;
 	let user1: SignerWithAddress;
@@ -23,6 +26,8 @@ describe('GNUSBridge Enhanced Tests', function () {
 	let snapshotId: string;
 
 	before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 		const config = {
 			diamondName: 'GeniusDiamond',
 			network: 'hardhat',
@@ -40,6 +45,18 @@ describe('GNUSBridge Enhanced Tests', function () {
 		);
 
 		[owner, user1, user2, user3] = await ethers.getSigners();
+
+		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
+		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4). The GeniusDiamond
+		// fixture is shared (cached) across suites, so a prior suite may already have
+		// seeded the one-shot SetSeedSupply — guard on provenanceInitialized (slot +1).
+		const initialized = await hre.network.provider.send('eth_getStorageAt', [
+			diamondAddress,
+			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+		]);
+		if (BigInt(initialized) === 0n) {
+			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
+		}
 
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
@@ -103,18 +120,16 @@ describe('GNUSBridge Enhanced Tests', function () {
 				0, // parent = GNUS (tokenId 0)
 				'Test NFT', // name
 				'TNFT', // symbol
-				2, // exchangeRate (2 GNUS per NFT) - NOT toWei(2)
+				2, // exchangeRate (display-only under the conversion-native model, D2)
 				10000, // maxSupply (large enough for all tests)
 				'ipfs://test-nft', // uri
 			);
 
-			// Mint NFT tokens with 10% fee - should receive 90 tokens
-			await geniusDiamond['mint(address,uint256,uint256)'](
-				user1.address,
-				1, // tokenId
-				100,
-			);
-			const balance = await geniusDiamond['balanceOf(address,uint256)'](user1.address, 1);
+			// Phase 9: the MINTER_ROLE 3-arg mint is restricted to id 0 (D10), so the
+			// fee-on-mint path is exercised on the GNUS root mint. Child issuance now
+			// goes through the factory mint (1:1 minion burn, no fee).
+			await geniusDiamond['mint(address,uint256)'](user1.address, 100);
+			const balance = await geniusDiamond['balanceOf(address)'](user1.address);
 			expect(balance).to.equal(90); // 100 - 10% = 90
 		});
 
@@ -298,20 +313,21 @@ describe('GNUSBridge Enhanced Tests', function () {
 		});
 	});
 
-	describe('Withdraw Functionality', function () {
-		it('should withdraw child token to GNUS correctly', async function () {
+	describe('Convert Functionality (Phase 9 — withdraw() removed, D4)', function () {
+		it('should convert child token to GNUS correctly (1:1 minions)', async function () {
 			// Create NFT (tokenId 1)
 			await geniusDiamond.createNFT(
 				0, // parent = GNUS (tokenId 0)
 				'Test NFT', // name
 				'TNFT', // symbol
-				2, // exchangeRate = 2 GNUS per NFT
+				2, // exchangeRate (display-only, D2 — never applied in state transitions)
 				10000, // maxSupply (large enough)
 				'ipfs://test-nft', // uri
 			);
 
-			// Mint NFT tokens to user1
-			await geniusDiamond['mint(address,uint256,uint256)'](user1.address, 1, 100);
+			// Mint child minions to user1 via the factory path (owner funds the 1:1 burn)
+			await geniusDiamond['mint(address,uint256)'](owner.address, 100);
+			await geniusDiamond['mint(address,uint256,uint256,bytes)'](user1.address, 1, 100, '0x');
 
 			// Check initial balances
 			let nftBalance = await geniusDiamond['balanceOf(address,uint256)'](user1.address, 1);
@@ -319,29 +335,29 @@ describe('GNUSBridge Enhanced Tests', function () {
 			expect(nftBalance).to.equal(100);
 			expect(gnusBalance).to.equal(0);
 
-			// Withdraw 50 NFT tokens (should get 50/2 = 25 GNUS)
-			await geniusDiamond.connect(user1).withdraw(50, 1);
+			// Convert 50 child minions to GNUS (1:1 — user1 receives 50 GNUS)
+			await geniusDiamond.connect(user1).convert(1, 0, 50, user1.address);
 
 			// Check final balances
 			nftBalance = await geniusDiamond['balanceOf(address,uint256)'](user1.address, 1);
 			gnusBalance = await geniusDiamond['balanceOf(address)'](user1.address);
 			expect(nftBalance).to.equal(50); // 100 - 50
-			expect(gnusBalance).to.equal(25); // Withdraw gives plain number (50 / exchangeRate 2 = 25)
+			expect(gnusBalance).to.equal(50); // 1:1 minion reallocation (D1/D3)
 		});
 
-		it('should revert withdraw if token not created', async function () {
+		it('should revert convert if token not created', async function () {
 			await expect(
-				geniusDiamond.connect(user1).withdraw(100, toWei(999)),
+				geniusDiamond.connect(user1).convert(toWei(999), 0, 100, user1.address),
 			).to.be.revertedWith('Token not created.');
 		});
 
-		it('should revert withdraw for GNUS token itself', async function () {
-			await expect(geniusDiamond.connect(user1).withdraw(100, toWei(0))).to.be.revertedWith(
-				'Cannot withdraw GNUS tokens.',
-			);
+		it('should revert convert for GNUS token itself (same-id guard)', async function () {
+			await expect(
+				geniusDiamond.connect(user1).convert(0, 0, 100, user1.address),
+			).to.be.revertedWith('Cannot convert to same id');
 		});
 
-		it('should revert withdraw with insufficient balance', async function () {
+		it('should revert convert with insufficient balance', async function () {
 			// Create NFT (will get tokenId 1 as first child of GNUS)
 			await geniusDiamond.createNFT(
 				0, // parent = GNUS (tokenId 0)
@@ -352,13 +368,16 @@ describe('GNUSBridge Enhanced Tests', function () {
 				'ipfs://test-nft',
 			);
 
-			// Try to withdraw without having any tokens
-			await expect(geniusDiamond.connect(user1).withdraw(100, 1)).to.be.revertedWith(
-				'Insufficient tokens.',
-			);
+			// Try to convert without having any tokens
+			await expect(
+				geniusDiamond.connect(user1).convert(1, 0, 100, user1.address),
+			).to.be.revertedWith('ERC1155: burn amount exceeds totalSupply');
 		});
 
-		it('should handle withdraw with bridge fee applied', async function () {
+		it('should charge no bridge fee on convert (D11)', async function () {
+			// Fund the owner BEFORE setting the fee so the funding mint is not haircut
+			await geniusDiamond['mint(address,uint256)'](owner.address, 100);
+
 			// Set bridge fee to 10%
 			await geniusDiamond.updateBridgeFee(100);
 
@@ -367,27 +386,23 @@ describe('GNUSBridge Enhanced Tests', function () {
 				0, // parent = GNUS (tokenId 0)
 				'Test NFT',
 				'TNFT',
-				2, // exchangeRate = 2 (plain number)
+				2, // exchangeRate (display-only)
 				10000,
 				'ipfs://test-nft',
 			);
 
-			// Mint NFT tokens to user1 (with bridge fee applied on mint)
-			await geniusDiamond['mint(address,uint256,uint256)'](
-				user1.address,
-				1, // tokenId 1
-				100,
-			);
+			// Mint child minions to user1 via the factory path (no fee on factory mints)
+			await geniusDiamond['mint(address,uint256,uint256,bytes)'](user1.address, 1, 100, '0x');
 
-			// Check balance after mint (should have 90 due to 10% bridge fee)
+			// Check balance after mint (full 100 — the bridge fee never applies to the factory path)
 			let nftBalance = await geniusDiamond['balanceOf(address,uint256)'](user1.address, 1);
-			expect(nftBalance).to.equal(90);
+			expect(nftBalance).to.equal(100);
 
-			// Withdraw 90 NFT tokens (should get (90/2) * 0.9 = 40.5, rounded down to 40)
-			await geniusDiamond.connect(user1).withdraw(90, 1);
+			// Convert all 100 child minions — convert charges no bridge fee (D11)
+			await geniusDiamond.connect(user1).convert(1, 0, 100, user1.address);
 
 			const gnusBalance = await geniusDiamond['balanceOf(address)'](user1.address);
-			expect(gnusBalance).to.equal(40); // (90 / 2) * (1 - 0.1) = 40.5, rounded down
+			expect(gnusBalance).to.equal(100); // exact 1:1, no fee haircut
 		});
 	});
 
@@ -403,8 +418,10 @@ describe('GNUSBridge Enhanced Tests', function () {
 				'ipfs://test-nft',
 			);
 
-			// Mint NFT tokens to user1
-			await geniusDiamond['mint(address,uint256,uint256)'](user1.address, 1, 100);
+			// Mint child minions to user1 via the factory path (owner funds the 1:1 burn;
+			// the MINTER_ROLE 3-arg mint is restricted to id 0 per D10)
+			await geniusDiamond['mint(address,uint256)'](owner.address, 100);
+			await geniusDiamond['mint(address,uint256,uint256,bytes)'](user1.address, 1, 100, '0x');
 
 			// Set chainID
 			await geniusDiamond.setChainID(1); // Ethereum mainnet

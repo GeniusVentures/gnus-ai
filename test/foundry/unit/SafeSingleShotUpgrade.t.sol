@@ -133,8 +133,25 @@ contract SafeSingleShotUpgradeTest is Test {
 
     // ── tests ────────────────────────────────────────────────
 
+    /// @notice Read-only view onto GNUSControl for the on-chain protocol version.
+    /// @dev selector 0x93420cf4 routes to the GNUSControl facet on the live diamond.
+    function _protocolVersion() internal view returns (uint256) {
+        (bool ok, bytes memory data) = DIAMOND.staticcall(abi.encodeWithSignature("protocolInfo()"));
+        require(ok, "protocolInfo() failed");
+        (, uint256 protocolVersion, ) = abi.decode(data, (uint256, uint256, uint256));
+        return protocolVersion;
+    }
+
     /// @notice Baseline: verify current Sepolia diamond state.
-    function test_SepoliaCurrentState() public view {
+    /// @dev These are PRE-upgrade (v2.5) expectations. If the live diamond has already
+    ///      been upgraded (protocolVersion >= 250), the GeniusAI/Escrow facets have been
+    ///      removed and this baseline is stale — skip rather than fail against the
+    ///      post-upgrade state. The v2.5 post-state is covered by
+    ///      test_SingleShotUpgradeFromArtifact on the anvil fork.
+    function test_SepoliaCurrentState() public {
+        if (_protocolVersion() >= 250) {
+            vm.skip(true, "diamond already at v2.5; pre-upgrade baseline is stale");
+        }
         assertEq(_facetCount(), 12, "Sepolia diamond: 12 facets");
         assertEq(_getSelectors(GENIUS_AI_SHELL).length, 2, "GeniusAI shell: 2 selectors");
         assertEq(_getSelectors(ESCROW_FACET).length, 7, "Escrow facet: 7 selectors");

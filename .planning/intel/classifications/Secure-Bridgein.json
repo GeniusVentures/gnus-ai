@@ -1,0 +1,39 @@
+{
+  "source_path": "docs/Secure-Bridgein.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Secure BridgeIn with MMR Merkle Roots",
+  "summary": "Implementation-ready technical specification replacing GNUSBridge's permanent validator set with a rolling API-attestor Merkle root, including exact Solidity signatures, storage layout, digest format, and test matrix.",
+  "scope": [
+    "GNUSBridge",
+    "GNUSBridgeValidatorStorage",
+    "bridgeIn",
+    "bridge attestor root",
+    "rolling Merkle root",
+    "EIP-191 digest",
+    "ECDSA secp256k1",
+    "Merkle proof verification",
+    "SuperGenius bridge exporter",
+    "ConsensusVote.signature",
+    "diamond storage append-only",
+    "replay protection",
+    "BridgeMessage struct",
+    "initializeBridgeAttestorV2",
+    "cross-chain bridging",
+    "diamond upgrade",
+    "setValidatorSet",
+    "SuperGenius#363",
+    "SuperGenius#364"
+  ],
+  "cross_refs": [
+    "GNUSBridge.sol",
+    "GNUSBridgeValidatorStorage.sol",
+    "GeniusVentures/SuperGenius#363",
+    "GeniusVentures/SuperGenius#364",
+    "GeniusVentures/gnus-ai-contracts"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

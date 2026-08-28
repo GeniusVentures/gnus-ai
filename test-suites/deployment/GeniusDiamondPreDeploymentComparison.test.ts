@@ -4,13 +4,13 @@ import {
 	Diamond,
 	diffDeployedFacets,
 	getDeployedFacets,
-} from '@diamondslab/diamonds';
+} from '@geniusventures/diamonds';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
 import { JsonRpcProvider } from 'ethers';
 import { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import {
 	LocalDiamondDeployer,

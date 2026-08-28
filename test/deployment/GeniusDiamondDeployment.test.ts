@@ -1,14 +1,14 @@
-import { Diamond, SupportedProvider } from '@diamondslab/diamonds';
+import { Diamond, SupportedProvider } from '@geniusventures/diamonds';
 import {
 	LocalDiamondDeployer,
 	LocalDiamondDeployerConfig,
 	loadDiamondContract,
-} from '@diamondslab/hardhat-diamonds/dist/utils';
+} from '@geniusventures/hardhat-diamonds/dist/utils';
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { debug } from 'debug';
 import hre, { ethers } from 'hardhat';
-import { multichain } from 'hardhat-multichain';
+import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { getInterfaceID } from '../../scripts/utils/helpers';
 import {
@@ -16,6 +16,7 @@ import {
 	IDiamondLoupe__factory,
 	IERC20Upgradeable__factory,
 } from '../../typechain-types';
+import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
@@ -53,6 +54,8 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 			let snapshotId: string;
 
 			before(async function () {
+				// 13-04: deploy GNUSLifecyclePolicy library + install factory linker before diamond deploy.
+				await setupLifecyclePolicyLinking();
 				const config = {
 					diamondName: diamondName,
 					networkName: networkName,
