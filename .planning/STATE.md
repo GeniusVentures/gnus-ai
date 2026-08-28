@@ -1,29 +1,30 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: ready_to_plan
-stopped_at: "Phase 7 complete (4/4) — shipped as PR #80 (ready for review; @codex review comment posted); next: triage PR #80, then plan Phase 08"
-last_updated: "2026-08-27T23:34:36.015Z"
+milestone_name: Tech Debt & Security Remediation
+status: Awaiting next milestone
+stopped_at: "Milestone v1.0 complete — closed 2026-08-28 (CI gate green at 44b2c75: tests + security-audit); next: /gsd-new-milestone"
+last_updated: "2026-08-28T19:52:59.518Z"
+last_activity: 2026-08-28 — Milestone v1.0 completed and archived
 progress:
   total_phases: 17
-  completed_phases: 15
+  completed_phases: 16
   total_plans: 45
   completed_plans: 45
-  percent: 88
+  percent: 100
 ---
 
 # Project State
 
 **Project:** Gnus.ai Smart Contracts — Tech Debt & Security Remediation
-**Last Updated:** 2026-08-27
+**Last Updated:** 2026-08-28
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 08 — bridge recipient
+**Current focus:** v1.0 shipped (2026-08-28) — awaiting next milestone; open threads: BRIDGE-17 external gate, erc20-gnus-proxy Phase 1 (PROXY-01/02), v1.0 audit tech-debt register
 
 ## Phase Status
 
@@ -143,7 +144,7 @@ See: .planning/PROJECT.md
 ## Next Actions
 
 1. BRIDGE-17 tracking (sole deliberate remainder): production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed) — gate record at docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md; track in .planning/SUBREPOS.md when scheduled.
-2. Milestone close-out is the next GSD step — all 17 phases complete (remediation arc closed 2026-08-27): `/gsd:complete-milestone`, then `/gsd:verify-work 07`.
+2. Milestone v1.0 CLOSED 2026-08-28 (audit → CI gate green → archives + MILESTONES.md + RETROSPECTIVE.md + tag v1.0). Next GSD step: `/gsd-new-milestone`.
 3. Recorded follow-ups — on-record 07-03 D-09 audit output awaiting owner routing (no work started): (a) snyk 23 medium+ transitive finding-set + OSV 115-advisory set need an owner dependency-refresh decision in an owning phase (STATE 07-03 disposition table); (b) git-secrets 37 hits incl. the three "privateKey" fixture fields at test/fixtures/bridge-attestor-vectors.json:26,32,38 awaiting owner review — no suppressions added; (c) slither triage-capable-upgrade follow-up (root cause of the --fail-none-only severity gate); (d) semgrep `unsafe-external-call` pattern-parse fix + the promotion-to-hard-gate condition (baseline stability across runs).
 4. Test-suite cleanup (not blocking, pre-existing): Hardhat single failure `GNUSControlStorage.test.ts` "should return initial protocol info" (chainID 31337 vs 0, cross-suite pollution — passes in isolation; root fix = idempotent shared provenance initializer, Phase 9-style sweep); Foundry Phase 08.1 Safe setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut); NEW 07-04 record — AccessControlInvariant flaky failure (STATE 07-04 routing event).
 
@@ -224,6 +225,17 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-27T22:21:32.889Z
-Stopped at: Blocked at 07-02 Task 3 — awaiting owner placement of BOTH tokens in gnus-ai/.env (SNYK_TOKEN + SOCKET_CLI_API_TOKEN; snyk:test restored per superseding ruling, commit 59dd883)
+Last session: 2026-08-28
+Stopped at: Milestone v1.0 complete — closed and tagged; REQUIREMENTS.md deleted (fresh one comes with the next milestone)
 Resume file: None
+
+## Current Position
+
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-08-28 — Milestone v1.0 completed and archived
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

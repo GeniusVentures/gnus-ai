@@ -2,9 +2,15 @@
 
 ## What This Is
 
-A brownfield remediation project for the Gnus.ai smart contract codebase — an EIP-2535 Diamond proxy system powering Genius Tokens (GNUS), NFTs, cross-chain bridging, and access control on EVM-compatible chains. The contracts are deployed on testnets (Sepolia, Polygon Amoy) with no mainnet deployment yet. This project addresses the technical debt, security gaps, and code quality issues identified in the codebase audit before mainnet launch.
+The Gnus.ai smart contract codebase — an EIP-2535 Diamond proxy system powering Genius Tokens (GNUS), NFTs, cross-chain bridging, and access control on EVM-compatible chains. Contracts are deployed on testnets (Sepolia, Polygon Amoy) with no mainnet deployment yet. Milestone v1.0 (2026-05-26 → 2026-08-28) closed the audited tech-debt/security backlog (Phases 1–7) and then extended the system well beyond remediation: conversion-native token economics (Phase 9), provenance-relocation bridging hardened to rolling API-attestor certificates (Phases 10 + 15), time-bound AI entitlements (Phase 13), and private-network AI licensing (Phase 14).
 
-The GenuisAI escrow system is being removed — it has moved to the SuperGenius chain and the facet is now dead code.
+The GeniusAI escrow system was removed in Phase 2 — escrow moved to the SuperGenius chain and the facet was dead code.
+
+## Current State
+
+**v1.0 shipped 2026-08-28** — 16 phases, 45 plans; 53-requirement audit traceability: 50 satisfied, 2 deferred to the sibling `erc20-gnus-proxy` repo (PROXY-01/02), 1 external gate open (BRIDGE-17). Full record: `.planning/MILESTONES.md`, `.planning/milestones/v1.0-*`. Test gate: 666 passing / 2 pending / 0 failing, green in CI (tests + tokenless security-audit).
+
+**Next milestone goals:** to be defined via `/gsd-new-milestone` — known inputs: BRIDGE-17 external gate (SuperGenius #363), erc20-gnus-proxy Phase 1 (PROXY-01/02 + nested gnus-ai-contracts pin bump), v1.0 audit tech-debt register (`.planning/milestones/v1.0-MILESTONE-AUDIT.md`).
 
 ## Core Value
 
@@ -30,15 +36,22 @@ The GenuisAI escrow system is being removed — it has moved to the SuperGenius 
 - ✓ Lock/release bridging via provenance relocation — threshold-ECDSA `bridgeIn` certificate verification, replay-protected via `processedMessages`, global-supply conserving (BRIDGE-02/03/04) — Validated in Phase 10: Lock/Release Bridge Vault — `contracts/gnus-ai/GNUSBridge.sol`, `contracts/gnus-ai/GNUSBridgeValidatorStorage.sol`
 - ✓ Secure BridgeIn V2 — rolling API-attestor root rotated as a side-effect of `bridgeIn`, canonical `BridgeMessage` identity, domain-separated `BRIDGE_CERTIFICATE_V2` split-encode digest, epoch-derived thresholds (2..16 override), strict-ascending per-signer Merkle proofs, CEI atomic root transition, emergency recovery, legacy-selector removal (BRIDGE-10..16, 18, 19) — Validated in Phase 15: Secure BridgeIn (Phase 10 Amendment) — `contracts/gnus-ai/GNUSBridgeAttestor.sol`, `test/fixtures/bridge-attestor-vectors.json`, `docs/Secure-BridgeIn-Exporter-ABI.md`
 - ✓ Tech-debt & security remediation arc closed (DEBT-01..06, SEC-01..08, PERF-01..02, TEST-01..03, QUAL-01, DEP-01 — 21 items) — Validated across Phases 1-7; every checkbox reconciled on source-level probe evidence in 07-04 (probe-then-flip, REQUIREMENTS.md synced) — key artifacts: `package.json` contracts-starter commit pin (`#commit=bf67b736…`, immutable-install green), `.github/workflows/security-audit.yml` CI audit gate (tokenless-hard + secret-conditional scanners), `.planning/STATE.md` "Phase 7 Decisions Logged (07-03)" disposition record
+- ✓ Safe-proposed diamondCut upgrades (Phase 08.1) — SafeProposerRPCDeploymentStrategy intercepts privileged cuts for Safe proposal, mainnet guard blocks direct upgrade unless `SAFE_PROPOSE=true`, CLI/env/config validation, JSON fallback artifacts (SWP-01..11) — `scripts/setup/RPCDiamondDeployer.ts`, `scripts/setup/strategies/SafeProposerRPCDeploymentStrategy.ts`
+- ✓ Deploy-verify pipeline fixes (Phase 08.2) — RPC deploy path hardened and verified against Sepolia diamond state
+- ✓ Conversion-native token economics (Phase 9) — per-child GNUS treasury accounting replacing implicit burn/mint backing; 1:1 minion backing, symmetric `convert()`, ConservationInvariant-enforced — `contracts/gnus-ai/GNUSTreasury.sol`
+- ✓ ERC-20 proxy hardening (Phase 11) — generic redeem adapter: single-transaction proxied-child → GNUS via `GNUSTreasury.convert()`, caller-bound direct-burn redeem (ff28e18, PR #75); PROXY-01/02 (allowances, immutable init) deferred to the sibling `erc20-gnus-proxy` repo (PROXY-03) — `contracts/gnus-ai/GNUSRedeemAdapter.sol`
+- ✓ Time-bound AI entitlements (Phase 13) — lifecycle/expiry modes, six transfer policies, five expiration dispositions, anti-scaling controls; soulbound AI Credits with burn-on-spend/expiry — `contracts/gnus-ai/GNUSLifecycle.sol`, `GNUSLifecycleMint.sol`, `GNUSLifecyclePolicy.sol` (+Storage/Types), `ERC1155ProxyOperator.sol`
+- ✓ Private-network AI licensing (Phase 14) — License NFTs as tenant/network identity, on-chain SKU registry (`priceInMinions`), GNUS-burn payment router, `LicenseActivated` event contract for SuperGenius consumers (LIC-01..07) — `contracts/gnus-ai/GNUSLicensing.sol`
 
 ### Active
 
 - [ ] **BRIDGE-17**: SuperGenius production-activation gate — #363 (slot quorum uses only signature-verified votes) and #364 (slot 0 identifies the API RPC that succeeded) must close before bridgeIn activation; #364 closed, #363 OPEN. Gate record: `docs/Secure-BridgeIn-Exporter-ABI.md` §5
+- [ ] **erc20-gnus-proxy Phase 1** (sibling repo, not started): PROXY-01 (real amount-specific allowances) + PROXY-02 (immutable proxy init), plus the nested gnus-ai-contracts pin bump (≥ d731384, issue #9, owner Am0rfu5)
 
 ### Out of Scope
 
 - Escrow release/closing/dispute mechanism — moved to SuperGenius chain, handled by different contracts
-- New feature development — this is a remediation pass only
+- New feature development — v1.0 was scoped as remediation but Phases 9–15 added features by explicit REQUIREMENTS amendment (v3/v4 ingests); future features go through the next milestone's requirements
 - Mainnet deployment — gated on audit completion and remediation verification
 - Real-time chat or video NFT features — not part of the GNUS token ecosystem
 - GNUSNFTCollectionName facet consolidation — low-priority refactor, defer to future cleanup pass
@@ -76,12 +89,16 @@ No mainnet deployments exist. The `mainnet.json`, `base.json`, `bsc.json`, and `
 
 | Decision                          | Rationale                                                                           | Outcome       |
 | --------------------------------- | ----------------------------------------------------------------------------------- | ------------- |
-| Remove GeniusAI facet entirely    | Escrow moved to SuperGenius chain; facet is dead code with incomplete functionality | — Pending     |
-| Use events for init logging       | `console.log` not available on live networks; events provide on-chain observability | — Pending     |
-| Standardize on Solidity 0.8.19    | Compiler config already uses 0.8.19; pragmas should match                           | — Pending     |
+| Remove GeniusAI facet entirely    | Escrow moved to SuperGenius chain; facet is dead code with incomplete functionality | ✓ Implemented (Phase 2) |
+| Use events for init logging       | `console.log` not available on live networks; events provide on-chain observability | ✓ Implemented (Phase 2) |
+| Standardize on Solidity 0.8.19    | Compiler config already uses 0.8.19; pragmas should match                           | ✓ Implemented (Phase 1) |
 | Exact version pinning (no ranges) | Supply chain security; prevents unintended dependency updates                       | ✓ Implemented |
 | 7-day minimum package age check   | Supply chain security; blocks brand-new unvetted packages                           | ✓ Implemented |
 | In-phase deprecation-advisory fixes (hardhat-multichain → @diamondslab/hardhat-multichain 1.1.0; eslint supported-line bump; semgrep stub removal) | Owner ruling 2026-08-27 — the audit gate must exit 0 without waivers | ✓ Implemented |
+| Conversion-native backing (Phase 9, 9-D1) | Real per-child GNUS treasury + symmetric `convert()` beats implicit burn/mint backing — explicit, invariant-checkable conservation | ✓ Implemented |
+| Provenance-relocation bridging (Phase 10, 10-D-01) | Lock-on-out/release-on-in via threshold certificates preserves global supply; no escrow on this chain | ✓ Implemented |
+| Caller-bound direct-burn redeem (Phase 11) | Redeem burns the caller's own child balance directly — no allowance path to abuse | ✓ Implemented |
+| Rolling attestor certificates (Phase 15) | `BRIDGE_CERTIFICATE_V2` rotates attestor root as a side-effect of `bridgeIn`; legacy threshold path removed pre-deployment | ✓ Implemented |
 
 ## Evolution
 
@@ -104,4 +121,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-08-27 after Phase 7 completion (remediation arc closed; BRIDGE-17 sole deliberate remainder)_
+_Last updated: 2026-08-28 after v1.0 milestone (remediation arc + Phases 08.1–15 shipped; BRIDGE-17 and erc20-gnus-proxy Phase 1 the deliberate remainders)_
