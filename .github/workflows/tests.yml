@@ -68,5 +68,13 @@ jobs:
       - name: Compile contracts and generate typechain
         run: yarn compile
 
+      # Test files import { Diamond } from '@geniusventures/diamonds at runtime;
+      # its defenderClients module calls process.loadEnvFile('.env') at import
+      # time and ENOENT-crashes when the file is absent (.env is gitignored).
+      # Empty placeholder is enough — Defender creds are only warned about,
+      # and nothing in the unit suite uses them.
+      - name: Ensure .env placeholder for defenderClients
+        run: touch .env
+
       - name: Run Hardhat unit suite
         run: yarn test
