@@ -154,6 +154,13 @@ const networkNames = (chainsArg || '').split(',').filter(Boolean);
 **Issue:** The file-header scaffold description still reads "Scaffold (LocalDiamondDeployer / treasury-seed probe / setChainID / snapshot isolation ...)", but the treasury-seed probe was removed from this file and folded into `ensureDiamondTestBaseline()` (now called at `:256`). The comment misdirects the next maintainer to a pattern that no longer exists here (the file's own lockstep instruction at `:50-51` says to keep `GNUSBridgeAttestorIn.test.ts` in sync with this shape).
 **Fix:** Update the header to "Scaffold (LocalDiamondDeployer / ensureDiamondTestBaseline / setChainID re-alias / snapshot isolation / random attestor wallets + tree)".
 
+## Fixes Applied
+
+- **WR-01** — fixed in commit `50aefd9`: `ensureDiamondTestBaseline()` now derives its provider from the passed contract (`geniusDiamond.runner?.provider`) instead of the ambient `ethers.provider`, so the `eth_getStorageAt` probe and the `setChainID`/`updateBridgeFee` writes share one provider by construction. The runner provider is widened to a send-capable structural type because ethers' abstract `Provider` type omits the raw `send` RPC method. Probe semantics unchanged (same slot, same `eth_getStorageAt`). Verified: limiter suites green; full gate unchanged.
+- **WR-02** — fixed in commit `a469669`: both provenance tests in `test/unit/GNUSTreasury.test.ts` now synthesize the never-seeded state in-test via `hardhat_setStorageAt` (zeroing globalSupply at the base slot and provenanceInitialized at base + 1), making the `'Global supply not initialized'` revert assertion and the `GlobalSupplyInitialized(0n, owner)` emit / `totalSupplyOfAll() == 0n` assertions unconditional — the previously dead branches execute in both standalone and full-suite runs. The stale `:454` "after evm_revert" comment is replaced with the synthesized-state rationale. The other protected test-body `SetSeedSupply` probes were left untouched.
+
+Post-fix gates: `npx hardhat test test/unit/GNUSTreasury.test.ts` 31 passing; `npx hardhat test test/unit/GNUSWithdrawLimiter.test.ts test/unit/GNUSWithdrawLimiterStorage.test.ts test/unit/DiamondInitFacet-limiter.test.ts` 24 passing; `yarn test` 666 passing / 2 pending / 0 failing (exit 0). Info findings IN-01..IN-04 remain open (out of scope for this fix pass).
+
 ---
 
 _Reviewed: 2026-08-31_
