@@ -11,6 +11,7 @@ import { GeniusDiamond } from '../../diamond-typechain-types';
 import vectorsJson from '../fixtures/bridge-attestor-vectors.json';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 import {
 	BRIDGE_CERTIFICATE_V2_DOMAIN,
 	BridgeMessageV2,
@@ -168,9 +169,6 @@ const fixture = vectorsJson as unknown as {
 
 describe('GNUSBridgeAttestor bridgeIn (V2 certificates)', function () {
 	this.timeout(0); // Extended indefinitely for diamond deployment time
-
-	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
-	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 
 	let geniusDiamond: GeniusDiamond;
 	let owner: SignerWithAddress;
@@ -390,16 +388,9 @@ describe('GNUSBridgeAttestor bridgeIn (V2 certificates)', function () {
 
 		[owner, user1, user2] = await ethers.getSigners();
 
-		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
-		// can run. Guarded by a storage probe so re-runs against a cached diamond
-		// don't revert (GNUSBridgeIn.test.ts scaffold pattern).
-		const initialized = await hre.network.provider.send('eth_getStorageAt', [
-			diamondAddress,
-			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-		]);
-		if (BigInt(initialized) === 0n) {
-			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-		}
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it;
+		// the 31337 re-alias below re-applies the bridge chainID inside this window
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Record the live chain id and point the diamond's chainID at it so
 		// bridgeIn's destination-chain check passes (the V2 digest binds

@@ -21,6 +21,7 @@ import {
 } from '../utils/bridge-certificate';
 import type { AttestorMerkleTree } from '../utils/bridge-certificate';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 /**
  * Phase 15 rewrite (BRIDGE-19, D-10) — GNUSBridge bridgeIn for the post-removal
@@ -56,9 +57,6 @@ import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePo
  */
 describe('GNUSBridge bridgeIn (post-removal V2 surface)', function () {
 	this.timeout(0); // Extended indefinitely for diamond deployment time
-
-	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
-	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 
 	// Selector constants — HEX LITERALS ONLY for the legacy shapes (asserting on
 	// the function-name strings would defeat the zero-legacy-reference gate).
@@ -253,16 +251,9 @@ describe('GNUSBridge bridgeIn (post-removal V2 surface)', function () {
 
 		[owner, user1] = await ethers.getSigners();
 
-		// Seed the provenance counter so the global-cap check in the fee-mint
-		// replica can run (reverts when uninitialized, Phase 9 D8/Pitfall 4).
-		// Guarded by a storage probe so re-runs against a cached diamond don't revert.
-		const initialized = await hre.network.provider.send('eth_getStorageAt', [
-			diamondAddress,
-			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-		]);
-		if (BigInt(initialized) === 0n) {
-			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-		}
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it;
+		// the 31337 re-alias below re-applies the bridge chainID inside this window
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Record the live chain id and point the diamond's chainID at it so
 		// bridgeIn's destination-chain check passes (certificates are signed over
