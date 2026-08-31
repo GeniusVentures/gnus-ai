@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
-stopped_at: "Completed 17-04-PLAN.md (TEST-05/06 root fixes; Foundry gate 215/0/5 via bridge node); 17-02/17-03 pending, then 17-05 ledger"
-last_updated: "2026-08-31T21:07:09.061Z"
+stopped_at: Completed 17-02-PLAN.md (12 Tier-A unit scaffolds on the shared baseline; Hardhat gate 666/2/0 twice); 17-03 pending, then 17-05 ledger
+last_updated: "2026-08-31T21:15:59.068Z"
 last_activity: 2026-08-31
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
-  percent: 40
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
 **Current focus:** Phase 17 — test-suite-determinism
-**Progress:** [████░░░░░░] 40%
+**Progress:** [██████░░░░] 60%
 
 ## Phase Status
 
@@ -51,6 +51,12 @@ See: .planning/PROJECT.md
 - 17-04: TEST-06 root fix (D-04) — both Safe setUps open with `vm.skip(SAFE_PROXY_FACTORY.code.length == 0, "requires sepolia/anvil fork with canonical Safe deployments")` as the first statement; canonical Sepolia factory 0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC has no code on the bridge-node fork, so the dependency is declared, not reverted on; existing in-test skips (:153/:182-class) untouched
 - 17-04: gate arithmetic proven via the wrapper bridge node (D-05 record for 17-05) — full `yarn forge:test`: **215 passed / 0 failed / 5 skipped** (220 total, 37 suites, exit 0; was 215/2/3 — 2 failed → 0, skips 3 → 5, passed unchanged); invariant-only `--match-contract AccessControlInvariant --force`: **8/0/0**, `invariant_revokingUnownedRoleIsSafe() (runs: 5, calls: 50, reverts: 1)` PASS; logs /tmp/17-04-forge-full.log + /tmp/17-04-invariant.log
 - 17-04: forge 1.7.1 renders custom setUp skip reasons with a `skipped: ` infix — observed `[SKIP: skipped: requires sepolia/anvil fork with canonical Safe deployments] setUp()`; 17-05 ledger greps must use the actual rendering, and exactly 2 reason-bearing skips is the expected count (one per Safe contract)
+
+### Phase 17 Decisions Logged (17-02)
+
+- 17-02: all 13 test/unit Tier-A scaffold-snapshot suites now declare the shared baseline before `initialSnapshotId` — 12 wired here (2 bridge + 3 probe-fold + 7 plain; GNUSControlStorage was 17-01); zero duplicated probe-guard bodies or local `TREASURY_STORAGE_SLOT` constants remain in test/unit Tier A — `test/utils/diamond-baseline.ts` is the only copy
+- 17-02: bridge 31337 re-alias preserved AFTER the baseline call inside each bridge suite's own snapshot window (T-17-04) — GNUSBridgeIn/GNUSBridgeAttestorIn still call `setChainID(localChainId)` before their snapshot; GNUSBridgeAttestorUpgrade's in-test WR-01 `setChainID` untouched (in-test mutation reverted by afterEach, not scaffold pollution)
+- 17-02: full `yarn test` gate re-observed **666 passing / 2 pending / 0 failing, exit 0, two runs (18s each)** — counts identical to 17-01 (sweep is isolation-hardening, not test-adding); no Pitfall-2 self-alias deviations needed (research A3 moderate risk did not materialize); the 3 multichain-shaped limiter scaffolds pass `deployedDiamondData.DiamondAddress!` (no `diamondAddress` local in that shape)
 
 ### Phase 7 Decisions Logged (07-01)
 
@@ -161,6 +167,7 @@ See: .planning/PROJECT.md
 
 | Phase 17 P01 | 5min | 2 tasks | 3 files |
 | Phase 17 P04 | 4min | 3 tasks | 3 files |
+| Phase 17 P02 | 4.5min | 3 tasks | 12 files |
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -239,14 +246,14 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-31T21:04:20.227Z
-Stopped at: Completed 17-04-PLAN.md (TEST-05/06 root fixes; Foundry gate 215/0/5 via bridge node); 17-02/17-03 pending, then 17-05 ledger
+Last session: 2026-08-31T21:15:59.060Z
+Stopped at: Completed 17-02-PLAN.md (12 Tier-A unit scaffolds on the shared baseline; Hardhat gate 666/2/0 twice); 17-03 pending, then 17-05 ledger
 Resume file: None
 
 ## Current Position
 
 Phase: 17 (test-suite-determinism) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-08-31
 

@@ -22,7 +22,7 @@
 
 | #   | Phase                         | Goal                                                              | Requirements    | Success Criteria |
 | --- | ----------------------------- | ----------------------------------------------------------------- | --------------- | ---------------- |
-| 17  | Test-Suite Determinism        | 2/5 | In Progress|  |
+| 17  | Test-Suite Determinism        | 3/5 | In Progress|  |
 | 18  | Scanner Triage Upgrades       | slither + semgrep gates expressed as real severity triage         | SEC-09, 10      | 3                |
 | 19  | Dependency & Secrets Hygiene  | OSV remainder refreshed; every git-secrets hit dispositioned      | DEP-02, SEC-11  | 3                |
 | 20  | BridgeIn Activation Readiness | #363 gate checked; bridgeIn activated or readiness-shipped        | BRIDGE-17       | 4                |
@@ -42,7 +42,7 @@
 4. New baselines recorded with zero known-stale/failing entries
 
 **Requirements:** TEST-04, TEST-05, TEST-06
-**Plans:** 2/5 plans executed
+**Plans:** 3/5 plans executed
 
 Plans:
 **Wave 1**
@@ -52,7 +52,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 17-02-PLAN.md — Tier-A test/unit scaffold sweep (12 files; bridge re-alias ordering preserved)
+- [x] 17-02-PLAN.md — Tier-A test/unit scaffold sweep (12 files; bridge re-alias ordering preserved)
 - [ ] 17-03-PLAN.md — Tier-B probe-guard dedup (9 files) + non-unit Tier-A scaffolds (gas/integration/deployment)
 
 **Wave 3** *(blocked on Wave 2 completion)*
