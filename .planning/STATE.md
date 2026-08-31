@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
-status: In progress
-stopped_at: "v1.1 gnus-ai slice seeded 2026-08-31 (phases 17-20, 22 mirrored from parent ROADMAP); next: /gsd-discuss-phase 17"
-last_updated: "2026-08-31T00:00:00.000Z"
-last_activity: 2026-08-31 — v1.1 slice seeded; Phase 17 planning started
+status: executing
+stopped_at: "Phase 17 discuss-phase complete 2026-08-31 (17-CONTEXT.md: D-01 TEST-05 attacker re-target, D-03 TEST-04 full baseline sweep, D-04/05 TEST-06 vm.skip fork-gate, D-06/07 local N-run + STATE ledger); next: /gsd-plan-phase 17 --ws gnus-ai"
+last_updated: "2026-08-31T19:57:31.905Z"
+last_activity: 2026-08-31 — Phase 17 discussed (all 4 gray areas decided); planning pending
 progress:
   total_phases: 5
   completed_phases: 0
@@ -217,8 +217,8 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-31
-Stopped at: v1.1 gnus-ai slice seeded (ROADMAP + REQUIREMENTS mirror, STATE flipped); Phase 17 discuss-phase pending
+Last session: 2026-08-31T19:57:31.875Z
+Stopped at: Phase 17 discuss-phase complete (17-CONTEXT.md committed, bcae426); next: /gsd-plan-phase 17 --ws gnus-ai (research-first per operator decision)
 Resume file: None
 
 ## Current Position
