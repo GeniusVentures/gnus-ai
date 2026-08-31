@@ -10,6 +10,7 @@ import type { HDNodeWallet } from 'ethers';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 import {
 	buildAttestorCertificate,
 	buildValidatorMerkleTree,
@@ -50,8 +51,6 @@ describe('GNUSBridgeAttestor V2 upgrade', function () {
 
 	// keccak256("gnus.ai.bridge.validator.storage") — GNUSBridgeValidatorStorage layout base slot
 	const BRIDGE_VALIDATOR_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.bridge.validator.storage'));
-	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
-	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 
 	// Raw slot offsets from the layout base (BRIDGE-10 / D-11 append map).
 	const SLOT_VALIDATOR_MERKLE_ROOT = 1n; // legacy, frozen once V2 is active
@@ -135,15 +134,8 @@ describe('GNUSBridgeAttestor V2 upgrade', function () {
 		attestors = [Wallet.createRandom(), Wallet.createRandom(), Wallet.createRandom()];
 		activeTree = buildValidatorMerkleTree(attestors.map((a) => a.address));
 
-		// Seed the provenance counter (scaffold guard — this suite never mints, but re-runs
-		// against a cached diamond must not revert). Guarded by a storage probe.
-		const initialized = await hre.network.provider.send('eth_getStorageAt', [
-			diamondAddress,
-			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-		]);
-		if (BigInt(initialized) === 0n) {
-			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-		}
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
 	});

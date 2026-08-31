@@ -9,11 +9,10 @@ import hre, { ethers } from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('GNUSNFTFactory Enhanced Tests', function () {
 	const diamondName = 'GeniusDiamond';
-	// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
-	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 	let diamond: Diamond;
 	let diamondAddress: string;
 	let geniusDiamond: GeniusDiamond;
@@ -45,17 +44,8 @@ describe('GNUSNFTFactory Enhanced Tests', function () {
 
 		[owner, creator, user1, user2] = await ethers.getSigners();
 
-		// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
-		// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4). The GeniusDiamond
-		// fixture is shared (cached) across suites, so a prior suite may already have
-		// seeded the one-shot SetSeedSupply — guard on provenanceInitialized (slot +1).
-		const initialized = await hre.network.provider.send('eth_getStorageAt', [
-			diamondAddress,
-			ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-		]);
-		if (BigInt(initialized) === 0n) {
-			await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-		}
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Take initial snapshot
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
