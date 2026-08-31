@@ -137,3 +137,9 @@ None — documentation-only plan; every figure in the ledger traces to a /tmp lo
 2. AccessControlInvariant deterministic — 17-04 + this plan's 10× invariant proof
 3. Safe setUp skip arithmetic recorded — 17-04 (D-04/D-05) + ledger
 4. New baselines with zero known-stale/failing entries — this plan (ROADMAP criterion 4, D-06/D-07)
+
+## Self-Check: PASSED
+
+- SUMMARY.md, STATE.md ledger, PROJECT.md re-point, ROADMAP pointer: all present
+- Commits 3ca9f99 / 48db318 / 7b6292e: all present on develop
+- 15 proof logs still on disk under /tmp

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
-status: executing
-stopped_at: "Completed 17-05-PLAN.md (D-06: 5x test:all + 10x invariant proof green; canonical Test Baseline Ledger in STATE.md; PROJECT re-pointed)"
-last_updated: "2026-08-31T21:36:00.000Z"
+status: verifying
+stopped_at: "Completed 17-05-PLAN.md (D-06: 5x test:all + 10x invariant proof all green; canonical Test Baseline Ledger written; PROJECT/ROADMAP re-pointed — Phase 17 complete, ready for verification)"
+last_updated: "2026-08-31T21:42:41.865Z"
 last_activity: 2026-08-31
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 20
 ---
 
 # Project State
@@ -25,13 +25,13 @@ See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
 **Current focus:** Phase 17 — test-suite-determinism
-**Progress:** [████████░░] 80%
+**Progress:** [██████████] 100%
 
 ## Phase Status
 
 | Phase | Name                            | Status  | Plans | Progress |
 | ----- | ------------------------------- | ------- | ----- | -------- |
-| 17    | Test-Suite Determinism          | In Progress | 1/5   | 20%      |
+| 17    | Test-Suite Determinism          | Complete | 5/5   | 100%     |
 | 18    | Scanner Triage Upgrades         | Pending | —     | 0%       |
 | 19    | Dependency & Secrets Hygiene    | Pending | —     | 0%       |
 | 20    | BridgeIn Activation Readiness   | Pending | —     | 0%       |
@@ -91,6 +91,12 @@ Per-run proof (all runs exit 0; logs /tmp/17-05-testall-{1..5}.log + /tmp/17-05-
 - 17-03: D-03 sweep complete — all 9 remaining duplicated probe-guard suites folded into `test/utils/diamond-baseline.ts`; repo-wide fold gates green (`gnus.ai.treasury.storage` slot string exists ONLY in the helper; `GNUSTreasury_SetSeedSupply(0n)` only in the helper + the GNUSTreasury one-shot test bodies); the 4 non-unit Tier-A scaffolds (gas, 2x integration, deployment via `ownerDiamond`/T-17-08) now declare the baseline before their first `evm_snapshot` — all 17 Tier-A scaffolds repo-wide wired, gas file's probe relocated from AFTER its snapshot to BEFORE it
 - 17-03: GNUSTreasury one-shot test bodies (old :504-:987) byte-untouched — diff hunks confined to old lines 18-425 and the only SetSeedSupply diff line is the deleted local fn's seed; `TREASURY_STORAGE_SLOT` is imported from the helper there because the protected bodies probe the constant directly; withdraw-limiter-integration's probe moved out of `beforeEach` into `before()` per the helper-never-mid-test rule (the helper also resets chainID/fee)
 - 17-03: full `yarn test` gate **666 passing / 2 pending / 0 failing, exit 0, two runs (17s each)** — identical to 17-01/17-02 (dedup/isolation-hardening, not test-adding); no Pitfall-2 self-alias deviations needed; 9-suite one-process intermediate run 138 passing / 0 failing
+
+### Phase 17 Decisions Logged (17-05)
+
+- 17-05: D-06 determinism proof executed against the fully-swept post-17-03 tree with one bridge node for the whole protocol — N=5 `yarn test:all` (all exit 0, counts byte-identical: Hardhat 666/2/0 + Foundry 215/0/5, 220 total, 37 suites) + N=10 invariant-only wrapper runs (all exit 0, 8/0/0); wall times: full-suite 56/50/48/54/51s (run 1 = 56s), invariant-only 20-22s (run 1 = 22s) — A1 closed, first recorded timings; logs /tmp/17-05-testall-{1..5}.log + /tmp/17-05-invariant-{1..10}.log
+- 17-05: canonical baseline ledger written into STATE.md `## Test Baseline Ledger (canonical)` from run-1 printed output only (Pitfall 1 rule of record) — Hardhat 666/2/0, Foundry 215/0/5 with the 3→5 skip change encoded as the DECLARED D-04/D-05 Safe setUp fork-skip (exactly 2 reason-bearing skips observed, forge 1.7.1 `skipped: ` infix) plus the 3 pre-existing deployment.t.sol runtime skips; single-source statement supersedes STATE 07-01/07-04 665/2/1, PROJECT 666/2/0, ROADMAP "666/2/0 + 1 stale"
+- 17-05: re-points landed — PROJECT.md:11 carries both observed figures + the STATE.md ledger pointer with the CI clause retained; ROADMAP.md gained only the post-phase forward-pointer line (phase-entry baselines stay historical); Next Actions item 4 records TEST-04/05/06 RESOLVED; zero CI workflow changes per D-07 (CI cannot host the Foundry bridge-node suite; a Hardhat-only guard would re-run the half that never flaked)
 
 ### Phase 7 Decisions Logged (07-01)
 
@@ -203,6 +209,7 @@ Per-run proof (all runs exit 0; logs /tmp/17-05-testall-{1..5}.log + /tmp/17-05-
 | Phase 17 P04 | 4min | 3 tasks | 3 files |
 | Phase 17 P02 | 4.5min | 3 tasks | 12 files |
 | Phase 17 P03 | 7.5min | 2 tasks | 13 files |
+| Phase 17 P05 | 12min | 2 tasks | 4 files |
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -281,15 +288,15 @@ Per-run proof (all runs exit 0; logs /tmp/17-05-testall-{1..5}.log + /tmp/17-05-
 
 ## Session Continuity
 
-Last session: 2026-08-31T21:26:23.223Z
-Stopped at: Completed 17-03-PLAN.md (D-03 sweep: 9 Tier-B folds + 4 non-unit Tier-A scaffolds; gate 666/2/0 twice); 17-04 done earlier; 17-05 ledger remains
+Last session: 2026-08-31T21:42:41.857Z
+Stopped at: Completed 17-05-PLAN.md (D-06: 5x test:all + 10x invariant proof all green; canonical Test Baseline Ledger written; PROJECT/ROADMAP re-pointed — Phase 17 complete, ready for verification)
 Resume file: None
 
 ## Current Position
 
 Phase: 17 (test-suite-determinism) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-31
 
 ## Operator Next Steps

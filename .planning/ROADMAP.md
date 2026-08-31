@@ -22,7 +22,7 @@
 
 | #   | Phase                         | Goal                                                              | Requirements    | Success Criteria |
 | --- | ----------------------------- | ----------------------------------------------------------------- | --------------- | ---------------- |
-| 17  | Test-Suite Determinism        | 4/5 | In Progress|  |
+| 17  | Test-Suite Determinism        | 5/5 | Complete   | 2026-08-31 |
 | 18  | Scanner Triage Upgrades       | slither + semgrep gates expressed as real severity triage         | SEC-09, 10      | 3                |
 | 19  | Dependency & Secrets Hygiene  | OSV remainder refreshed; every git-secrets hit dispositioned      | DEP-02, SEC-11  | 3                |
 | 20  | BridgeIn Activation Readiness | #363 gate checked; bridgeIn activated or readiness-shipped        | BRIDGE-17       | 4                |
@@ -42,7 +42,7 @@
 4. New baselines recorded with zero known-stale/failing entries
 
 **Requirements:** TEST-04, TEST-05, TEST-06
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 **Wave 1**
@@ -57,7 +57,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 17-05-PLAN.md — N=5/N=10 determinism proof + STATE.md canonical baseline ledger (D-06)
+- [x] 17-05-PLAN.md — N=5/N=10 determinism proof + STATE.md canonical baseline ledger (D-06)
 
 **Priority:** P1 (CI reliability)
 **Source:** mirrored from `TokenContracts/.planning/ROADMAP.md` Phase 17 (2026-08-31)
