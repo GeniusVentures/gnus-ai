@@ -1,50 +1,42 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: Tech Debt & Security Remediation
-status: Awaiting next milestone
-stopped_at: "Milestone v1.0 complete — closed 2026-08-28 (CI gate green at 44b2c75: tests + security-audit); next: /gsd-new-milestone"
-last_updated: "2026-08-28T19:52:59.518Z"
-last_activity: 2026-08-28 — Milestone v1.0 completed and archived
+milestone: v1.1
+milestone_name: Proxy Completion & Production Readiness
+status: In progress
+stopped_at: "v1.1 gnus-ai slice seeded 2026-08-31 (phases 17-20, 22 mirrored from parent ROADMAP); next: /gsd-discuss-phase 17"
+last_updated: "2026-08-31T00:00:00.000Z"
+last_activity: 2026-08-31 — v1.1 slice seeded; Phase 17 planning started
 progress:
-  total_phases: 17
-  completed_phases: 16
-  total_plans: 45
-  completed_plans: 45
-  percent: 100
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Project:** Gnus.ai Smart Contracts — Tech Debt & Security Remediation
-**Last Updated:** 2026-08-28
+**Project:** Gnus.ai Smart Contracts — v1.1 Proxy Completion & Production Readiness
+**Last Updated:** 2026-08-31
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** v1.0 shipped (2026-08-28) — awaiting next milestone; open threads: BRIDGE-17 external gate, erc20-gnus-proxy Phase 1 (PROXY-01/02), v1.0 audit tech-debt register
+**Current focus:** v1.1 (parent-hosted milestone) — gnus-ai slice: test-suite determinism (17), scanner triage (18), dependency/secrets hygiene (19), BridgeIn activation readiness (20), child-NFT economics build (22, gated on parent-routed Phase 21 research). Phase 16 (proxy hardening) shipped in erc20-gnus-proxy 2026-08-30 (PR #12).
 
 ## Phase Status
 
-| Phase | Name                              | Status | Plans | Progress |
-| ----- | --------------------------------- | ------ | ----- | -------- |
-| 1     | Preliminary Cleanup               | ✓      | 2/2   | 100%     |
-| 2     | Dead Code Removal                 | ✓      | 2/2   | 100%     |
-| 3     | Input Validation                  | ✓      | 2/2   | 100%     |
-| 4     | Access Control & Observability    | ✓      | 1/1   | 100%     |
-| 5     | Circuit Breaker & Performance     | ✓      | 1/1   | 100%     |
-| 6     | Test Coverage                     | ✓      | 2/2   | 100%     |
-| 7     | Dependency Hardening              | ✓      | 4/4   | 100%     |
-| 08.1  | Safe Wallet Proposer Retrofit     | ✓      | 3/3   | 100%     |
-| 08.2  | Deploy-Verify Pipeline Fixes      | ✓      | 3/3   | 100%     |
-| 9     | Per-Child GNUS Treasury/Reserve   | ✓      | 5/5   | 100%     |
-| 10    | Lock/Release Bridge Vault         | ✓      | 4/4   | 100%     |
-| 11    | ERC-20 Proxy Hardening            | ✓      | 4/4   | 100%     |
-| 13    | Time-Bound ERC-1155 Entitlements  | ✓      | 6/6   | 100%     |
-| 14    | Private-Network AI Licensing      | ✓      | 5/5   | 100%     |
-| 15    | Secure BridgeIn (Ph10 Amendment)  | ✓      | 4/4   | 100%     |
+| Phase | Name                            | Status  | Plans | Progress |
+| ----- | ------------------------------- | ------- | ----- | -------- |
+| 17    | Test-Suite Determinism          | Pending | 0/0   | 0%       |
+| 18    | Scanner Triage Upgrades         | Pending | —     | 0%       |
+| 19    | Dependency & Secrets Hygiene    | Pending | —     | 0%       |
+| 20    | BridgeIn Activation Readiness   | Pending | —     | 0%       |
+| 22    | Child-NFT Economics Build       | Pending | —     | 0%       |
+
+*(v1.0 phase table: 16/17 phases complete — archived in milestones/v1.0-ROADMAP.md.)*
 
 ### Phase 7 Decisions Logged (07-01)
 
@@ -225,17 +217,18 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-28
-Stopped at: Milestone v1.0 complete — closed and tagged; REQUIREMENTS.md deleted (fresh one comes with the next milestone)
+Last session: 2026-08-31
+Stopped at: v1.1 gnus-ai slice seeded (ROADMAP + REQUIREMENTS mirror, STATE flipped); Phase 17 discuss-phase pending
 Resume file: None
 
 ## Current Position
 
-Phase: Milestone v1.0 complete
+Phase: 17 — Test-Suite Determinism (not yet discussed)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-08-28 — Milestone v1.0 completed and archived
+Status: In progress (v1.1)
+Last activity: 2026-08-31 — v1.1 slice seeded; Phase 17 planning started
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- `/gsd-discuss-phase 17 --ws gnus-ai` — capture TEST-04/05/06 design decisions into 17-CONTEXT.md
+- Then `/gsd-plan-phase 17 --ws gnus-ai` (research-first confirmed by owner 2026-08-31)
