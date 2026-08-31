@@ -1,5 +1,12 @@
 import { ethers } from 'hardhat';
+import type { Provider } from 'ethers';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+
+// `ContractRunner.provider` is typed as ethers' abstract Provider, which omits
+// the raw `send` RPC method. Every provider bound to a contract in this harness
+// (HardhatEthersProvider, JsonRpcProvider) is send-capable, so widen to the
+// send-capable shape for the storage probe below.
+type RpcCapableProvider = Provider & { send(method: string, params: Array<any>): Promise<any> };
 
 // keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot.
 const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
@@ -21,6 +28,10 @@ const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treas
  * provenanceInitialized storage slot (base + 1) because it reverts with
  * "Already initialized" when a prior suite already seeded the cached diamond.
  *
+ * The probe is sent through the passed contract's own provider
+ * (`geniusDiamond.runner.provider`), never the ambient `ethers.provider`, so
+ * the read and the writes below share one provider by construction.
+ *
  * The caller must be the LibDiamond contractOwner with DEFAULT_ADMIN_ROLE —
  * signer0 (the default-connected diamond) satisfies both roles on the local
  * shared diamond.
@@ -34,7 +45,15 @@ async function ensureDiamondTestBaseline(
 	geniusDiamond: GeniusDiamond,
 	diamondAddress: string,
 ): Promise<void> {
-	const initialized = await ethers.provider.send('eth_getStorageAt', [
+	// Probe through the passed contract's own provider so the read and the
+	// state-changing calls below share one provider by construction — the
+	// ambient `ethers.provider` can point at a different chain than the one
+	// `geniusDiamond` writes to (multichain suites rebind it around this call).
+	const provider = geniusDiamond.runner?.provider as RpcCapableProvider | null | undefined;
+	if (!provider) {
+		throw new Error('ensureDiamondTestBaseline: contract has no provider runner');
+	}
+	const initialized = await provider.send('eth_getStorageAt', [
 		diamondAddress,
 		ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
 	]);
