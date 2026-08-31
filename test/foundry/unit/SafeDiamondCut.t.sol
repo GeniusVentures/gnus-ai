@@ -47,6 +47,11 @@ contract SafeDiamondCutTest is Test {
     address private safeOwner;
 
     function setUp() public {
+        // The canonical Sepolia Safe v1.3.0 deployments exist only on a
+        // sepolia/anvil fork; the yarn forge:test bridge-node fork carries only the
+        // locally deployed diamond, so the createProxyWithNonce call below would
+        // revert — declare the fork dependency instead of failing on it (D-04).
+        vm.skip(SAFE_PROXY_FACTORY.code.length == 0, "requires sepolia/anvil fork with canonical Safe deployments");
         safeOwner = makeAddr("safeOwner");
         vm.deal(safeOwner, 10 ether);
 
