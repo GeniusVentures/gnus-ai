@@ -27,6 +27,7 @@ import { formatEther, id, JsonRpcProvider } from 'ethers';
 import hre, { ethers } from 'hardhat';
 import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
+import { ensureDiamondTestBaseline } from './diamond-baseline';
 
 // Create utils object for compatibility
 const utils = { formatEther, id };
@@ -122,6 +123,12 @@ describe('[ContractName] Tests', async function () {
 					ownerSigner = await ethersMultichain.getSigner(owner);
 				}
 				ownerDiamond = geniusDiamond.connect(ownerSigner);
+
+				// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(
+					ownerDiamond,
+					deployedDiamondData.DiamondAddress!,
+				);
 
 				// Take initial snapshot
 				snapshotId = await provider.send('evm_snapshot', []);

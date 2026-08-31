@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('GNUSControlStorage Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -48,6 +49,9 @@ describe('GNUSControlStorage Tests', function () {
 			hre.ethers,
 		);
 
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
+
 		// Take initial snapshot for test isolation
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');
 	});
@@ -66,11 +70,6 @@ describe('GNUSControlStorage Tests', function () {
 
 	describe('Storage layout and protocol info', function () {
 		it('should return initial protocol info', async function () {
-			// Bridge suites alias the shared diamond's chainID to the local
-			// chain (GNUSBridgeIn scaffold) and that mutation intentionally
-			// outlives their snapshots — normalize it before asserting
-			// defaults (same reset as the zero-chain-ID edge case below).
-			await geniusDiamond.setChainID(0);
 			const info = await geniusDiamond.protocolInfo();
 
 			// Should have protocol version set during initialization
