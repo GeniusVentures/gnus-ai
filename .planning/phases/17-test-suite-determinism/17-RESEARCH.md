@@ -399,7 +399,9 @@ Suite result: ok. 0 passed; 0 failed; 1 skipped
 
 **Everything else in this research was verified against repo source, the installed toolchain, or an empirical forge run this session.**
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+>All three resolved before planning: Q2 by the operator's post-research scope ruling (2026-08-31) — Tier A 17 + dedup of the duplicated-probe-guard Tier-B suites (9 verified sites, including the 9th at `test/integration/withdraw-limiter-integration.test.ts:114-122` the planner found); guard-free Tier-B suites untouched. Q1 by the derive-from-run-1 rule encoded in every plan's record rules. Q3 by the locked N=10 `AccessControlInvariant` bar in 17-05 plus N=5 `yarn test:all` covering the family. Downstream agents: do not re-litigate these.
 
 1. **Exact Hardhat pass count post-fix**
    - What we know: historical records say 665 or 666 (2 pending); the count depends on suite set, not on this phase's changes (which add no tests).

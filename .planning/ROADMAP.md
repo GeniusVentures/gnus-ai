@@ -35,12 +35,30 @@
 **Goal:** Eliminate every known non-deterministic or known-stale failure in the gnus-ai suites at the root cause.
 **Depends on:** nothing. Baselines: Hardhat 666/2/0 with 1 known-stale failure; Foundry 215/2/3 with setUp reverts + flaky invariant.
 **Success criteria:**
+
 1. GNUSControlStorage "should return initial protocol info" passes in the FULL suite (root fix, no test-side guard)
 2. AccessControlInvariant passes across N consecutive runs without seed-luck (config seeded or invariant aligned to handler)
 3. SafeSingleShotUpgrade + SafeDiamondCut setUp green
 4. New baselines recorded with zero known-stale/failing entries
 
 **Requirements:** TEST-04, TEST-05, TEST-06
+**Plans:** 5 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 17-01-PLAN.md — Shared baseline helper (ensureDiamondTestBaseline) + TEST-04 victim wiring + guard deletion
+- [ ] 17-04-PLAN.md — Foundry: invariant attacker re-target (D-01) + Safe setUp vm.skip fork gate (D-04)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 17-02-PLAN.md — Tier-A test/unit scaffold sweep (12 files; bridge re-alias ordering preserved)
+- [ ] 17-03-PLAN.md — Tier-B probe-guard dedup (9 files) + non-unit Tier-A scaffolds (gas/integration/deployment)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 17-05-PLAN.md — N=5/N=10 determinism proof + STATE.md canonical baseline ledger (D-06)
+
 **Priority:** P1 (CI reliability)
 **Source:** mirrored from `TokenContracts/.planning/ROADMAP.md` Phase 17 (2026-08-31)
 
@@ -49,6 +67,7 @@
 **Goal:** Express scanner severity gates as real triage instead of version-specific exit-code workarounds.
 **Depends on:** nothing (17's clean baselines help but are not required).
 **Success criteria:**
+
 1. slither on a triage-capable line; known Phase-9 FPs triaged in config, gate exits 0 with triage visible
 2. semgrep `unsafe-external-call` pattern parses and executes
 3. CI semgrep step promoted to hard gate (continue-on-error dropped) on a stable recorded baseline
@@ -61,6 +80,7 @@
 **Goal:** Close the OSV advisory remainder and give every git-secrets hit an explicit provenance disposition.
 **Depends on:** nothing. Owner participation likely for git-secrets rulings and any OSV residuals.
 **Success criteria:**
+
 1. `yarn osv:scan` exit 0, or every residual advisory carries an owner-ruling disposition
 2. All 37 git-secrets hits dispositioned (fixture keys proven test-only, remediated, or `.gitallowed` by owner ruling)
 3. `yarn install --immutable` + audit gates still green after resolutions
@@ -73,6 +93,7 @@
 **Goal:** BRIDGE-17 resolved either way — activation if the external gate closed, packaged readiness if not.
 **Depends on:** nothing (external gate: SuperGenius #363). Verify state at phase start.
 **Success criteria:**
+
 1. SuperGenius #363 state verified and recorded in the phase record
 2. If closed: bridgeIn activated on Sepolia (attestor set bootstrapped, first certificate processed, epoch advanced)
 3. If open: activation runbook + config shipped; BRIDGE-17 remains the only blocker
@@ -86,6 +107,7 @@
 **Goal:** Implement what Phase 21 validated, under the conversion-native conservation model.
 **Depends on:** Phase 21 (Child-NFT Economics Research — cross-repo, parent-planned; go/no-go per NFT-04/05/06 recorded at its exit).
 **Success criteria:**
+
 1. Every go-item from Phase 21 implemented with tests on the gnus-ai diamond
 2. Conservation invariants extended and green over any new treasury/swap surface
 3. No-go items moved to Out of Scope with the refuting evidence referenced

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
-stopped_at: "Phase 17 discuss-phase complete 2026-08-31 (17-CONTEXT.md: D-01 TEST-05 attacker re-target, D-03 TEST-04 full baseline sweep, D-04/05 TEST-06 vm.skip fork-gate, D-06/07 local N-run + STATE ledger); next: /gsd-plan-phase 17 --ws gnus-ai"
-last_updated: "2026-08-31T19:57:31.905Z"
-last_activity: 2026-08-31 — Phase 17 discussed (all 4 gray areas decided); planning pending
+stopped_at: "Phase 17 discuss-phase complete (17-CONTEXT.md committed, bcae426); next: /gsd-plan-phase 17 --ws gnus-ai (research-first per operator decision)"
+last_updated: "2026-08-31T20:36:50.559Z"
+last_activity: 2026-08-31 -- Phase 17 planning complete
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 5
   completed_plans: 0
   percent: 0
 ---
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md
 
 | Phase | Name                            | Status  | Plans | Progress |
 | ----- | ------------------------------- | ------- | ----- | -------- |
-| 17    | Test-Suite Determinism          | Pending | 0/0   | 0%       |
+| 17    | Test-Suite Determinism          | Planned | 0/5   | 0%       |
 | 18    | Scanner Triage Upgrades         | Pending | —     | 0%       |
 | 19    | Dependency & Secrets Hygiene    | Pending | —     | 0%       |
 | 20    | BridgeIn Activation Readiness   | Pending | —     | 0%       |
@@ -225,8 +225,8 @@ Resume file: None
 
 Phase: 17 — Test-Suite Determinism (not yet discussed)
 Plan: —
-Status: In progress (v1.1)
-Last activity: 2026-08-31 — v1.1 slice seeded; Phase 17 planning started
+Status: Ready to execute
+Last activity: 2026-08-31 -- Phase 17 planning complete
 
 ## Operator Next Steps
 
