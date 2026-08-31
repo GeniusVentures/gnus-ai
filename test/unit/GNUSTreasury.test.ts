@@ -451,45 +451,45 @@ describe('GNUS Treasury Tests', async function () {
 
 			describe('provenance', function () {
 				it('totalSupplyOfAll reverts pre-seed', async function () {
-					// Fresh fixture: provenanceInitialized == false after evm_revert.
-					// Note: the diamond deploy may have invoked the deployInit depending on the
-					// diamonds tooling; if so, this test would observe initialized=true and the
-					// revert would not fire. The assertion below is written against the documented
-					// semantic (revert pre-seed). If the deployer pre-seeds, this test fails and
-					// signals the runbook needs updating — which is the intended canary.
-					const initialized = await provider.send('eth_getStorageAt', [
+					// The suite baseline in before() seeds provenance, and no evm_revert in
+					// this suite can restore an uninitialized slot — synthesize the
+					// never-seeded state via hardhat_setStorageAt: zero globalSupply (base
+					// slot) and provenanceInitialized (base slot + 1).
+					await provider.send('hardhat_setStorageAt', [
+						diamondAddress,
+						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT), 32),
+						ethers.toBeHex(0n, 32),
+					]);
+					await provider.send('hardhat_setStorageAt', [
 						diamondAddress,
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+						ethers.toBeHex(0n, 32),
 					]);
-					if (BigInt(initialized) === 0n) {
-						await expect(geniusDiamond.totalSupplyOfAll()).to.be.revertedWith(
-							'Global supply not initialized',
-						);
-					} else {
-						// Deploy pre-seeded (expected under new config) — assert the view returns.
-						const v = await geniusDiamond.totalSupplyOfAll();
-						expect(v).to.be.gte(0n);
-					}
+					await expect(geniusDiamond.totalSupplyOfAll()).to.be.revertedWith(
+						'Global supply not initialized',
+					);
 				});
 
 				it('Initialize260 seeds globalSupply and emits GlobalSupplyInitialized', async function () {
-					// If the deploy already initialized, this call reverts with "Already initialized"
-					// — which is also a valid proof of the one-shot guard. Test both branches.
-					const initialized = await provider.send('eth_getStorageAt', [
+					// Same synthesized pre-seed state as above: the baseline in before()
+					// seeds provenance, so zero globalSupply (base slot) and
+					// provenanceInitialized (base slot + 1) to exercise the one-shot
+					// success path unconditionally.
+					await provider.send('hardhat_setStorageAt', [
+						diamondAddress,
+						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT), 32),
+						ethers.toBeHex(0n, 32),
+					]);
+					await provider.send('hardhat_setStorageAt', [
 						diamondAddress,
 						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
+						ethers.toBeHex(0n, 32),
 					]);
-					if (BigInt(initialized) === 0n) {
-						await expect(ownerDiamond.GNUSTreasury_SetSeedSupply(0n))
-							.to.emit(geniusDiamond, 'GlobalSupplyInitialized')
-							.withArgs(0n, owner);
-						const v = await geniusDiamond.totalSupplyOfAll();
-						expect(v).to.eq(0n);
-					} else {
-						// Already initialized — the one-shot guard is exercised by the re-init test below.
-						const v = await geniusDiamond.totalSupplyOfAll();
-						expect(v).to.be.gte(0n);
-					}
+					await expect(ownerDiamond.GNUSTreasury_SetSeedSupply(0n))
+						.to.emit(geniusDiamond, 'GlobalSupplyInitialized')
+						.withArgs(0n, owner);
+					const v = await geniusDiamond.totalSupplyOfAll();
+					expect(v).to.eq(0n);
 				});
 
 				it('re-initialization reverts with "Already initialized"', async function () {
