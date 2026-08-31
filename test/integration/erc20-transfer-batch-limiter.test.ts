@@ -16,6 +16,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -92,6 +93,9 @@ describe('ERC20TransferBatch Limiter Integration Tests', async function () {
 				log('Owner:', owner);
 				log('Signer1:', signer1);
 				log('Signer2:', signer2);
+
+				// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(geniusDiamond, deployedDiamondData.DiamondAddress!);
 
 				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 			});

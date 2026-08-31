@@ -17,6 +17,7 @@ import {
 	IERC20Upgradeable__factory,
 } from '../../typechain-types';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () {
 	const diamondName = 'GeniusDiamond';
@@ -104,6 +105,9 @@ describe('🧪 Multichain Fork and Diamond Deployment Tests', async function () 
 				ownerSigner = await ethersMultichain.getSigner(owner);
 
 				ownerDiamond = geniusDiamond.connect(ownerSigner);
+
+				// Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(ownerDiamond, deployedDiamondData.DiamondAddress!);
 			});
 
 			beforeEach(async function () {

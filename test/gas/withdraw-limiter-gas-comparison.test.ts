@@ -30,6 +30,7 @@ import {
 	DEST_CHAIN_ID,
 } from '../utils/bridge-fixtures';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 interface GasResult {
 	binCount: number;
@@ -85,20 +86,10 @@ describe('Withdraw Limiter Gas Usage Comparison', function () {
 			user2 = signers[2];
 			user3 = signers[3];
 
-			initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
+			// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+			await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
-			// Seed the provenance counter so the global-cap check in _mintWithBridgeFee
-			// can run (reverts when uninitialized, Phase 9 D8/Pitfall 4). The GeniusDiamond
-			// fixture is shared (cached) across suites, so a prior suite may already have
-			// seeded the one-shot SetSeedSupply — guard on provenanceInitialized (slot +1).
-			const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
-			const initialized = await ethers.provider.send('eth_getStorageAt', [
-				diamondAddress,
-				ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-			]);
-			if (BigInt(initialized) === 0n) {
-				await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-			}
+			initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 
 			// Create child NFT for convert tests
 			// createNFT(parentId, name, symbol, exchangeRate, maxSupply, uri)
