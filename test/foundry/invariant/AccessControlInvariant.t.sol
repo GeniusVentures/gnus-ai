@@ -254,7 +254,7 @@ contract AccessControlInvariant is GeniusDiamondTestBase {
 
     /**
      * @notice Invariant: Revoking a role that wasn't granted has no effect
-     * @dev View-only: Just checks that user3 doesn't have roles
+     * @dev View-only: Just checks that attacker doesn't have roles
      *
      * PROPERTY TESTED:
      * - Addresses that never received a role don't have that role
@@ -272,8 +272,10 @@ contract AccessControlInvariant is GeniusDiamondTestBase {
      * - Security vulnerabilities from unintended role assignments
      */
     function invariant_revokingUnownedRoleIsSafe() public view {
-        // User3 shouldn't have UPGRADER_ROLE (never granted)
-        assertFalse(_hasRole(UPGRADER_ROLE, user3), "User3 should not have UPGRADER_ROLE");
+        // attacker is outside GeniusDiamondHandler.actors, so no fuzz sequence can
+        // grant it any role; the former subject actors[3] was legitimately grantable
+        // via handler_grantRole (roles[3] = UPGRADER_ROLE), making it unsound here.
+        assertFalse(_hasRole(UPGRADER_ROLE, attacker), "Attacker should not have UPGRADER_ROLE");
 
         console.log("[OK] Ungranted roles verified");
     }
