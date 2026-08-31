@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('ERC1155ProxyOperator Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -50,6 +51,9 @@ describe('ERC1155ProxyOperator Tests', function () {
 			diamondAddress,
 			hre.ethers,
 		);
+
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Grant MINTER_ROLE to owner for GNUS token minting
 		await geniusDiamond.grantRole(MINTER_ROLE, await owner.getAddress());

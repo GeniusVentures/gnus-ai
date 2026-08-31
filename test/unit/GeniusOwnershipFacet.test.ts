@@ -8,6 +8,7 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types/GeniusDiamond';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('GeniusOwnershipFacet', function () {
 	let diamond: Diamond;
@@ -40,6 +41,9 @@ describe('GeniusOwnershipFacet', function () {
 			diamondAddress,
 			hre.ethers,
 		);
+
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Take initial snapshot for test isolation
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');

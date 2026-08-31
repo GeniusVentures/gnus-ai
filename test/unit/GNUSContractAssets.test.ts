@@ -8,6 +8,7 @@ import type { Signer } from 'ethers';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('GNUSContractAssets', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -61,6 +62,9 @@ describe('GNUSContractAssets', function () {
 			diamondAddress,
 			hre.ethers,
 		);
+
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Note: owner is already the super admin (contract owner)
 		// No need to grant additional roles

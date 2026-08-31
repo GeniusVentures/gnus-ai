@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 describe('ERC20TransferBatch Tests', function () {
 	let geniusDiamond: GeniusDiamond;
@@ -47,6 +48,9 @@ describe('ERC20TransferBatch Tests', function () {
 			diamondAddress,
 			hre.ethers,
 		);
+
+		// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+		await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
 
 		// Take initial snapshot for test isolation
 		initialSnapshotId = await hre.network.provider.send('evm_snapshot');

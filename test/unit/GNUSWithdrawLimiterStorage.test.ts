@@ -16,6 +16,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -83,6 +84,9 @@ describe('GNUS Withdraw Limiter Storage Tests', async function () {
 				log('Owner:', owner.address);
 				log('User1:', user1.address);
 				log('User2:', user2.address);
+
+				// Declare the protocol baseline BEFORE the snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(geniusDiamond, deployedDiamondData.DiamondAddress!);
 
 				initialSnapshotId = await ethers.provider.send('evm_snapshot', []);
 			});
