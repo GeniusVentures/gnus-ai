@@ -7,7 +7,7 @@
 
 ### Test-Suite Cleanup (Phase 17)
 
-- [ ] **TEST-04**: GNUSControlStorage "should return initial protocol info" passes in the FULL suite — root fix (idempotent shared provenance initializer; cross-suite pollution), no test-side workaround.
+- [x] **TEST-04**: GNUSControlStorage "should return initial protocol info" passes in the FULL suite — root fix (idempotent shared provenance initializer; cross-suite pollution), no test-side workaround.
 - [ ] **TEST-05**: AccessControlInvariant deterministic across runs — seed the invariant config or align the invariant with the handler's grant surface (gnus-ai 07-04 recorded root cause).
 - [ ] **TEST-06**: Phase 08.1 Safe setUp reverts resolved — SafeSingleShotUpgrade + SafeDiamondCut tests green.
 
@@ -44,7 +44,7 @@
 
 | Requirement | Phase | Status |
 | ----------- | ----- | ------ |
-| TEST-04     | 17    | Pending |
+| TEST-04     | 17    | Complete |
 | TEST-05     | 17    | Pending |
 | TEST-06     | 17    | Pending |
 | SEC-09      | 18    | Pending |

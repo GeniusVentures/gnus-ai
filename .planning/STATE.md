@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
-stopped_at: "Phase 17 discuss-phase complete (17-CONTEXT.md committed, bcae426); next: /gsd-plan-phase 17 --ws gnus-ai (research-first per operator decision)"
-last_updated: "2026-08-31T20:51:48.043Z"
-last_activity: 2026-08-31 -- Phase 17 execution started
+stopped_at: "Completed 17-01-PLAN.md (shared baseline helper + TEST-04 victim fix; suite 666/2/0); next: /gsd:execute-phase 17 for 17-02/17-03 (wave 2)"
+last_updated: "2026-08-31T20:58:04.802Z"
+last_activity: 2026-08-31
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -25,18 +25,25 @@ See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
 **Current focus:** Phase 17 — test-suite-determinism
+**Progress:** [██░░░░░░░░] 20%
 
 ## Phase Status
 
 | Phase | Name                            | Status  | Plans | Progress |
 | ----- | ------------------------------- | ------- | ----- | -------- |
-| 17    | Test-Suite Determinism          | Planned | 0/5   | 0%       |
+| 17    | Test-Suite Determinism          | In Progress | 1/5   | 20%      |
 | 18    | Scanner Triage Upgrades         | Pending | —     | 0%       |
 | 19    | Dependency & Secrets Hygiene    | Pending | —     | 0%       |
 | 20    | BridgeIn Activation Readiness   | Pending | —     | 0%       |
 | 22    | Child-NFT Economics Build       | Pending | —     | 0%       |
 
 *(v1.0 phase table: 16/17 phases complete — archived in milestones/v1.0-ROADMAP.md.)*
+
+### Phase 17 Decisions Logged (17-01)
+
+- 17-01: `ensureDiamondTestBaseline()` lands in `test/utils/diamond-baseline.ts` (D-03) with the `(geniusDiamond, diamondAddress)` signature per the GNUSTreasury.test.ts `seedProvenanceIfNeeded` precedent; module conventions from network-utils.ts (JSDoc, bottom export block, no default export); body order probe → conditional seed → setChainID(0) → updateBridgeFee(0)
+- 17-01: TEST-04 root-fix evidence — full `yarn test` suite **666 passing / 2 pending / 0 failing, exit 0** (two consecutive runs: 17s / 16s); the victim ("should return initial protocol info") passes in the FULL alphabetical-order suite with the test-side `setChainID(0)` guard deleted; the +1 vs the stale 07-04 665/2/1 baseline is exactly the victim flipping green — observed figure recorded for the 17-05 ledger
+- 17-01: no dedicated test file for the helper — every wired suite exercises it, the full-suite mocha gate is its correctness signal (17-RESEARCH Wave 0); test-template.ts inherits the baseline via `ownerDiamond` before the first `evm_snapshot`, so new suites declare it by default
 
 ### Phase 7 Decisions Logged (07-01)
 
@@ -133,12 +140,19 @@ See: .planning/PROJECT.md
 | ---- | ---- | ----------- | ------ |
 | 2026-08-26 | sku0-sentinel-guard | createLicense rejects SKU id 0 (licenseSku sentinel collision) | ✓ complete |
 
+## Performance Metrics
+
+| Plan | Duration | Tasks | Files |
+| ---- | -------- | ----- | ----- |
+
 ## Next Actions
 
 1. BRIDGE-17 tracking (sole deliberate remainder): production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed) — gate record at docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md; track in .planning/SUBREPOS.md when scheduled.
 2. Milestone v1.0 CLOSED 2026-08-28 (audit → CI gate green → archives + MILESTONES.md + RETROSPECTIVE.md + tag v1.0). Next GSD step: `/gsd-new-milestone`.
 3. Recorded follow-ups — on-record 07-03 D-09 audit output awaiting owner routing (no work started): (a) snyk 23 medium+ transitive finding-set + OSV 115-advisory set need an owner dependency-refresh decision in an owning phase (STATE 07-03 disposition table); (b) git-secrets 37 hits incl. the three "privateKey" fixture fields at test/fixtures/bridge-attestor-vectors.json:26,32,38 awaiting owner review — no suppressions added; (c) slither triage-capable-upgrade follow-up (root cause of the --fail-none-only severity gate); (d) semgrep `unsafe-external-call` pattern-parse fix + the promotion-to-hard-gate condition (baseline stability across runs).
 4. Test-suite cleanup (not blocking, pre-existing): Hardhat single failure `GNUSControlStorage.test.ts` "should return initial protocol info" (chainID 31337 vs 0, cross-suite pollution — passes in isolation; root fix = idempotent shared provenance initializer, Phase 9-style sweep); Foundry Phase 08.1 Safe setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut); NEW 07-04 record — AccessControlInvariant flaky failure (STATE 07-04 routing event).
+
+| Phase 17 P01 | 5min | 2 tasks | 3 files |
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -217,16 +231,16 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-31T19:57:31.875Z
-Stopped at: Phase 17 discuss-phase complete (17-CONTEXT.md committed, bcae426); next: /gsd-plan-phase 17 --ws gnus-ai (research-first per operator decision)
+Last session: 2026-08-31T20:58:04.795Z
+Stopped at: Completed 17-01-PLAN.md (shared baseline helper + TEST-04 victim fix; suite 666/2/0); next: /gsd:execute-phase 17 for 17-02/17-03 (wave 2)
 Resume file: None
 
 ## Current Position
 
 Phase: 17 (test-suite-determinism) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 17
-Last activity: 2026-08-31 -- Phase 17 execution started
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-08-31
 
 ## Operator Next Steps
 
