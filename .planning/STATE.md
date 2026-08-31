@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
-stopped_at: Completed 17-02-PLAN.md (12 Tier-A unit scaffolds on the shared baseline; Hardhat gate 666/2/0 twice); 17-03 pending, then 17-05 ledger
-last_updated: "2026-08-31T21:15:59.068Z"
+stopped_at: "Completed 17-03-PLAN.md (D-03 sweep: 9 Tier-B folds + 4 non-unit Tier-A scaffolds; gate 666/2/0 twice); 17-04 done earlier; 17-05 ledger remains"
+last_updated: "2026-08-31T21:26:23.231Z"
 last_activity: 2026-08-31
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
 **Current focus:** Phase 17 — test-suite-determinism
-**Progress:** [██████░░░░] 60%
+**Progress:** [████████░░] 80%
 
 ## Phase Status
 
@@ -57,6 +57,12 @@ See: .planning/PROJECT.md
 - 17-02: all 13 test/unit Tier-A scaffold-snapshot suites now declare the shared baseline before `initialSnapshotId` — 12 wired here (2 bridge + 3 probe-fold + 7 plain; GNUSControlStorage was 17-01); zero duplicated probe-guard bodies or local `TREASURY_STORAGE_SLOT` constants remain in test/unit Tier A — `test/utils/diamond-baseline.ts` is the only copy
 - 17-02: bridge 31337 re-alias preserved AFTER the baseline call inside each bridge suite's own snapshot window (T-17-04) — GNUSBridgeIn/GNUSBridgeAttestorIn still call `setChainID(localChainId)` before their snapshot; GNUSBridgeAttestorUpgrade's in-test WR-01 `setChainID` untouched (in-test mutation reverted by afterEach, not scaffold pollution)
 - 17-02: full `yarn test` gate re-observed **666 passing / 2 pending / 0 failing, exit 0, two runs (18s each)** — counts identical to 17-01 (sweep is isolation-hardening, not test-adding); no Pitfall-2 self-alias deviations needed (research A3 moderate risk did not materialize); the 3 multichain-shaped limiter scaffolds pass `deployedDiamondData.DiamondAddress!` (no `diamondAddress` local in that shape)
+
+### Phase 17 Decisions Logged (17-03)
+
+- 17-03: D-03 sweep complete — all 9 remaining duplicated probe-guard suites folded into `test/utils/diamond-baseline.ts`; repo-wide fold gates green (`gnus.ai.treasury.storage` slot string exists ONLY in the helper; `GNUSTreasury_SetSeedSupply(0n)` only in the helper + the GNUSTreasury one-shot test bodies); the 4 non-unit Tier-A scaffolds (gas, 2x integration, deployment via `ownerDiamond`/T-17-08) now declare the baseline before their first `evm_snapshot` — all 17 Tier-A scaffolds repo-wide wired, gas file's probe relocated from AFTER its snapshot to BEFORE it
+- 17-03: GNUSTreasury one-shot test bodies (old :504-:987) byte-untouched — diff hunks confined to old lines 18-425 and the only SetSeedSupply diff line is the deleted local fn's seed; `TREASURY_STORAGE_SLOT` is imported from the helper there because the protected bodies probe the constant directly; withdraw-limiter-integration's probe moved out of `beforeEach` into `before()` per the helper-never-mid-test rule (the helper also resets chainID/fee)
+- 17-03: full `yarn test` gate **666 passing / 2 pending / 0 failing, exit 0, two runs (17s each)** — identical to 17-01/17-02 (dedup/isolation-hardening, not test-adding); no Pitfall-2 self-alias deviations needed; 9-suite one-process intermediate run 138 passing / 0 failing
 
 ### Phase 7 Decisions Logged (07-01)
 
@@ -168,6 +174,7 @@ See: .planning/PROJECT.md
 | Phase 17 P01 | 5min | 2 tasks | 3 files |
 | Phase 17 P04 | 4min | 3 tasks | 3 files |
 | Phase 17 P02 | 4.5min | 3 tasks | 12 files |
+| Phase 17 P03 | 7.5min | 2 tasks | 13 files |
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -246,14 +253,14 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-31T21:15:59.060Z
-Stopped at: Completed 17-02-PLAN.md (12 Tier-A unit scaffolds on the shared baseline; Hardhat gate 666/2/0 twice); 17-03 pending, then 17-05 ledger
+Last session: 2026-08-31T21:26:23.223Z
+Stopped at: Completed 17-03-PLAN.md (D-03 sweep: 9 Tier-B folds + 4 non-unit Tier-A scaffolds; gate 666/2/0 twice); 17-04 done earlier; 17-05 ledger remains
 Resume file: None
 
 ## Current Position
 
 Phase: 17 (test-suite-determinism) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-08-31
 
