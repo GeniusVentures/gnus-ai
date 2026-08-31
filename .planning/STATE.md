@@ -4,8 +4,8 @@ milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
 stopped_at: "Phase 17 discuss-phase complete (17-CONTEXT.md committed, bcae426); next: /gsd-plan-phase 17 --ws gnus-ai (research-first per operator decision)"
-last_updated: "2026-08-31T20:36:50.559Z"
-last_activity: 2026-08-31 -- Phase 17 planning complete
+last_updated: "2026-08-31T20:51:48.043Z"
+last_activity: 2026-08-31 -- Phase 17 execution started
 progress:
   total_phases: 5
   completed_phases: 0
@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** v1.1 (parent-hosted milestone) — gnus-ai slice: test-suite determinism (17), scanner triage (18), dependency/secrets hygiene (19), BridgeIn activation readiness (20), child-NFT economics build (22, gated on parent-routed Phase 21 research). Phase 16 (proxy hardening) shipped in erc20-gnus-proxy 2026-08-30 (PR #12).
+**Current focus:** Phase 17 — test-suite-determinism
 
 ## Phase Status
 
@@ -223,10 +223,10 @@ Resume file: None
 
 ## Current Position
 
-Phase: 17 — Test-Suite Determinism (not yet discussed)
-Plan: —
-Status: Ready to execute
-Last activity: 2026-08-31 -- Phase 17 planning complete
+Phase: 17 (test-suite-determinism) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 17
+Last activity: 2026-08-31 -- Phase 17 execution started
 
 ## Operator Next Steps
 
