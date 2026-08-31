@@ -17,6 +17,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -168,16 +169,8 @@ describe('GNUS Licensing (Phase 14 LIC-01/03/04/05/06)', async function () {
                 outsiderDiamond = geniusDiamond.connect(signers[5]);
                 deviceWalletDiamond = geniusDiamond.connect(signers[4]);
 
-                // Seed the provenance counter (Phase 9 D8) — guarded, shared-fixture pattern
-                // (GNUSLifecycleAICredits.test.ts / GNUSBridgeEnhanced.test.ts).
-                const treasurySlot = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
-                const initialized = await provider.send('eth_getStorageAt', [
-                    diamondAddress,
-                    ethers.toBeHex(BigInt(treasurySlot) + 1n, 32),
-                ]);
-                if (BigInt(initialized) === 0n) {
-                    await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-                }
+                // Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+                await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
             });
 
             beforeEach(async function () {

@@ -16,6 +16,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -56,8 +57,6 @@ describe('GNUS Redeem Adapter Tests', async function () {
 	const GNUS_TOKEN_ID = 0n;
 	// keccak256("gnus.ai.nft.factory.storage") — NFT struct mapping base slot
 	const FACTORY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.nft.factory.storage'));
-	// keccak256("gnus.ai.treasury.storage") — GNUSTreasury Layout base slot
-	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 
 	/**
 	 * Compute the storage slot for NFTs[tokenId].nonConvertible (bool).
@@ -126,6 +125,9 @@ describe('GNUS Redeem Adapter Tests', async function () {
 				}
 				ownerSigner = await ethersMultichain.getSigner(owner);
 				ownerDiamond = geniusDiamond.connect(ownerSigner);
+
+				// Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(ownerDiamond, diamondAddress);
 			});
 
 			beforeEach(async function () {
@@ -139,30 +141,12 @@ describe('GNUS Redeem Adapter Tests', async function () {
 			});
 
 			/**
-			 * Seed the provenance counter with 0 if not already initialized (the
-			 * GeniusDiamond fixture is shared/cached across suites in this process).
-			 */
-			async function seedProvenanceIfNeeded(
-				dContract: GeniusDiamond = ownerDiamond,
-				address: string = diamondAddress,
-			): Promise<void> {
-				const initialized = await provider.send('eth_getStorageAt', [
-					address,
-					ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-				]);
-				if (BigInt(initialized) === 0n) {
-					await dContract.GNUSTreasury_SetSeedSupply(0n);
-				}
-			}
-
-			/**
-			 * Boot a fresh state: seed provenance, mint GNUS, create a direct child at
-			 * rate 2e18, and mint 100 child minions to signer1 (the user). No operator
-			 * approvals are needed — redeem burns the caller's balance directly.
+			 * Boot a fresh state: mint GNUS, create a direct child at rate 2e18, and
+			 * mint 100 child minions to signer1 (the user). No operator approvals are
+			 * needed — redeem burns the caller's balance directly.
 			 * Returns the child token id (= 1).
 			 */
 			async function bootWithChild(): Promise<bigint> {
-				await seedProvenanceIfNeeded();
 				await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 				await ownerDiamond['mint(address,uint256)'](owner, toWei('1000'));
 				const rate = toWei('2'); // 2e18

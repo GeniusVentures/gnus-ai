@@ -16,6 +16,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -55,8 +56,6 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
     const GNUS_TOKEN_ID = 0n;
     // keccak256("gnus.ai.nft.factory.storage") — NFT struct mapping base slot
     const FACTORY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.nft.factory.storage'));
-    // keccak256("gnus.ai.treasury.storage") — GNUSTreasury Layout base slot
-    const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 
     /**
      * Compute the storage slot for NFTs[tokenId] + offset.
@@ -143,6 +142,9 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
                 }
                 ownerSigner = await ethersMultichain.getSigner(owner);
                 ownerDiamond = geniusDiamond.connect(ownerSigner);
+
+                // Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+                await ensureDiamondTestBaseline(ownerDiamond, diamondAddress);
             });
 
             beforeEach(async function () {
@@ -156,23 +158,6 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
             });
 
             /**
-             * Seed the provenance counter with 0 if not already initialized. The
-             * GeniusDiamond fixture is shared (cached) across suites in this process, so
-             * a prior suite may already have seeded; the one-shot SetSeedSupply reverts
-             * in that case. Guards on the provenanceInitialized storage slot (+1) so
-             * individual suites can also be run standalone.
-             */
-            async function seedProvenanceIfNeeded(): Promise<void> {
-                const initialized = await provider.send('eth_getStorageAt', [
-                    diamondAddress,
-                    ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-                ]);
-                if (BigInt(initialized) === 0n) {
-                    await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
-                }
-            }
-
-            /**
              * Owner funds themselves with `amount` of id-0 minions, then factory-mints
              * `amount` minions of `childId` to `recipient`. The burn comes out of the
              * owner's balance (caller = owner); the recipient gets the child.
@@ -184,7 +169,6 @@ describe('GNUS Lifecycle Upgrade Tests (Phase 13 SC1)', async function () {
 
             describe('legacy decode (Phase 13 struct append)', function () {
                 it('pre-Phase-13 NFT records decode with zero defaults for lifecycle fields and unchanged pre-existing fields', async function () {
-                    await seedProvenanceIfNeeded();
                     await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
                     const expectedRate = toWei('3');
@@ -253,8 +237,6 @@ await ownerDiamond.createNFT(
                 });
 
                 it('storage layout: Phase 13 fields pack into slots +8 (with nonConvertible), +9, +10', async function () {
-                    await seedProvenanceIfNeeded();
-
                                         // WR-06 (13 review): childCurIndex-derived id — see legacy test above.
                     const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
                     const probeId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
@@ -348,7 +330,6 @@ await ownerDiamond.createNFT(
                 });
 
                 it('legacy token behaviorally unchanged after zeroing Phase 13 slots (mint + transfer)', async function () {
-                    await seedProvenanceIfNeeded();
                     await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
                                         // WR-06 (13 review): derive the id from childCurIndex BEFORE createNFT —
@@ -405,7 +386,6 @@ await ownerDiamond.createNFT(
 
             describe('Phase 14 append (D-03/D-25)', function () {
                 it('pre-Phase-14 NFT records decode with zero defaults for the D-03/D-25 fields', async function () {
-                    await seedProvenanceIfNeeded();
                     await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
                     // WR-06: childCurIndex-derived id — robust to shared fixture.
@@ -437,8 +417,6 @@ await ownerDiamond.createNFT(
                 });
 
                 it('storage layout: D-03/D-25 fields occupy slots +11 (address), +12 (uint256), +13 (uint8 + bool)', async function () {
-                    await seedProvenanceIfNeeded();
-
                     const preInfo = await geniusDiamond.getNFTInfo(GNUS_TOKEN_ID);
                     const probeId = (GNUS_TOKEN_ID << 128n) | preInfo.childCurIndex;
                     await ownerDiamond.createNFT(

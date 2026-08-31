@@ -16,6 +16,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline, TREASURY_STORAGE_SLOT } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -61,8 +62,8 @@ describe('GNUS Treasury Tests', async function () {
 	const GNUS_MAX_SUPPLY = toWei('50000000');
 	// keccak256("gnus.ai.nft.factory.storage") — NFT struct mapping base slot
 	const FACTORY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.nft.factory.storage'));
-	// keccak256("gnus.ai.treasury.storage") — GNUSTreasury Layout base slot
-	const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
+	// TREASURY_STORAGE_SLOT is imported from the shared baseline helper — the
+	// one-shot test bodies below probe it directly.
 
 	/**
 	 * Compute the storage slot for NFTs[tokenId].parentId (uint256).
@@ -145,6 +146,9 @@ describe('GNUS Treasury Tests', async function () {
 				}
 				ownerSigner = await ethersMultichain.getSigner(owner);
 				ownerDiamond = geniusDiamond.connect(ownerSigner);
+
+				// Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(ownerDiamond, diamondAddress);
 			});
 
 			beforeEach(async function () {
@@ -158,26 +162,6 @@ describe('GNUS Treasury Tests', async function () {
 			});
 
 			/**
-			 * Seed the provenance counter with 0 if not already initialized. The
-			 * GeniusDiamond fixture is shared (cached) across suites in this process, so
-			 * a prior suite may already have seeded; the one-shot SetSeedSupply reverts
-			 * in that case. Guards on the provenanceInitialized storage slot (+1) so
-			 * individual suites can also be run standalone.
-			 */
-			async function seedProvenanceIfNeeded(
-				diamond: GeniusDiamond = ownerDiamond,
-				address: string = diamondAddress,
-			): Promise<void> {
-				const initialized = await provider.send('eth_getStorageAt', [
-					address,
-					ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-				]);
-				if (BigInt(initialized) === 0n) {
-					await diamond.GNUSTreasury_SetSeedSupply(0n);
-				}
-			}
-
-			/**
 			 * Boot a fresh provenance state: initialize with seed 0, grant MINTER_ROLE
 			 * to owner (already granted by fixture — kept for clarity), mint 1000 GNUS
 			 * to signer1, create a direct child at rate 2e18, mint 100 child minions to signer1.
@@ -185,8 +169,6 @@ describe('GNUS Treasury Tests', async function () {
 			 * GNUSNFTFactory_Initialize pre-creates id 0 with childCurIndex = 0).
 			 */
 			async function bootWithChild(): Promise<bigint> {
-				// Seed provenance with 0 — the local fixture has no bridged-in supply yet.
-				await seedProvenanceIfNeeded();
 				// Mint 1000 free GNUS to signer1 (they will pay for converts).
 				await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 				// Also give owner some GNUS so they can fund the factory-mint burn.
@@ -309,8 +291,7 @@ describe('GNUS Treasury Tests', async function () {
 
 			describe('child to child', function () {
 				it('childA->childB convert: zero limiter charge, supply-neutral reallocation', async function () {
-					// Initialize and create TWO direct children
-					await seedProvenanceIfNeeded();
+					// Create TWO direct children
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'A', 'A', toWei('1'), toWei('1000000'), 'ipfs://a');
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'B', 'B', toWei('1'), toWei('1000000'), 'ipfs://b');
@@ -342,8 +323,7 @@ describe('GNUS Treasury Tests', async function () {
 
 			describe('deep', function () {
 				it('grandchild->GNUS single-hop convert; no tree-walking; rate never applied', async function () {
-					// Initialize and build a depth-2 tree: GNUS -> A -> B
-					await seedProvenanceIfNeeded();
+					// Build a depth-2 tree: GNUS -> A -> B
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 
 					// Create depth-1 child A
@@ -422,7 +402,6 @@ describe('GNUS Treasury Tests', async function () {
 
 				it('convert nonConvertible destination reverts', async function () {
 					// Two children; flip destination's nonConvertible; attempt convert src->dst.
-					await seedProvenanceIfNeeded();
 					await ownerDiamond['mint(address,uint256)'](signer1, toWei('1000'));
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'A', 'A', toWei('1'), toWei('1000000'), 'ipfs://a');
 					await ownerDiamond.createNFT(GNUS_TOKEN_ID, 'B', 'B', toWei('1'), toWei('1000000'), 'ipfs://b');

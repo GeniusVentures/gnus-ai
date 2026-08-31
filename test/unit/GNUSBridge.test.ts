@@ -16,6 +16,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -52,8 +53,6 @@ describe('GNUS Bridge Tests', async function () {
 
 			let ethersMultichain: typeof ethers;
 			let snapshotId: string;
-			// keccak256("gnus.ai.treasury.storage") — GNUSTreasuryStorage layout base slot
-			const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 			let deployedDiamondAddress: string;
 
 			let erc1155ProxyOperator: GeniusDiamond;
@@ -108,6 +107,9 @@ describe('GNUS Bridge Tests', async function () {
 					await ethers.getContractFactory('ERC1155ProxyOperator');
 				// erc1155ProxyOperator = ERC1155ProxyOperatorFactory.attach(ownerDiamond.address);
 				erc1155ProxyOperator = ownerDiamond;
+
+				// Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+				await ensureDiamondTestBaseline(ownerDiamond, deployedDiamondAddress);
 			});
 
 			beforeEach(async function () {
@@ -224,19 +226,6 @@ describe('GNUS Bridge Tests', async function () {
 				let nftID: bigint;
 
 				beforeEach(async function () {
-					// Seed the provenance counter so the global-cap check in
-					// _mintWithBridgeFee can run (reverts when uninitialized, D8/Pitfall 4).
-					// The GeniusDiamond fixture is shared (cached) across suites, so a prior
-					// suite may already have seeded the one-shot SetSeedSupply — guard on
-					// provenanceInitialized (slot +1).
-					const initialized = await provider.send('eth_getStorageAt', [
-						deployedDiamondAddress,
-						ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-					]);
-					if (BigInt(initialized) === 0n) {
-						await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
-					}
-
 					// Create NFT for testing
 					nftID = 1n;
 					// exchangeRate is display-only under the conversion-native model (D2);

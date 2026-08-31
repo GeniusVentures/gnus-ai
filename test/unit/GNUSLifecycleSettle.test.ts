@@ -17,6 +17,7 @@ import { multichain } from '@geniusventures/hardhat-multichain';
 import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -75,9 +76,6 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
 
     // GNUS_TOKEN_ID is 0 (GNUSConstants.sol)
     const GNUS_TOKEN_ID = 0n;
-    // keccak256("gnus.ai.treasury.storage") — GNUSTreasury Layout base slot.
-    // provenanceInitialized is the SECOND field (offset +1) — see GNUSTreasury.test.ts.
-    const TREASURY_STORAGE_SLOT = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
 
     // ExpirationMode ordinals (GNUSLifecycleTypes.sol — on-chain, append-only).
     const MODE_NONE = 0;
@@ -155,6 +153,9 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                 ownerDiamond = geniusDiamond.connect(ownerSigner);
                 signer1Diamond = geniusDiamond.connect(signers[1]);
                 signer3Diamond = geniusDiamond.connect(signers[3]);
+
+                // Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+                await ensureDiamondTestBaseline(ownerDiamond, diamondAddress);
             });
 
             beforeEach(async function () {
@@ -232,22 +233,6 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                     cfg,
                 );
                 return (GNUS_TOKEN_ID << 128n) | childIndex;
-            }
-
-            /**
-             * Seed the provenance counter with 0 if not already initialized (idempotent).
-             * The GeniusDiamond fixture may be shared (cached) across suites in this process,
-             * so a prior suite may already have seeded; the one-shot SetSeedSupply reverts in
-             * that case. Pattern from GNUSTreasury.test.ts.
-             */
-            async function seedProvenanceIfNeeded(): Promise<void> {
-                const initialized = await provider.send('eth_getStorageAt', [
-                    diamondAddress,
-                    ethers.toBeHex(BigInt(TREASURY_STORAGE_SLOT) + 1n, 32),
-                ]);
-                if (BigInt(initialized) === 0n) {
-                    await ownerDiamond.GNUSTreasury_SetSeedSupply(0n);
-                }
             }
 
             /** Mint `amount` of `id` to signer1 via the credential-gated path (open mint: no verifier). */
@@ -540,7 +525,6 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                 });
 
                 it('REDEEM_TO_PARENT: child supply down by amount, parent (GNUS) balance up by amount, totalSupplyOfAll unchanged', async function () {
-                    await seedProvenanceIfNeeded();
                     const validUntil = BigInt((await time.latest()) + 1000);
                     // createNFTWithLifecycle keeps nonConvertible=false for non-BURN
                     // dispositions, so REDEEM_TO_PARENT passes the Q1 gate.
@@ -577,7 +561,6 @@ describe('GNUS Lifecycle Settlement Tests (13-05)', async function () {
                 });
 
                 it('WR-04: REDEEM_TO_PARENT settlement is not blocked by the parent sale window / per-wallet cap (settlement mint carve-out)', async function () {
-                    await seedProvenanceIfNeeded();
                     const validUntil = BigInt((await time.latest()) + 1000);
                     const id = await createNFTWithLifecycle(
                         'RedeemGated',

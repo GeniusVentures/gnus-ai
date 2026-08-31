@@ -18,6 +18,7 @@ import { GeniusDiamond } from '../../diamond-typechain-types';
 import { toWei } from '../../scripts/utils/helpers';
 import { setupLifecyclePolicyLinking } from '../../scripts/utils/GNUSLifecyclePolicyLinking';
 import { SGNS_DESTINATION, SGNS_DESTINATION_Y_ODD, DEST_CHAIN_ID } from '../utils/bridge-fixtures';
+import { ensureDiamondTestBaseline } from '../utils/diamond-baseline';
 
 chai.use(chaiAsPromised);
 
@@ -148,19 +149,8 @@ describe('GNUS AI Credits End-to-End Tests (Phase 13 SC7/D11)', async function (
                 signer1Diamond = geniusDiamond.connect(signers[1]);
                 signer2Diamond = geniusDiamond.connect(signers[2]);
 
-                // Seed the provenance counter so totalSupplyOfAll's global-cap read works
-                // (reverts "Global supply not initialized" otherwise — Phase 9 D8/Pitfall 4).
-                // The fixture is shared (cached) across suites, so a prior suite may already
-                // have seeded the one-shot SetSeedSupply — guard on provenanceInitialized
-                // (slot +1 of gnus.ai.treasury.storage). Pattern: GNUSBridgeEnhanced.test.ts.
-                const treasurySlot = ethers.keccak256(ethers.toUtf8Bytes('gnus.ai.treasury.storage'));
-                const initialized = await provider.send('eth_getStorageAt', [
-                    diamondAddress,
-                    ethers.toBeHex(BigInt(treasurySlot) + 1n, 32),
-                ]);
-                if (BigInt(initialized) === 0n) {
-                    await geniusDiamond.GNUSTreasury_SetSeedSupply(0n);
-                }
+                // Declare the protocol baseline BEFORE any snapshot so reverts restore it (TEST-04)
+                await ensureDiamondTestBaseline(geniusDiamond, diamondAddress);
             });
 
             beforeEach(async function () {
