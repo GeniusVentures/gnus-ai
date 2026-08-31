@@ -10,7 +10,7 @@ The GeniusAI escrow system was removed in Phase 2 — escrow moved to the SuperG
 
 **v1.0 shipped 2026-08-28** — 16 phases, 45 plans; 53-requirement audit traceability: 50 satisfied, 2 deferred to the sibling `erc20-gnus-proxy` repo (PROXY-01/02), 1 external gate open (BRIDGE-17). Full record: `.planning/MILESTONES.md`, `.planning/milestones/v1.0-*`. Test gate: 666 passing / 2 pending / 0 failing (Hardhat) and 215 passed / 0 failed / 5 skipped (Foundry via local bridge node); canonical baselines live in .planning/STATE.md § Test Baseline Ledger; green in CI (tests + tokenless security-audit).
 
-**Next milestone goals:** to be defined via `/gsd-new-milestone` — known inputs: BRIDGE-17 external gate (SuperGenius #363), erc20-gnus-proxy Phase 1 (PROXY-01/02 + nested gnus-ai-contracts pin bump), v1.0 audit tech-debt register (`.planning/milestones/v1.0-MILESTONE-AUDIT.md`).
+**v1.1 (Proxy Completion & Production Readiness, parent-planned) — gnus-ai slice underway:** Phase 17 (Test-Suite Determinism) complete 2026-08-31, 5/5 plans — all three known failure classes fixed at the root (cross-suite state pollution via shared `ensureDiamondTestBaseline()`; flaky AccessControlInvariant via the D-01 attacker re-target; Safe setUp fork-dependency declared via `vm.skip`), proven deterministic over N=5 full-suite + N=10 invariant-only runs. Next: Phase 18 (Scanner Triage Upgrades). Sibling-repo slice: erc20-gnus-proxy Phase 1 shipped 2026-08-30 (PROXY-01/02/04, PR #12).
 
 ## Core Value
 
@@ -42,6 +42,7 @@ The GeniusAI escrow system was removed in Phase 2 — escrow moved to the SuperG
 - ✓ ERC-20 proxy hardening (Phase 11) — generic redeem adapter: single-transaction proxied-child → GNUS via `GNUSTreasury.convert()`, caller-bound direct-burn redeem (ff28e18, PR #75); PROXY-01/02 (allowances, immutable init) deferred to the sibling `erc20-gnus-proxy` repo (PROXY-03) — `contracts/gnus-ai/GNUSRedeemAdapter.sol`
 - ✓ Time-bound AI entitlements (Phase 13) — lifecycle/expiry modes, six transfer policies, five expiration dispositions, anti-scaling controls; soulbound AI Credits with burn-on-spend/expiry — `contracts/gnus-ai/GNUSLifecycle.sol`, `GNUSLifecycleMint.sol`, `GNUSLifecyclePolicy.sol` (+Storage/Types), `ERC1155ProxyOperator.sol`
 - ✓ Private-network AI licensing (Phase 14) — License NFTs as tenant/network identity, on-chain SKU registry (`priceInMinions`), GNUS-burn payment router, `LicenseActivated` event contract for SuperGenius consumers (LIC-01..07) — `contracts/gnus-ai/GNUSLicensing.sol`
+- ✓ Test-suite determinism (Phase 17) — every snapshot-carrying scaffold declares the shared protocol baseline before its snapshot (17 Tier-A wirings, 9 Tier-B probe-guard dedups), the unowned-role invariant asserts an address outside the handler's fuzz grant surface, and both Safe setUps declare their fork dependency via `vm.skip`; baselines 666/2/0 + 215/0/5 proven identical across N=5+N=10 runs (TEST-04/05/06) — Validated in Phase 17: Test-Suite Determinism — `test/utils/diamond-baseline.ts`, `.planning/STATE.md` § Test Baseline Ledger
 
 ### Active
 
@@ -121,4 +122,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-08-28 after v1.0 milestone (remediation arc + Phases 08.1–15 shipped; BRIDGE-17 and erc20-gnus-proxy Phase 1 the deliberate remainders)_
+_Last updated: 2026-08-31 after Phase 17 (v1.1 gnus-ai slice: test-suite determinism; test baselines now canonical in STATE.md § Test Baseline Ledger)_
