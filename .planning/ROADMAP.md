@@ -61,6 +61,7 @@ Plans:
 
 **Priority:** P1 (CI reliability)
 **Source:** mirrored from `TokenContracts/.planning/ROADMAP.md` Phase 17 (2026-08-31)
+**Post-phase canonical baselines:** .planning/STATE.md § Test Baseline Ledger — all figures in this entry remain the historical phase-start record.
 
 ### Phase 18: Scanner Triage Upgrades
 

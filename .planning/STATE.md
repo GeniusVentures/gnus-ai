@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
-stopped_at: "Completed 17-03-PLAN.md (D-03 sweep: 9 Tier-B folds + 4 non-unit Tier-A scaffolds; gate 666/2/0 twice); 17-04 done earlier; 17-05 ledger remains"
-last_updated: "2026-08-31T21:26:23.231Z"
+stopped_at: "Completed 17-05-PLAN.md (D-06: 5x test:all + 10x invariant proof green; canonical Test Baseline Ledger in STATE.md; PROJECT re-pointed)"
+last_updated: "2026-08-31T21:36:00.000Z"
 last_activity: 2026-08-31
 progress:
   total_phases: 5
@@ -38,6 +38,34 @@ See: .planning/PROJECT.md
 | 22    | Child-NFT Economics Build       | Pending | —     | 0%       |
 
 *(v1.0 phase table: 16/17 phases complete — archived in milestones/v1.0-ROADMAP.md.)*
+
+## Test Baseline Ledger (canonical)
+
+*This section is the canonical test-gate baseline for gnus-ai — PROJECT.md and the CI workflows point here (precedent: .github/workflows/security-audit.yml:8 points at .planning/STATE.md). Historical fragmented figures — STATE 07-01/07-04 "665/2/1", PROJECT "666/2/0", ROADMAP "666/2/0 with 1 known-stale failure" — are superseded by this ledger. Zero known-stale or known-failing entries remain (Phase 17 closed TEST-04/05/06, 2026-08-31).*
+
+- **Hardhat gate** (`yarn test`): **666 passing / 2 pending / 0 failing** — recorded 2026-08-31, derived from N=5 consecutive `yarn test:all` runs (counts identical across all 5; run-1 wall 56s, range 48-56s); failure set: empty
+- **Foundry gate** (`yarn forge:test` via the local bridge node — `npx hardhat node` on 127.0.0.1:8545 first; bare `forge test` without the wrapper node is NOT a valid gate): **215 passed / 0 failed / 5 skipped** (220 total tests, 37 suites) — recorded 2026-08-31 from the same N=5 runs; failure set: empty; skip count 3→5 vs the pre-Phase-17 215/2/3 baseline is the DECLARED fork-skip for SafeSingleShotUpgradeTest + SafeDiamondCutTest setUp (17-04 / D-04: `vm.skip(SAFE_PROXY_FACTORY.code.length == 0, "requires sepolia/anvil fork with canonical Safe deployments")` — forge 1.7.1 renders it `[SKIP: skipped: requires sepolia/anvil fork with canonical Safe deployments] setUp()`), NOT drift; the other 3 skips are the pre-existing runtime-conditional `deployment.t.sol` entries
+- **Invariant determinism** (`npx hardhat diamonds-forge:test --diamond-name GeniusDiamond --network localhost --force --match-contract AccessControlInvariant`): **8 passed / 0 failed / 0 skipped** across N=10 consecutive wrapper runs (run-1 wall 22s, range 20-22s) — the 07-04-recorded flake (`invariant_revokingUnownedRoleIsSafe`, "User3 should not have UPGRADER_ROLE") is root-fixed by the 17-04 re-target to the never-granted `attacker` (TEST-05 / D-01), no seed reliance (D-02)
+
+Per-run proof (all runs exit 0; logs /tmp/17-05-testall-{1..5}.log + /tmp/17-05-invariant-{1..10}.log, captured 2026-08-31):
+
+| # | Gate | Date | Result | Wall |
+|---|------|------|--------|------|
+| 1 | `yarn test:all` (Hardhat + Foundry) | 2026-08-31 | 666/2/0 + 215/0/5 — ok | 56s |
+| 2 | `yarn test:all` | 2026-08-31 | 666/2/0 + 215/0/5 — ok | 50s |
+| 3 | `yarn test:all` | 2026-08-31 | 666/2/0 + 215/0/5 — ok | 48s |
+| 4 | `yarn test:all` | 2026-08-31 | 666/2/0 + 215/0/5 — ok | 54s |
+| 5 | `yarn test:all` | 2026-08-31 | 666/2/0 + 215/0/5 — ok | 51s |
+| 1 | AccessControlInvariant only (wrapper) | 2026-08-31 | 8/0/0 — ok | 22s |
+| 2 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 21s |
+| 3 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 22s |
+| 4 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 22s |
+| 5 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 21s |
+| 6 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 21s |
+| 7 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 21s |
+| 8 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 20s |
+| 9 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 21s |
+| 10 | AccessControlInvariant only | 2026-08-31 | 8/0/0 — ok | 22s |
 
 ### Phase 17 Decisions Logged (17-01)
 
@@ -169,7 +197,7 @@ See: .planning/PROJECT.md
 1. BRIDGE-17 tracking (sole deliberate remainder): production bridgeIn activation gated on SuperGenius#363 closing (#364 already closed) — gate record at docs/Secure-BridgeIn-Exporter-ABI.md §5 + 15-04-SUMMARY.md; track in .planning/SUBREPOS.md when scheduled.
 2. Milestone v1.0 CLOSED 2026-08-28 (audit → CI gate green → archives + MILESTONES.md + RETROSPECTIVE.md + tag v1.0). Next GSD step: `/gsd-new-milestone`.
 3. Recorded follow-ups — on-record 07-03 D-09 audit output awaiting owner routing (no work started): (a) snyk 23 medium+ transitive finding-set + OSV 115-advisory set need an owner dependency-refresh decision in an owning phase (STATE 07-03 disposition table); (b) git-secrets 37 hits incl. the three "privateKey" fixture fields at test/fixtures/bridge-attestor-vectors.json:26,32,38 awaiting owner review — no suppressions added; (c) slither triage-capable-upgrade follow-up (root cause of the --fail-none-only severity gate); (d) semgrep `unsafe-external-call` pattern-parse fix + the promotion-to-hard-gate condition (baseline stability across runs).
-4. Test-suite cleanup (not blocking, pre-existing): Hardhat single failure `GNUSControlStorage.test.ts` "should return initial protocol info" (chainID 31337 vs 0, cross-suite pollution — passes in isolation; root fix = idempotent shared provenance initializer, Phase 9-style sweep); Foundry Phase 08.1 Safe setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut); NEW 07-04 record — AccessControlInvariant flaky failure (STATE 07-04 routing event).
+4. Test-suite cleanup — RESOLVED by Phase 17 (2026-08-31; TEST-04/05/06): (a) Hardhat `GNUSControlStorage.test.ts` "should return initial protocol info" chainID pollution — root-fixed by the shared `ensureDiamondTestBaseline()` helper wired into all 17 Tier-A scaffolds (17-01..17-03, gate 665/2/1 → 666/2/0); (b) Foundry Phase 08.1 Safe setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut) — declared fork dependencies via setUp `vm.skip` (17-04 D-04, skips 3→5 by declaration, 0 failed); (c) AccessControlInvariant flaky failure (07-04 routing event) — root-fixed by the attacker re-target (17-04 D-01, 10 consecutive green runs). Zero known-stale/failing entries remain — canonical counts live in this file's "Test Baseline Ledger (canonical)" section.
 
 | Phase 17 P01 | 5min | 2 tasks | 3 files |
 | Phase 17 P04 | 4min | 3 tasks | 3 files |

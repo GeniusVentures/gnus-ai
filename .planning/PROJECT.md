@@ -8,7 +8,7 @@ The GeniusAI escrow system was removed in Phase 2 — escrow moved to the SuperG
 
 ## Current State
 
-**v1.0 shipped 2026-08-28** — 16 phases, 45 plans; 53-requirement audit traceability: 50 satisfied, 2 deferred to the sibling `erc20-gnus-proxy` repo (PROXY-01/02), 1 external gate open (BRIDGE-17). Full record: `.planning/MILESTONES.md`, `.planning/milestones/v1.0-*`. Test gate: 666 passing / 2 pending / 0 failing, green in CI (tests + tokenless security-audit).
+**v1.0 shipped 2026-08-28** — 16 phases, 45 plans; 53-requirement audit traceability: 50 satisfied, 2 deferred to the sibling `erc20-gnus-proxy` repo (PROXY-01/02), 1 external gate open (BRIDGE-17). Full record: `.planning/MILESTONES.md`, `.planning/milestones/v1.0-*`. Test gate: 666 passing / 2 pending / 0 failing (Hardhat) and 215 passed / 0 failed / 5 skipped (Foundry via local bridge node); canonical baselines live in .planning/STATE.md § Test Baseline Ledger; green in CI (tests + tokenless security-audit).
 
 **Next milestone goals:** to be defined via `/gsd-new-milestone` — known inputs: BRIDGE-17 external gate (SuperGenius #363), erc20-gnus-proxy Phase 1 (PROXY-01/02 + nested gnus-ai-contracts pin bump), v1.0 audit tech-debt register (`.planning/milestones/v1.0-MILESTONE-AUDIT.md`).
 
