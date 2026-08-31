@@ -22,7 +22,7 @@
 
 | #   | Phase                         | Goal                                                              | Requirements    | Success Criteria |
 | --- | ----------------------------- | ----------------------------------------------------------------- | --------------- | ---------------- |
-| 17  | Test-Suite Determinism        | 5/5 | Complete   | 2026-08-31 |
+| 17  | Test-Suite Determinism        | 5/5 | Complete    | 2026-08-31 |
 | 18  | Scanner Triage Upgrades       | slither + semgrep gates expressed as real severity triage         | SEC-09, 10      | 3                |
 | 19  | Dependency & Secrets Hygiene  | OSV remainder refreshed; every git-secrets hit dispositioned      | DEP-02, SEC-11  | 3                |
 | 20  | BridgeIn Activation Readiness | #363 gate checked; bridgeIn activated or readiness-shipped        | BRIDGE-17       | 4                |

@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
-status: verifying
-stopped_at: "Completed 17-05-PLAN.md (D-06: 5x test:all + 10x invariant proof all green; canonical Test Baseline Ledger written; PROJECT/ROADMAP re-pointed — Phase 17 complete, ready for verification)"
-last_updated: "2026-08-31T21:42:41.865Z"
+status: ready_to_plan
+stopped_at: Phase 17 complete (5/5) — ready to discuss Phase 18
+last_updated: 2026-08-31T22:11:06.601Z
 last_activity: 2026-08-31
 progress:
   total_phases: 5
@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
-**Current focus:** Phase 17 — test-suite-determinism
+**Current focus:** Phase 18 — scanner triage upgrades
 **Progress:** [██████████] 100%
 
 ## Phase Status
@@ -294,9 +294,9 @@ Resume file: None
 
 ## Current Position
 
-Phase: 17 (test-suite-determinism) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
+Phase: 18
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-08-31
 
 ## Operator Next Steps
