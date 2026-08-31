@@ -22,7 +22,7 @@
 
 | #   | Phase                         | Goal                                                              | Requirements    | Success Criteria |
 | --- | ----------------------------- | ----------------------------------------------------------------- | --------------- | ---------------- |
-| 17  | Test-Suite Determinism        | Full-suite green, no flakes, no known-stale failures (1/5 plans, In Progress) | TEST-04, 05, 06 | 4                |
+| 17  | Test-Suite Determinism        | 2/5 | In Progress|  |
 | 18  | Scanner Triage Upgrades       | slither + semgrep gates expressed as real severity triage         | SEC-09, 10      | 3                |
 | 19  | Dependency & Secrets Hygiene  | OSV remainder refreshed; every git-secrets hit dispositioned      | DEP-02, SEC-11  | 3                |
 | 20  | BridgeIn Activation Readiness | #363 gate checked; bridgeIn activated or readiness-shipped        | BRIDGE-17       | 4                |
@@ -42,13 +42,13 @@
 4. New baselines recorded with zero known-stale/failing entries
 
 **Requirements:** TEST-04, TEST-05, TEST-06
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 
 Plans:
 **Wave 1**
 
 - [x] 17-01-PLAN.md — Shared baseline helper (ensureDiamondTestBaseline) + TEST-04 victim wiring + guard deletion
-- [ ] 17-04-PLAN.md — Foundry: invariant attacker re-target (D-01) + Safe setUp vm.skip fork gate (D-04)
+- [x] 17-04-PLAN.md — Foundry: invariant attacker re-target (D-01) + Safe setUp vm.skip fork gate (D-04)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Proxy Completion & Production Readiness
 status: executing
-stopped_at: "Completed 17-01-PLAN.md (shared baseline helper + TEST-04 victim fix; suite 666/2/0); next: /gsd:execute-phase 17 for 17-02/17-03 (wave 2)"
-last_updated: "2026-08-31T20:58:04.802Z"
+stopped_at: "Completed 17-04-PLAN.md (TEST-05/06 root fixes; Foundry gate 215/0/5 via bridge node); 17-02/17-03 pending, then 17-05 ledger"
+last_updated: "2026-08-31T21:07:09.061Z"
 last_activity: 2026-08-31
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md
 
 **Core value:** Production-ready smart contracts that have passed comprehensive security review and are safe for mainnet deployment.
 **Current focus:** Phase 17 — test-suite-determinism
-**Progress:** [██░░░░░░░░] 20%
+**Progress:** [████░░░░░░] 40%
 
 ## Phase Status
 
@@ -44,6 +44,13 @@ See: .planning/PROJECT.md
 - 17-01: `ensureDiamondTestBaseline()` lands in `test/utils/diamond-baseline.ts` (D-03) with the `(geniusDiamond, diamondAddress)` signature per the GNUSTreasury.test.ts `seedProvenanceIfNeeded` precedent; module conventions from network-utils.ts (JSDoc, bottom export block, no default export); body order probe → conditional seed → setChainID(0) → updateBridgeFee(0)
 - 17-01: TEST-04 root-fix evidence — full `yarn test` suite **666 passing / 2 pending / 0 failing, exit 0** (two consecutive runs: 17s / 16s); the victim ("should return initial protocol info") passes in the FULL alphabetical-order suite with the test-side `setChainID(0)` guard deleted; the +1 vs the stale 07-04 665/2/1 baseline is exactly the victim flipping green — observed figure recorded for the 17-05 ledger
 - 17-01: no dedicated test file for the helper — every wired suite exercises it, the full-suite mocha gate is its correctness signal (17-RESEARCH Wave 0); test-template.ts inherits the baseline via `ownerDiamond` before the first `evm_snapshot`, so new suites declare it by default
+
+### Phase 17 Decisions Logged (17-04)
+
+- 17-04: TEST-05 root fix (D-01) — `invariant_revokingUnownedRoleIsSafe` re-targeted from `user3` to the never-granted `attacker`: user3 = `GeniusDiamondHandler.actors[3]` sits inside the fuzz grant surface (`roles[3]` = UPGRADER_ROLE via handler_grantRole :540-547), while attacker (GeniusDiamondTestBase :97) is never pushed into actors — deterministic by construction; zero `user3` references remain (case-insensitive); no `invariant.seed`/`fuzz.seed` reliance (D-02 honored)
+- 17-04: TEST-06 root fix (D-04) — both Safe setUps open with `vm.skip(SAFE_PROXY_FACTORY.code.length == 0, "requires sepolia/anvil fork with canonical Safe deployments")` as the first statement; canonical Sepolia factory 0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC has no code on the bridge-node fork, so the dependency is declared, not reverted on; existing in-test skips (:153/:182-class) untouched
+- 17-04: gate arithmetic proven via the wrapper bridge node (D-05 record for 17-05) — full `yarn forge:test`: **215 passed / 0 failed / 5 skipped** (220 total, 37 suites, exit 0; was 215/2/3 — 2 failed → 0, skips 3 → 5, passed unchanged); invariant-only `--match-contract AccessControlInvariant --force`: **8/0/0**, `invariant_revokingUnownedRoleIsSafe() (runs: 5, calls: 50, reverts: 1)` PASS; logs /tmp/17-04-forge-full.log + /tmp/17-04-invariant.log
+- 17-04: forge 1.7.1 renders custom setUp skip reasons with a `skipped: ` infix — observed `[SKIP: skipped: requires sepolia/anvil fork with canonical Safe deployments] setUp()`; 17-05 ledger greps must use the actual rendering, and exactly 2 reason-bearing skips is the expected count (one per Safe contract)
 
 ### Phase 7 Decisions Logged (07-01)
 
@@ -153,6 +160,7 @@ See: .planning/PROJECT.md
 4. Test-suite cleanup (not blocking, pre-existing): Hardhat single failure `GNUSControlStorage.test.ts` "should return initial protocol info" (chainID 31337 vs 0, cross-suite pollution — passes in isolation; root fix = idempotent shared provenance initializer, Phase 9-style sweep); Foundry Phase 08.1 Safe setUp reverts (SafeSingleShotUpgrade + SafeDiamondCut); NEW 07-04 record — AccessControlInvariant flaky failure (STATE 07-04 routing event).
 
 | Phase 17 P01 | 5min | 2 tasks | 3 files |
+| Phase 17 P04 | 4min | 3 tasks | 3 files |
 
 ### Phase 13 Decisions Logged (13-06)
 
@@ -231,14 +239,14 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-08-31T20:58:04.795Z
-Stopped at: Completed 17-01-PLAN.md (shared baseline helper + TEST-04 victim fix; suite 666/2/0); next: /gsd:execute-phase 17 for 17-02/17-03 (wave 2)
+Last session: 2026-08-31T21:04:20.227Z
+Stopped at: Completed 17-04-PLAN.md (TEST-05/06 root fixes; Foundry gate 215/0/5 via bridge node); 17-02/17-03 pending, then 17-05 ledger
 Resume file: None
 
 ## Current Position
 
 Phase: 17 (test-suite-determinism) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-08-31
 
