@@ -74,6 +74,18 @@ Plans:
 3. CI semgrep step promoted to hard gate (continue-on-error dropped) on a stable recorded baseline
 
 **Requirements:** SEC-09, SEC-10
+**Plans:** 3 plans (2 waves)
+
+Plans:
+**Wave 1**
+
+- [ ] 18-01-PLAN.md — Slither 0.11.6 upgrade + exit-code probes (D-02), committed .slither.db.json triage + config wiring (D-01), bare CI gate flip, STATE Scanner Baseline Ledger
+- [ ] 18-02-PLAN.md — Fixed unsafe-external-call rule root + .devcontainer mirror (D-08), --no-git-ignore surface + 15 excludes + D-11/D-12 exclusions (D-10), D-09 executes-proof, 13 any-typings (D-06)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 18-03-PLAN.md — D-13 blocking owner checkpoint (4 unsafe-math sites), 3-run zero-findings stability, CI semgrep promotion (pin 1.174.0 D-07, drop continue-on-error), STATE 37-item disposition ledger + phase-exit gates
+
 **Source:** mirrored from `TokenContracts/.planning/ROADMAP.md` Phase 18 (2026-08-31)
 
 ### Phase 19: Dependency & Secrets Hygiene
