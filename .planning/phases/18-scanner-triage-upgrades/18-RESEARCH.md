@@ -359,14 +359,14 @@ if (!success) {
 
 ## Open Questions
 
-1. **Disposition of the 37-item set (owner ruling required before the semgrep gate can go green)**
+1. **Disposition of the 37-item set (owner ruling required before the semgrep gate can go green)** — **(RESOLVED at planning, 2026-08-31: D-11 permanent exclusion for diamond-selector-clash; D-12 temporary exclusion + upstream routing for hard-coded-secret; D-13 defers unsafe-math-operation to the blocking execution checkpoint in plan 18-03 Task 1 — owner rules before the semgrep gate goes green)**
    - What we know: exact findings, paths, and lines (Pitfall 2 + `/tmp/18-research/probeE-final-sim.json`); the D-04/D-10 menu is owner-ruled rule exclusion vs routing event per finding class.
    - What's unclear: which classes the owner rules out vs routes — `diamond-selector-clash` (structural FP generator as-written) and `unsafe-math-operation` (checked-arithmetic 0.8 idiom) look like exclusion candidates; `hard-coded-secret` in commented devcontainer code is trivially FP but lives in a nested submodule.
    - Recommendation: put the disposition table in front of the owner as an early phase checkpoint (it gates the promotion step), with the per-class recommendation pre-drafted.
 
-2. **Does the owner want `test/` in the semgrep surface?** (A3) — today it is excluded by semgrep's bundled default ignore (not by repo choice); 43 tracked `.sol` files there. Default plan: leave as-is (surface change is D-10's submodule goal only).
+2. **Does the owner want `test/` in the semgrep surface?** (A3) — today it is excluded by semgrep's bundled default ignore (not by repo choice); 43 tracked `.sol` files there. Default plan: leave as-is (surface change is D-10's submodule goal only). — **(RESOLVED: D-14 — `test/` stays OUT of the semgrep surface, unchanged by this phase)**
 
-3. **Optional CI hardening: pin `crytic-compile` alongside slither** (Pitfall 4) — accepted float vs tightened pin is an owner call; not required by any locked decision.
+3. **Optional CI hardening: pin `crytic-compile` alongside slither** (Pitfall 4) — accepted float vs tightened pin is an owner call; not required by any locked decision. — **(RESOLVED: accepted float per Pitfall 4 — the crytic-compile range (>=0.4.2,<0.5.0) is recorded as known-accepted in STATE unless the probes show instability; no additional pin)**
 
 ## Environment Availability
 
