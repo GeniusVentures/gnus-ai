@@ -7,6 +7,11 @@ on:
     paths:
       - package.json
       - .github/workflows/security-lock-refresh.yml
+  pull_request:
+    branches: [develop]
+    paths:
+      - package.json
+      - .github/workflows/security-lock-refresh.yml
   workflow_dispatch:
 
 permissions:
@@ -14,7 +19,7 @@ permissions:
 
 jobs:
   refresh-lock:
-    if: github.repository == 'GeniusVentures/gnus-ai' && github.ref == 'refs/heads/security/refresh-dependencies-develop-20261009'
+    if: github.repository == 'GeniusVentures/gnus-ai' && (github.ref == 'refs/heads/security/refresh-dependencies-develop-20261009' || github.head_ref == 'security/refresh-dependencies-develop-20261009')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
