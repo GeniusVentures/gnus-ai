@@ -1,10 +1,10 @@
 name: OSS Scanner Docker build
 
+# Build inputs include Solidity/TypeScript source, submodule gitlinks, and Yarn
+# dependencies. Do not path-filter this check: unrelated-looking changes can
+# still invalidate the anonymous build or offline test.
 on:
   pull_request:
-    paths:
-      - '.oss-scanner/**'
-      - '.github/workflows/oss-scanner-build.yml'
   workflow_dispatch:
 
 permissions:
