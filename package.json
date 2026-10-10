@@ -94,7 +94,9 @@
   "license": "MIT",
   "resolutions": {
     "diff@^4.0.1": "4.0.4",
-    "ip-address@^10.0.1": "10.3.1",
+    "ip-address@^10.0.1": "10.7.1",
+    "brace-expansion@^5.0.0": "5.0.12",
+    "node-gyp@^12.1.0": "12.3.0",
     "@isaacs/brace-expansion@^5.0.0": "5.0.1",
     "minimatch@^10.1.1": "10.2.6",
     "picomatch@^4.0.2": "4.0.4",
