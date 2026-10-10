@@ -13,11 +13,12 @@ ENV CI=1 \
 RUN dnf install -y python39 python39-pip && dnf clean all
 
 # The diamonds-hardhat-foundry plugin calls forge at Hardhat config load.
-# Install a pinned, SHA-256-checked Foundry release before compiling contracts.
+# The standard Linux Foundry binary needs glibc >=2.34; AlmaLinux 8 is 2.28.
+# Use Foundry's Alpine/musl build with a pinned SHA-256 instead.
 RUN curl -fL --retry 3 --retry-delay 3 \
-      "https://github.com/foundry-rs/foundry/releases/download/v1.8.5/foundry_v1.8.5_linux_amd64.tar.gz" \
+      "https://github.com/foundry-rs/foundry/releases/download/v1.8.5/foundry_v1.8.5_alpine_amd64.tar.gz" \
       -o /tmp/foundry.tar.gz \
- && echo "6c66ffcc55fa4249197721baa3098bc208014ea1d8aa04b2ed50ac6bccffb226  /tmp/foundry.tar.gz" | sha256sum -c - \
+ && echo "edc0c55cfb1d38411721bda7bd9f3c8b53eed7be98272be8b823359170286167  /tmp/foundry.tar.gz" | sha256sum -c - \
  && tar -xzf /tmp/foundry.tar.gz -C /usr/local/bin forge cast anvil chisel \
  && chmod 0755 /usr/local/bin/forge /usr/local/bin/cast /usr/local/bin/anvil /usr/local/bin/chisel \
  && rm -f /tmp/foundry.tar.gz \
