@@ -1,0 +1,46 @@
+name: OSS Scanner Docker build
+
+# Build inputs include Solidity/TypeScript source, submodule gitlinks, and Yarn
+# dependencies. Do not path-filter this check: unrelated-looking changes can
+# still invalidate the anonymous build or offline test.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scanner-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout public source
+        uses: actions/checkout@v5
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Check scanner settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fx 'repo: https://github.com/GeniusVentures/gnus-ai#develop' .oss-scanner/project.yaml
+          grep -Fx 'primary_contact: admin@gnus.ai' .oss-scanner/project.yaml
+          grep -Fx 'FROM ghcr.io/geniusventures/almalinux-8:latest' .oss-scanner/Dockerfile
+          test -s .oss-scanner/threat_model.md
+          ! grep -nE 'GNUS_TOKEN_1|GH_TOKEN|secrets\\.|--mount=type=secret' .oss-scanner/Dockerfile
+
+      - name: Build anonymously from public AlmaLinux 8 image
+        run: docker build --pull --progress=plain -f .oss-scanner/Dockerfile -t gnus-ai-oss-scanner:check .
+
+      - name: Test offline without external RPC credentials
+        shell: bash
+        run: |
+          docker run --rm --network none --entrypoint /bin/bash gnus-ai-oss-scanner:check -euo pipefail -c '
+            cd /src
+            test -d artifacts
+            test -d diamond-typechain-types
+            test -d contracts/gnus-ai
+            node .yarn/releases/yarn-4.10.3.cjs hardhat test --no-compile test/unit/GNUSControlStorage.test.ts
+          '
