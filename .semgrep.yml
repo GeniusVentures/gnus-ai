@@ -8,10 +8,11 @@ rules:
     languages: [solidity]
 
   - id: unsafe-external-call
-    patterns:
-      - pattern: ".call{"
-      - pattern: require(success
-    message: "Unsafe external call without proper error handling. Consider using a safe wrapper or checking return data."
+    # Match a Solidity low-level .call{...} expression without relying on
+    # fragments that Semgrep's Solidity parser rejects. This is a heuristic:
+    # reviewers must inspect whether the return status and data are checked.
+    pattern-regex: '\\.call\\s*\\{'
+    message: "Review low-level external call: verify success handling, return-data validation, and reentrancy safety."
     severity: WARNING
     languages: [solidity]
 
