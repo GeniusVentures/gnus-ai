@@ -12,6 +12,17 @@ ENV CI=1 \
 # Python 3.9 is for node-gyp; AlmaLinux 8's default Python 3.6 is too old.
 RUN dnf install -y python39 python39-pip && dnf clean all
 
+# The diamonds-hardhat-foundry plugin calls forge at Hardhat config load.
+# Install a pinned, SHA-256-checked Foundry release before compiling contracts.
+RUN curl -fL --retry 3 --retry-delay 3 \
+      "https://github.com/foundry-rs/foundry/releases/download/v1.8.5/foundry_v1.8.5_linux_amd64.tar.gz" \
+      -o /tmp/foundry.tar.gz \
+ && echo "6c66ffcc55fa4249197721baa3098bc208014ea1d8aa04b2ed50ac6bccffb226  /tmp/foundry.tar.gz" | sha256sum -c - \
+ && tar -xzf /tmp/foundry.tar.gz -C /usr/local/bin forge cast anvil chisel \
+ && chmod 0755 /usr/local/bin/forge /usr/local/bin/cast /usr/local/bin/anvil /usr/local/bin/chisel \
+ && rm -f /tmp/foundry.tar.gz \
+ && forge --version
+
 WORKDIR /src
 COPY . /src
 
