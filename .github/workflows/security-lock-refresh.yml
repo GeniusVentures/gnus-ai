@@ -39,7 +39,6 @@ jobs:
           set -euo pipefail
           yarn install --mode=update-lockfile
           yarn install --immutable
-          yarn npm audit --severity moderate
       - name: Commit only generated lockfile
         run: |
           set -euo pipefail
@@ -51,3 +50,5 @@ jobs:
           fi
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(security): refresh Yarn lockfile for patched transitive dependencies'
           git push origin HEAD:security/refresh-dependencies-develop-20261009
+      - name: Audit patched dependencies
+        run: yarn npm audit --severity moderate
